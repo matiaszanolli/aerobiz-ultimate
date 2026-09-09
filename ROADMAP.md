@@ -83,32 +83,29 @@ U-002 grows into real rendering work.**
 
 ## M2 -- Rebase the game to $900000
 
-### U-010 -- Rewrite the 1,990 "safe" ROM literals [OPEN, next]
+### U-010 -- Rewrite the safe ROM literals [DONE]
 
-`tools/scan_rom_refs.py` classifies them. Rewrite each as `ROM_BASE+$xxxxxx`.
-`make verify` must still report an MD5 match afterwards -- that proves no
-encoding changed. Do it in reviewable batches, not one commit.
+3,001 rebased as `ROM_BASE+$xxxxxx`, in five batches, each verified
+byte-identical. `scan_rom_refs.py --rewrite` did the work, so the tool that
+finds a site is the tool that fixes it.
 
-Forms in scope: `($imm).l` operands (1,075), `movea #imm` (831), `dbra` literal
-targets (40), `dc.l` ROM pointers (31), `bsr.b` literal targets (12), one
-`jmp $xxx(pc)`.
+The starting figure of 1,990 was wrong, in three ways the scanner could not
+see:
 
-The mechanism is now wired and proven. `ROM_BASE` was declared in
-PORT_ARCHITECTURE.md §3 but had never actually been defined for the Genesis
-target, nor used once in shared sources; it is now `equ $00000000` in
-`disasm/aerobiz.asm`. One site is converted as a worked example and template:
+| Missed class | Count | Why |
+|---|---|---|
+| hand-encoded `dc.w $4EB9,$hi,$lo` | 971 | address split across two words; invisible to every regex |
+| multi-value `dc.l` lines | 35 | only the first longword on a line was matched |
+| PC-relative `$xxx(pc)` / `$xxx(pc,Rn)` | 22 | not modelled at all |
+| `dbne` / `dbeq` | 2 | only `dbra`/`dbf` were listed, and the conditional pattern anchors on `b` |
 
-    movea.l #ROM_BASE+$000D64,a3    ; VRAMBulkLoad.asm:11
+The 971 mattered most: they are `jsr` targets, and left alone every one would
+have called into unmapped `$000xxx`. They are now real mnemonics --
+`jsr (ROM_BASE+$000D64).l` -- which also removes 971 hand-encoded instructions,
+per ground rule 4.
 
-`make verify` still matches, which is what confirms `#ROM_BASE+$000D64` encodes
-identically to `#$00000D64` under `-no-opt` -- the encoding hazard
-KNOWN_ISSUES.md warns about.
-
-**Size neutrality is not optional.** These expressions carry *Genesis* offsets,
-so the 32X image must keep the Genesis layout byte for byte. Never insert or
-remove bytes in a shared source to accommodate the 32X; see
-[PORT_ARCHITECTURE.md §2.1](PORT_ARCHITECTURE.md). The Genesis check cannot see
-this class of mistake either.
+The true inventory was 3,872, not 2,886. `disasm/sections/header.asm` is
+excluded: its vector table is inert on 32X.
 
 ### U-011 -- Classify the 896 "review" literals [OPEN]
 
@@ -121,17 +118,36 @@ are masks, counts and multipliers, not addresses. Classify against
 constant as `ROM_BASE+$xxxx` leaves the Genesis ROM unchanged and breaks only
 the 32X build. Record the verdict and the evidence for each site.
 
-### U-012 -- Get the game half to assemble at $900000 [OPEN]
+### U-012 -- Get the game half to assemble at $900000 [DONE]
 
-Gated on U-010. `make 32x` currently fails on out-of-range branches, which is
-exactly the unrebased literals showing up. Success is a 2 MB cartridge.
+Fell out of U-010: once the PC-relative literals were rebased, `make 32x`
+assembles a full 2 MB cartridge.
 
-### U-013 -- Reach the title screen [OPEN]
+The layout check that matters: the game half is byte-for-byte the same length
+as the Genesis image and differs in 5,793 bytes, **every one an isolated single
+byte** where an address high byte went `$0X` to `$9X`. No runs, so nothing
+shifted -- which is the property the whole rebasing scheme depends on. Roughly
+3,000 of those are the literal rebases; the rest are symbolic references that
+`org ROM_BASE` moved on their own.
 
-The M2 acceptance test. Expect to find rebasing misses here; each one is a
-literal the scanner did not classify or classified wrongly. Feed every finding
-back into `tools/scan_rom_refs.py` so the tool gets better rather than the fixes
-being one-offs.
+### U-013 -- Reach the title screen [OPEN, close]
+
+The game boots and runs on 32X. Running the cartridge and the Genesis build in
+the same emulator and diffing work RAM from `$FFF010`, they agree to within 17
+of 4,080 bytes after 900 frames, and the survivors are per-frame counters and
+dispatch flags around `$FFF011-$FFF03C` -- where two runs that are not
+cycle-locked would differ anyway, since the 32X spends its first frames in
+adapter bring-up.
+
+Getting there needed one fix beyond rebasing: the jump table's slots are
+vector-indexed, not packed, so every interrupt was jumping into padding. Work
+RAM divergence went from 41 bytes to 2 when that was corrected.
+
+What is left is to actually **look at the screen**, which this harness cannot
+do: the prebuilt `profiling_frontend` predates the `VRD_VIDEO_DUMP_DIR` code in
+its own source, so it accepts the variables and writes nothing. Rebuilding it
+is U-091. Until then "reaches the title screen" is inference from work RAM, not
+observation, and this item stays open.
 
 ---
 
@@ -254,7 +270,14 @@ that assembly-only would be a poor trade. marsdev or crosstool-ng `sh-elf`.
 
 Not urgent -- M1 and M2 need no SH2 C -- but it blocks M4 and M5.
 
-### U-091 -- Emulator harness for automated boot tests [OPEN]
+### U-091 -- Emulator harness for automated boot tests [OPEN, raised]
+
+Now blocking U-013. `../32x-playground/tools/libretro-profiling` already does
+most of it -- `--debug-script` with `run`, `read`, `regs` drove U-001 and U-013
+-- but the checked-in `profiling_frontend` binary is older than its source and
+has no video capture, so there is no way to see a frame. Rebuild the frontend
+and the instrumented core, then add a screenshot comparison against the Genesis
+build to the boot test.
 
 U-001 is manual. A headless run that asserts on comm-port state would make every
 subsequent milestone cheaper to verify.

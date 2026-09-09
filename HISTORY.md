@@ -11,6 +11,56 @@ manual section or the tool output that backs it.
 
 ## 2026-09-08
 
+### M2: the rebased game assembles, boots and runs on the 32X
+
+U-010 and U-012 done, U-013 all but confirmed. 3,001 literals rebased in five
+batches, each verified byte-identical, by `scan_rom_refs.py --rewrite`.
+
+The measured figure of 2,886 that this file already records as a correction of
+an earlier guess was itself wrong. Three classes were invisible to the scanner:
+
+| Missed | Count | Why |
+|---|---|---|
+| hand-encoded `dc.w $4EB9,$hi,$lo` | 971 | the address is split across two words |
+| multi-value `dc.l` lines | 35 | only the first longword per line was matched |
+| PC-relative `$xxx(pc)`, `dbne`, `dbeq` | 24 | not modelled |
+
+True inventory: 3,872. The 971 were the dangerous ones -- `jsr` targets that
+would each have called into unmapped `$000xxx`.
+
+Two things fell out that are worth more than the count:
+
+**The image layout is provably intact.** The 32X game half is byte-for-byte the
+same length as the Genesis image and differs in 5,793 bytes, every one an
+isolated single byte where an address high byte went `$0X` to `$9X`. Not one
+contiguous run of two. That is the direct evidence for the size-neutrality
+constraint recorded earlier the same day, and the cheapest test we have that
+rebasing has not shifted anything.
+
+**Every 68000 interrupt was jumping into padding.** The boot ROM's vector table
+is fixed and each vector targets its own slot in the cartridge jump table at
+`$200 + (vector - 1) * 6`. Ours packed the sixteen entries we use end to end, so
+V-Blank sat at `$25A` -- vector 16's slot -- while the boot ROM jumped to
+`$2AE`. Read back live rather than inferred: `$000078` holds `$8802AE`. M1 never
+caught it because MdMain masks interrupts and idles.
+
+The differential method is what found it, and is worth keeping: run the 32X
+cartridge and the Genesis build in the same emulator, diff work RAM. Before the
+fix, 41 of 512 bytes differed, with the 32X side holding zeros exactly where the
+Genesis build had V-Blank dispatch flags. After, 2 of 512 -- one of them a
+stored ROM pointer reading `$94xxxx` against `$04xxxx`, which is correct
+rebasing rather than divergence.
+
+A caution recorded because it nearly misled: `$FF0006` is documented in
+RAM_MAP.md as incrementing each MainLoop iteration, and it reads zero on 32X.
+It also reads zero on the Genesis build, so it is not the liveness signal the
+map describes and proves nothing either way.
+
+Still not *seen*. The prebuilt `profiling_frontend` is older than its own
+source and has no video capture, so it accepts `VRD_VIDEO_DUMP_DIR` and writes
+nothing. "Reaches the title screen" is inference from work RAM until the
+harness can produce a frame; U-091 is raised to blocking.
+
 ### The rebasing mechanism was never actually wired up
 
 `ROM_BASE` is the whole dual-build design (PORT_ARCHITECTURE.md §3), and it did
