@@ -30,6 +30,16 @@ MARS_COMM5          equ $00A1512A
 MARS_COMM6          equ $00A1512C
 MARS_COMM7          equ $00A1512E
 
+; Boot handshake slots -- manual 5.1.
+;
+; The boot-ROM flow chart's "comm 0, 4, 8" are BYTE offsets into the comm area,
+; not comm-register indices.  The boot ROM writes the master's 'M_OK' as a
+; longword at $A15120 and the slave's 'S_OK' as a longword at $A15124 -- i.e.
+; over COMM0/COMM1 and COMM2/COMM3.  Confirmed against a running 32X BIOS
+; (U-001); reading "comm4" as MARS_COMM4 ($A15128) hangs the 68000 forever.
+MARS_COMM_MOK       equ $00A15120   ; master ready, longword 'M_OK'
+MARS_COMM_SOK       equ $00A15124   ; slave ready,  longword 'S_OK'
+
 ; PWM -- manual 3.4
 MARS_PWM_CTL        equ $00A15130   ; TM3-0 / RTP / RMD1-0 / LMD1-0
 MARS_PWM_CYCLE      equ $00A15132   ; sample cycle (NTSC base 23.01 MHz)

@@ -24,6 +24,11 @@
         .equ    COMM4,          0x20004028
         .equ    COMM6,          0x2000402C
 
+! Boot handshake slots -- see definitions_32x.asm for why these are byte
+! offsets 0 and 4 rather than comm-register indices 0 and 4.
+        .equ    COMM_MOK,       0x20004020      ! master ready, 'M_OK'
+        .equ    COMM_SOK,       0x20004024      ! slave ready,  'S_OK'
+
         .equ    PWM_CTL,        0x20004030
         .equ    PWM_CYCLE,      0x20004032
         .equ    PWM_LCH,        0x20004034

@@ -12,6 +12,16 @@
 ;   4. hand control to the unmodified Aerobiz entry point
 ; ===========================================================================
 
+; ---------------------------------------------------------------------------
+; Security result -- manual 5.2
+;
+; The initial program does not jump here; it falls through with the carry flag
+; carrying its verdict, which is why the manual's own sample listing puts a
+; `bcs` immediately after `.include icd_mars.prg`.  This must therefore be the
+; very first instruction of the application, before anything disturbs CCR.
+; ---------------------------------------------------------------------------
+        bcs.w   MarsSecurityFailed              ; cs: ID or self-check failure
+
         move    #$2700,sr                       ; interrupts off during bring-up
         lea     ($00FFF000).l,sp
 
@@ -25,14 +35,14 @@
 ; have reported.
 ; ---------------------------------------------------------------------------
 .wait_master:
-        cmpi.l  #'M_OK',(MARS_COMM0).l
+        cmpi.l  #'M_OK',(MARS_COMM_MOK).l
         bne.s   .wait_master
 .wait_slave:
-        cmpi.l  #'S_OK',(MARS_COMM4).l
+        cmpi.l  #'S_OK',(MARS_COMM_SOK).l
         bne.s   .wait_slave
 
-        clr.l   (MARS_COMM0).l                  ; release the master
-        clr.l   (MARS_COMM4).l                  ; release the slave
+        clr.l   (MARS_COMM_MOK).l               ; release the master
+        clr.l   (MARS_COMM_SOK).l               ; release the slave
 
 ; ---------------------------------------------------------------------------
 ; Cartridge banking -- manual 3.2.1
@@ -63,7 +73,27 @@
 ; address.  It performs the TMSS write, loads the Z80 driver and runs the
 ; stock VDP init table, exactly as it does on a plain Genesis.
 ; ---------------------------------------------------------------------------
+    ifd MILESTONE1
+; Milestone-1 cartridge: there is no game half to jump to (the image is
+; $FF-filled from $100000 on), so idle here instead.  Everything the M1
+; acceptance test inspects -- comm ports, bank register, adapter state -- has
+; already happened by this point and stays observable while we spin.
+.m1_idle:
+        bra.s   .m1_idle
+    else
         jmp     (GameEntryPoint).l
+    endif
+
+; ---------------------------------------------------------------------------
+; Security failure.
+;
+; The adapter has already refused us, so there is nothing safe to draw with and
+; no reason to continue.  Halt somewhere a debugger can identify.
+; ---------------------------------------------------------------------------
+MarsSecurityFailed:
+        move    #$2700,sr
+.halt:
+        bra.s   .halt
 
 ; ===========================================================================
 ; Exception and interrupt trampolines

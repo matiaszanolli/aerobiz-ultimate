@@ -42,7 +42,7 @@ master_start:
         ! Release: the boot ROM put 'M_OK' in comm0 and the 68000 clears it
         ! when it is ready for us.  Manual 5.1 -- the SH2 must wait for that
         ! clear before touching anything the 68000 is still initialising.
-        mov.l   .L_comm0, r1
+        mov.l   .L_comm_mok, r1
 .Lwait_release:
         mov.l   @r1, r0
         tst     r0, r0
@@ -117,7 +117,7 @@ halt:
 
         .align  4
 .L_stack:       .long   MASTER_STACK
-.L_comm0:       .long   COMM0
+.L_comm_mok:    .long   COMM_MOK
 .L_sysreg:      .long   SYSREG
 .L_vint_clr:    .long   VINT_CLR
 .L_hint_clr:    .long   HINT_CLR

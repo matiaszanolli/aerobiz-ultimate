@@ -31,6 +31,7 @@ MARS_DONOR     = reference/Virtua Racing Deluxe (USA).32x
 
 ULTIMATE_ROM   = $(BUILD_DIR)/aerobiz-ultimate.32x
 BOOT_HALF      = $(BUILD_DIR)/32x_boot.bin
+BOOT_HALF_M1   = $(BUILD_DIR)/32x_boot_m1.bin
 GAME_HALF      = $(BUILD_DIR)/32x_game.bin
 MARS_INIT_BIN  = $(BUILD_DIR)/mars_init.bin
 MARS_INIT_INC  = $(BUILD_DIR)/mars_init.inc
@@ -45,6 +46,9 @@ SH2_ASFLAGS = --big -isa=sh2
 
 GENESIS_SRC  = $(DISASM_DIR)/aerobiz.asm
 BOOT_SRC     = $(DISASM_DIR)/ultimate_boot.asm
+# ultimate_boot.asm pulls these in; without listing them a change to the header
+# or to MdMain would not trigger a rebuild.
+BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
 SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS))
@@ -94,9 +98,9 @@ verify: $(GENESIS_ROM)
 # rebased.  See PORT_ARCHITECTURE.md section 6.
 32x-m1: $(BUILD_DIR)/aerobiz-ultimate-m1.32x
 
-$(BUILD_DIR)/aerobiz-ultimate-m1.32x: $(BOOT_HALF)
+$(BUILD_DIR)/aerobiz-ultimate-m1.32x: $(BOOT_HALF_M1)
 	@echo "==> Assembling milestone-1 test cartridge..."
-	@cp $(BOOT_HALF) $@
+	@cp $(BOOT_HALF_M1) $@
 	@dd if=/dev/zero bs=1M count=1 2>/dev/null | tr '\000' '\377' >> $@
 	@echo "==> Build complete: $@"
 	@ls -lh $@
@@ -114,9 +118,15 @@ $(ULTIMATE_ROM): $(BOOT_HALF) $(GAME_HALF)
 	@echo "==> Build complete: $@"
 	@ls -lh $@
 
-$(BOOT_HALF): $(BOOT_SRC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+$(BOOT_HALF): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -o $@ $<
+
+# Milestone-1 boot half: identical to the real one except that MdMain idles
+# instead of jumping to the game image, which the M1 cartridge does not carry.
+$(BOOT_HALF_M1): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, milestone 1 (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DMILESTONE1=1 -o $@ $<
 
 $(GAME_HALF): $(GAME_SRC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X game half (\$$900000)..."

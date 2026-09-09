@@ -2,7 +2,7 @@
 ! Aerobiz Ultimate -- SH2 slave
 !
 ! Started by the boot ROM at slave_start with VBR from the MARS user header.
-! The boot ROM has already written 'S_OK' into comm4; the 68000 clears it to
+! The boot ROM has already written 'S_OK' at $20004024; the 68000 clears it to
 ! release us.  docs/32x-hardware-manual.md section 5.1.
 !
 ! The slave holds no work yet.  It exists so both CPUs are in a known state
@@ -37,7 +37,7 @@ slave_start:
         mov     #0x60, r0
         ldc     r0, sr
 
-        mov.l   .L_comm4, r1
+        mov.l   .L_comm_sok, r1
 .Lwait_release:
         mov.l   @r1, r0
         tst     r0, r0
@@ -61,5 +61,5 @@ slave_halt:
 
         .align  4
 .L_sstack:      .long   SLAVE_STACK
-.L_comm4:       .long   COMM4
+.L_comm_sok:    .long   COMM_SOK
 .L_scmd_clr:    .long   CMD_CLR
