@@ -155,7 +155,8 @@ ROMs, and `make verify` is what tells you whether that was intended.
 | Question | File |
 |----------|------|
 | How the port works and why | [PORT_ARCHITECTURE.md](PORT_ARCHITECTURE.md) |
-| What to work on next | [BACKLOG.md](BACKLOG.md) |
+| What to work on next | [ROADMAP.md](ROADMAP.md) |
+| What has been done, and what we got wrong | [HISTORY.md](HISTORY.md) |
 | Pitfalls, Genesis and 32X | [KNOWN_ISSUES.md](KNOWN_ISSUES.md) |
 | 32X hardware | [docs/32x-hardware-manual.md](docs/32x-hardware-manual.md) |
 | SH2 | [docs/sh7604-hardware-manual.md](docs/sh7604-hardware-manual.md) |

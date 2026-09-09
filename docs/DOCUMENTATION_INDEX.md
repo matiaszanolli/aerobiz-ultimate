@@ -21,7 +21,8 @@ All documentation available for the Aerobiz Supersonic disassembly project.
 | Document | Description |
 |----------|-------------|
 | [../CLAUDE.md](../CLAUDE.md) | Project briefing, ground rules, architecture |
-| [../BACKLOG.md](../BACKLOG.md) | Prioritized task queue |
+| [../ROADMAP.md](../ROADMAP.md) | Milestones and task queue |
+| [../HISTORY.md](../HISTORY.md) | Progress log: what was done, and corrections to earlier beliefs |
 | [../KNOWN_ISSUES.md](../KNOWN_ISSUES.md) | Known pitfalls, bugs, hardware gotchas |
 | [../agents/README.md](../agents/README.md) | Agent team coordination model |
 

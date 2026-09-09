@@ -32,7 +32,7 @@ Working directory: /mnt/data/src/aerobiz-disasm
 Navigator session ID: [NAVIGATOR_ID]
 Task: [TASK_DESCRIPTION]
 
-[BACKLOG ENTRY -- paste the relevant B-XXX block here]
+[ROADMAP ENTRY -- paste the relevant U-nnn block here]
 
 == YOUR ROLE ==
 

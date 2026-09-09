@@ -50,7 +50,7 @@ but any agent (or the user) can trigger it.
 ```
 Task Manager
   -> Step 1: Spawn Navigator (Haiku, loads index.md -- fast, cheap, respawn freely)
-  -> Step 2: Orient on task (read BACKLOG, present options if needed, user decides)
+  -> Step 2: Orient on task (read ROADMAP, present options if needed, user decides)
   -> Step 2.5: Research Gate (for bugs/unexplained behavior)
        -> Engineer reads documentation, builds mental model, identifies root cause
        -> Task Manager verifies: every claim backed by documentation?
@@ -62,7 +62,7 @@ Task Manager
   -> Step 4: Spawn Auditor (Opus, fresh per proposal -- NEVER resumed)
        -> APPROVED -> Engineer implements
        -> BLOCKED  -> fix required -> user decides -> retry
-  -> Step 5: Wrap up -- draft BACKLOG + index updates, present to user for approval
+  -> Step 5: Wrap up -- draft ROADMAP + index updates, present to user for approval
 ```
 
 ## Invocation

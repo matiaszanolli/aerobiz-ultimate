@@ -10,7 +10,7 @@
 
 The Task Manager is a thin session coordinator. It:
 1. Spins up the Navigator
-2. Orients on what to work on (from user or BACKLOG)
+2. Orients on what to work on (from user or ROADMAP)
 3. Spawns the Engineer with the right context
 4. Manages the Auditor sign-off gate
 5. Reports results and proposes doc updates to the user
@@ -23,7 +23,7 @@ The user always decides direction. The Engineer does all analysis and coding.
 ## Trigger Conditions
 
 ### Auto-trigger
-When the session is about to modify any file in `disasm/` or work on any BACKLOG item,
+When the session is about to modify any file in `disasm/` or work on any ROADMAP item,
 invoke the Task Manager first. This ensures Navigator is live before technical work begins.
 
 ### User-trigger
@@ -56,7 +56,7 @@ Navigator is fast and cheap -- respawn without hesitation if the ID goes stale.
 
 ### Step 2: Orient
 
-Read the first 60 lines of `BACKLOG.md` (P0 and P1 items).
+Read `ROADMAP.md` -- it is organised by milestone (M1..M7); the open items of the current milestone are the candidates.
 
 **If the user already specified a task** (via `/task-manager <issue>` or in their request):
 -> Skip to Step 3.
@@ -70,7 +70,7 @@ Read the first 60 lines of `BACKLOG.md` (P0 and P1 items).
 <P1 items -- one line each: ID, title, status>
 <P2 count: N items open>
 
-### Recommended: <B-XXX -- title>
+### Recommended: <U-nnn -- title>
 Why: <one sentence -- highest impact / clearest next step>
 Expected: <what success looks like>
 
@@ -112,7 +112,7 @@ not fully understood, the Engineer MUST complete a Research Phase before impleme
 Spawn the Engineer (from `agents/engineer.md`) with:
 - Navigator ID (from Step 1)
 - Task description + any user constraints mentioned
-- The relevant BACKLOG entry (paste the full B-XXX block)
+- The relevant ROADMAP entry (paste the full U-nnn block)
 
 ```python
 Task(
@@ -155,7 +155,7 @@ Task(
 After Engineer reports implementation complete and build passes:
 
 1. Read `analysis/agent-scratch/engineer/findings.md`
-2. Draft any BACKLOG.md updates (status change, test results, commit hash)
+2. Draft any ROADMAP.md updates (status change, test results, commit hash)
 3. Draft any index.md updates (new pitfalls or architectural facts discovered)
 4. Present all drafts to the user for approval
 5. **Do NOT commit to git without explicit user approval**

@@ -70,7 +70,8 @@ while breaking the 32X build. That class of change needs human review.
 | Question | File |
 |----------|------|
 | How the port is structured, and why | [PORT_ARCHITECTURE.md](PORT_ARCHITECTURE.md) |
-| What to work on next | [BACKLOG.md](BACKLOG.md) |
+| What to work on next | [ROADMAP.md](ROADMAP.md) |
+| Progress so far | [HISTORY.md](HISTORY.md) |
 | 32X and Genesis pitfalls | [KNOWN_ISSUES.md](KNOWN_ISSUES.md) |
 | 32X hardware reference | [docs/32x-hardware-manual.md](docs/32x-hardware-manual.md) |
 | SH2 reference | [docs/sh7604-hardware-manual.md](docs/sh7604-hardware-manual.md) |

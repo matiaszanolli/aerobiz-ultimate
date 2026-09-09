@@ -1,10 +1,16 @@
-# Aerobiz Ultimate -- Backlog
+# Aerobiz Ultimate -- Roadmap
 
-Task queue for the 32X port. Items are `U-nnn`. The inherited disassembly
-backlog (`B-nnn`) lives in the upstream [aerobiz-disasm](../aerobiz-disasm/)
-project and is not carried here -- that work is complete.
+What is next for the 32X port. Items are `U-nnn`, grouped by milestone;
+milestones are defined in
+[PORT_ARCHITECTURE.md](PORT_ARCHITECTURE.md#6-milestones).
 
-Milestones are defined in [PORT_ARCHITECTURE.md](PORT_ARCHITECTURE.md#6-milestones).
+[HISTORY.md](HISTORY.md) is the companion to this file: what has already been
+done, and which earlier beliefs turned out to be wrong. When an item closes,
+move its findings there rather than leaving them here.
+
+The inherited disassembly backlog (`B-nnn`) lives in the upstream
+[aerobiz-disasm](../aerobiz-disasm/) project and is not carried here -- that
+work is complete.
 
 ---
 

@@ -9,7 +9,7 @@ The Navigator's complete knowledge base. Updated after each session.
 | Document | Path | Topics Covered |
 |----------|------|----------------|
 | Project briefing | CLAUDE.md | Ground rules, architecture, build, module categories |
-| Task queue | BACKLOG.md | Prioritized work items with acceptance criteria |
+| Task queue | ROADMAP.md | Milestones and work items with acceptance criteria |
 | Known pitfalls | KNOWN_ISSUES.md | 68K translation bugs, Genesis hardware hazards |
 | Agent team | agents/README.md | Team roles, session flow, research-first principle |
 | Genesis software manual | docs/genesis-software-development-manual.md | VDP, DMA, I/O, memory map, sound |
