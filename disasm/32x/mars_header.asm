@@ -79,23 +79,40 @@
 ; exception and interrupt trampolines the vector table above points at.
 ; ---------------------------------------------------------------------------
 JumpTable:
-MarsEntry:              jmp     MdMain                  ; $200 application entry
-TrapBusError:           jmp     GameBusError            ; $206
-TrapAddressError:       jmp     GameAddressError        ; $20C
-TrapIllegal:            jmp     GameIllegal             ; $212
-TrapZeroDivide:         jmp     GameZeroDivide          ; $218
-TrapChk:                jmp     GameChk                 ; $21E
-TrapTrapv:              jmp     GameTrapv               ; $224
-TrapPrivilege:          jmp     GamePrivilege           ; $22A
-TrapTrace:              jmp     GameTrace               ; $230
-TrapLineA:              jmp     GameLineA               ; $236
-TrapLineF:              jmp     GameLineF               ; $23C
-TrapReserved:           jmp     GameReserved            ; $242
-TrapUninitialized:      jmp     GameUninitialized       ; $248
-IntLevel2Ext:           jmp     GameExtInt              ; $24E
-IntLevel4HBlank:        jmp     GameHBlankInt           ; $254
-IntLevel6VBlank:        jmp     GameVBlankInt           ; $25A
+; Slot n sits at $200 + (vector - 1) * 6, NOT packed end to end: the boot ROM's
+; vector table is fixed and jumps to a slot per 68000 vector number. Read back
+; live under ADEN = 1, $000078 (level 6) holds $8802AE = $200 + 29 * 6. Packing
+; the entries contiguously puts V-Blank at $25A -- vector 16's slot -- and every
+; interrupt lands in padding.
+MarsEntry:              jmp     MdMain                  ; $200 v1  reset
+TrapBusError:           jmp     GameBusError            ; $206 v2
+TrapAddressError:       jmp     GameAddressError        ; $20C v3
+TrapIllegal:            jmp     GameIllegal             ; $212 v4
+TrapZeroDivide:         jmp     GameZeroDivide          ; $218 v5
+TrapChk:                jmp     GameChk                 ; $21E v6
+TrapTrapv:              jmp     GameTrapv               ; $224 v7
+TrapPrivilege:          jmp     GamePrivilege           ; $22A v8
+TrapTrace:              jmp     GameTrace               ; $230 v9
+TrapLineA:              jmp     GameLineA               ; $236 v10
+TrapLineF:              jmp     GameLineF               ; $23C v11
+TrapReserved:           jmp     GameReserved            ; $242 v12
+                        jmp     GameReserved            ; $248 v13
+                        jmp     GameReserved            ; $24E v14
+TrapUninitialized:      jmp     GameUninitialized       ; $254 v15
 
+        dcb.b   (CART_BASE+$28A)-*,$FF                  ; $25A v16-23 reserved
+
+IntSpurious:            jmp     GameReserved            ; $28A v24 spurious
+IntLevel1:              jmp     GameReserved            ; $290 v25
+IntLevel2Ext:           jmp     GameExtInt              ; $296 v26 EXT
+IntLevel3:              jmp     GameReserved            ; $29C v27
+IntLevel4HBlank:        jmp     GameHBlankInt           ; $2A2 v28 H-Blank
+IntLevel5:              jmp     GameReserved            ; $2A8 v29
+IntLevel6VBlank:        jmp     GameVBlankInt           ; $2AE v30 V-Blank
+IntLevel7:              jmp     GameReserved            ; $2B4 v31
+
+; $2BA v32-47 are TRAP #0-#15 and $316 v48-63 reserved. The stock game leaves
+; every TRAP vector zero, so they stay padding.
         dcb.b   (CART_BASE+$3C0)-*,$FF                  ; pad to the user header
 
 ; ---------------------------------------------------------------------------
