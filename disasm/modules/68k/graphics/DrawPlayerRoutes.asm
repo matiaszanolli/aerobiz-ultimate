@@ -15,7 +15,7 @@ DrawPlayerRoutes:                                                  ; $009E1C
     pea     ($0001).w
     pea     ($000F).w
     pea     -$0002(a6)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     lea     $000c(sp),sp
     move.w  d6,d0
     lsl.w   #$5,d0
@@ -33,7 +33,7 @@ DrawPlayerRoutes:                                                  ; $009E1C
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     addq.l  #$4,sp
     move.w  d0,d4
     bra.b   .l9ea4
@@ -46,7 +46,7 @@ DrawPlayerRoutes:                                                  ; $009E1C
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6eea                           ; jsr $006EEA
+    jsr     (ROM_BASE+$006EEA).l
     addq.l  #$8,sp
     move.w  d0,d3
 .l9ea4:                                                 ; $009EA4
@@ -93,10 +93,10 @@ DrawPlayerRoutes:                                                  ; $009E1C
     addi.l  #$3b,d0
     move.l  d0,-(sp)
     pea     ($0544).w
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044
+    jsr     (ROM_BASE+$01E044).l
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0024(sp),sp
 .l9f32:                                                 ; $009F32
     addq.l  #$8,a2

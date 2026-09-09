@@ -237,7 +237,7 @@ CalcCityStats:                                                  ; $01E98E
     move.b  $0003(a2),d0               ; descriptor byte[3] = secondary value
     moveq   #$0,d1
     move.b  $0001(a2),d1               ; descriptor byte[1] = primary rating (multiplier)
-    dc.w    $4eb9,$0003,$e05c          ; jsr Multiply32 ($03E05C): d0 = byte[3] * byte[1]
+    jsr     (ROM_BASE+$03E05C).l       ; jsr Multiply32 ($03E05C): d0 = byte[3] * byte[1]
     add.l   d0,d6                      ; d6 += weighted product
     addq.l  #$4,a2                     ; next descriptor (4 bytes/entry)
     addq.w  #$1,d4                     ; d4 = iteration counter
@@ -302,7 +302,7 @@ CalcCityStats:                                                  ; $01E98E
     move.b  $0003(a2),d0               ; descriptor byte[3]
     moveq   #$0,d1
     move.b  $0001(a2),d1               ; descriptor byte[1]
-    dc.w    $4eb9,$0003,$e05c          ; jsr Multiply32 ($03E05C)
+    jsr     (ROM_BASE+$03E05C).l       ; jsr Multiply32 ($03E05C)
     move.l  d0,d1
     add.l   d0,d0                      ; * 2
     add.l   d1,d0                      ; * 3
@@ -318,7 +318,7 @@ CalcCityStats:                                                  ; $01E98E
     move.b  $0003(a2),d0               ; descriptor byte[3]
     moveq   #$0,d1
     move.b  $0001(a2),d1               ; descriptor byte[1]
-    dc.w    $4eb9,$0003,$e05c          ; jsr Multiply32 ($03E05C)
+    jsr     (ROM_BASE+$03E05C).l       ; jsr Multiply32 ($03E05C)
 .l1ea9c:                                                ; $01EA9C
     add.l   d0,d6                      ; d6 += weighted product
     addq.l  #$4,a2                     ; next descriptor
@@ -336,7 +336,7 @@ CalcCityStats:                                                  ; $01E98E
     moveq   #$0,d1
     move.w  d5,d1                      ; d1 = total stat sum (divisor)
     move.l  d6,d0                      ; d0 = weighted product sum (dividend)
-    dc.w    $4eb9,$0003,$e0c6          ; jsr UnsignedDivide ($03E0C6): d0 = d6/d5
+    jsr     (ROM_BASE+$03E0C6).l       ; jsr UnsignedDivide ($03E0C6): d0 = d6/d5
     move.l  d0,d6                      ; d6 = weighted average
 
 ; --- Phase: Insertion Sort Top-3 (first sort pass, by range1 category) ---
@@ -500,7 +500,7 @@ CalcCityStats:                                                  ; $01E98E
     moveq   #$0,d0
     move.w  d3,d0
     moveq   #$3,d1                   ; divisor = 3
-    dc.w    $4eb9,$0003,$e08a        ; jsr SignedDiv ($03E08A): d0 = d3 / 3
+    jsr     (ROM_BASE+$03E08A).l     ; jsr SignedDiv ($03E08A): d0 = d3 / 3
     move.w  d0,d3                    ; d3 = top-3 rank average
 
 ; --- Phase: Write Output ---

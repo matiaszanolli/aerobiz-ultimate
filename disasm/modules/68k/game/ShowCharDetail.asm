@@ -68,7 +68,7 @@ ShowCharDetail:                                                  ; $007D92
     pea     ($0040).w                               ; size param $40
     clr.l   -(sp)
     pea     ($0010).w                               ; GameCommand #$10
-    dc.w    $4eb9,$0000,$0d64                       ; jsr $000D64 (GameCommand)
+    jsr     (ROM_BASE+$000D64).l                    ; jsr $000D64 (GameCommand)
     lea     $000c(sp),sp
     ; --- Phase: Portrait mode (d6 == 1): decompress and place char graphic ---
     cmpi.w  #$1,d6
@@ -76,12 +76,12 @@ ShowCharDetail:                                                  ; $007D92
     ; Decompress char portrait LZ from table at $A1AE8
     move.l  ($000A1AE8).l,-(sp)                     ; compressed data pointer from $A1AE8
     pea     ($00FF1804).l                           ; decompress into save_buf_base ($FF1804)
-    dc.w    $4eb9,$0000,$3fec                       ; jsr $003FEC (LZ_Decompress)
+    jsr     (ROM_BASE+$003FEC).l                    ; jsr $003FEC (LZ_Decompress)
     ; Place tile: $37 tiles wide, at VRAM index $6B4
     pea     ($0037).w                               ; width = $37 = 55 tiles
     pea     ($06B4).w                               ; VRAM tile index $6B4
     pea     ($00FF1804).l                           ; source: decompressed data
-    dc.w    $4eb9,$0000,$4668                       ; jsr $004668 (CmdPlaceTile)
+    jsr     (ROM_BASE+$004668).l                    ; jsr $004668 (CmdPlaceTile)
     ; Draw portrait at (col=d3, row=d2) via GameCommand #$1B
     pea     ($00070F78).l                           ; portrait resource string/ptr
     pea     ($0008).w                               ; width = 8
@@ -94,7 +94,7 @@ ShowCharDetail:                                                  ; $007D92
     move.l  d0,-(sp)                                ; col = d3
     pea     ($0001).w
     pea     ($001B).w                               ; GameCommand #$1B = DrawText/Tile
-    dc.w    $4eb9,$0000,$0d64                       ; jsr $000D64 (GameCommand)
+    jsr     (ROM_BASE+$000D64).l                    ; jsr $000D64 (GameCommand)
     lea     $0030(sp),sp
 .l7e50:                                            ; $007E50
     ; --- Phase: Set text window for stat display ---
@@ -107,7 +107,7 @@ ShowCharDetail:                                                  ; $007D92
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)                                ; window col = d3
-    dc.w    $4eb9,$0003,$a942                       ; jsr $03A942 (SetTextWindow)
+    jsr     (ROM_BASE+$03A942).l                    ; jsr $03A942 (SetTextWindow)
     ; --- Set text cursor for first stat line (col=d3, row=d2+8) ---
     move.w  d2,d0
     ext.l   d0
@@ -116,14 +116,14 @@ ShowCharDetail:                                                  ; $007D92
     ext.l   d0
     addq.l  #$8,d0                                  ; col = d3 + 8
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                       ; jsr $03AB2C (SetTextCursor)
+    jsr     (ROM_BASE+$03AB2C).l                    ; jsr $03AB2C (SetTextCursor)
     ; --- Format and print secondary stat: value = char[+$02] * 5 * 2 (= * 10) ---
     moveq   #$0,d0
     move.w  $0002(a2),d0                            ; char record +$02 = secondary stat
     move.l  d0,-(sp)
     pea     ($0003E1A2).l                           ; format string for secondary stat
     move.l  a4,-(sp)                                ; string buffer
-    dc.w    $4eb9,$0003,$b22c                       ; jsr $03B22C (sprintf)
+    jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     ; --- Print formatted string; width mode check silently discards result ---
     cmpi.w  #$2,d4                                  ; width mode == 2?  (result unused -- compiler artifact)
     move.l  a4,-(sp)
@@ -137,7 +137,7 @@ ShowCharDetail:                                                  ; $007D92
     ext.l   d0
     addi.l  #$9,d0                                  ; row = d3 + 9
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                       ; jsr $03AB2C (SetTextCursor)
+    jsr     (ROM_BASE+$03AB2C).l                    ; jsr $03AB2C (SetTextCursor)
     lea     $0030(sp),sp
     ; --- Format and print primary rating: value = char[+$01] * 5 * 2 (= * 10) ---
     moveq   #$0,d0
@@ -149,7 +149,7 @@ ShowCharDetail:                                                  ; $007D92
     move.l  d0,-(sp)
     pea     ($0003E19E).l                           ; format string for primary rating
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0003,$b22c                       ; jsr $03B22C (sprintf)
+    jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode == 2?  (result unused)
     move.l  a4,-(sp)
     jsr     (a5)                                    ; PrintfWide
@@ -162,7 +162,7 @@ ShowCharDetail:                                                  ; $007D92
     ext.l   d0
     addq.l  #$4,d0                                  ; row = d3 + 4
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                       ; jsr $03AB2C (SetTextCursor)
+    jsr     (ROM_BASE+$03AB2C).l                    ; jsr $03AB2C (SetTextCursor)
     ; --- Format display stat A: shown as (100 - char[+$08]) ---
     moveq   #$0,d0
     move.b  $0008(a2),d0                            ; char record +$08 = display stat A
@@ -171,7 +171,7 @@ ShowCharDetail:                                                  ; $007D92
     move.l  d1,-(sp)
     pea     ($0003E19A).l                           ; format string for display stat A
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0003,$b22c                       ; jsr $03B22C (sprintf)
+    jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode == 2?  (result unused)
     move.l  a4,-(sp)
     jsr     (a5)                                    ; PrintfWide
@@ -184,7 +184,7 @@ ShowCharDetail:                                                  ; $007D92
     ext.l   d0
     addi.l  #$b,d0                                  ; row = d3 + $B = 11
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                       ; jsr $03AB2C (SetTextCursor)
+    jsr     (ROM_BASE+$03AB2C).l                    ; jsr $03AB2C (SetTextCursor)
     lea     $0030(sp),sp
     ; --- Format display stat B: shown as (100 - char[+$09]) ---
     moveq   #$0,d0
@@ -194,7 +194,7 @@ ShowCharDetail:                                                  ; $007D92
     move.l  d1,-(sp)
     pea     ($0003E196).l                           ; format string for display stat B
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0003,$b22c                       ; jsr $03B22C (sprintf)
+    jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode == 2?  (result unused)
     move.l  a4,-(sp)
     jsr     (a5)                                    ; PrintfWide
@@ -212,7 +212,7 @@ ShowCharDetail:                                                  ; $007D92
     ext.l   d0
     addq.l  #$4,d0                                  ; row = d3 + 4
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                       ; jsr $03AB2C (SetTextCursor)
+    jsr     (ROM_BASE+$03AB2C).l                    ; jsr $03AB2C (SetTextCursor)
     ; Format event A - B
     moveq   #$0,d0
     move.b  (a3),d0                                 ; event_records[+$0] = event byte A
@@ -222,7 +222,7 @@ ShowCharDetail:                                                  ; $007D92
     move.l  d0,-(sp)
     pea     ($0003E192).l                           ; format string for A-B delta
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0003,$b22c                       ; jsr $03B22C (sprintf)
+    jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode check (result unused)
     move.l  a4,-(sp)
     jsr     (a5)                                    ; PrintfWide
@@ -235,7 +235,7 @@ ShowCharDetail:                                                  ; $007D92
     ext.l   d0
     addi.l  #$b,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                       ; jsr $03AB2C (SetTextCursor)
+    jsr     (ROM_BASE+$03AB2C).l                    ; jsr $03AB2C (SetTextCursor)
     lea     $0020(sp),sp
     ; Format event byte B alone
     moveq   #$0,d0
@@ -254,7 +254,7 @@ ShowCharDetail:                                                  ; $007D92
     ext.l   d0
     addq.l  #$5,d0                                  ; row = d3 + 5
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                       ; jsr $03AB2C (SetTextCursor)
+    jsr     (ROM_BASE+$03AB2C).l                    ; jsr $03AB2C (SetTextCursor)
     addq.l  #$8,sp
     ; Call CalcWeightedStat: args = (slot, player)
     move.w  d5,d0
@@ -270,7 +270,7 @@ ShowCharDetail:                                                  ; $007D92
 .l8000:                                            ; $008000
     ; --- Common sprintf + PrintfWide for the final stat line ---
     move.l  a4,-(sp)                                ; string buffer
-    dc.w    $4eb9,$0003,$b22c                       ; jsr $03B22C (sprintf)
+    jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     move.l  a4,-(sp)
     jsr     (a5)                                    ; PrintfWide: print final formatted stat
     movem.l -$00a8(a6),d2-d7/a2-a5

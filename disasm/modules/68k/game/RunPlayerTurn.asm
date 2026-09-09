@@ -14,7 +14,7 @@ RunPlayerTurn:                                                  ; $00D6BE
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$12ee                           ; jsr $0112EE
+    jsr     (ROM_BASE+$0112EE).l
     addq.l  #$8,sp
     move.w  d0,d4
     cmpi.w  #$ff,d0
@@ -46,7 +46,7 @@ RunPlayerTurn:                                                  ; $00D6BE
     addq.l  #$8,sp
     bra.b   .ld6ce
 .ld728:                                                 ; $00D728
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
     pea     ($0001).w
     move.w  d3,d0
     ext.l   d0
@@ -54,7 +54,7 @@ RunPlayerTurn:                                                  ; $00D6BE
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     pea     ($0002).w
     move.w  d3,d0
     ext.l   d0
@@ -62,7 +62,7 @@ RunPlayerTurn:                                                  ; $00D6BE
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
     movem.l -$0010(a6),d2-d4
     unlk    a6
     rts

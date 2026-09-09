@@ -20,7 +20,7 @@ CheckCharCompat:                                                  ; $00818A
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6f42                           ; jsr $006F42
+    jsr     (ROM_BASE+$006F42).l
     addq.l  #$8,sp
     cmp.w   $0002(a2),d0
     bhi.b   .l81ca

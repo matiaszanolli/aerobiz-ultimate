@@ -64,9 +64,9 @@ CalcWeightedStat:                                                  ; $008016
     move.w  $0004(a2),d0
     moveq   #$0,d1
     move.w  d2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d4
 .l80c2:                                                 ; $0080C2
     move.w  d4,d0

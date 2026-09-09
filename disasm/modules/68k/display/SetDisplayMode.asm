@@ -10,7 +10,7 @@ SetDisplayMode:                                                  ; $01D340
     bne.b   .l1d362
     pea     ($0010).w
     pea     ($0013).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
     move.w  #$ffff,($00FFBD52).l
 .l1d362:                                                ; $01D362
@@ -28,7 +28,7 @@ SetDisplayPage:                                                  ; $01D37A
     tst.w   d2
     bne.b   .l1d390
     pea     ($0018).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$4,sp
 .l1d390:                                                ; $01D390
     move.w  d2,d0

@@ -16,7 +16,7 @@ RunTransitionSteps:                                                  ; $023D80
     nop
     pea     ($0006).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
     jsr     (a2)
 .l23db2:                                                ; $023DB2

@@ -11,12 +11,12 @@ MatchCharSlots:                                                  ; $01B324
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     move.w  d0,d6
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     addq.l  #$8,sp
     move.w  d0,d5
     cmp.w   d5,d6
@@ -66,7 +66,7 @@ MatchCharSlots:                                                  ; $01B324
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6eea                           ; jsr $006EEA
+    jsr     (ROM_BASE+$006EEA).l
     addq.l  #$8,sp
     move.w  d0,d4
     cmpi.w  #$ff,d0
@@ -112,7 +112,7 @@ MatchCharSlots:                                                  ; $01B324
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6eea                           ; jsr $006EEA
+    jsr     (ROM_BASE+$006EEA).l
     addq.l  #$8,sp
     move.w  d0,d4
     cmpi.w  #$ff,d0

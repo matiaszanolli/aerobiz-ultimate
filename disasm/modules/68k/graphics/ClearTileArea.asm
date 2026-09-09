@@ -11,7 +11,7 @@ ClearTileArea:                                                  ; $03A9AC
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     rts
 ; === Translated block $03A9D0-$03AAF4 ===

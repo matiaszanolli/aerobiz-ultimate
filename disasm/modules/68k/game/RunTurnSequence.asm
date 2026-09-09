@@ -18,7 +18,7 @@ RunTurnSequence:                                                  ; $029ABC
     movea.l #$0d64,a3                   ; a3 = GameCommand ($0D64) dispatcher
     movea.l #$00ff1804,a4               ; a4 = save_buf_base ($FF1804) display context
     movea.l #$5092,a5                   ; a5 = DisplaySetup ($5092)
-    dc.w    $4eb9,$0001,$d71c           ; jsr $01D71C  -- VBlank sync
+    jsr     (ROM_BASE+$01D71C).l        ; jsr $01D71C  -- VBlank sync
     moveq   #$0,d4
     move.b  ($00FF0016).l,d4            ; d4 = current_player (0-3)
     move.w  d4,d0
@@ -28,7 +28,7 @@ RunTurnSequence:                                                  ; $029ABC
     movea.l a0,a2                       ; a2 = AI decision table entry for this player
 
 ; --- Phase: display initialization -- clear screen, run entry animation ---
-    dc.w    $4eb9,$0001,$e398           ; jsr $01E398  -- screen/display init
+    jsr     (ROM_BASE+$01E398).l        ; jsr $01E398  -- screen/display init
     pea     ($0004C68E).l              ; ptr into GameStatusText (banner string A)
     pea     ($0002).w
     pea     ($0002).w
@@ -39,13 +39,13 @@ RunTurnSequence:                                                  ; $029ABC
     jsr     (a3)                        ; GameCommand $1B: render text panel (row=3, col=$B, ...)
     pea     ($0004C696).l              ; ptr into GameStatusText (banner string B)
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0000,$3fec           ; jsr $003FEC  -- load/decompress resource
+    jsr     (ROM_BASE+$003FEC).l        ; jsr $003FEC  -- load/decompress resource
     lea     $0024(sp),sp
     clr.l   -(sp)
     move.l  a4,-(sp)
     pea     ($0004).w
     pea     ($00B2).w
-    dc.w    $4eb9,$0001,$d568           ; jsr $01D568  -- display blit (x=$B2, y=4)
+    jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$B2, y=4)
     pea     ($0004C610).l              ; ptr into GameStatusText (banner string C)
     pea     ($0002).w
     pea     ($0002).w
@@ -57,12 +57,12 @@ RunTurnSequence:                                                  ; $029ABC
     lea     $002c(sp),sp
     pea     ($0004C618).l              ; ptr into GameStatusText (banner string D)
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0000,$3fec           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     clr.l   -(sp)
     move.l  a4,-(sp)
     pea     ($0004).w
     pea     ($00AE).w
-    dc.w    $4eb9,$0001,$d568           ; jsr $01D568  -- display blit (x=$AE, y=4)
+    jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$AE, y=4)
     lea     $0018(sp),sp
     pea     ($0004C596).l              ; ptr into GameStatusText (header panel string)
     pea     ($0002).w
@@ -74,13 +74,13 @@ RunTurnSequence:                                                  ; $029ABC
     jsr     (a3)                        ; GameCommand $1B: render text panel (row=$15, col=$B)
     pea     ($0004C59E).l              ; ptr into GameStatusText
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0000,$3fec           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp
     clr.l   -(sp)
     move.l  a4,-(sp)
     pea     ($0004).w
     pea     ($00AA).w
-    dc.w    $4eb9,$0001,$d568           ; jsr $01D568  -- display blit (x=$AA, y=4)
+    jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$AA, y=4)
 
 ; --- Phase: draw route map and city connection panels ---
     pea     ($00072A6C).l              ; route map tile data A (first city column)
@@ -117,12 +117,12 @@ RunTurnSequence:                                                  ; $029ABC
     jsr     (a5)                        ; DisplaySetup: load/display tile block
     move.l  ($000A1B30).l,-(sp)        ; ptr from ROM ptr table at $0A1B30 (player-portrait data)
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0000,$3fec           ; jsr $003FEC  -- load/decompress player portrait
+    jsr     (ROM_BASE+$003FEC).l        ; jsr $003FEC  -- load/decompress player portrait
     lea     $0030(sp),sp
     pea     ($0048).w
     pea     ($005B).w
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0000,$4668           ; jsr $004668  -- blit portrait tile (x=$5B, y=$48)
+    jsr     (ROM_BASE+$004668).l        ; jsr $004668  -- blit portrait tile (x=$5B, y=$48)
     pea     ($0007267C).l              ; city/route connection line graphics
     pea     ($0012).w
     pea     ($001C).w
@@ -150,14 +150,14 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($0004BD96).l              ; route summary text (quarterly revenue/profit data)
     pea     ($001E).w
     pea     ($003D).w
-    dc.w    $4eb9,$0001,$d568           ; jsr $01D568  -- display blit (x=$3D, y=$1E)
+    jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$3D, y=$1E)
     move.l  ($000A1B60).l,-(sp)        ; ptr from ROM ptr table (second player resource)
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0000,$3fec           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     pea     ($001E).w
     pea     ($0001).w
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0000,$4668           ; jsr $004668  -- blit tile (x=1, y=$1E)
+    jsr     (ROM_BASE+$004668).l        ; jsr $004668  -- blit tile (x=1, y=$1E)
     lea     $0028(sp),sp
     pea     ($000732DC).l              ; route slot label B
     pea     ($0005).w
@@ -181,7 +181,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($0004C1B4).l              ; route slot summary text
     pea     ($001E).w
     pea     ($001F).w
-    dc.w    $4eb9,$0001,$d568           ; jsr $01D568  -- display blit (x=$1F, y=$1E)
+    jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$1F, y=$1E)
     lea     $0030(sp),sp
 
 ; Draw stat-panel graphics tiles ($4C734 and $4C854)
@@ -189,12 +189,12 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($0003).w
     pea     ($0003).w
     pea     ($0640).w                  ; $0640 = VRAM destination word
-    dc.w    $4eb9,$0001,$d7be           ; jsr $01D7BE  -- DMA/blit to VRAM at $0640
+    jsr     (ROM_BASE+$01D7BE).l        ; jsr $01D7BE  -- DMA/blit to VRAM at $0640
     pea     ($0004C854).l              ; stat panel graphic B
     pea     ($0003).w
     pea     ($0003).w
     pea     ($0649).w                  ; $0649 = VRAM destination word (9 tiles after $0640)
-    dc.w    $4eb9,$0001,$d7be           ; jsr $01D7BE
+    jsr     (ROM_BASE+$01D7BE).l
     lea     $0020(sp),sp
 
 ; --- Phase: loop over 3 route-panel subviews (d2 = 0, 1, 2) ---
@@ -215,9 +215,9 @@ RunTurnSequence:                                                  ; $029ABC
     blt.b   .l29d7c
 
 ; --- Phase: initial input wait -- detect if player wants to advance ---
-    dc.w    $4eb9,$0001,$d748           ; jsr $01D748  -- VBlank sync
+    jsr     (ROM_BASE+$01D748).l        ; jsr $01D748  -- VBlank sync
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec           ; jsr $01E1EC  -- wait for input (no timeout)
+    jsr     (ROM_BASE+$01E1EC).l        ; jsr $01E1EC  -- wait for input (no timeout)
     addq.l  #$4,sp
     tst.w   d0                          ; d0 = input result (0 = no input / timeout)
     beq.b   .l29db0
@@ -240,7 +240,7 @@ RunTurnSequence:                                                  ; $029ABC
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)                   ; arg: player index
-    dc.w    $4eb9,$0000,$7912           ; jsr $007912  -- check/display player event
+    jsr     (ROM_BASE+$007912).l        ; jsr $007912  -- check/display player event
     lea     $0014(sp),sp
     clr.w   d3                         ; clear first-iteration flag
 
@@ -260,7 +260,7 @@ RunTurnSequence:                                                  ; $029ABC
     tst.w   d5
     beq.b   .l29e1e                     ; d5=0 -> skip input polling, go to action dispatch
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec           ; jsr $01E1EC  -- poll for further input
+    jsr     (ROM_BASE+$01E1EC).l        ; jsr $01E1EC  -- poll for further input
     addq.l  #$4,sp
     tst.w   d0
     beq.b   .l29e1e                     ; no input -> go to action dispatch
@@ -486,7 +486,7 @@ RunTurnSequence:                                                  ; $029ABC
     addq.l  #$2,d0                     ; left: advance by 2 (wraps around mod 3)
 .l2a01c:                                                ; $02A01C
     moveq   #$3,d1                     ; modulus = 3 (3 subpanels)
-    dc.w    $4eb9,$0003,$e146           ; jsr $03E146  -- d0 = d0 mod d1
+    jsr     (ROM_BASE+$03E146).l        ; jsr $03E146  -- d0 = d0 mod d1
     move.w  d0,d2                      ; update slot/subpanel index
 .l2a026:                                                ; $02A026
     pea     ($0005).w                  ; arg: display mode 5 (re-enter input loop)
@@ -494,7 +494,7 @@ RunTurnSequence:                                                  ; $029ABC
 
 ; --- Phase: exit -- VBlank sync then finalize revenue/expense for this player ---
 .l2a02e:                                                ; $02A02E
-    dc.w    $4eb9,$0001,$d71c           ; jsr $01D71C  -- VBlank sync
+    jsr     (ROM_BASE+$01D71C).l        ; jsr $01D71C  -- VBlank sync
     pea     ($0040).w                  ; cmd param
     clr.l   -(sp)
     pea     ($0010).w                  ; cmd $10 = reset display mode / clear screen state
@@ -506,7 +506,7 @@ RunTurnSequence:                                                  ; $029ABC
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)                   ; arg: player index
-    dc.w    $4eb9,$0000,$6a2e           ; jsr $006A2E  -- finalize revenue  (writes quarter_accum_a)
+    jsr     (ROM_BASE+$006A2E).l        ; jsr $006A2E  -- finalize revenue  (writes quarter_accum_a)
     pea     ($0002).w
     move.w  ($00FF9A1C).l,d0           ; screen_id again
     ext.l   d0
@@ -514,7 +514,7 @@ RunTurnSequence:                                                  ; $029ABC
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78           ; jsr $006B78  -- finalize expenses (writes quarter_accum_b)
+    jsr     (ROM_BASE+$006B78).l        ; jsr $006B78  -- finalize expenses (writes quarter_accum_b)
     movem.l -$0028(a6),d2-d6/a2-a5
     unlk    a6
     rts

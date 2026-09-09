@@ -6,7 +6,7 @@
 ClearCharSprites:                                                  ; $0377C8
     pea     ($0004).w
     pea     ($0037).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     addq.l  #$8,sp
     rts
 

@@ -35,7 +35,7 @@ ShowCharCompare:                                                  ; $00E6B2
     move.l  d0,-(sp)
     move.w  d6,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$969a                           ; jsr $00969A
+    jsr     (ROM_BASE+$00969A).l
     move.w  d4,d0
     move.l  d0,-(sp)
     move.w  d3,d0
@@ -52,22 +52,22 @@ ShowCharCompare:                                                  ; $00E6B2
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     pea     ($0040).w
     clr.l   -(sp)
     pea     ($0010).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0028(sp),sp
     pea     ($0010).w
     pea     ($001E).w
     pea     ($0002).w
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
     pea     ($0010).w
     pea     ($001F).w
     pea     ($0002).w
     pea     ($0001).w
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
     lea     $0020(sp),sp
     pea     ($0001).w
     pea     ($06A0).w
@@ -77,7 +77,7 @@ ShowCharCompare:                                                  ; $00E6B2
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$883a                           ; jsr $00883A
+    jsr     (ROM_BASE+$00883A).l
     pea     ($0003).w
     pea     ($0005).w
     jsr     (a2)
@@ -86,7 +86,7 @@ ShowCharCompare:                                                  ; $00E6B2
     movea.l #$0005e680,a0
     move.l  (a0,d0.w),-(sp)
     pea     ($0003E93C).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
     pea     ($0006).w
     pea     ($0002).w
     jsr     (a2)
@@ -96,7 +96,7 @@ ShowCharCompare:                                                  ; $00E6B2
     movea.l #$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
     pea     ($0003E938).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
     pea     ($0640).w
     pea     ($000A).w
     pea     ($0003).w

@@ -71,7 +71,7 @@ CharacterBrowser:                                                  ; $008A4A
     jsr     (a3)
 ; CmdSetBackground ($00538E): fill scroll plane with background tile pattern
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$538e                           ; jsr $00538E
+    jsr     (ROM_BASE+$00538E).l
 ; GameCommand #$1B: place tile strip from $4DD9C (character list panel background)
 ; width=$09, height=$1E, col=$12, row=$01, layer 0
     pea     ($0004DD9C).l
@@ -86,14 +86,14 @@ CharacterBrowser:                                                  ; $008A4A
 ; LZ_Decompress: decompress character list panel graphics from ROM $4DFB8 to $FF1804
     pea     ($0004DFB8).l
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
 ; VRAMBulkLoad: DMA transfer $02E1 tiles at index $000F from $FF1804 to VRAM
     clr.l   -(sp)
     clr.l   -(sp)
     move.l  a5,-(sp)
     pea     ($000F).w
     pea     ($02E1).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     lea     $001c(sp),sp
 ; GameCommand #$1A: draw panel overlay tile strip ($077E = bordered list area)
 ; at col=$01, row=$02, width=$13, height=$1C
@@ -116,23 +116,23 @@ CharacterBrowser:                                                  ; $008A4A
     pea     ($0012).w
     pea     ($0002).w
     pea     ($0007).w
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
 ; DisplaySetup ($005092): load character detail panel graphics from $767BE
 ; 16-tile wide x 32-tile high display region
     pea     ($0010).w
     pea     ($0020).w
     pea     ($000767BE).l
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
 ; LZ_Decompress: decompress character portrait from pointer at $9513C to $FF1804
     move.l  ($0009513C).l,-(sp)
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
 ; CmdPlaceTile2 ($0045E6): place portrait tile block (96 pixels wide, $0640 palette/flags)
 ; at VRAM offset from $FF1804 src
     pea     ($0060).w
     pea     ($0640).w
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0000,$45e6                           ; jsr $0045E6
+    jsr     (ROM_BASE+$0045E6).l
     lea     $0030(sp),sp
 ; GameCommand #$1B: place title bar tile strip from $70E58
 ; width=$0A, height=$08, col=$05, row=$0C (character name header area)
@@ -148,10 +148,10 @@ CharacterBrowser:                                                  ; $008A4A
     move.w  d5,d6
 ; PrintfNarrow ($03B246): display character name label using format string at $3E1AA
     pea     ($0003E1AA).l
-    dc.w    $4eb9,$0003,$b246                           ; jsr $03B246
+    jsr     (ROM_BASE+$03B246).l
 ; ReadInput ($01E1EC): check for any pending button presses (mode 0 = immediate)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC
+    jsr     (ROM_BASE+$01E1EC).l
     lea     $0024(sp),sp
 ; If any input already pending: set -$2(a6) = 1 (skip first-frame countdown)
     tst.w   d0
@@ -209,7 +209,7 @@ CharacterBrowser:                                                  ; $008A4A
     pea     ($0010).w
     pea     ($0020).w
     pea     ($000767BE).l
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     lea     $000c(sp),sp
 ; Clear page_refresh_flag after refresh
     clr.w   d4
@@ -224,7 +224,7 @@ CharacterBrowser:                                                  ; $008A4A
     addi.l  #$28,d0
     move.l  d0,-(sp)
     pea     ($000767DC).l
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     lea     $000c(sp),sp
 ; Set d4=1 so next frame will reload the portrait panel (alternating display)
     moveq   #$1,d4
@@ -234,7 +234,7 @@ CharacterBrowser:                                                  ; $008A4A
     beq.b   .l8c74
 ; ReadInput: check if key has been released (mode 0 = immediate)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC
+    jsr     (ROM_BASE+$01E1EC).l
     addq.l  #$4,sp
 ; If input still held (d0 != 0): send GameCmd #$03/#$0E and loop back
     tst.w   d0
@@ -254,7 +254,7 @@ CharacterBrowser:                                                  ; $008A4A
     move.w  -$0004(a6),d0
     move.l  d0,-(sp)
     pea     ($000A).w
-    dc.w    $4eb9,$0001,$e290                           ; jsr $01E290
+    jsr     (ROM_BASE+$01E290).l
     addq.l  #$8,sp
 ; Mask to relevant 6 bits: $3F = Start/A/B/C + Up/Down/Left/Right
     andi.w  #$3f,d0
@@ -340,7 +340,7 @@ CharacterBrowser:                                                  ; $008A4A
     beq.w   .l8dde
 ; --- Character selected path: load and display character detail ---
 ; ResourceLoad: load additional graphics for the detail view
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
 ; GameCommand #$40/#$10: clear sprite layer before loading detail view
     pea     ($0040).w
     clr.l   -(sp)
@@ -348,10 +348,10 @@ CharacterBrowser:                                                  ; $008A4A
     jsr     (a3)
 ; CmdSetBackground: fill plane with background tile pattern
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$538e                           ; jsr $00538E
+    jsr     (ROM_BASE+$00538E).l
 ; LoadDisplaySet ($01D444): load display mode $10 (character detail layout)
     pea     ($0010).w
-    dc.w    $4eb9,$0001,$d444                           ; jsr $01D444
+    jsr     (ROM_BASE+$01D444).l
 ; GameCommand #$03/#$0E: display housekeeping sync
     pea     ($0003).w
     pea     ($000E).w
@@ -373,7 +373,7 @@ CharacterBrowser:                                                  ; $008A4A
     move.w  $000a(a6),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     lea     $002c(sp),sp
 ; ShowRelPanel ($006B78): display character relationship/affinity panel
 ; mode=2, character=d5, player=$A(a6)
@@ -384,7 +384,7 @@ CharacterBrowser:                                                  ; $008A4A
     move.w  $000a(a6),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
 ; GameCommand #$1A: draw confirm button tile ($077F) at col=$13, row=$20, width=$01, height=$01
     pea     ($077F).w
     pea     ($0001).w
@@ -406,7 +406,7 @@ CharacterBrowser:                                                  ; $008A4A
     jsr     (a3)
     lea     $001c(sp),sp
 ; ResourceUnload: release the detail-view graphics
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748
+    jsr     (ROM_BASE+$01D748).l
     bra.b   .l8dfa
 ; --- Cancelled/Start path: show relation panel without detail confirm UI ---
 .l8dde:                                                 ; $008DDE
@@ -418,7 +418,7 @@ CharacterBrowser:                                                  ; $008A4A
     move.w  $000a(a6),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
     lea     $000c(sp),sp
 ; --- Phase: Exit ---
 ; GameCommand #$18: trigger display commit / DMA flush before returning

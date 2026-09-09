@@ -11,6 +11,6 @@ ClearInfoPanel:                                                  ; $023930
     pea     ($000A).w
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     rts

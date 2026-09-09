@@ -28,7 +28,7 @@ FormatRelationStats:                                                  ; $019660
     moveq   #$1,d5
 ; ClearCharSprites ($377C8): clear any existing character sprites from the panel area
 ; Ensures a clean slate before drawing the new relation cell
-    dc.w    $4eb9,$0003,$77c8                           ; jsr $0377C8
+    jsr     (ROM_BASE+$0377C8).l
 ; GameCommand #$1A: clear tile region for the cell background
 ; Args: width=$C, height=$20, col=d4, priority=$8000 (high-priority erase), row=0, area=0
     move.l  #$8000,-(sp)
@@ -40,7 +40,7 @@ FormatRelationStats:                                                  ; $019660
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
 ; --- Phase: Compatibility Check for Tile Color ---
 ; RangeMatch($7158): test if char_a and char_b are in the same range/type category
 ; Returns d0=1 if same range (compatible pair), 0 if different
@@ -50,7 +50,7 @@ FormatRelationStats:                                                  ; $019660
     moveq   #$0,d0
     move.b  (a2),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7158                           ; jsr $007158
+    jsr     (ROM_BASE+$007158).l
     lea     $0024(sp),sp
     tst.w   d0
     beq.b   .l196d0
@@ -79,7 +79,7 @@ FormatRelationStats:                                                  ; $019660
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$6760                           ; jsr $006760
+    jsr     (ROM_BASE+$006760).l
     lea     $0020(sp),sp
 ; --- Phase: Draw Character Name Tiles (char_b) ---
 ; FillTileRect: draw character B's name tiles at (col=d4+2, row from $E(a6)+1)
@@ -101,7 +101,7 @@ FormatRelationStats:                                                  ; $019660
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$6760                           ; jsr $006760
+    jsr     (ROM_BASE+$006760).l
     lea     $0020(sp),sp
 ; --- Phase: Draw Compatibility Fraction Background Tiles ---
 ; GameCommand #$1A: place tile $077E at (col=d4+4, row=d5+4, width=$B, height=4)
@@ -119,7 +119,7 @@ FormatRelationStats:                                                  ; $019660
     move.l  d0,-(sp)
     pea     ($0001).w
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
 ; Second block of tile $077E at (col=d4+4, row=d5+$13): the bottom half of the fraction panel
     pea     ($077E).w
@@ -135,7 +135,7 @@ FormatRelationStats:                                                  ; $019660
     move.l  d0,-(sp)
     pea     ($0001).w
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
 ; --- Phase: Optional Portrait DMA (mode flag check) ---
 ; If display mode argument ($12(a6)) == 1, decompress and DMA the portrait tile set
@@ -144,7 +144,7 @@ FormatRelationStats:                                                  ; $019660
 ; LZ_Decompress: decompress portrait gfx from ROM $4DCE8 into save_buf_base ($FF1804)
     pea     ($0004DCE8).l
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
 ; VRAMBulkLoad($1D568): DMA transfer $328 bytes from $FF1804 to VRAM page #$12(a6)
 ; $328 = 808 bytes = 2 tile rows of portrait graphics data
     move.w  $0012(a6),d0
@@ -154,7 +154,7 @@ FormatRelationStats:                                                  ; $019660
     move.l  a5,-(sp)
     pea     ($001A).w
     pea     ($0328).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     lea     $001c(sp),sp
 .l197c6:                                                ; $0197C6
 ; --- Phase: Print Char A Name ---
@@ -163,7 +163,7 @@ FormatRelationStats:                                                  ; $019660
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
 ; SetTextCursor(col=d4, row=d5+1): position cursor just below the top of the cell
     move.w  d4,d0
     ext.l   d0
@@ -205,7 +205,7 @@ FormatRelationStats:                                                  ; $019660
     move.l  d0,-(sp)
 ; CharCodeCompare($6F42): compute compatibility index between char_a and char_b
 ; Returns d0 = compat score (0-100)
-    dc.w    $4eb9,$0000,$6f42                           ; jsr $006F42
+    jsr     (ROM_BASE+$006F42).l
     addq.l  #$8,sp
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
@@ -231,7 +231,7 @@ FormatRelationStats:                                                  ; $019660
     addi.w  #$b,d0
     move.l  d0,-(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$58fc                           ; jsr $0058FC
+    jsr     (ROM_BASE+$0058FC).l
 ; Second PlaceIconPair with offset $12 rows (second icon row)
     move.w  d4,d0
     move.l  d0,-(sp)
@@ -239,7 +239,7 @@ FormatRelationStats:                                                  ; $019660
     addi.w  #$12,d0
     move.l  d0,-(sp)
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$58fc                           ; jsr $0058FC
+    jsr     (ROM_BASE+$0058FC).l
 ; PlaceIconTiles($595E): place 2x2 icon tile block at (col=d4, row=d5+$11)
 ; Args: tile_x=2, tile_y=2
     move.w  d4,d0
@@ -249,7 +249,7 @@ FormatRelationStats:                                                  ; $019660
     move.l  d0,-(sp)
     pea     ($0002).w
     pea     ($0002).w
-    dc.w    $4eb9,$0000,$595e                           ; jsr $00595E
+    jsr     (ROM_BASE+$00595E).l
     lea     $0030(sp),sp
 ; PrintfWide: print char B's name one more time (for the score/type line)
     moveq   #$0,d0
@@ -273,12 +273,12 @@ FormatRelationStats:                                                  ; $019660
     jsr     (a4)
 ; GetLowNibble($7402): extract low nibble of relation record byte[0] = char_a sub-type
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$7402                           ; jsr $007402
+    jsr     (ROM_BASE+$007402).l
     addq.l  #$4,sp
     move.l  d0,-(sp)
 ; GetByteField4($74E0): extract packed 4-bit field from byte[0] = char_a slot ID
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0
+    jsr     (ROM_BASE+$0074E0).l
     addq.l  #$4,sp
 ; Translate byte field through display index table at $FF1278:
 ; movea $FF1278, index by d0 byte -> relation type display offset
@@ -395,12 +395,12 @@ FormatRelationStats:                                                  ; $019660
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
 ; LZ_Decompress: decompress score-tier graphic from ROM $4E28A into $FF1804
 ; $4E28A contains the score meter tile graphics for all 3 tiers
     pea     ($0004E28A).l
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp
 ; VRAMBulkLoad($1D568): DMA $18 bytes of decompressed score graphic data to VRAM
 ; Target VRAM page $037B: score-tier icon tile set
@@ -409,7 +409,7 @@ FormatRelationStats:                                                  ; $019660
     move.l  a5,-(sp)
     pea     ($0018).w
     pea     ($037B).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
 .l199f0:                                                ; $0199F0
     movem.l -$0030(a6),d2-d5/a2-a5
     unlk    a6

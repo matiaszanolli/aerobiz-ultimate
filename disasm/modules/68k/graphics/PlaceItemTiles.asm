@@ -20,10 +20,10 @@ PlaceItemTiles:                                                  ; $023A34
     addq.l  #$1,d0
     move.l  d0,-(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044
+    jsr     (ROM_BASE+$01E044).l
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0024(sp),sp
     addq.l  #$1,a2
     addq.w  #$1,d2

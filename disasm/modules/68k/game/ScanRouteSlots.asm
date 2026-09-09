@@ -19,7 +19,7 @@ ScanRouteSlots:                                                  ; $01A468
     add.w   d0,d0
     movea.l #$00ff0118,a0
     pea     (a0,d0.w)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     lea     $000c(sp),sp
     clr.w   d3
 .l1a4aa:                                                ; $01A4AA
@@ -37,7 +37,7 @@ ScanRouteSlots:                                                  ; $01A468
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     addq.l  #$4,sp
     move.w  d0,d2
     bra.b   .l1a4f4
@@ -52,7 +52,7 @@ ScanRouteSlots:                                                  ; $01A468
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9dc4                           ; jsr $009DC4
+    jsr     (ROM_BASE+$009DC4).l
     addq.l  #$8,sp
 .l1a4f4:                                                ; $01A4F4
     cmp.w   d5,d2

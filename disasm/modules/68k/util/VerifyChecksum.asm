@@ -15,14 +15,14 @@ VerifyChecksum:                                                  ; $00F552
     addi.l  #$00200003,d0
     move.l  d0,-(sp)
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0001,$e0fe                           ; jsr $01E0FE
+    jsr     (ROM_BASE+$01E0FE).l
     movea.l a3,a2
     move.w  $0004(a2),d0
     move.l  d0,-(sp)
     move.l  a3,d0
     addq.l  #$6,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$d6fc                           ; jsr $01D6FC
+    jsr     (ROM_BASE+$01D6FC).l
     lea     $0014(sp),sp
     cmp.w   $0002(a2),d0
     bne.b   .lf5a2

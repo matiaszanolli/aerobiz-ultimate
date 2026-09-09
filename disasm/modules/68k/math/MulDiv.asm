@@ -15,10 +15,10 @@ MulDiv:                                                  ; $01E11C
     move.w  $000a(sp),d0
     moveq   #$0,d1
     move.w  $000e(sp),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$0,d1
     move.w  d2,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
 .l1e146:                                                ; $01E146
     move.l  (sp)+,d2
     rts

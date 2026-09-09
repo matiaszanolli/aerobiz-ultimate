@@ -93,7 +93,7 @@ CollectPlayerChars:                                                  ; $00E152
     clr.l   -(sp)
     move.l  a3,-(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d538                           ; jsr $01D538
+    jsr     (ROM_BASE+$01D538).l
     lea     $0020(sp),sp
     addi.w  #$a,d5
     addq.w  #$1,d4
@@ -166,7 +166,7 @@ CollectPlayerChars:                                                  ; $00E152
     clr.l   -(sp)
     move.l  a3,-(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d538                           ; jsr $01D538
+    jsr     (ROM_BASE+$01D538).l
     lea     $0020(sp),sp
     addi.w  #$a,d5
     addq.w  #$1,d4

@@ -20,7 +20,7 @@ ShowCharProfile:                                                  ; $007C3C
     move.l  a2,d0
     addq.l  #$2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     move.l  a2,d0
     moveq   #$22,d1
     add.l   d1,d0
@@ -35,7 +35,7 @@ ShowCharProfile:                                                  ; $007C3C
     move.l  d0,-(sp)
     pea     ($0001).w
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0028(sp),sp
     pea     ($0001).w
     clr.l   -(sp)
@@ -44,7 +44,7 @@ ShowCharProfile:                                                  ; $007C3C
     move.l  d0,-(sp)
     pea     ($0009).w
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     lea     $0014(sp),sp
 .l7cca:                                                 ; $007CCA
     cmpi.w  #$1,d3
@@ -82,12 +82,12 @@ ShowCharProfile:                                                  ; $007C3C
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$a5a8                           ; jsr $03A5A8
+    jsr     (ROM_BASE+$03A5A8).l
     pea     ($0020).w
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
     lea     $0028(sp),sp
     cmpi.w  #$1,d3
     bne.b   .l7d50

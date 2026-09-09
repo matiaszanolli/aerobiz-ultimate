@@ -32,7 +32,7 @@ LoadTileGraphics:                                                  ; $005F00
     movea.l #$000ae0c4,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF899C).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     move.w  d3,d5
     moveq   #$d,d0
     lsl.w   d0,d5
@@ -68,13 +68,13 @@ LoadTileGraphics:                                                  ; $005F00
     movea.l #$00ff03e0,a0
 .l5f8c:                                                 ; $005F8C
     move.l  (a0,d0.w),-(sp)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     pea     ($001E).w
     moveq   #$0,d0
     move.w  d4,d0
     move.l  d0,-(sp)
     pea     ($00FF899C).l
-    dc.w    $4eb9,$0000,$45e6                           ; jsr $0045E6
+    jsr     (ROM_BASE+$0045E6).l
     lea     $002c(sp),sp
     pea     -$003c(a6)
     pea     ($0006).w
@@ -89,10 +89,10 @@ LoadTileGraphics:                                                  ; $005F00
     move.w  $001e(a6),d0
     move.l  d0,-(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     movem.l -$004c(a6),d2-d5
     unlk    a6
     rts

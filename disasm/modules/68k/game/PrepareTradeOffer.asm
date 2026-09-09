@@ -205,13 +205,13 @@ CalcCharProfit:                                                  ; $0206EE
     andi.l  #$ffff,d0
     moveq   #$0,d1
     move.w  d3,d1                      ; d1 = city_b index
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- multiply d0 by city_b popularity
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- multiply d0 by city_b popularity
     move.w  d4,d1
     add.w   d1,d1                      ; d1 = plane_type * 2 (byte index into $FF0728)
     movea.l #$00ff0728,a0              ; $FF0728: per-aircraft-type lookup table (stride 2)
     move.b  (a0,d1.w),d1              ; d1 = aircraft lookup factor for this plane_type
     andi.l  #$ff,d1
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- multiply by aircraft factor
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- multiply by aircraft factor
     move.l  d0,d5
     asr.l   #$6,d5                     ; d5 = scaled city_b product >> 6 (international bonus)
 
@@ -225,14 +225,14 @@ CalcCharProfit:                                                  ; $0206EE
     move.b  $0003(a3),d0               ; d0 = stat descriptor scale param (+$03)
     andi.l  #$ffff,d0
     moveq   #$c,d1                     ; d1 = $C (cap / modulus for international routes)
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- compute scaled factor (modulo/clamp)
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- compute scaled factor (modulo/clamp)
     tst.l   d0
     ble.b   .l2078e                    ; scale factor <= 0: push 0 bonus
     moveq   #$0,d0
     move.b  $0003(a3),d0               ; reload scale param
     andi.l  #$ffff,d0
     moveq   #$c,d1
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- recompute (positive: use real value)
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- recompute (positive: use real value)
     move.l  d0,-(sp)                   ; push international scale factor onto stack
     bra.b   .l20790
 .l2078e:                                                ; $02078E
@@ -244,7 +244,7 @@ CalcCharProfit:                                                  ; $0206EE
     andi.l  #$ffff,d0
     moveq   #$0,d1
     move.w  d3,d1                      ; d1 = city_b (used again for second multiply)
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- plane_stat * city_b popularity
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- plane_stat * city_b popularity
     move.l  (sp)+,d1                   ; d1 = international scale factor (popped from stack)
     bra.b   .l207d4
 
@@ -255,7 +255,7 @@ CalcCharProfit:                                                  ; $0206EE
     andi.l  #$ffff,d0
     moveq   #$0,d1
     move.w  d3,d1                      ; d1 = city_b
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- plane_stat * city_b popularity
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- plane_stat * city_b popularity
     move.w  d2,d1
     add.w   d1,d1                      ; d1 = stat_type * 2 (index into $FF0728 for domestic)
     movea.l #$00ff0728,a0              ; $FF0728: per-stat-type aircraft factor lookup
@@ -264,7 +264,7 @@ CalcCharProfit:                                                  ; $0206EE
     ; fall through to shared multiply
 
 .l207d4:                                                ; $0207D4
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- final multiply (plane*pop*factor)
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- final multiply (plane*pop*factor)
     move.l  d0,d6
     asr.l   #$6,d6                     ; d6 = domestic/alt bonus term >> 6
 
@@ -277,7 +277,7 @@ CalcCharProfit:                                                  ; $0206EE
     moveq   #$0,d0
     move.w  d4,d0                      ; d0 = city_a
     move.l  d0,-(sp)                   ; arg1 = city_a
-    dc.w    $4eb9,$0000,$6f42          ; jsr CharCodeCompare ($006F42): d0 = compat score
+    jsr     (ROM_BASE+$006F42).l       ; jsr CharCodeCompare ($006F42): d0 = compat score
     addq.l  #$8,sp
     move.w  d0,d2                      ; d2 = compatibility score (reuses stat_type reg)
 
@@ -286,14 +286,14 @@ CalcCharProfit:                                                  ; $0206EE
     moveq   #$0,d0
     move.w  $0002(a2),d0               ; d0 = char slot secondary stat (+$02)
     moveq   #$32,d1                    ; d1 = $32 = 50
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 = slot_stat * 50
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 = slot_stat * 50
     move.l  d0,-(sp)                   ; push term A
 
     ; Term B: compatibility score * $A (10)
     moveq   #$0,d0
     move.w  d2,d0                      ; d0 = compat score
     moveq   #$a,d1                     ; d1 = $A = 10
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 = compat * 10
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 = compat * 10
     add.l   (sp)+,d0                   ; d0 = term_A + term_B (slot_stat*50 + compat*10)
     move.l  d0,-(sp)                   ; push combined term
 
@@ -301,13 +301,13 @@ CalcCharProfit:                                                  ; $0206EE
     moveq   #$0,d0
     move.w  $0002(a2),d0               ; d0 = slot secondary stat (+$02)
     moveq   #$32,d1
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 = slot_stat * 50
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 = slot_stat * 50
     moveq   #$0,d1
     move.b  $0008(a2),d1               ; d1 = slot quality byte (+$08)
     andi.l  #$ffff,d1
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- d0 *= quality_factor
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- d0 *= quality_factor
     move.l  (sp)+,d1                   ; d1 = combined (term_A + term_B)
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 = combined * quality_scaled
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 = combined * quality_scaled
     moveq   #$0,d1
     move.b  $0008(a2),d1               ; d1 = quality byte (add back directly)
     add.w   d1,d0
@@ -318,21 +318,21 @@ CalcCharProfit:                                                  ; $0206EE
     moveq   #$0,d0
     move.w  d2,d0                      ; d0 = compat score
     moveq   #$a,d1                     ; * 10
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  ($00FF1294).l,d1           ; d1 = stat_scale ($FF1294: global stat scaling factor)
     ext.l   d1
     addi.l  #$32,d1                    ; d1 += $32 (50): base bias for stat scaling
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- d0 *= (stat_scale + 50)
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- d0 *= (stat_scale + 50)
     moveq   #$0,d1
     move.w  d4,d1                      ; d1 = blended quality product
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- d0 *= blended_quality
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- d0 *= blended_quality
     moveq   #$0,d1
     move.w  d3,d1                      ; d1 = city_b index
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- d0 *= city_b factor
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- d0 *= city_b factor
     lsr.l   #$1,d0                     ; halve to normalize scale
     move.l  d0,d2
     move.l  #$2710,d1                  ; d1 = 10000 -- normalize to percentage base
-    dc.w    $4eb9,$0003,$e0c6          ; jsr $03E0C6 -- d0 = d2 / 10000 (scaled division)
+    jsr     (ROM_BASE+$03E0C6).l       ; jsr $03E0C6 -- d0 = d2 / 10000 (scaled division)
     add.w   d5,d0                      ; add international bonus term (d5 = city_b scaled >> 6)
     add.w   d6,d0                      ; add domestic/alt bonus term (d6 = domestic >> 6)
     move.w  d0,d2                      ; d2 = pre-ramp revenue estimate
@@ -343,13 +343,13 @@ CalcCharProfit:                                                  ; $0206EE
     move.w  ($00FF0006).l,d0           ; d0 = frame_counter ($FF0006)
     ext.l   d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 = frame_counter / 3
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 = frame_counter / 3
     addi.l  #$1e,d0                    ; d0 += $1E (30): time ramp offset (minimum multiplier)
     moveq   #$0,d1
     move.w  d2,d1                      ; d1 = pre-ramp estimate
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- d0 *= pre-ramp
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- d0 *= pre-ramp
     moveq   #$64,d1                    ; d1 = $64 (100): normalize ramp
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 /= 100
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 /= 100
     moveq   #$1,d1
     cmp.l   d0,d1
     bge.b   .l208e8                    ; result <= 1: clamp to 1
@@ -358,13 +358,13 @@ CalcCharProfit:                                                  ; $0206EE
     move.w  ($00FF0006).l,d0           ; re-read frame_counter for second ramp pass
     ext.l   d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 = frame_counter / 3
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 = frame_counter / 3
     addi.l  #$1e,d0                    ; + $1E (30)
     moveq   #$0,d1
     move.w  d2,d1
-    dc.w    $4eb9,$0003,$e05c          ; jsr $03E05C -- d0 *= pre-ramp (second pass)
+    jsr     (ROM_BASE+$03E05C).l       ; jsr $03E05C -- d0 *= pre-ramp (second pass)
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a          ; jsr $03E08A -- d0 /= 100
+    jsr     (ROM_BASE+$03E08A).l       ; jsr $03E08A -- d0 /= 100
     bra.b   .l208ea
 .l208e8:                                                ; $0208E8
     moveq   #$1,d0                     ; clamp result to minimum 1

@@ -82,7 +82,7 @@ CalcCharAdvantage:                                                  ; $008458
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)                                   ; push city_index as arg
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 = RangeLookup: map city_index -> 0..7 region bucket
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 = RangeLookup: map city_index -> 0..7 region bucket
     addq.l  #$4,sp
     move.w  d0,d5                                      ; d5 = region bucket
     move.w  d7,d0
@@ -133,7 +133,7 @@ CalcCharAdvantage:                                                  ; $008458
     move.w  (a5),d0                                    ; d0 = raw traffic delta (from -$02(a6))
     add.l   d0,d0                                      ; d0 * 2
     moveq   #$3,d1                                     ; divisor = 3
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A = SignedDiv: d0 = (delta*2)/3
+    jsr     (ROM_BASE+$03E08A).l                        ; jsr $03E08A = SignedDiv: d0 = (delta*2)/3
     moveq   #$0,d1
     move.w  d2,d1                                      ; d1 = base benefit cap
     cmp.l   d1,d0                                      ; scaled_result > cap?
@@ -147,7 +147,7 @@ CalcCharAdvantage:                                                  ; $008458
     move.w  (a5),d0
     add.l   d0,d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A = SignedDiv
+    jsr     (ROM_BASE+$03E08A).l                        ; jsr $03E08A = SignedDiv
 .l8578:                                                 ; $008578
 ; Ensure minimum benefit = 1
     move.w  d0,d2

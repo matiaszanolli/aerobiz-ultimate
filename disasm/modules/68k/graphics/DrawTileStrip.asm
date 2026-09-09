@@ -31,7 +31,7 @@ DrawTileStrip:                                                  ; $005C64
     move.w  d4,d0
     ext.l   d0
     moveq   #$2,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     tst.l   d0
     beq.b   .l5cba
     move.l  d2,d0
@@ -62,7 +62,7 @@ DrawTileStrip:                                                  ; $005C64
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     movem.l -$0044(a6),d2-d6/a2
     unlk    a6
     rts

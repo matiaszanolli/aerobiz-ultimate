@@ -15,7 +15,7 @@ CalcRelationValue:                                                  ; $01A506
     moveq   #$0,d0
     move.w  d3,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7610                           ; jsr $007610
+    jsr     (ROM_BASE+$007610).l
     addq.l  #$8,sp
     move.w  d0,d2
     moveq   #$0,d4
@@ -26,7 +26,7 @@ CalcRelationValue:                                                  ; $01A506
     add.l   d4,d4
     move.l  d4,d0
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,d4
     addi.l  #$2710,d4
     moveq   #$0,d2
@@ -40,9 +40,9 @@ CalcRelationValue:                                                  ; $01A506
     move.b  $1(a2,a0.l),d0
     andi.l  #$ff,d0
     move.l  d4,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     bra.b   .l1a5da
 .l1a57c:                                                ; $01A57C
     cmpi.w  #$2,d5
@@ -60,9 +60,9 @@ CalcRelationValue:                                                  ; $01A506
     move.b  $1(a2,a0.l),d0
     andi.l  #$ff,d0
     move.l  d4,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d3
     moveq   #$0,d0
     move.w  d6,d0
@@ -71,9 +71,9 @@ CalcRelationValue:                                                  ; $01A506
     move.b  $1(a2,a0.l),d0
     andi.l  #$ff,d0
     move.l  d4,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d2
     move.l  d3,d0
     add.l   d2,d0
@@ -83,14 +83,14 @@ CalcRelationValue:                                                  ; $01A506
     move.w  ($00FF0006).l,d0
     ext.l   d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addi.l  #$1e,d0
     move.l  d0,d3
     move.l  d2,d0
     move.l  d3,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d2
     movem.l (sp)+,d2-d6/a2
     rts

@@ -18,7 +18,7 @@ DrawCharDetailPanel:                                                  ; $01AFF0
     move.l  a2,d0
     addq.l  #$2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     lea     $0018(sp),sp
     move.l  a2,d0
     moveq   #$22,d1
@@ -42,15 +42,15 @@ DrawCharDetailPanel:                                                  ; $01AFF0
     move.l  d0,-(sp)
     pea     ($0009).w
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     lea     $0030(sp),sp
     move.l  ($000A1AE8).l,-(sp)
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     pea     ($0037).w
     pea     ($06B4).w
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$4668                           ; jsr $004668
+    jsr     (ROM_BASE+$004668).l
     pea     ($00070F78).l
     pea     ($0008).w
     pea     ($000E).w

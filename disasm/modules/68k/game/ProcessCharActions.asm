@@ -23,9 +23,9 @@ ProcessCharActions:                                                  ; $014202
     pea     ($0040).w                                  ; arg: display mode $40
     clr.l   -(sp)
     pea     ($0010).w                                  ; arg: GameCommand $10 (display mode reset)
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64  ; GameCommand($10, 0, $40)
+    jsr     (ROM_BASE+$000D64).l                        ; jsr $000D64  ; GameCommand($10, 0, $40)
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$538e                           ; jsr $00538E  ; audio tick
+    jsr     (ROM_BASE+$00538E).l                        ; jsr $00538E  ; audio tick
     pea     ($0002).w
     move.w  ($00FF9A1C).l,d0                           ; screen_id (scenario index)
     ext.l   d0
@@ -33,7 +33,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0                                      ; player index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78  ; finalize display layout (player, screen_id, 2)
+    jsr     (ROM_BASE+$006B78).l                        ; jsr $006B78  ; finalize display layout (player, screen_id, 2)
     lea     $001c(sp),sp
 
 ; locate this player's event_record: base $FFB9E8, stride $20 (32 bytes/player)
@@ -49,7 +49,7 @@ ProcessCharActions:                                                  ; $014202
     pea     ($0020).w                                  ; arg: width
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942  ; clear/render action selection panel
+    jsr     (ROM_BASE+$03A942).l                        ; jsr $03A942  ; clear/render action selection panel
     clr.w   d5                                         ; d5 = "slot changed" flag (0 = unchanged)
     clr.w   d3                                         ; d3 = loop-exit code (0 = continue, $C = done, $FF = cancel)
 
@@ -57,7 +57,7 @@ ProcessCharActions:                                                  ; $014202
     pea     ($0014).w                                  ; count: $14 (20) bytes to copy
     clr.l   -(sp)
     move.l  a4,-(sp)                                   ; dest: city_data table ptr (a4)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520  ; read/display char slot info
+    jsr     (ROM_BASE+$01D520).l                        ; jsr $01D520  ; read/display char slot info
 
 ; run the char bitfield search to find the next eligible char in this player's fleet
     move.w  ($00FF9A1C).l,d0                           ; screen_id
@@ -66,7 +66,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0                                      ; player index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6eea                           ; jsr $006EEA  ; BitFieldSearch(player, screen_id) -> d0 = slot or $FF
+    jsr     (ROM_BASE+$006EEA).l                        ; jsr $006EEA  ; BitFieldSearch(player, screen_id) -> d0 = slot or $FF
     lea     $0024(sp),sp
     move.w  d0,d6                                      ; d6 = selected char slot index (or $FF = none available)
     cmpi.w  #$ff,d6
@@ -82,7 +82,7 @@ ProcessCharActions:                                                  ; $014202
     pea     ($0015).w
     clr.l   -(sp)
     pea     ($001A).w                                  ; GameCommand $1A (display mode for no-char state)
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64  ; GameCommand($1A, 0, $15, $20, 3, 5, $8000)
+    jsr     (ROM_BASE+$000D64).l                        ; jsr $000D64  ; GameCommand($1A, 0, $15, $20, 3, 5, $8000)
     lea     $001c(sp),sp
 ; locate the CharTypeRangeTable entry for this scenario type
     move.w  ($00FF9A1C).l,d0                           ; screen_id (scenario/category index)
@@ -135,8 +135,8 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7912                           ; jsr $007912  ; show dialog box with string
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C  ; sync/vblank wait
+    jsr     (ROM_BASE+$007912).l                        ; jsr $007912  ; show dialog box with string
+    jsr     (ROM_BASE+$01D71C).l                        ; jsr $01D71C  ; sync/vblank wait
     pea     ($0002).w
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
@@ -144,7 +144,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E  ; finalize revenue side
+    jsr     (ROM_BASE+$006A2E).l                        ; jsr $006A2E  ; finalize revenue side
     clr.l   -(sp)
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
@@ -152,14 +152,14 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78  ; finalize display/expense side
+    jsr     (ROM_BASE+$006B78).l                        ; jsr $006B78  ; finalize display/expense side
     lea     $002c(sp),sp
 ; --- Phase: Char found -- select action slot ---
 .l14394:                                                ; $014394
     cmpi.w  #$ff,d6
     beq.w   .l14464                                    ; still $FF = no char, skip to done
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$538e                           ; jsr $00538E  ; audio tick before UI
+    jsr     (ROM_BASE+$00538E).l                        ; jsr $00538E  ; audio tick before UI
 ; call char-action UI picker: presents the char selection menu and returns chosen slot
     move.w  d7,d0                                      ; d7 = current route slot (pre-selection)
     ext.l   d0
@@ -177,7 +177,7 @@ ProcessCharActions:                                                  ; $014202
     cmpi.w  #$ff,d7
     bne.b   .l14414                                    ; valid slot chosen -- go load the route slot
 ; user cancelled char selection or no valid action slot found
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C  ; sync/vblank wait
+    jsr     (ROM_BASE+$01D71C).l                        ; jsr $01D71C  ; sync/vblank wait
     pea     ($0002).w
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
@@ -185,7 +185,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E  ; finalize revenue side
+    jsr     (ROM_BASE+$006A2E).l                        ; jsr $006A2E  ; finalize revenue side
     clr.l   -(sp)
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
@@ -193,7 +193,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78  ; finalize expense/display side
+    jsr     (ROM_BASE+$006B78).l                        ; jsr $006B78  ; finalize expense/display side
     lea     $0018(sp),sp
     cmpi.w  #$7,($00FF9A1C).l                          ; screen_id == 7 = end-of-scenario screen
     bne.b   .l14464                                    ; not end-of-scenario: set done code below
@@ -215,7 +215,7 @@ ProcessCharActions:                                                  ; $014202
     clr.l   -(sp)
     move.l  a2,-(sp)                                   ; src: route slot
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d538                           ; jsr $01D538  ; memcpy(0, a2, $200003, a4, $14)
+    jsr     (ROM_BASE+$01D538).l                        ; jsr $01D538  ; memcpy(0, a2, $200003, a4, $14)
     moveq   #$0,d0
     move.b  $0001(a2),d0                               ; route_slot.city_b (dest city index)
     ext.l   d0
@@ -227,7 +227,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$b324                           ; jsr $01B324  ; ShowRouteInfo(player, city_a, city_b)
+    jsr     (ROM_BASE+$01B324).l                        ; jsr $01B324  ; ShowRouteInfo(player, city_a, city_b)
     lea     $0020(sp),sp
     bra.b   .l14466
 .l14464:                                                ; $014464
@@ -256,7 +256,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$19b4                           ; jsr $0119B4  ; SwapRouteSlot(player, slot_ptr) -> assigns new route
+    jsr     (ROM_BASE+$0119B4).l                        ; jsr $0119B4  ; SwapRouteSlot(player, slot_ptr) -> assigns new route
     addq.l  #$8,sp
     clr.w   d7                                         ; reset route slot index to 0 after swap
     movea.l -$0004(a6),a0                              ; reload player record ptr from link frame
@@ -304,7 +304,7 @@ ProcessCharActions:                                                  ; $014202
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64  ; GameCommand($1A, ...) -- display before-state panel
+    jsr     (ROM_BASE+$000D64).l                        ; jsr $000D64  ; GameCommand($1A, ...) -- display before-state panel
     lea     $001c(sp),sp
     move.l  #$8000,-(sp)
     pea     ($0005).w
@@ -313,7 +313,7 @@ ProcessCharActions:                                                  ; $014202
     clr.l   -(sp)
     pea     ($0001).w
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64  ; GameCommand($1A, 1, ...) -- display after-state panel
+    jsr     (ROM_BASE+$000D64).l                        ; jsr $000D64  ; GameCommand($1A, 1, ...) -- display after-state panel
     clr.l   -(sp)
     pea     ($0001).w
     clr.l   -(sp)
@@ -321,7 +321,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7912                           ; jsr $007912  ; ShowConfirmDialog(player, $3F748, 0, 1, 0) -> d0 = 0/1
+    jsr     (ROM_BASE+$007912).l                        ; jsr $007912  ; ShowConfirmDialog(player, $3F748, 0, 1, 0) -> d0 = 0/1
     lea     $0030(sp),sp
     cmpi.w  #$1,d0
     bne.w   .l14636                                    ; player declined: skip commit
@@ -352,14 +352,14 @@ ProcessCharActions:                                                  ; $014202
 
 ; copy the modified slot data (from a4 working copy) back over the live slot
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0  ; GetRouteEventSlot(slot_ptr) -> d0 = event offset
+    jsr     (ROM_BASE+$0074E0).l                        ; jsr $0074E0  ; GetRouteEventSlot(slot_ptr) -> d0 = event offset
     andi.l  #$ffff,d0
     add.l   d0,d0                                      ; * 2 (event_records stride is 2)
     lea     (a5,d0.l),a0                               ; a5 = this player's event_record base
     addq.l  #$1,a0                                     ; +1 = odd-byte target within event record
     movea.l a0,a3
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$7402                           ; jsr $007402  ; GetRouteFareComponent(slot_ptr) -> d0 = fare value
+    jsr     (ROM_BASE+$007402).l                        ; jsr $007402  ; GetRouteFareComponent(slot_ptr) -> d0 = fare value
     add.b   d0,(a3)                                    ; update event_record fare field (add new fare)
 
 ; write updated slot fields back from working buffer to live slot
@@ -368,7 +368,7 @@ ProcessCharActions:                                                  ; $014202
     clr.l   -(sp)
     move.l  a4,-(sp)                                   ; src: working buffer (has player's chosen values)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d538                           ; jsr $01D538  ; memcpy(0, a4, $200003, a2, $14)
+    jsr     (ROM_BASE+$01D538).l                        ; jsr $01D538  ; memcpy(0, a4, $200003, a2, $14)
 
 ; re-apply new assignment: add new frequency back to both city popularity fields
     moveq   #$0,d0
@@ -393,22 +393,22 @@ ProcessCharActions:                                                  ; $014202
 
 ; update event_record with new fare (subtract old fare component)
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0  ; GetRouteEventSlot(slot_ptr) -> d0
+    jsr     (ROM_BASE+$0074E0).l                        ; jsr $0074E0  ; GetRouteEventSlot(slot_ptr) -> d0
     andi.l  #$ffff,d0
     add.l   d0,d0
     lea     (a5,d0.l),a0
     addq.l  #$1,a0
     movea.l a0,a3
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$7402                           ; jsr $007402  ; GetRouteFareComponent -> d0
+    jsr     (ROM_BASE+$007402).l                        ; jsr $007402  ; GetRouteFareComponent -> d0
     lea     $0024(sp),sp
     sub.b   d0,(a3)                                    ; event_record fare field -= old fare (finalize delta)
     ori.b   #$01,$000a(a2)                             ; route_slot.status_flags |= $01 (mark slot as updated/pending)
 
 ; --- Phase: Action tail -- sync and advance to next slot ---
 .l14636:                                                ; $014636
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C  ; sync/vblank wait
-    dc.w    $4eb9,$0001,$e398                           ; jsr $01E398  ; post-action UI update
+    jsr     (ROM_BASE+$01D71C).l                        ; jsr $01D71C  ; sync/vblank wait
+    jsr     (ROM_BASE+$01E398).l                        ; jsr $01E398  ; post-action UI update
     pea     ($0001).w
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
@@ -416,7 +416,7 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E  ; finalize revenue side
+    jsr     (ROM_BASE+$006A2E).l                        ; jsr $006A2E  ; finalize revenue side
     pea     ($0002).w
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
@@ -424,9 +424,9 @@ ProcessCharActions:                                                  ; $014202
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78  ; finalize expense/display side
+    jsr     (ROM_BASE+$006B78).l                        ; jsr $006B78  ; finalize expense/display side
     lea     $0018(sp),sp
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748  ; VBlank sync before next iteration
+    jsr     (ROM_BASE+$01D748).l                        ; jsr $01D748  ; VBlank sync before next iteration
 
 ; --- Phase: Loop condition -- continue if d3 != $C (done), else exit ---
 .l14680:                                                ; $014680

@@ -45,7 +45,7 @@ CheckCharEligible:                                                  ; $00FEDA
     move.b  $0001(a3),d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7610                           ; jsr $007610
+    jsr     (ROM_BASE+$007610).l
     addq.l  #$8,sp
     cmpi.w  #$3,d0
     beq.b   .lff6e

@@ -160,7 +160,7 @@ CalcRelationScore:                                                  ; $032D7A
     lea     (a0,d0.w),a0
     movea.l a0,a2
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0
+    jsr     (ROM_BASE+$0074E0).l
     addq.l  #$4,sp
     move.w  d0,d2
     mulu.w  #$c,d0
@@ -177,7 +177,7 @@ CalcRelationScore:                                                  ; $032D7A
     move.b  (a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     lsl.w   #$2,d0
     movea.l #$00ffbde4,a0
     lea     (a0,d0.w),a0
@@ -186,7 +186,7 @@ CalcRelationScore:                                                  ; $032D7A
     move.b  $0001(a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     addq.l  #$8,sp
     lsl.w   #$2,d0
     movea.l #$00ffbde4,a0
@@ -196,20 +196,20 @@ CalcRelationScore:                                                  ; $032D7A
     move.b  $0003(a4),d0
     moveq   #$0,d1
     move.w  (a4),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,-(sp)
     moveq   #$0,d0
     move.b  $0003(a3),d0
     moveq   #$0,d1
     move.w  (a3),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     add.l   (sp)+,d0
     moveq   #$0,d1
     move.w  (a3),d1
     moveq   #$0,d2
     move.w  (a4),d2
     add.l   d2,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     bra.w   .l32eda
 .l32e54:                                                ; $032E54
     moveq   #$0,d0
@@ -230,7 +230,7 @@ CalcRelationScore:                                                  ; $032D7A
     moveq   #$0,d1
     move.b  $0001(a4),d1
     andi.l  #$ffff,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,-(sp)
     moveq   #$0,d0
     move.b  $0003(a3),d0
@@ -238,7 +238,7 @@ CalcRelationScore:                                                  ; $032D7A
     moveq   #$0,d1
     move.b  $0001(a3),d1
     andi.l  #$ffff,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     add.l   (sp)+,d0
     moveq   #$0,d1
     move.b  $0001(a3),d1
@@ -247,7 +247,7 @@ CalcRelationScore:                                                  ; $032D7A
     move.b  $0001(a4),d2
     andi.l  #$ffff,d2
     add.l   d2,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
 .l32eda:                                                ; $032EDA
     move.w  d0,d2
     moveq   #$0,d0
@@ -258,17 +258,17 @@ CalcRelationScore:                                                  ; $032D7A
     move.b  (a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$70dc                           ; jsr $0070DC
+    jsr     (ROM_BASE+$0070DC).l
     addq.l  #$8,sp
     move.w  d0,d3
     move.w  $0004(a2),d0
     sub.w   d3,d0
     ext.l   d0
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.w  d3,d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d5
     moveq   #$0,d0
     move.w  d2,d0
@@ -278,14 +278,14 @@ CalcRelationScore:                                                  ; $032D7A
     addi.l  #$32,d0
     moveq   #$0,d1
     move.w  $0008(a2),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$0,d1
     move.w  d2,d1
     move.w  d5,d6
     ext.l   d6
     sub.l   d6,d1
     addi.l  #$32,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     moveq   #$0,d0
     move.b  $0001(a5),d0
@@ -297,7 +297,7 @@ CalcRelationScore:                                                  ; $032D7A
     moveq   #$0,d1
     move.b  $0003(a2),d1
     andi.l  #$ffff,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$0,d1
     move.w  d2,d1
     cmp.l   d1,d0
@@ -316,7 +316,7 @@ CalcRelationScore:                                                  ; $032D7A
     moveq   #$0,d1
     move.b  $0003(a2),d1
     andi.l  #$ffff,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
 .l32fa2:                                                ; $032FA2
     move.w  d0,d2
     move.w  d3,d0
@@ -324,9 +324,9 @@ CalcRelationScore:                                                  ; $032D7A
     move.w  d4,d1
     ext.l   d1
     addi.l  #$64,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d3
     moveq   #$0,d0
     move.w  d2,d0
@@ -336,9 +336,9 @@ CalcRelationScore:                                                  ; $032D7A
     lsl.l   #$2,d0
     moveq   #$0,d1
     move.w  d3,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  #$2710,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     movem.l (sp)+,d2-d6/a2-a5
     rts

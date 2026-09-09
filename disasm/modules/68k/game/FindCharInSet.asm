@@ -72,7 +72,7 @@ RenderTextBlock:                                                  ; $03ACDC
     ; d0 = current cursor_x value
     moveq   #$20,d1
     ; d1 = $20: SignedMod divisor (wrap cursor within 32-column display width)
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     ; SignedMod: d0 = cursor_x mod 32 (normalise to [0, 31])
     move.w  d0,(a3)
     ; cursor_x = normalised value
@@ -80,7 +80,7 @@ RenderTextBlock:                                                  ; $03ACDC
     move.w  ($00FFBDA6).l,d0
     ; d0 = cursor_y (FFBDA6: vertical cursor position in tile rows)
     moveq   #$20,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     ; SignedMod: d0 = cursor_y mod 32 (wrap within 32-row tilemap)
     move.w  d0,($00FFBDA6).l
     ; cursor_y = normalised value
@@ -209,7 +209,7 @@ RenderTextBlock:                                                  ; $03ACDC
     bsr.w RenderTextLine
     ; output accumulated tile line for the word group
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$e2f4                           ; jsr $01E2F4
+    jsr     (ROM_BASE+$01E2F4).l
     ; jsr $01E2F4 (unknown function, likely ReadInput variant): d0 = button bits
     lea     $0020(sp),sp
     ; clean up RenderTextLine (7) + the above call (1) args
@@ -502,7 +502,7 @@ RenderTextBlock:                                                  ; $03ACDC
     moveq   #$1,d7
     ; d7 = 1: enter word-group mode
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC
+    jsr     (ROM_BASE+$01E1EC).l
     ; ReadInput(0): read current joypad state without waiting
     addq.l  #$4,sp
     move.w  d0,d6
@@ -514,7 +514,7 @@ RenderTextBlock:                                                  ; $03ACDC
 .l3af90:                                                ; $03AF90
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     ; GameCommand($E, 1): wait for V-blank / one-frame sync
     addq.l  #$8,sp
     bra.b   .l3afc4

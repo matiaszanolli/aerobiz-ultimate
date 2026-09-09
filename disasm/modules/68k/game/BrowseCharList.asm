@@ -26,7 +26,7 @@ BrowseCharList:                                                  ; $008E0C
     movea.l #$00ffbd64,a2       ; a2 -> charlist cursor/scroll state
 ; ReadInput mode 0: detect player 2 presence
     clr.l   -(sp)               ; mode = 0
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr ReadInput ($01E1EC)
+    jsr     (ROM_BASE+$01E1EC).l                        ; jsr ReadInput ($01E1EC)
     tst.w   d0
     beq.b   .l8e3e
     moveq   #$1,d2              ; d2 = 1: two-player mode
@@ -82,7 +82,7 @@ BrowseCharList:                                                  ; $008E0C
 ; GameCmd16 #$37, mode 2: clear stat preview sprite layer
     pea     ($0002).w
     pea     ($0037).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr GameCmd16 ($01E0B8)
+    jsr     (ROM_BASE+$01E0B8).l                        ; jsr GameCmd16 ($01E0B8)
     lea     $0024(sp),sp
     move.w  #$ff,d4             ; clear prev_hit_index (no item highlighted now)
 ; --- Phase: Render cursor tile on list ---
@@ -100,7 +100,7 @@ BrowseCharList:                                                  ; $008E0C
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($0740).w           ; tile $0740 = list cursor indicator tile
-    dc.w    $4eb9,$0001,$e044                           ; jsr TilePlacement ($01E044)
+    jsr     (ROM_BASE+$01E044).l                        ; jsr TilePlacement ($01E044)
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a4)                 ; GameCommand #$E = display sync
@@ -109,7 +109,7 @@ BrowseCharList:                                                  ; $008E0C
     tst.w   d2                  ; two-player mode?
     beq.b   .l8f14              ; single-player: skip 2P check
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr ReadInput ($01E1EC)
+    jsr     (ROM_BASE+$01E1EC).l                        ; jsr ReadInput ($01E1EC)
     addq.l  #$4,sp
     tst.w   d0                  ; any 2P input?
     beq.b   .l8f14              ; no: proceed to main input polling
@@ -125,7 +125,7 @@ BrowseCharList:                                                  ; $008E0C
     move.w  d5,d0               ; carry accumulated input
     move.l  d0,-(sp)
     pea     ($000A).w           ; timeout = $0A frames
-    dc.w    $4eb9,$0001,$e290                           ; jsr ProcessInputLoop ($01E290)
+    jsr     (ROM_BASE+$01E290).l                        ; jsr ProcessInputLoop ($01E290)
     addq.l  #$8,sp
 ; Mask to relevant buttons: $BF = all bits except bit 6
     andi.w  #$bf,d0
@@ -203,7 +203,7 @@ BrowseCharList:                                                  ; $008E0C
 ; Decompress the list portrait tiles from ROM $4DFB8 to save_buf_base ($FF1804)
     pea     ($0004DFB8).l       ; LZ-compressed list portrait tiles (ROM address)
     pea     ($00FF1804).l       ; output = save_buf_base
-    dc.w    $4eb9,$0000,$3fec                           ; jsr LZ_Decompress ($003FEC)
+    jsr     (ROM_BASE+$003FEC).l                        ; jsr LZ_Decompress ($003FEC)
     lea     $0024(sp),sp
 ; VRAMBulkLoad: DMA $0F tiles from $FF1804 to VRAM at index $02E1 (list portrait area)
     clr.l   -(sp)
@@ -211,7 +211,7 @@ BrowseCharList:                                                  ; $008E0C
     pea     ($00FF1804).l
     pea     ($000F).w           ; tile count = $0F = 15
     pea     ($02E1).w           ; VRAM tile destination index
-    dc.w    $4eb9,$0001,$d568                           ; jsr VRAMBulkLoad ($01D568)
+    jsr     (ROM_BASE+$01D568).l                        ; jsr VRAMBulkLoad ($01D568)
     lea     $0014(sp),sp
 ; CharacterBrowser result handling
 .l901a:                                                 ; $00901A
@@ -286,7 +286,7 @@ BrowseCharList:                                                  ; $008E0C
     jsr     (a4)                 ; clear stat preview area
     pea     ($0002).w
     pea     ($0037).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr GameCmd16: clear preview sprites
+    jsr     (ROM_BASE+$01E0B8).l                        ; jsr GameCmd16: clear preview sprites
     lea     $0024(sp),sp
     move.w  #$ff,d4             ; prev_hit_index = $FF (no hover)
 .l90e0:                                                 ; $0090E0

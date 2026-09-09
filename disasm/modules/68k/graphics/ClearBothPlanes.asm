@@ -11,7 +11,7 @@ ClearBothPlanes:                                                  ; $00814A
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     clr.l   -(sp)
     pea     ($0020).w
@@ -20,6 +20,6 @@ ClearBothPlanes:                                                  ; $00814A
     clr.l   -(sp)
     pea     ($0001).w
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     rts

@@ -18,7 +18,7 @@ ShowStatsSummary:                                                  ; $018214
     ; Returns signed sum representing player's current ranking score vs previous quarter.
     move.w  d6,d0
     move.l  d0,-(sp)             ; arg: player index
-    dc.w    $4eb9,$0001,$045a                           ; jsr SumPlayerStats ($01045A)
+    jsr     (ROM_BASE+$01045A).l                        ; jsr SumPlayerStats ($01045A)
     move.w  d0,-$00d2(a6)        ; local[-$D2] = stat sum (negative = dropped, positive = rose)
     ; Compute season index from frame_counter: d5 = (frame_counter >> 2) + $37
     ; $FF0006 = frame_counter (increments each MainLoop tick)
@@ -36,7 +36,7 @@ ShowStatsSummary:                                                  ; $018214
     ; Returns the player's total "rank score" (absolute level, not delta).
     move.w  d6,d0
     move.l  d0,-(sp)             ; arg: player index
-    dc.w    $4eb9,$0001,$0492                           ; jsr SumStatBytes ($010492)
+    jsr     (ROM_BASE+$010492).l                        ; jsr SumStatBytes ($010492)
     addq.l  #$8,sp               ; pop both args (SumPlayerStats + SumStatBytes)
     move.w  d0,d2                ; d2 = current total rank score
     tst.w   d2
@@ -48,7 +48,7 @@ ShowStatsSummary:                                                  ; $018214
     move.l  ($00047B7C).l,-(sp)  ; arg: format string pointer for rank-0 (first quarter)
     move.l  ($00047C1C).l,-(sp)  ; arg: second format part (continuation string)
     move.l  a5,-(sp)             ; arg: output buffer (a5 = local stack string buffer)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr sprintf ($03B22C) -- format rank-0 message
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C) -- format rank-0 message
     lea     $000c(sp),sp
     pea     ($0002).w            ; arg: display mode = 2
     move.l  a5,-(sp)             ; arg: formatted string buffer
@@ -79,7 +79,7 @@ ShowStatsSummary:                                                  ; $018214
     move.l  d0,-(sp)             ; arg: current rank value (for "%d" in format string)
     move.l  ($00047C2C).l,-(sp)  ; arg: secondary format string (continuation)
     move.l  a5,-(sp)             ; arg: output buffer
-    dc.w    $4eb9,$0003,$b22c                           ; jsr sprintf ($03B22C)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C)
     lea     $0010(sp),sp         ; pop 4 args
     bra.b   .l18318
 .l182b2:                                                ; $0182B2
@@ -93,7 +93,7 @@ ShowStatsSummary:                                                  ; $018214
     move.l  d0,-(sp)             ; arg: new (lower) rank
     move.l  ($00047C28).l,-(sp)  ; arg: format string for "dropped to rank N"
     move.l  a5,-(sp)             ; arg: output buffer
-    dc.w    $4eb9,$0003,$b22c                           ; jsr sprintf ($03B22C)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C)
     lea     $000c(sp),sp
     bra.b   .l18318
 .l182d2:                                                ; $0182D2
@@ -126,7 +126,7 @@ ShowStatsSummary:                                                  ; $018214
     move.l  d0,-(sp)             ; arg: new rank (for "%d" #2 in format)
     move.l  ($00047C24).l,-(sp)  ; arg: format string continuation
     move.l  a5,-(sp)             ; arg: output buffer
-    dc.w    $4eb9,$0003,$b22c                           ; jsr sprintf ($03B22C) -- "moved up" message
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C) -- "moved up" message
     lea     $0014(sp),sp         ; pop 5 args
 .l18318:                                                ; $018318
     ; --- Phase: Render Rank Summary String and Initialize Route/Char Bonus Tables ---
@@ -136,12 +136,12 @@ ShowStatsSummary:                                                  ; $018214
     move.l  a5,-(sp)             ; arg: formatted string buffer (sprintf output)
     pea     ($0003).w            ; arg: max = 3 (random 0-3 for display mode selection)
     clr.l   -(sp)                ; arg: extra = 0
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr RandRange ($01D6A4) -- random 0-3
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr RandRange ($01D6A4) -- random 0-3
     addq.l  #$8,sp               ; pop RandRange args
     move.l  d0,-(sp)             ; arg: random display mode (0-3)
     move.w  d6,d0
     move.l  d0,-(sp)             ; arg: player index
-    dc.w    $4eb9,$0002,$fbd6                           ; jsr $02FBD6 -- render rank summary string
+    jsr     (ROM_BASE+$02FBD6).l                        ; jsr $02FBD6 -- render rank summary string
     lea     $0010(sp),sp
     ; --- Phase: Initialize Route-Pair Result Table and Char-Bonus Accumulator ---
     ; Initialize 4 slot-pair result entries (at -$10(a6)) to $FFFF,$FFFF = empty/invalid.
@@ -214,23 +214,23 @@ ShowStatsSummary:                                                  ; $018214
 .l183c4:                                                ; $0183C4
     ; CalcCompatScore(a3): compute compatibility score for the char in this route slot
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$7412                           ; jsr CalcCompatScore ($007412)
+    jsr     (ROM_BASE+$007412).l                        ; jsr CalcCompatScore ($007412)
     addq.l  #$4,sp
     ext.l   d0                   ; d0 = raw compatibility score
     ; Multiply32(d0, d4): scale score by threshold level
     move.w  d4,d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr Multiply32 ($03E05C)
+    jsr     (ROM_BASE+$03E05C).l                        ; jsr Multiply32 ($03E05C)
     ; SignedDiv(d0, $14): normalize by $14 (20) to get score-per-level
     moveq   #$14,d1              ; d1 = $14 = 20 (scaling denominator)
-    dc.w    $4eb9,$0003,$e08a                           ; jsr SignedDiv ($03E08A)
+    jsr     (ROM_BASE+$03E08A).l                        ; jsr SignedDiv ($03E08A)
     moveq   #$e,d1               ; d1 = $0E = 14 (minimum score threshold)
     cmp.l   d0,d1                ; is normalized score > 14?
     bgt.b   .l183c2              ; not yet: try next d4 level
     ; Score exceeds threshold at level d4.
     ; GetCharStat ($007402) at a3: returns the char slot number for this route
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$7402                           ; jsr $007402 (GetCharStat / slot-lookup)
+    jsr     (ROM_BASE+$007402).l                        ; jsr $007402 (GetCharStat / slot-lookup)
     addq.l  #$4,sp
     ; Compute bonus surplus: d4 - GetCharStat_result = how much d4 exceeds the baseline
     move.w  d4,d1
@@ -240,7 +240,7 @@ ShowStatsSummary:                                                  ; $018214
     ble.b   .l18414              ; bonus <= 0: no accumulation for this slot
     ; $0074E0: get the char's secondary index/field (slot assignment within the roster)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0 (char roster-slot lookup)
+    jsr     (ROM_BASE+$0074E0).l                        ; jsr $0074E0 (char roster-slot lookup)
     addq.l  #$4,sp
     ; Index char_bonus_acc[] by the secondary index: acc[idx] += d4
     add.w   d0,d0                ; d0 *= 2 (word offset into char_bonus_acc)
@@ -379,7 +379,7 @@ ShowStatsSummary:                                                  ; $018214
     ; SortWordPairs($0109FA): insert this pair into the top-4 result table at -$10(a6)
     pea     ($0004).w            ; arg: table size = 4 (keep best 4)
     pea     -$0010(a6)           ; arg: result table base (4 × (slot,bonus) pairs)
-    dc.w    $4eb9,$0001,$09fa                           ; jsr SortWordPairs ($0109FA)
+    jsr     (ROM_BASE+$0109FA).l                        ; jsr SortWordPairs ($0109FA)
     addq.l  #$8,sp
 .l1850a:                                                ; $01850A
     addq.l  #$2,a2               ; advance accumulator pointer
@@ -446,18 +446,18 @@ ShowStatsSummary:                                                  ; $018214
     movea.l #$00047c0c,a0        ; a0 = $47C0C (display format string pointer table)
     move.l  (a0,d0.w),-(sp)      ; arg: format string pointer (header text for this result)
     move.l  a5,-(sp)             ; arg: output buffer a5
-    dc.w    $4eb9,$0003,$b22c                           ; jsr sprintf ($03B22C) -- format result
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C) -- format result
     ; RandRange(0, 3): random display variant
     clr.l   -(sp)                ; arg: min = 0
     move.l  a5,-(sp)             ; arg: formatted result string
     pea     ($0003).w            ; arg: max = 3
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr RandRange ($01D6A4)
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr RandRange ($01D6A4)
     addq.l  #$8,sp
     move.l  d0,-(sp)             ; arg: random display mode (0-3)
     move.w  d6,d0
     move.l  d0,-(sp)             ; arg: player index
-    dc.w    $4eb9,$0002,$fbd6                           ; jsr $02FBD6 -- render result on screen
+    jsr     (ROM_BASE+$02FBD6).l                        ; jsr $02FBD6 -- render result on screen
     lea     $001c(sp),sp         ; pop sprintf + RandRange + $02FBD6 args
     moveq   #$1,d3               ; d3 = 1: at least one result was displayed
 .l185be:                                                ; $0185BE
@@ -493,12 +493,12 @@ ShowStatsSummary:                                                  ; $018214
     ; RandRange(0, 3) + $02FBD6: generate random variant and render final summary
     pea     ($0003).w            ; arg: max = 3
     clr.l   -(sp)                ; arg: min = 0
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr RandRange ($01D6A4)
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr RandRange ($01D6A4)
     addq.l  #$8,sp
     move.l  d0,-(sp)             ; arg: random display mode (0-3)
     move.w  d6,d0
     move.l  d0,-(sp)             ; arg: player index
-    dc.w    $4eb9,$0002,$fbd6                           ; jsr $02FBD6 -- render final summary on screen
+    jsr     (ROM_BASE+$02FBD6).l                        ; jsr $02FBD6 -- render final summary on screen
     movem.l -$00FC(a6),d2-d7/a2-a5
     unlk    a6
     rts

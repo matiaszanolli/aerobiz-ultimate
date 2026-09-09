@@ -10,7 +10,7 @@ PlaceCursor:                                                  ; $009CEC
     move.l  $001c(sp),d4
     movea.l #$0d64,a2
     pea     ($0006).w
-    dc.w    $4eb9,$0001,$d444                           ; jsr $01D444
+    jsr     (ROM_BASE+$01D444).l
     move.l  #$8000,-(sp)
     pea     ($0002).w
     pea     ($0002).w
@@ -22,7 +22,7 @@ PlaceCursor:                                                  ; $009CEC
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($0744).w
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044
+    jsr     (ROM_BASE+$01E044).l
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a2)
@@ -43,7 +43,7 @@ PlaceCursor:                                                  ; $009CEC
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($0740).w
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044
+    jsr     (ROM_BASE+$01E044).l
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a2)

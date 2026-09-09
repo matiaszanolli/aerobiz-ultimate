@@ -42,7 +42,7 @@ FormatRelationDisplay:                                                  ; $01924
     pea     ($0001).w
     pea     ($001A).w
 ; GameCommand ($000D64) #$1A = ClearTileArea
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
 ; If display_flag (d2) != 1, skip portrait and name rendering -- go straight to gauge/stats
     cmpi.w  #$1,d2
@@ -59,7 +59,7 @@ FormatRelationDisplay:                                                  ; $01924
     move.b  (a2),d0
     move.l  d0,-(sp)
 ; RangeMatch: returns nonzero if char_a and char_b are in the same range bucket (compatible type group)
-    dc.w    $4eb9,$0000,$7158                           ; jsr $007158
+    jsr     (ROM_BASE+$007158).l
     tst.w   d0
 ; If same range: use portrait pointer from $000A1B50 (matched pair graphic)
     beq.b   .l192c4
@@ -71,16 +71,16 @@ FormatRelationDisplay:                                                  ; $01924
 .l192ca:                                                ; $0192CA
 ; LZ_Decompress ($003FEC): decompress selected portrait graphic data into save_buf_base ($FF1804)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
 ; Call $4668: tile placement helper -- place portrait at position ($10 wide, 1 tall) into buffer at a3
     pea     ($0010).w
     pea     ($0001).w
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$4668                           ; jsr $004668
+    jsr     (ROM_BASE+$004668).l
 ; LZ_Decompress secondary portrait overlay data from $4DCE8 into the buffer
     pea     ($0004DCE8).l
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp
 ; VRAMBulkLoad ($01D568): DMA-transfer the portrait tile data to VRAM
 ; Args: size=$0328 (808 bytes = ~50 tiles), dest=a3 buffer, flags=0, tile_addr=$001A
@@ -94,7 +94,7 @@ FormatRelationDisplay:                                                  ; $01924
     pea     ($001A).w
 ; $0328 = 808 bytes = portrait tile data size (~50 tiles × 32 bytes each; 8×8 pixels, 4bpp)
     pea     ($0328).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
 ; GameCommand #$1B: place the portrait sprite tiles on screen
 ; Source $72AC0 = portrait tile index table; $0D wide, $1E tall at column d4, row d5+1
     pea     ($00072AC0).l
@@ -109,7 +109,7 @@ FormatRelationDisplay:                                                  ; $01924
     pea     ($0001).w
     pea     ($001B).w
 ; GameCommand #$1B = place tile block from table onto screen
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0030(sp),sp
 ; --- Phase: Compatibility Gauge ---
 .l1933a:                                                ; $01933A
@@ -119,7 +119,7 @@ FormatRelationDisplay:                                                  ; $01924
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
 ; SetTextCursor (a4 = $03AB2C): position cursor at (d4+1, d5+1) for the gauge display
     move.w  d4,d0
     ext.l   d0
@@ -142,7 +142,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Format string at $410F8 -- prints first character's name with wide font
     pea     ($000410F8).l
 ; PrintfWide ($03B270): format + display string using 2-tile wide font
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
 ; SetTextCursor: position at (d4+1, d5+$C) -- 12 rows below the first name (for char_b name)
     move.w  d4,d0
     ext.l   d0
@@ -167,7 +167,7 @@ FormatRelationDisplay:                                                  ; $01924
     move.l  d0,-(sp)
     clr.l   -(sp)
 ; PlaceIconPair: draws tile pair at position, variant 0 = base gauge frame
-    dc.w    $4eb9,$0000,$58fc                           ; jsr $0058FC
+    jsr     (ROM_BASE+$0058FC).l
 ; PlaceIconPair at (d4+1, d5+$12): draw top icon of the relation indicator
     move.w  d4,d0
     addq.w  #$1,d0
@@ -178,7 +178,7 @@ FormatRelationDisplay:                                                  ; $01924
     move.l  d0,-(sp)
     pea     ($0001).w
 ; PlaceIconPair variant 1 = top icon
-    dc.w    $4eb9,$0000,$58fc                           ; jsr $0058FC
+    jsr     (ROM_BASE+$0058FC).l
 ; $00595E: place a tile pair with 2×2 icon at (d4+1, d5+$11)
 ; $11 = row 17, 2×2 tile block for the relation strength icon
     move.w  d4,d0
@@ -190,7 +190,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Width=2, height=2 for the relation icon block
     pea     ($0002).w
     pea     ($0002).w
-    dc.w    $4eb9,$0000,$595e                           ; jsr $00595E
+    jsr     (ROM_BASE+$00595E).l
 ; --- Phase: Compatibility Score Calculation and Print ---
 ; CharCodeCompare ($006F42): compute a raw compatibility index from the two character codes
 ; This is NOT the percentage -- it returns a category index (0-6) from the 7-category jump table
@@ -205,7 +205,7 @@ FormatRelationDisplay:                                                  ; $01924
     ext.l   d0
     move.l  d0,-(sp)
 ; CharCodeCompare: returns compatibility category index in d0
-    dc.w    $4eb9,$0000,$6f42                           ; jsr $006F42
+    jsr     (ROM_BASE+$006F42).l
     addq.l  #$8,sp
 ; Mask to word: compatibility score is a word value (0-$FFFF range)
     andi.l  #$ffff,d0
@@ -213,7 +213,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Format string at $410F4: prints the compatibility score value with wide font
     pea     ($000410F4).l
 ; PrintfWide: display the numeric compatibility score
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
     lea     $0030(sp),sp
 ; SetTextCursor: position at (d4+1, d5+$13) for char_b's name
 ; $13 = row 19: char_b name below the relation icon block
@@ -238,7 +238,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Format string at $410F0 -- prints second character's name
     pea     ($000410F0).l
 ; PrintfWide: display char_b's name
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
 ; --- Phase: City Data Fields Display (char_a) ---
 ; SetTextCursor: position at (d4+3, d5+4) -- city stat line for char_a
     move.w  d4,d0
@@ -284,7 +284,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Format string at $410E6: prints two stat values for char_a (current / max) with narrow font
     pea     ($000410E6).l
 ; PrintfNarrow ($03B246): format + display with 1-tile narrow font
-    dc.w    $4eb9,$0003,$b246                           ; jsr $03B246
+    jsr     (ROM_BASE+$03B246).l
 ; --- Phase: City Data Fields Display (char_a, second line) ---
 ; SetTextCursor: position at (d4+3, d5+$14) -- second city stat line for char_a
 ; $14 = row 20: the line below the first city stat row
@@ -334,7 +334,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Format string at $410DC: prints two stat values for char_a's second city entry (narrow font)
     pea     ($000410DC).l
 ; PrintfNarrow: display the second stat pair for char_a's side of the panel
-    dc.w    $4eb9,$0003,$b246                           ; jsr $03B246
+    jsr     (ROM_BASE+$03B246).l
 ; --- Phase: City Data Fields Display (char_b) ---
 ; SetTextCursor: position at (d4+$B, $E) for char_b's city stats
 ; $B = column 11, $E = row 14
@@ -348,12 +348,12 @@ FormatRelationDisplay:                                                  ; $01924
 ; (char_b city_data reads performed implicitly within $7402)
     move.l  a2,-(sp)
 ; $7402: compute and return two city stat values for the char pair (using char_b as primary)
-    dc.w    $4eb9,$0000,$7402                           ; jsr $007402
+    jsr     (ROM_BASE+$007402).l
     addq.l  #$4,sp
     move.l  d0,-(sp)
 ; Format string at $410D8: print char_b's city stat result with narrow font
     pea     ($000410D8).l
-    dc.w    $4eb9,$0003,$b246                           ; jsr $03B246
+    jsr     (ROM_BASE+$03B246).l
     lea     $001c(sp),sp
 ; --- Phase: Relation Action Buttons (char_a side) ---
 ; Display the relation action chooser for char_a
@@ -374,13 +374,13 @@ FormatRelationDisplay:                                                  ; $01924
     move.l  d0,-(sp)
     move.l  a2,-(sp)
 ; $74E0: CalcCompatScore variant -- compute relation action set for display
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0
+    jsr     (ROM_BASE+$0074E0).l
     addq.l  #$4,sp
 ; d0 = action bitmask (word); mask to 16 bits
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
 ; ShowCharPortrait ($03A5A8): display action/portrait panel using the action bitmask
-    dc.w    $4eb9,$0003,$a5a8                           ; jsr $03A5A8
+    jsr     (ROM_BASE+$03A5A8).l
 ; ShowRelationAction ($0199FA): display relation action button/icon for char_a
 ; Args: pair record (a2), col=d4+4, row=d5+$F, mode=1, display_flag=d2
     move.w  d2,d0
@@ -496,11 +496,11 @@ FormatRelationDisplay:                                                  ; $01924
     clr.l   -(sp)
     pea     ($001B).w
 ; GameCommand #$1B = place tile block from table (local array) onto screen
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
 ; LZ_Decompress: decompress relation icon graphics from $4E28A into the save buffer at a3
     pea     ($0004E28A).l
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp
 ; VRAMBulkLoad ($01D568): DMA the decompressed icon tiles to VRAM
 ; Dest tile: $037B, size=$18 words = 24 bytes = 3 tiles, flags=0
@@ -511,7 +511,7 @@ FormatRelationDisplay:                                                  ; $01924
     pea     ($0018).w
 ; $037B = VRAM tile destination (base of relation icon tile strip)
     pea     ($037B).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
 .l19656:                                                ; $019656
 ; --- Phase: Epilogue ---
 ; Restore caller registers from link frame and return

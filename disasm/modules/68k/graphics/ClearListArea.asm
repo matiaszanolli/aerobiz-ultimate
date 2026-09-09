@@ -11,7 +11,7 @@ ClearListArea:                                                  ; $0237A8
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     rts
 ; === Translated block $0237D0-$0238F0 ===

@@ -20,13 +20,13 @@ RunGameMenu:                                                  ; $016F9E
     move.b  ($00FF0016).l,d0        ; d0 = current_player ($FF0016): 0-3
     move.w  d0,(a3)                 ; ($FFA792) = current_player (for dialog title lookup)
     ; --- Phase: Load resources and set up display ---
-    dc.w    $4eb9,$0001,$d71c       ; jsr ResourceLoad ($01D71C): load required graphics resource
-    dc.w    $4eb9,$0001,$e398       ; jsr PreLoopInit ($01E398): one-time pre-loop state init
+    jsr     (ROM_BASE+$01D71C).l    ; jsr ResourceLoad ($01D71C): load required graphics resource
+    jsr     (ROM_BASE+$01E398).l    ; jsr PreLoopInit ($01E398): one-time pre-loop state init
     ; DisplaySetup: set up background tilemap at palette 0x10, size 0x10
     pea     ($0010).w               ; height param
     pea     ($0010).w               ; width param
     pea     ($0004C976).l           ; ROM pointer to background tile data / display descriptor
-    dc.w    $4eb9,$0000,$5092       ; jsr DisplaySetup ($005092): init title/BG display
+    jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092): init title/BG display
     ; GameCommand #$1B: draw tile block for main menu panel
     pea     ($0004C996).l           ; tile data pointer for menu panel
     pea     ($001C).w               ; height = $1C rows
@@ -39,7 +39,7 @@ RunGameMenu:                                                  ; $016F9E
     ; LZ decompress logo/portrait graphics to save buffer $FF1804
     pea     ($0004D096).l           ; compressed data source pointer (ROM logo data)
     pea     ($00FF1804).l           ; save_buf_base: decompression output buffer
-    dc.w    $4eb9,$0000,$3fec       ; jsr LZ_Decompress ($003FEC): decompress logo tiles
+    jsr     (ROM_BASE+$003FEC).l    ; jsr LZ_Decompress ($003FEC): decompress logo tiles
     lea     $0030(sp),sp            ; clean up $30 (12 args x 4)
     ; VRAMBulkLoad: DMA logo tiles to VRAM
     pea     ($0001).w               ; flags: 1
@@ -47,8 +47,8 @@ RunGameMenu:                                                  ; $016F9E
     pea     ($00FF1804).l           ; source = decompressed tile buffer
     pea     ($0104).w               ; VRAM tile count = $104 (260 tiles)
     pea     ($0001).w               ; DMA channel / mode = 1
-    dc.w    $4eb9,$0001,$d568       ; jsr VRAMBulkLoad ($01D568): chunked DMA to VRAM
-    dc.w    $4eb9,$0001,$d748       ; jsr ResourceUnload ($01D748): unload graphics resource
+    jsr     (ROM_BASE+$01D568).l    ; jsr VRAMBulkLoad ($01D568): chunked DMA to VRAM
+    jsr     (ROM_BASE+$01D748).l    ; jsr ResourceUnload ($01D748): unload graphics resource
     ; TilePlacement: place logo tile at position 0,0 with 1x1 dimensions
     clr.l   -(sp)                   ; priority = 0
     pea     ($0001).w               ; tile count Y = 1
@@ -57,7 +57,7 @@ RunGameMenu:                                                  ; $016F9E
     clr.l   -(sp)                   ; Y pos = 0
     clr.l   -(sp)                   ; tile index = 0
     clr.l   -(sp)                   ; tile data address = 0
-    dc.w    $4eb9,$0001,$e044       ; jsr TilePlacement ($01E044): place logo tile
+    jsr     (ROM_BASE+$01E044).l    ; jsr TilePlacement ($01E044): place logo tile
     lea     $0030(sp),sp            ; clean up $30
     ; GameCommand #$E: commit display update
     pea     ($0001).w
@@ -66,7 +66,7 @@ RunGameMenu:                                                  ; $016F9E
     ; GameCmd16 (#$10): clear sprite layer via command 4, row $3B
     pea     ($0004).w               ; arg: 4 (clear mode)
     pea     ($003B).w               ; arg: $3B (row limit for sprite clear)
-    dc.w    $4eb9,$0001,$e0b8       ; jsr GameCmd16 ($01E0B8): clear sprites in range
+    jsr     (ROM_BASE+$01E0B8).l    ; jsr GameCmd16 ($01E0B8): clear sprites in range
     ; GameCommand #$E again: finalize display
     pea     ($0001).w
     pea     ($000E).w
@@ -87,7 +87,7 @@ RunGameMenu:                                                  ; $016F9E
     move.w  (a3),d0                 ; d0 = current_player (from a3 = $FFA792)
     ext.l   d0
     move.l  d0,-(sp)                ; push player_index for dialog header
-    dc.w    $4eb9,$0000,$7912       ; jsr ShowDialog ($007912): show menu with player name header
+    jsr     (ROM_BASE+$007912).l    ; jsr ShowDialog ($007912): show menu with player name header
     ; SelectMenuItem: get user selection with scroll cursor at current d4 position
     pea     ($0005).w               ; 5 menu items
     move.w  d4,d0
@@ -135,7 +135,7 @@ RunGameMenu:                                                  ; $016F9E
     dc.w    $0054                   ; jtab[3]: offset +$54 -> case 3: finance menu
     dc.w    $0072                   ; jtab[4]: offset +$72 -> case 4: end-turn
     ; --- Case 0: Aircraft menu ---
-    dc.w    $4eb9,$0001,$d71c       ; jsr ResourceLoad: load aircraft graphics
+    jsr     (ROM_BASE+$01D71C).l    ; jsr ResourceLoad: load aircraft graphics
     dc.w    $4878,$0010             ; pea ($0010).w -- arg: mode $10
     dc.w    $4878,$0018             ; pea ($0018).w -- arg: type $18
     dc.w    $4878,$0001             ; pea ($0001).w -- arg: 1
@@ -183,7 +183,7 @@ RunGameMenu:                                                  ; $016F9E
     dc.w    $4a43                   ; tst.w d3 (loop exit requested?)
     dc.w    $6700,$ff1c             ; beq.w $017080 (no -> back to loop top)
     ; --- Phase: Exit path -- unload resource and restore scenario_flag ---
-    dc.w    $4eb9,$0001,$d71c       ; jsr ResourceLoad (called again before exit? NOTE: may be ResourceUnload)
+    jsr     (ROM_BASE+$01D71C).l    ; jsr ResourceLoad (called again before exit? NOTE: may be ResourceUnload)
     ; LoadScreen: reload main game screen before returning
     dc.w    $42a7                   ; clr.l -(sp)
     dc.w    $3039,$00ff,$9a1c       ; move.w ($FF9A1C).l,d0 -- screen_id
@@ -192,7 +192,7 @@ RunGameMenu:                                                  ; $016F9E
     dc.w    $3013                   ; move.w (a3),d0 -- current_player from $FFA792
     dc.w    $48c0                   ; ext.l d0
     dc.w    $2f00                   ; move.l d0,-(sp) -- push player_index
-    dc.w    $4eb9,$0000,$6a2e       ; jsr LoadScreen ($006A2E): load and init game screen
+    jsr     (ROM_BASE+$006A2E).l    ; jsr LoadScreen ($006A2E): load and init game screen
     pea     ($0002).w               ; mode 2
     dc.w    $3039,$00ff,$9a1c       ; move.w ($FF9A1C).l,d0 -- screen_id
     dc.w    $48c0                   ; ext.l d0
@@ -200,7 +200,7 @@ RunGameMenu:                                                  ; $016F9E
     dc.w    $3013                   ; move.w (a3),d0 -- current_player
     dc.w    $48c0                   ; ext.l d0
     dc.w    $2f00                   ; push player_index
-    dc.w    $4eb9,$0000,$6b78       ; jsr ShowRelPanel ($006B78): show relation/status panel
+    jsr     (ROM_BASE+$006B78).l    ; jsr ShowRelPanel ($006B78): show relation/status panel
     dc.w    $4fef,$0018             ; lea $18(sp),sp -- clean up args
     dc.w    $3039,$00ff,$1296       ; move.w ($FF1296).l,d0 -- scenario_flag: restore original value
     dc.w    $4cdf,$3c1c             ; movem.l (sp)+,d2-d4/a2-a5

@@ -46,7 +46,7 @@ CalcStatChange:                                                  ; $0090F4
     sub.l   d0,d1                       ; d1 = 100 - base_stat
     move.l  d1,d0                       ; d0 = headroom to 100
     moveq   #$5,d1                      ; divisor = 5
-    dc.w    $4eb9,$0003,$e08a           ; jsr $03E08A (SignedDiv: d0 / d1 -> d0)
+    jsr     (ROM_BASE+$03E08A).l        ; jsr $03E08A (SignedDiv: d0 / d1 -> d0)
     moveq   #$1,d1
     cmp.l   d0,d1                       ; is result < 1?
     bge.b   .l914e                      ; yes -> clamp to 1
@@ -57,7 +57,7 @@ CalcStatChange:                                                  ; $0090F4
     move.l  d1,d0
     moveq   #$5,d1                      ; divisor = 5
 .l9146:                                                 ; $009146
-    dc.w    $4eb9,$0003,$e08a           ; jsr $03E08A (SignedDiv: d0 / d1 -> d0)
+    jsr     (ROM_BASE+$03E08A).l        ; jsr $03E08A (SignedDiv: d0 / d1 -> d0)
     bra.b   .l9150                      ; -> store result
 .l914e:                                                 ; $00914E
     moveq   #$1,d0                      ; clamp delta to minimum of 1
@@ -76,7 +76,7 @@ CalcStatChange:                                                  ; $0090F4
     sub.l   d0,d1                       ; headroom = 100 - base
     move.l  d1,d0
     moveq   #$a,d1                      ; divisor = 10 (larger mode -> smaller delta)
-    dc.w    $4eb9,$0003,$e08a           ; jsr $03E08A (SignedDiv)
+    jsr     (ROM_BASE+$03E08A).l        ; jsr $03E08A (SignedDiv)
     moveq   #$1,d1
     cmp.l   d0,d1
     bge.b   .l914e                      ; clamp to 1
@@ -150,7 +150,7 @@ CalcStatChange:                                                  ; $0090F4
     sub.l   d0,d1
     move.l  d1,d0
     moveq   #$9,d1                      ; divisor = 9
-    dc.w    $4eb9,$0003,$e08a           ; jsr $03E08A (SignedDiv)
+    jsr     (ROM_BASE+$03E08A).l        ; jsr $03E08A (SignedDiv)
     moveq   #$1,d1
     cmp.l   d0,d1
     bge.w   .l914e
@@ -186,7 +186,7 @@ CalcStatChange:                                                  ; $0090F4
     sub.l   d0,d1                       ; headroom = 100 - base
     move.l  d1,d0
     moveq   #$3,d1                      ; divisor = 3 (widest category, biggest positive delta)
-    dc.w    $4eb9,$0003,$e08a           ; jsr $03E08A (SignedDiv)
+    jsr     (ROM_BASE+$03E08A).l        ; jsr $03E08A (SignedDiv)
     moveq   #$1,d1
     cmp.l   d0,d1
     bge.w   .l914e

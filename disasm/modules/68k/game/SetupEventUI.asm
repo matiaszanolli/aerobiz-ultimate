@@ -12,7 +12,7 @@ SetupEventUI:                                                  ; $0225B8
     bne.b   .l225dc
     pea     ($0001).w
     pea     ($0010).w
-    dc.w    $4eb9,$0001,$d3ac                           ; jsr $01D3AC
+    jsr     (ROM_BASE+$01D3AC).l
     addq.l  #$8,sp
 .l225dc:                                                ; $0225DC
     clr.l   -(sp)

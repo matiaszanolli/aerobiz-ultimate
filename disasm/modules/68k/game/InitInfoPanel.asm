@@ -19,7 +19,7 @@ InitInfoPanel:                                                  ; $0238F0
     pea     ($000A).w
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0024(sp),sp
     move.l  (sp)+,d2
     rts

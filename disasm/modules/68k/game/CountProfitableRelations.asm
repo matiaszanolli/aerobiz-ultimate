@@ -54,11 +54,11 @@ RankCharCandidates:                                                  ; $01052E
     pea     ($000C).w
     clr.l   -(sp)
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520  -- MemFill(a4, 0, 12)
+    jsr     (ROM_BASE+$01D520).l                        ; jsr $01D520  -- MemFill(a4, 0, 12)
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648  -- RangeLookup(d4) -> char category 0-6
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648  -- RangeLookup(d4) -> char category 0-6
     lea     $0010(sp),sp
     move.w  d0,d2                      ; d2 = char category index (result of RangeLookup)
     lsl.w   #$2,d0                     ; category * 4 (each CharTypeRangeTable entry is 4 bytes)
@@ -114,12 +114,12 @@ RankCharCandidates:                                                  ; $01052E
     moveq   #$0,d0
     move.w  d4,d0
     move.l  d0,-(sp)                   ; arg: query char type (d4)
-    dc.w    $4eb9,$0000,$6f42                           ; jsr $006F42 -- CharCodeCompare(d2, d4) -> compatibility score
+    jsr     (ROM_BASE+$006F42).l                        ; jsr $006F42 -- CharCodeCompare(d2, d4) -> compatibility score
     move.w  d0,d3                      ; d3 = compatibility score
     moveq   #$0,d0
     move.w  d5,d0
     move.l  d0,-(sp)                   ; arg: player_index
-    dc.w    $4eb9,$0003,$5ccc                           ; jsr $035CCC -- GetRelationScore(d5) -> d0
+    jsr     (ROM_BASE+$035CCC).l                        ; jsr $035CCC -- GetRelationScore(d5) -> d0
     lea     $000c(sp),sp
     cmp.w   d3,d0                      ; relation score vs compatibility?
     bcs.b   .l10640                    ; skip if relation score < compat (not worth it)
@@ -131,7 +131,7 @@ RankCharCandidates:                                                  ; $01052E
     moveq   #$0,d0
     move.w  d4,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$865e                           ; jsr $00865E -- CalcCharCompatScore(d2, d4) -> d0
+    jsr     (ROM_BASE+$00865E).l                        ; jsr $00865E -- CalcCharCompatScore(d2, d4) -> d0
     andi.l  #$ffff,d0
     asr.l   #$1,d0                     ; halve score (shift right 1 = /2)
     move.w  d3,d1
@@ -190,11 +190,11 @@ FindBestCharacter:                                                  ; $010686
     pea     ($0008).w
     clr.l   -(sp)
     pea     -$0008(a6)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520 -- MemFill(local_buf, 0, 8)
+    jsr     (ROM_BASE+$01D520).l                        ; jsr $01D520 -- MemFill(local_buf, 0, 8)
     move.w  $000e(a6),d0               ; d0 = char_type arg (second param)
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup -> category 0-6
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup -> category 0-6
     lea     $0010(sp),sp
     move.w  d0,d2                      ; d2 = category index
     lsl.w   #$2,d0
@@ -374,7 +374,7 @@ FindBestCharacter:                                                  ; $010686
     move.l  d0,-(sp)
     move.w  d6,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E -- CalcCharCost(type, arg_e, d6) -> d0
+    jsr     (ROM_BASE+$00E08E).l                        ; jsr $00E08E -- CalcCharCost(type, arg_e, d6) -> d0
     lea     $000c(sp),sp
     move.l  d0,d2                      ; d2 = computed cost
     cmp.l   $0006(a5),d2               ; compare vs player_record.cash (+$06)
@@ -426,7 +426,7 @@ FindCharByValue:                                                  ; $0108F2
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(d6) -> category
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(d6) -> category
     addq.l  #$4,sp
 
 ; --- Phase: Table selection -- pick range1 or range2 table based on char_type ---
@@ -487,7 +487,7 @@ FindCharByValue:                                                  ; $0108F2
     move.l  d0,-(sp)
     move.w  $000a(a6),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E -- CalcCharCost(type, d6, player) -> d0
+    jsr     (ROM_BASE+$00E08E).l                        ; jsr $00E08E -- CalcCharCost(type, d6, player) -> d0
     lea     $000c(sp),sp
     move.l  d0,d2                      ; d2 = cost for this candidate
     cmp.l   $0006(a5),d2               ; cost <= player.cash?

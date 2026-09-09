@@ -6,9 +6,9 @@ RefreshAndWait:                                                  ; $01D310
     move.l  d2,-(sp)
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     pea     ($0014).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $000c(sp),sp
     move.b  d0,d2
     btst    #$00,d2

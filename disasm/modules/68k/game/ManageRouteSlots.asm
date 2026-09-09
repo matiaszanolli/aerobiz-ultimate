@@ -61,7 +61,7 @@ ManageRouteSlots:                                                  ; $0112EE
     moveq   #$0,d0
     move.b  (a2),d0                    ; byte[0] = aircraft_code
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648          ; jsr RangeLookup ($00D648): map aircraft_code -> category 0-7
+    jsr     (ROM_BASE+$00D648).l       ; jsr RangeLookup ($00D648): map aircraft_code -> category 0-7
     addq.l  #$4,sp
     move.w  d0,(a3)                    ; store resolved aircraft index
     bra.b   .l11338
@@ -94,11 +94,11 @@ ManageRouteSlots:                                                  ; $0112EE
     pea     ($0004).w                  ; 4 palette words
     pea     ($0031).w                  ; display mode = $31
     pea     -$0012(a6)                 ; ptr to palette word block
-    dc.w    $4eb9,$0000,$5092          ; jsr DisplaySetup ($005092): apply palette to display
+    jsr     (ROM_BASE+$005092).l       ; jsr DisplaySetup ($005092): apply palette to display
     pea     ($0040).w                  ; fill = 64 bytes
     clr.l   -(sp)                      ; fill value = 0
     pea     -$0094(a6)                 ; string work buffer
-    dc.w    $4eb9,$0001,$d520          ; jsr MemFillByte ($01D520): clear string work buffer
+    jsr     (ROM_BASE+$01D520).l       ; jsr MemFillByte ($01D520): clear string work buffer
     lea     $0020(sp),sp
 
 ; --- Phase: scenario_type dispatch for intro dialog ---
@@ -117,7 +117,7 @@ ManageRouteSlots:                                                  ; $0112EE
     movea.l #$00047982,a0            ; $47982: 4 ROM longword ptrs (one per scenario type)
     move.l  (a0,d0.w),-(sp)          ; push scenario string ptr
     pea     -$0094(a6)                ; push work buffer (already has prefix)
-    dc.w    $4eb9,$0001,$e1ba         ; jsr StringAppend ($01E1BA): strcat scenario string
+    jsr     (ROM_BASE+$01E1BA).l      ; jsr StringAppend ($01E1BA): strcat scenario string
     ; ShowDialog: display assembled string as an in-game dialog
     clr.l   -(sp)
     clr.l   -(sp)
@@ -126,7 +126,7 @@ ManageRouteSlots:                                                  ; $0112EE
     move.w  $000a(a6),d0             ; player_index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7912         ; jsr ShowDialog ($007912)
+    jsr     (ROM_BASE+$007912).l      ; jsr ShowDialog ($007912)
     lea     $001c(sp),sp
     bra.b   .l113f8
 
@@ -135,7 +135,7 @@ ManageRouteSlots:                                                  ; $0112EE
     move.w  $000a(a6),d0             ; player_index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$c43c         ; jsr ShowPlayerInfo ($01C43C)
+    jsr     (ROM_BASE+$01C43C).l      ; jsr ShowPlayerInfo ($01C43C)
     addq.l  #$4,sp
 
 ; --- Phase: Initialize main loop variables ---
@@ -145,7 +145,7 @@ ManageRouteSlots:                                                  ; $0112EE
     moveq   #$c,d2                    ; d2 = row cursor = $0C (first column group base)
     moveq   #$1,d6                    ; d6 = sub-column cursor = 1 (first row position)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec         ; jsr ReadInput ($01E1EC): seed initial input state
+    jsr     (ROM_BASE+$01E1EC).l      ; jsr ReadInput ($01E1EC): seed initial input state
     addq.l  #$4,sp
     tst.w   d0
     beq.b   .l11414
@@ -198,7 +198,7 @@ ManageRouteSlots:                                                  ; $0112EE
     pea     ($000C).w                 ; x = $0C (col 12)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64         ; jsr GameCommand $1A
+    jsr     (ROM_BASE+$000D64).l      ; jsr GameCommand $1A
     ; DrawBox: draw bordered dialog box at (row=d2, col=d6), 9 rows x 7 cols
     pea     ($0009).w                 ; box height = 9
     pea     ($0007).w                 ; box width = 7
@@ -206,9 +206,9 @@ ManageRouteSlots:                                                  ; $0112EE
     move.l  d0,-(sp)                  ; col = d6 (sub-column cursor)
     move.w  d2,d0
     move.l  d0,-(sp)                  ; row = d2 (row cursor)
-    dc.w    $4eb9,$0000,$5a04         ; jsr DrawBox ($005A04)
+    jsr     (ROM_BASE+$005A04).l      ; jsr DrawBox ($005A04)
     pea     ($0003F1B0).l             ; ROM: route detail text format string at $03F1B0
-    dc.w    $4eb9,$0003,$b246         ; jsr PrintfNarrow ($03B246): format route detail
+    jsr     (ROM_BASE+$03B246).l      ; jsr PrintfNarrow ($03B246): format route detail
     lea     $0030(sp),sp
     ; ShowRouteDetailsDialog: show full route info for slot d3, this player
     move.w  d3,d0
@@ -228,7 +228,7 @@ ManageRouteSlots:                                                  ; $0112EE
     tst.w   -$00a0(a6)                ; auto-scroll flag set?
     beq.b   .l114ce
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec         ; jsr ReadInput ($01E1EC): drain one more input frame
+    jsr     (ROM_BASE+$01E1EC).l      ; jsr ReadInput ($01E1EC): drain one more input frame
     addq.l  #$4,sp
     tst.w   d0
     bne.w   .l11442                   ; still getting input: loop immediately
@@ -239,7 +239,7 @@ ManageRouteSlots:                                                  ; $0112EE
     move.w  d5,d0                     ; previous button state (repeat input)
     move.l  d0,-(sp)
     pea     ($000A).w                 ; mode $0A = standard joypad decode
-    dc.w    $4eb9,$0001,$e290         ; jsr ProcessInputLoop ($01E290): returns D0 = button word
+    jsr     (ROM_BASE+$01E290).l      ; jsr ProcessInputLoop ($01E290): returns D0 = button word
     addq.l  #$8,sp
     move.w  d0,d5                     ; d5 = new button state
 
@@ -274,7 +274,7 @@ ManageRouteSlots:                                                  ; $0112EE
     moveq   #$0,d0
     move.b  (a2),d0                   ; byte[0] = aircraft_code
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648         ; jsr RangeLookup ($00D648)
+    jsr     (ROM_BASE+$00D648).l      ; jsr RangeLookup ($00D648)
     addq.l  #$4,sp
     move.w  d0,d4                     ; d4 = resolved aircraft index
     bra.b   .l1152c
@@ -311,14 +311,14 @@ ManageRouteSlots:                                                  ; $0112EE
     pea     -$009c(a6)                ; display param B ptr
 
 .l11564:                                                ; $011564
-    dc.w    $4eb9,$0000,$5092         ; jsr DisplaySetup ($005092): render aircraft icon tile
+    jsr     (ROM_BASE+$005092).l      ; jsr DisplaySetup ($005092): render aircraft icon tile
     lea     $000c(sp),sp
     ; Advance column counter mod 4 (cycles 0 -> 1 -> 2 -> 3 -> 0)
     move.w  -$009e(a6),d0
     ext.l   d0
     addq.l  #$1,d0
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146         ; jsr SignedMod ($03E146): d0 = (counter+1) mod 4
+    jsr     (ROM_BASE+$03E146).l      ; jsr SignedMod ($03E146): d0 = (counter+1) mod 4
     move.w  d0,-$009e(a6)            ; store updated column counter
 
 ; ============================================================================
@@ -338,7 +338,7 @@ ManageRouteSlots:                                                  ; $0112EE
     addi.l  #$38,d0                   ; tile_id = aircraft_index + $38
     move.l  d0,-(sp)
     pea     -$009c(a6)                ; use param B for cursor highlight
-    dc.w    $4eb9,$0000,$5092         ; jsr DisplaySetup
+    jsr     (ROM_BASE+$005092).l      ; jsr DisplaySetup
     lea     $000c(sp),sp
 
 .l115b0:                                                ; $0115B0
@@ -386,10 +386,10 @@ ManageRouteSlots:                                                  ; $0112EE
     addi.l  #$3b,d0                   ; tile_id = d3 + $3B (empty-slot tile base)
     move.l  d0,-(sp)
     pea     ($0546).w                 ; tile $0546 = "add route" empty-slot left icon
-    dc.w    $4eb9,$0001,$e044         ; jsr TilePlacement ($01E044)
+    jsr     (ROM_BASE+$01E044).l      ; jsr TilePlacement ($01E044)
     pea     ($000A).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64         ; jsr GameCommand $0E: commit tile to display
+    jsr     (ROM_BASE+$000D64).l      ; jsr GameCommand $0E: commit tile to display
     lea     $0024(sp),sp
 
     ; Second tile: same position, alternate icon (right/complement icon)
@@ -411,10 +411,10 @@ ManageRouteSlots:                                                  ; $0112EE
     addi.l  #$3b,d0
     move.l  d0,-(sp)
     pea     ($0548).w                 ; tile $0548 = "add route" empty-slot right icon
-    dc.w    $4eb9,$0001,$e044         ; jsr TilePlacement
+    jsr     (ROM_BASE+$01E044).l      ; jsr TilePlacement
     pea     ($000A).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64         ; jsr GameCommand $0E
+    jsr     (ROM_BASE+$000D64).l      ; jsr GameCommand $0E
     lea     $0024(sp),sp
     bra.w   .l11828                   ; exit after route-add UI
 
@@ -429,7 +429,7 @@ ManageRouteSlots:                                                  ; $0112EE
     move.l  (a0,d0.w),-(sp)          ; push route-type format string
     move.l  ($00047996).l,-(sp)      ; $47996: ROM ptr to revenue/profit format string
     pea     -$0094(a6)                ; string work buffer
-    dc.w    $4eb9,$0003,$b22c         ; jsr sprintf ($03B22C): format route info into buffer
+    jsr     (ROM_BASE+$03B22C).l      ; jsr sprintf ($03B22C): format route info into buffer
     ; ShowTextDialog: display formatted route info as a text dialog
     pea     ($0001).w
     clr.l   -(sp)
@@ -564,7 +564,7 @@ ManageRouteSlots:                                                  ; $0112EE
     ext.l   d0
     subi.l  #$c,d0                    ; d2 - $0C (0 or 6)
     moveq   #$6,d1
-    dc.w    $4eb9,$0003,$e08a         ; jsr SignedDiv ($03E08A): d0 = (d2-$0C) / 6 -> 0 or 1
+    jsr     (ROM_BASE+$03E08A).l      ; jsr SignedDiv ($03E08A): d0 = (d2-$0C) / 6 -> 0 or 1
     move.w  d0,d3                     ; d3 = column component
     move.w  d6,d0
     ext.l   d0
@@ -592,7 +592,7 @@ ManageRouteSlots:                                                  ; $0112EE
     pea     ($0004).w                 ; 4 palette words
     pea     ($0031).w
     pea     -$0012(a6)                ; ptr to palette block
-    dc.w    $4eb9,$0000,$5092         ; jsr DisplaySetup: update display with new palette
+    jsr     (ROM_BASE+$005092).l      ; jsr DisplaySetup: update display with new palette
     lea     $000c(sp),sp
     cmp.w   d3,d4                     ; slot index changed from prev frame?
     beq.b   .l11814                   ; same slot: no redraw needed
@@ -602,13 +602,13 @@ ManageRouteSlots:                                                  ; $0112EE
 .l11814:                                                ; $011814
     pea     ($0003).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64         ; jsr GameCommand $0E: commit pending display tiles
+    jsr     (ROM_BASE+$000D64).l      ; jsr GameCommand $0E: commit pending display tiles
     addq.l  #$8,sp
     bra.w   .l11442                   ; back to top of main loop
 
 ; --- Phase: Exit ---
 .l11828:                                                ; $011828
-    dc.w    $4eb9,$0001,$e398         ; jsr PreLoopInit ($01E398): display cleanup
+    jsr     (ROM_BASE+$01E398).l      ; jsr PreLoopInit ($01E398): display cleanup
     move.w  d3,d0                     ; return: selected slot index, or $FF = cancelled
     movem.l -$00c8(a6),d2-d7/a2-a5
     unlk    a6

@@ -25,7 +25,7 @@ SelectMenuItem:                                                  ; $009F4A
     pea     ($0001).w
     move.w  d1,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$d3ac                           ; jsr $01D3AC
+    jsr     (ROM_BASE+$01D3AC).l
     addq.l  #$8,sp
     rts
 LoadSlotGraphics:                                                  ; $009F88
@@ -47,7 +47,7 @@ LoadSlotGraphics:                                                  ; $009F88
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
 .l9fcc:                                                 ; $009FCC
     move.w  d3,d0
@@ -56,11 +56,11 @@ LoadSlotGraphics:                                                  ; $009F88
     movea.l #$000a1ac8,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF899C).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     pea     ($0010).w
     pea     ($03A4).w
     pea     ($00FF899C).l
-    dc.w    $4eb9,$0000,$45e6                           ; jsr $0045E6
+    jsr     (ROM_BASE+$0045E6).l
     lea     $0014(sp),sp
     movem.l (sp)+,d2-d5
     rts

@@ -28,7 +28,7 @@ InitCharRecord:                                                  ; $0181C6
     moveq   #$0,d0
     move.b  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$1e5e                           ; jsr $021E5E
+    jsr     (ROM_BASE+$021E5E).l
     lea     $0014(sp),sp
     movem.l (sp)+,d2-d3/a2
     rts

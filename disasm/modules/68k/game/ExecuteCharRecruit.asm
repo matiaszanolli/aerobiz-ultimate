@@ -210,7 +210,7 @@ CollectCharRevenue:                                                  ; $0366D0
     moveq   #$0,d0
     move.w  d5,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E
+    jsr     (ROM_BASE+$00E08E).l
     lea     $000c(sp),sp
     move.l  d0,d2
     lsr.l   #$2,d0
@@ -223,7 +223,7 @@ CollectCharRevenue:                                                  ; $0366D0
     pea     ($001C).w
     pea     ($0011).w
     pea     ($0002).w
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
     move.w  d3,d0
     lsl.w   #$2,d0
     movea.l #$0005e680,a0
@@ -238,9 +238,9 @@ CollectCharRevenue:                                                  ; $0366D0
     movea.l #$00ff00a8,a0
     pea     (a0,d0.w)
     pea     ($000449C8).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
     pea     ($001E).w
-    dc.w    $4eb9,$0001,$e2f4                           ; jsr $01E2F4
+    jsr     (ROM_BASE+$01E2F4).l
     lea     $0024(sp),sp
 .l367a6:                                                ; $0367A6
     addq.l  #$1,a2
@@ -275,7 +275,7 @@ CollectCharRevenue:                                                  ; $0366D0
     moveq   #$0,d0
     move.w  d5,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E
+    jsr     (ROM_BASE+$00E08E).l
     lea     $000c(sp),sp
     move.l  d0,d2
     lsr.l   #$2,d0
@@ -288,7 +288,7 @@ CollectCharRevenue:                                                  ; $0366D0
     pea     ($001C).w
     pea     ($0011).w
     pea     ($0002).w
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
     move.w  d3,d0
     lsl.w   #$2,d0
     movea.l #$0005e680,a0
@@ -303,9 +303,9 @@ CollectCharRevenue:                                                  ; $0366D0
     movea.l #$00ff00a8,a0
     pea     (a0,d0.w)
     pea     ($000449B2).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
     pea     ($001E).w
-    dc.w    $4eb9,$0001,$e2f4                           ; jsr $01E2F4
+    jsr     (ROM_BASE+$01E2F4).l
     lea     $0024(sp),sp
 .l36872:                                                ; $036872
     addq.l  #$1,a2

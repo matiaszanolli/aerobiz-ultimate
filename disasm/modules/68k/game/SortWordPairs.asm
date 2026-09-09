@@ -133,13 +133,13 @@ RunPlayerSelectUI:                                                  ; $010AB6
     pea     ($0008).w
     move.l  a4,-(sp)
     pea     ($00076AC0).l
-    dc.w    $4eb9,$0000,$45b2                           ; jsr $0045B2
+    jsr     (ROM_BASE+$0045B2).l
     pea     ($0008).w
     move.l  a4,d0
     addq.l  #$8,d0
     move.l  d0,-(sp)
     pea     ($00076AC0).l
-    dc.w    $4eb9,$0000,$45b2                           ; jsr $0045B2
+    jsr     (ROM_BASE+$0045B2).l
     lea     $0018(sp),sp
     moveq   #$0,d0
     move.w  d2,d0
@@ -160,7 +160,7 @@ RunPlayerSelectUI:                                                  ; $010AB6
     pea     ($0023).w
     jsr     (a5)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC
+    jsr     (ROM_BASE+$01E1EC).l
     lea     $0020(sp),sp
     tst.w   d0
     beq.b   .l10b46
@@ -183,7 +183,7 @@ RunPlayerSelectUI:                                                  ; $010AB6
     tst.w   d4
     beq.b   .l10b80
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC
+    jsr     (ROM_BASE+$01E1EC).l
     addq.l  #$4,sp
     tst.w   d0
     bne.w   .l10c9c
@@ -192,7 +192,7 @@ RunPlayerSelectUI:                                                  ; $010AB6
     move.w  d3,d0
     move.l  d0,-(sp)
     pea     ($000A).w
-    dc.w    $4eb9,$0001,$e290                           ; jsr $01E290
+    jsr     (ROM_BASE+$01E290).l
     addq.l  #$8,sp
     andi.w  #$33,d0
     move.w  d0,d3
@@ -268,11 +268,11 @@ RunPlayerSelectUI:                                                  ; $010AB6
     pea     ($0008).w
     move.l  a4,-(sp)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$45b2                           ; jsr $0045B2
+    jsr     (ROM_BASE+$0045B2).l
     pea     ($0008).w
     move.l  a2,-(sp)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$45b2                           ; jsr $0045B2
+    jsr     (ROM_BASE+$0045B2).l
     lea     $0018(sp),sp
     moveq   #$0,d0
     move.w  d2,d0

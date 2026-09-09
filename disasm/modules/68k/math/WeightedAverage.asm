@@ -17,20 +17,20 @@ WeightedAverage:                                                  ; $01E346
     move.w  $001a(sp),d0
     moveq   #$0,d1
     move.w  d3,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,-(sp)
     moveq   #$0,d0
     move.w  $0016(sp),d0
     moveq   #$0,d1
     move.w  d2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     add.l   (sp)+,d0
     moveq   #$0,d1
     move.w  d2,d1
     moveq   #$0,d4
     move.w  d3,d4
     add.l   d4,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.w  d0,d2
 .l1e392:                                                ; $01E392
     movem.l (sp)+,d2-d4

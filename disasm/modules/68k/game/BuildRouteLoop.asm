@@ -12,12 +12,12 @@ BuildRouteLoop:                                                  ; $027F18
     pea     ($0040).w
     clr.l   -(sp)
     pea     ($0010).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     clr.l   -(sp)
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$12ee                           ; jsr $0112EE
+    jsr     (ROM_BASE+$0112EE).l
     lea     $0014(sp),sp
     move.w  d0,d2
     cmpi.w  #$4,d2
@@ -62,8 +62,8 @@ BuildRouteLoop:                                                  ; $027F18
 .l27faa:                                                ; $027FAA
     cmpi.w  #$ff,d2
     bne.w   .l27f2a
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
-    dc.w    $4eb9,$0001,$e398                           ; jsr $01E398
+    jsr     (ROM_BASE+$01D71C).l
+    jsr     (ROM_BASE+$01E398).l
     pea     ($0001).w
     move.w  d3,d0
     ext.l   d0
@@ -71,7 +71,7 @@ BuildRouteLoop:                                                  ; $027F18
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     pea     ($0002).w
     move.w  d3,d0
     ext.l   d0
@@ -79,7 +79,7 @@ BuildRouteLoop:                                                  ; $027F18
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
     lea     $0018(sp),sp
     movem.l (sp)+,d2-d4/a2
     rts

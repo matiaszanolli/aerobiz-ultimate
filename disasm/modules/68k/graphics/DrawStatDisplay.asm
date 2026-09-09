@@ -14,7 +14,7 @@ DrawStatDisplay:                                                  ; $0088EA
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
     lea     $0010(sp),sp
     cmpi.w  #$ff,d4
     bne.w   .l89a6
@@ -92,7 +92,7 @@ DrawStatDisplay:                                                  ; $0088EA
     move.l  d5,d0
     addq.l  #$5,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     lea     $0024(sp),sp
     pea     ($0001).w
     move.w  d3,d0
@@ -119,7 +119,7 @@ DrawStatDisplay:                                                  ; $0088EA
     movea.l #$0005e7e4,a0
     move.l  (a0,d0.w),-(sp)
     pea     ($0003E1A6).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
 .l8a40:                                                 ; $008A40
     movem.l -$0018(a6),d2-d6/a2
     unlk    a6

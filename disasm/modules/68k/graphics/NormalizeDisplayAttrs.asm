@@ -220,7 +220,7 @@ InitTileBuffer:                                                  ; $005060
     pea     ($0040).w
     pea     ($00FF14BC).l
     pea     ($000472CE).l
-    dc.w    $4eb9,$0001,$e16c                           ; jsr $01E16C
+    jsr     (ROM_BASE+$01E16C).l
     pea     ($0040).w
     clr.l   -(sp)
     pea     ($00FF14BC).l

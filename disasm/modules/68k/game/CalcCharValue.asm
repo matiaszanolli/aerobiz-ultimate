@@ -19,7 +19,7 @@ CalcCharValue:                                                  ; $00E08E
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     move.l  #$01f4,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,d2
     move.w  d3,d0
     ext.l   d0
@@ -27,7 +27,7 @@ CalcCharValue:                                                  ; $00E08E
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9d92                           ; jsr $009D92
+    jsr     (ROM_BASE+$009D92).l
     addq.l  #$8,sp
     move.w  d0,d3
     moveq   #$0,d0
@@ -35,11 +35,11 @@ CalcCharValue:                                                  ; $00E08E
     addi.w  #$32,d0
     andi.l  #$ffff,d0
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     moveq   #$0,d1
     move.w  d3,d1
     addq.l  #$2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     tst.l   d0
     bge.b   .le110
     addq.l  #$3,d0
@@ -50,17 +50,17 @@ CalcCharValue:                                                  ; $00E08E
     moveq   #$0,d1
     move.w  d3,d1
     move.l  d2,d0
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,d2
     move.w  ($00FF0006).l,d0
     ext.l   d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addi.l  #$1e,d0
     move.l  d2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d2
     movem.l (sp)+,d2-d4/a2
     rts

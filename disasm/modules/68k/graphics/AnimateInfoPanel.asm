@@ -17,7 +17,7 @@ AnimateInfoPanel:                                                  ; $023958
 .l23974:                                                ; $023974
     pea     ($0006).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     move.w  d3,d0
     move.l  d0,-(sp)
     move.l  a2,-(sp)
@@ -25,7 +25,7 @@ AnimateInfoPanel:                                                  ; $023958
     nop
     pea     ($0006).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     move.w  d3,d0
     move.l  d0,-(sp)
     move.l  a2,-(sp)

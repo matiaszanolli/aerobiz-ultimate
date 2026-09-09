@@ -26,7 +26,7 @@ DrawLayersReverse:                                                  ; $004CB6
     move.w  d3,d0
     move.l  d0,-(sp)
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
 .l4cf8:                                                 ; $004CF8
     subq.w  #$1,d2

@@ -9,12 +9,12 @@ ShowGameScreen:                                                  ; $020A64
     move.b  ($00FF0016).l,d3
     move.w  ($00FFA6B0).l,d2
     andi.w  #$7fff,d2
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
-    dc.w    $4eb9,$0001,$e398                           ; jsr $01E398
+    jsr     (ROM_BASE+$01D71C).l
+    jsr     (ROM_BASE+$01E398).l
     pea     ($0010).w
     pea     ($0010).w
     pea     ($000769FE).l
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     pea     ($00071098).l
     pea     ($001C).w
     pea     ($0020).w
@@ -22,15 +22,15 @@ ShowGameScreen:                                                  ; $020A64
     clr.l   -(sp)
     pea     ($0001).w
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     move.l  ($000A1AF0).l,-(sp)
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0030(sp),sp
     pea     ($00FA).w
     pea     ($0001).w
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$45e6                           ; jsr $0045E6
+    jsr     (ROM_BASE+$0045E6).l
     moveq   #$0,d0
     move.w  d2,d0
     move.l  d0,-(sp)
@@ -60,7 +60,7 @@ ShowGameScreen:                                                  ; $020A64
     nop
     addq.l  #$4,sp
 .l20b2c:                                                ; $020B2C
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748
+    jsr     (ROM_BASE+$01D748).l
     movem.l (sp)+,d2-d3
     rts
 ; === Translated block $020B38-$021E5E ===

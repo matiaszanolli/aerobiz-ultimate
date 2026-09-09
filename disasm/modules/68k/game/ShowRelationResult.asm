@@ -23,12 +23,12 @@ ShowRelationResult:                                                  ; $019DE6
     ; Decompress the portrait graphic from the pointer in ROM table at $A1AE4
     move.l  ($000A1AE4).l,-(sp)      ; ROM pointer: character portrait compressed data
     pea     ($00FF1804).l             ; dest = $FF1804 (save_buf_base staging buffer)
-    dc.w    $4eb9,$0000,$3fec         ; jsr LZ_Decompress ($003FEC): decompress portrait to $FF1804
+    jsr     (ROM_BASE+$003FEC).l      ; jsr LZ_Decompress ($003FEC): decompress portrait to $FF1804
     ; DMA portrait tiles to VRAM: tile $0694, count $20 tiles
     pea     ($0020).w                 ; tile count = $20 (32 tiles — portrait graphic)
     pea     ($0694).w                 ; VRAM tile destination = $0694
     pea     ($00FF1804).l             ; source = $FF1804 (decompressed portrait)
-    dc.w    $4eb9,$0000,$4668         ; jsr $004668 (VRAMBulkLoad variant): DMA portrait to VRAM
+    jsr     (ROM_BASE+$004668).l      ; jsr $004668 (VRAMBulkLoad variant): DMA portrait to VRAM
     ; Place portrait sprite tile block on screen (GameCmd #$1B)
     pea     ($00070F58).l             ; compressed tile metadata for portrait frame
     pea     ($0004).w                 ; height = 4
@@ -51,7 +51,7 @@ ShowRelationResult:                                                  ; $019DE6
     pea     ($0020).w                 ; width = $20
     clr.l   -(sp)                     ; col = 0
     clr.l   -(sp)                     ; row = 0
-    dc.w    $4eb9,$0003,$a942         ; jsr SetTextWindow ($03A942): set full-screen text window
+    jsr     (ROM_BASE+$03A942).l      ; jsr SetTextWindow ($03A942): set full-screen text window
     ; Load register constants for the icon bar rendering positions
     move.w  $000e(a6),d7              ; d7 = screen row base from $E(a6)
     addq.w  #$4,d7                    ; d7 += 4 (offset icon bars 4 rows below the base)
@@ -65,21 +65,21 @@ ShowRelationResult:                                                  ; $019DE6
     moveq   #$0,d0
     move.b  (a2),d0                   ; d0 = char A code (a2+0)
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$70dc         ; jsr CharCodeScore ($0070DC): compute % match for (charA, charB)
+    jsr     (ROM_BASE+$0070DC).l      ; jsr CharCodeScore ($0070DC): compute % match for (charA, charB)
     move.w  d0,d2                     ; d2 = raw compatibility score (0..100-ish percent)
     ; Clamp the score to [0, $96] ($96 = 150 — the scale max before normalization)
     pea     ($0064).w                 ; min clamp = $64 (100)
     pea     ($0096).w                 ; max clamp = $96 (150)
     move.w  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$e11c         ; jsr $01E11C: clamp d0 to [min, max] passed on stack
+    jsr     (ROM_BASE+$01E11C).l      ; jsr $01E11C: clamp d0 to [min, max] passed on stack
     lea     $0024(sp),sp
     ; Compute number of filled icon tiles: d4 = d2 / $14 ($14=20 = scale divisor)
     ; This converts the score into a count out of 10 filled tiles
     move.w  d2,d0
     ext.l   d0
     moveq   #$14,d1                   ; divisor = $14 (20)
-    dc.w    $4eb9,$0003,$e08a         ; jsr SignedDiv ($03E08A): d0 = score / 20 = filled tile count
+    jsr     (ROM_BASE+$03E08A).l      ; jsr SignedDiv ($03E08A): d0 = score / 20 = filled tile count
     move.w  d0,d4                     ; d4 = number of fully-filled icon tiles (0..7)
     ; --- Phase: Bonus Score Adjustment ---
     ; a2+$04 = a word: historical/prior score. If nonzero, compute a trend-bonus for d3.
@@ -102,7 +102,7 @@ ShowRelationResult:                                                  ; $019DE6
     sub.l   d1,d0                     ; d0 = prior - current (positive = deterioration gap)
     move.w  d4,d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e08a         ; jsr SignedDiv: d0 = (prior - current) / d4 (normalize by tile count)
+    jsr     (ROM_BASE+$03E08A).l      ; jsr SignedDiv: d0 = (prior - current) / d4 (normalize by tile count)
     move.l  d0,d3
     mulu.w  #$5,d3                    ; d3 = normalized_gap * 5 (scale to display range)
     addi.w  #$32,d3                   ; d3 += $32 (50) = center the range at 50 (above 50 = worse)
@@ -117,7 +117,7 @@ ShowRelationResult:                                                  ; $019DE6
     sub.l   d1,d0                     ; d0 = current - prior (positive = improvement gap)
     move.w  d4,d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e08a         ; jsr SignedDiv: d0 = (current - prior) / d4
+    jsr     (ROM_BASE+$03E08A).l      ; jsr SignedDiv: d0 = (current - prior) / d4
     mulu.w  #$5,d0                    ; d0 = normalized_gap * 5
     moveq   #$32,d3                   ; d3 = $32 (50 = baseline center)
     sub.w   d0,d3                     ; d3 = 50 - scaled_gap (below 50 = improvement shown)
@@ -148,14 +148,14 @@ ShowRelationResult:                                                  ; $019DE6
     ; d2 = d3 / 10 = number of fully-filled icon tiles (0..10)
     ext.l   d0
     moveq   #$a,d1                    ; divisor = $A (10)
-    dc.w    $4eb9,$0003,$e08a         ; jsr SignedDiv ($03E08A): d0 = d3 / 10
+    jsr     (ROM_BASE+$03E08A).l      ; jsr SignedDiv ($03E08A): d0 = d3 / 10
     move.w  d0,d2                     ; d2 = filled tile count (0..10, each tile = 10%)
     ; d4 = d3 mod 10 = fractional remainder for the partial tile
     ; Use SignedMod ($03E146) then compute partial tile index
     move.w  d3,d0
     ext.l   d0
     moveq   #$a,d1                    ; divisor = $A (10)
-    dc.w    $4eb9,$0003,$e146         ; jsr SignedMod ($03E146): d0 = d3 mod 10 (0..9 remainder)
+    jsr     (ROM_BASE+$03E146).l      ; jsr SignedMod ($03E146): d0 = d3 mod 10 (0..9 remainder)
     ; Map the modulo to a partial tile index: if remainder > 1, use it directly; else use 1 as minimum
     moveq   #$1,d1
     cmp.l   d0,d1
@@ -163,7 +163,7 @@ ShowRelationResult:                                                  ; $019DE6
     move.w  d3,d0
     ext.l   d0
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e146         ; jsr SignedMod: recompute remainder
+    jsr     (ROM_BASE+$03E146).l      ; jsr SignedMod: recompute remainder
     bra.b   .l19f4e
 .l19f4c:                                                ; $019F4C
     moveq   #$1,d0                    ; d0 = 1 (minimum partial tile index)
@@ -282,13 +282,13 @@ ShowRelationResult:                                                  ; $019DE6
     ext.l   d0
     addi.l  #$9,d0                    ; d0 += 9 (move below the icon bars)
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c         ; jsr SetTextCursor ($03AB2C): position cursor at (col, row+9)
+    jsr     (ROM_BASE+$03AB2C).l      ; jsr SetTextCursor ($03AB2C): position cursor at (col, row+9)
     ; Print the prior score (a2+4) using format string at $41128 (e.g. "PREV:%d")
     moveq   #$0,d0
     move.w  $0004(a2),d0              ; d0 = prior score from a2+$04 char stat record field
     move.l  d0,-(sp)
     pea     ($00041128).l             ; format string for prior score label (e.g. "PREV: %d")
-    dc.w    $4eb9,$0003,$b246         ; jsr PrintfNarrow ($03B246): print prior score value
+    jsr     (ROM_BASE+$03B246).l      ; jsr PrintfNarrow ($03B246): print prior score value
     ; Position cursor one column to the right for the trend/delta label
     move.w  (a5),d0
     ext.l   d0
@@ -298,7 +298,7 @@ ShowRelationResult:                                                  ; $019DE6
     ext.l   d0
     addi.l  #$9,d0                    ; same row
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c         ; jsr SetTextCursor ($03AB2C)
+    jsr     (ROM_BASE+$03AB2C).l      ; jsr SetTextCursor ($03AB2C)
     ; Compute trend delta: d3 was adjusted percentage, subtract $32 (50) to center
     ; Positive delta = score improved vs prior; negative = score declined
     subi.w  #$32,d3                   ; d3 -= 50: d3 = signed trend delta relative to baseline
@@ -306,7 +306,7 @@ ShowRelationResult:                                                  ; $019DE6
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($00041122).l             ; format string for trend delta (e.g. "+%d" or "-%d")
-    dc.w    $4eb9,$0003,$b246         ; jsr PrintfNarrow ($03B246): print trend delta
+    jsr     (ROM_BASE+$03B246).l      ; jsr PrintfNarrow ($03B246): print trend delta
     lea     $0020(sp),sp
 ; --- Phase: Icon Bar Rendering (Row 2 — Primary Stat Bar) ---
 ; a2+$0B = char stat record field +$0B = "computed/cached stat value" (0..$0E max 14)
@@ -557,13 +557,13 @@ ShowRelationResult:                                                  ; $019DE6
     ext.l   d0
     addi.l  #$a,d0                    ; row += $A (below the three icon bars)
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c         ; jsr SetTextCursor ($03AB2C): position below icon bars
+    jsr     (ROM_BASE+$03AB2C).l      ; jsr SetTextCursor ($03AB2C): position below icon bars
     ; Print secondary stat value (a2+$03) using format string at $4111C
     moveq   #$0,d0
     move.b  $0003(a2),d0              ; d0 = secondary stat from a2+$03 (cap/limit field)
     move.l  d0,-(sp)
     pea     ($0004111C).l             ; format string for secondary stat label
-    dc.w    $4eb9,$0003,$b270         ; jsr PrintfWide ($03B270): print in wide (2-tile) font
+    jsr     (ROM_BASE+$03B270).l      ; jsr PrintfWide ($03B270): print in wide (2-tile) font
     ; Position cursor for the final result value display: col = $12(a6)+2, row = $E(a6)+$D
     move.w  (a5),d0
     addq.w  #$2,d0                    ; col = $12(a6)+2
@@ -574,7 +574,7 @@ ShowRelationResult:                                                  ; $019DE6
     ; Display the final relation result using $595E — likely a sprite/icon placement function
     pea     ($0002).w                 ; param = 2
     pea     ($0003).w                 ; param = 3 (result type / display mode)
-    dc.w    $4eb9,$0000,$595e         ; jsr $00595E: place/render final relation result indicator
+    jsr     (ROM_BASE+$00595E).l      ; jsr $00595E: place/render final relation result indicator
     movem.l -$0028(a6),d2-d7/a2-a5   ; restore callee-saved registers
     unlk    a6
     rts

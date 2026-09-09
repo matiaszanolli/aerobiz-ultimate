@@ -14,12 +14,12 @@ CalcQuarterBonus:                                                  ; $0140DC
     move.w  ($00FF0006).l,d0
     ext.l   d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addi.l  #$1e,d0
     move.l  d2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     move.l  (sp)+,d2
     rts

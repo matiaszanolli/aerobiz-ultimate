@@ -10,7 +10,7 @@ ShowCharInfoPage:                                                  ; $02F430
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
     move.w  $000a(a6),d2
     move.l  $000c(a6),-(sp)
     clr.l   -(sp)
@@ -24,19 +24,19 @@ ShowCharInfoPage:                                                  ; $02F430
     movea.l #$000485d6,a0
     move.w  (a0,d0.w),d1
     move.l  d1,-(sp)
-    dc.w    $4eb9,$0000,$643c                           ; jsr $00643C
+    jsr     (ROM_BASE+$00643C).l
     lea     $0030(sp),sp
     pea     ($0020).w
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
     lea     $0010(sp),sp
     cmpi.w  #$1,$0016(a6)
     bne.b   .l2f4cc
     pea     ($0009).w
     pea     ($0002).w
-    dc.w    $4eb9,$0000,$7784                           ; jsr $007784
+    jsr     (ROM_BASE+$007784).l
     move.w  d0,d3
     clr.l   -(sp)
     pea     ($0002).w
@@ -45,7 +45,7 @@ ShowCharInfoPage:                                                  ; $02F430
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0024(sp),sp
     bra.b   .l2f4e2
 .l2f4cc:                                                ; $02F4CC
@@ -53,7 +53,7 @@ ShowCharInfoPage:                                                  ; $02F430
     bne.b   .l2f4e2
     pea     ($0001).w
     pea     ($0003).w
-    dc.w    $4eb9,$0001,$d62c                           ; jsr $01D62C
+    jsr     (ROM_BASE+$01D62C).l
 .l2f4e2:                                                ; $02F4E2
     move.w  d3,d0
     movem.l -$0008(a6),d2-d3

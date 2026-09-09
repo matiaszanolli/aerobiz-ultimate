@@ -50,14 +50,14 @@ SelectPreviewPage:                                                  ; $007784
     lea     $0030(sp),sp
 .l7800:                                                 ; $007800
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC
+    jsr     (ROM_BASE+$01E1EC).l
     addq.l  #$4,sp
     andi.w  #$0fff,d0
     bne.b   .l7800
 .l7810:                                                 ; $007810
     pea     ($0001).w
     pea     ($0003).w
-    dc.w    $4eb9,$0001,$d62c                           ; jsr $01D62C
+    jsr     (ROM_BASE+$01D62C).l
     addq.l  #$8,sp
     move.w  d0,d2
     andi.l  #$3c,d0

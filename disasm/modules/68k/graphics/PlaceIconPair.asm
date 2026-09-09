@@ -34,6 +34,6 @@ PlaceIconPair:                                                  ; $0058FC
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     unlk    a6
     rts

@@ -68,7 +68,7 @@ DrawRouteLines:                                                  ; $0098D2
     move.l  d0,-(sp)
     move.w  d7,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$dc26                           ; jsr $01DC26
+    jsr     (ROM_BASE+$01DC26).l
     lea     $0018(sp),sp
 .l9980:                                                 ; $009980
     moveq   #$14,d0

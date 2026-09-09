@@ -428,7 +428,7 @@ PackSaveState:                                                  ; $00EB28
     addi.l  #$00200003,d0                              ; d0 = SRAM dest address (odd byte, slot offset)
     move.l  d0,-(sp)                                   ; arg: SRAM dest
     move.l  a4,-(sp)                                   ; arg: save_buf_base (src)
-    dc.w    $4eb9,$0001,$e0e0                           ; jsr $01E0E0  ; DMA or byte-copy to SRAM
+    jsr     (ROM_BASE+$01E0E0).l                        ; jsr $01E0E0  ; DMA or byte-copy to SRAM
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)

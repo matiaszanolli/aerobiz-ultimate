@@ -41,7 +41,7 @@ ConfigScrollBar:                                                  ; $006298
     and.w   d0,($00FFBDAC).l
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
     bra.b   .l6344
 .l6304:                                                 ; $006304
@@ -50,7 +50,7 @@ ConfigScrollBar:                                                  ; $006298
     and.w   d0,($00FFBDAC).l
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
     clr.w   (a2)
     move.w  d6,$0002(a2)
@@ -85,14 +85,14 @@ SetScrollBarMode:                                                  ; $00634A
     andi.w  #$fffb,(a3)
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
     bra.b   .l63bc
 .l6384:                                                 ; $006384
     andi.w  #$fffb,(a3)
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     move.w  $0012(a6),d0
     move.l  d0,-(sp)
     move.w  $000e(a6),d0

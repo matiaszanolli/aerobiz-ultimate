@@ -23,18 +23,18 @@ LoadCompressedGfx:                                                  ; $005FF6
     pea     ($0030).w
     pea     ($0007673E).l
 .l603a:                                                 ; $00603A
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     moveq   #$0,d0
     move.w  d2,d0
     lsl.l   #$2,d0
     movea.l #$00088c90,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     pea     ($0078).w
     pea     ($0640).w
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$45e6                           ; jsr $0045E6
+    jsr     (ROM_BASE+$0045E6).l
     lea     $0020(sp),sp
     pea     ($000700A8).l
     pea     ($000A).w
@@ -47,7 +47,7 @@ LoadCompressedGfx:                                                  ; $005FF6
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
 .l609e:                                                 ; $00609E
     movem.l (sp)+,d2-d4

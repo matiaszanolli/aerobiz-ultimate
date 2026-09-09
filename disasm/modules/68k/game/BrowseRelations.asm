@@ -35,7 +35,7 @@ BrowseRelations:                                                  ; $018F8E
     move.w  d3,d0               ; partner slot 0-3
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$81d2                           ; jsr FindRelationRecord ($0081D2)
+    jsr     (ROM_BASE+$0081D2).l                        ; jsr FindRelationRecord ($0081D2)
     lea     $000c(sp),sp
 ; Store result pointer into partner_ptrs[d3] (longword array at a5, stride 4)
     move.w  d3,d1
@@ -77,7 +77,7 @@ BrowseRelations:                                                  ; $018F8E
 ; GameCommand #$16 (GameCmd16 wrapper): clear sprite layer #$37, mode 8
     pea     ($0008).w
     pea     ($0037).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr GameCmd16 ($01E0B8)
+    jsr     (ROM_BASE+$01E0B8).l                        ; jsr GameCmd16 ($01E0B8)
 ; d3 = $FF signals "no current partner displayed yet" (first-display state)
     move.w  #$ff,d3
     bra.b   .l19054
@@ -88,7 +88,7 @@ BrowseRelations:                                                  ; $018F8E
     ext.l   d0
     addq.l  #$1,d0              ; d0 = d2 + 1
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr SignedMod ($03E146): d0 = (d2+1) mod 4
+    jsr     (ROM_BASE+$03E146).l                        ; jsr SignedMod ($03E146): d0 = (d2+1) mod 4
     move.w  d0,d2               ; d2 = next candidate partner index (wraps 0-3)
 .l19054:                                                ; $019054
 ; Check partner_ptrs[d2] is non-NULL (i.e. a valid relation record exists for slot d2)
@@ -101,7 +101,7 @@ BrowseRelations:                                                  ; $018F8E
 ; Found a valid slot at d2. Read input to detect dual-player vs. single-player mode:
 ; ReadInput mode 0 returns: d0 nonzero if second player is also active (2P mode)
     clr.l   -(sp)               ; mode = 0 (normal read)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr ReadInput ($01E1EC)
+    jsr     (ROM_BASE+$01E1EC).l                        ; jsr ReadInput ($01E1EC)
     lea     $0028(sp),sp
     tst.w   d0
     beq.b   .l19076
@@ -147,7 +147,7 @@ BrowseRelations:                                                  ; $018F8E
     tst.w   d4                  ; 2-player mode?
     beq.b   .l190d8             ; single-player: skip 2P input check
     clr.l   -(sp)               ; ReadInput mode 0
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr ReadInput ($01E1EC)
+    jsr     (ROM_BASE+$01E1EC).l                        ; jsr ReadInput ($01E1EC)
     addq.l  #$4,sp
     tst.w   d0                  ; any 2P input this frame?
     beq.b   .l190d8             ; no 2P input: continue normally
@@ -175,7 +175,7 @@ BrowseRelations:                                                  ; $018F8E
     pea     ($0078).w           ; y pixel = $78 = 120
     pea     ($0039).w           ; palette/attr field
     pea     ($0770).w           ; tile index $0770 = left scroll arrow
-    dc.w    $4eb9,$0001,$e044                           ; jsr TilePlacement ($01E044)
+    jsr     (ROM_BASE+$01E044).l                        ; jsr TilePlacement ($01E044)
     pea     ($0001).w
     pea     ($000E).w           ; GameCommand #$E = display update
     jsr     (a2)
@@ -188,7 +188,7 @@ BrowseRelations:                                                  ; $018F8E
     pea     ($0078).w           ; y pixel = $78 = 120
     pea     ($003A).w
     pea     ($0771).w           ; tile index $0771 = right scroll arrow
-    dc.w    $4eb9,$0001,$e044                           ; jsr TilePlacement ($01E044)
+    jsr     (ROM_BASE+$01E044).l                        ; jsr TilePlacement ($01E044)
     lea     $001c(sp),sp
 .l1913c:                                                ; $01913C
     pea     ($0001).w
@@ -203,7 +203,7 @@ BrowseRelations:                                                  ; $018F8E
     bne.b   .l19162
     pea     ($0002).w
     pea     ($0039).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr GameCmd16 ($01E0B8): clear indicator sprite
+    jsr     (ROM_BASE+$01E0B8).l                        ; jsr GameCmd16 ($01E0B8): clear indicator sprite
     addq.l  #$8,sp
     bra.b   .l1913c
 ; Frame $1E (30): reset animation frame counter (30-frame blink cycle)
@@ -217,7 +217,7 @@ BrowseRelations:                                                  ; $018F8E
     move.w  d6,d0               ; previous input state (for repeat/edge detect)
     move.l  d0,-(sp)
     pea     ($000A).w           ; timeout = $0A = 10 frames
-    dc.w    $4eb9,$0001,$e290                           ; jsr ProcessInputLoop ($01E290)
+    jsr     (ROM_BASE+$01E290).l                        ; jsr ProcessInputLoop ($01E290)
     addq.l  #$8,sp
 ; Mask to buttons we care about: $33 = Up, Down, Left, Right (d-pad bits)
     andi.w  #$33,d0
@@ -246,7 +246,7 @@ BrowseRelations:                                                  ; $018F8E
     ext.l   d0
     addq.l  #$1,d0              ; d0 = d2 + 1
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr SignedMod: d0 = (d2+1) mod 4
+    jsr     (ROM_BASE+$03E146).l                        ; jsr SignedMod: d0 = (d2+1) mod 4
     move.w  d0,d2               ; advance partner index
     ext.l   d0
     lsl.l   #$2,d0
@@ -263,7 +263,7 @@ BrowseRelations:                                                  ; $018F8E
     ext.l   d0
     addq.l  #$3,d0              ; d0 = d2 + 3 (equivalent to d2 - 1 mod 4)
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr SignedMod: d0 = (d2+3) mod 4
+    jsr     (ROM_BASE+$03E146).l                        ; jsr SignedMod: d0 = (d2+3) mod 4
     move.w  d0,d2
     ext.l   d0
     lsl.l   #$2,d0

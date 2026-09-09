@@ -4,7 +4,7 @@
 ; 38 bytes | $028B46-$028B6B
 ; ============================================================================
 RunEventSequence:                                                  ; $028B46
-    dc.w    $4eb9,$0003,$a9ac                           ; jsr $03A9AC
+    jsr     (ROM_BASE+$03A9AC).l
     dc.w    $4eba,$001e                                 ; jsr $028B6C
     nop
     dc.w    $4eba,$049c                                 ; jsr $028FF0

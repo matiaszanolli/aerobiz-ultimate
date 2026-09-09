@@ -30,7 +30,7 @@
     move.l  d0,-(sp)
     move.w  d7,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$969a                           ; jsr $00969A
+    jsr     (ROM_BASE+$00969A).l
     lea     $0018(sp),sp
     move.l  -$0004(a6),d0
     cmp.l   -$0008(a6),d0
@@ -68,7 +68,7 @@
     move.l  d0,-(sp)
     move.w  d7,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$969a                           ; jsr $00969A
+    jsr     (ROM_BASE+$00969A).l
     lea     $0018(sp),sp
     move.l  -$0004(a6),d0
     cmp.l   -$0008(a6),d0

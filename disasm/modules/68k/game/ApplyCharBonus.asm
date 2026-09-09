@@ -30,12 +30,12 @@ ApplyCharBonus:                                                  ; $0357FE
     moveq   #$0,d0
     move.w  d4,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$f4ee                           ; jsr $02F4EE
+    jsr     (ROM_BASE+$02F4EE).l
     addq.l  #$4,sp
     andi.l  #$ffff,d0
     moveq   #$0,d1
     move.w  d2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,d3
     add.l   d3,$0006(a3)
     sub.b   d2,(a2)

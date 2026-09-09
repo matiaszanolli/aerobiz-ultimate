@@ -20,13 +20,13 @@ TogglePageDisplay:                                                  ; $023B10
     pea     (a0,d0.w)
     pea     ($0078).w
     pea     ($0640).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     moveq   #$1,d0
     eor.w   d0,d2
     clr.l   -(sp)
     move.w  d4,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$d62c                           ; jsr $01D62C
+    jsr     (ROM_BASE+$01D62C).l
     lea     $001c(sp),sp
     move.w  d0,d3
     tst.w   d3

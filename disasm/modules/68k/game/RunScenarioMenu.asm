@@ -65,7 +65,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     move.w  d4,d0                                      ; stat_type index (scenario/city index)
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648  ; RangeLookup(stat_type) -> d0 = aircraft_category
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648  ; RangeLookup(stat_type) -> d0 = aircraft_category
     move.w  d0,d7                                      ; d7 = aircraft_category (result from CharTypeRangeTable scan)
 
 ; extract display variant from high byte of session_word
@@ -81,7 +81,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     move.w  d3,d0                                      ; player index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9d92                           ; jsr $009D92  ; GetCharStat(player, stat_type) -> d0 = stat byte
+    jsr     (ROM_BASE+$009D92).l                        ; jsr $009D92  ; GetCharStat(player, stat_type) -> d0 = stat byte
     lea     $0010(sp),sp
     move.w  d0,-$0002(a6)                              ; save char stat value in link frame
 
@@ -106,7 +106,7 @@ RunScenarioMenu:                                                  ; $02C2FA
 .l2c3c6:                                                ; $02C3C6
     asr.l   #$4,d0                                     ; d0 = frame_counter / 16 (arithmetic shift right)
     moveq   #$64,d1                                    ; d1 = $64 = 100 (multiplier / modulus)
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C  ; Modulo32(d0, 100) -> d0 = frame_counter/16 mod 100
+    jsr     (ROM_BASE+$03E05C).l                        ; jsr $03E05C  ; Modulo32(d0, 100) -> d0 = frame_counter/16 mod 100
     addi.l  #$01f4,d0                                  ; d0 += $1F4 (500); base price component
 
 ; second term: (char_stat_value + aircraft_category) mod 100 + $7D0 (2000)
@@ -117,7 +117,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     ext.l   d7
     exg     d7,a0                                      ; swap: d7 = aircraft_category, a0 = char_stat_value
     add.l   a0,d1                                      ; d1 = capped_score + char_stat_value
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C  ; Modulo32(d1, 100) -> d0 = (score+stat) mod 100
+    jsr     (ROM_BASE+$03E05C).l                        ; jsr $03E05C  ; Modulo32(d1, 100) -> d0 = (score+stat) mod 100
     addi.l  #$07d0,d0                                  ; d0 += $7D0 (2000); final display price
     move.l  d0,d5                                      ; d5 = computed display price (in game currency units)
 
@@ -141,9 +141,9 @@ RunScenarioMenu:                                                  ; $02C2FA
     move.l  ($0004842C).l,-(sp)                        ; ptr to secondary portrait descriptor string
 .l2c422:                                               ; $02C422
     move.l  a4,-(sp)                                   ; arg: local display buffer (portrait area)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C  ; RenderCharPortrait(a4, str1, str2)
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C  ; sync/vblank wait
-    dc.w    $4eb9,$0000,$814a                           ; jsr $00814A  ; clear/prepare info panel
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C  ; RenderCharPortrait(a4, str1, str2)
+    jsr     (ROM_BASE+$01D71C).l                        ; jsr $01D71C  ; sync/vblank wait
+    jsr     (ROM_BASE+$00814A).l                        ; jsr $00814A  ; clear/prepare info panel
 
 ; finalize revenue display for this player/screen
     pea     ($0001).w
@@ -153,15 +153,15 @@ RunScenarioMenu:                                                  ; $02C2FA
     move.w  d3,d0                                      ; player index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E  ; FinalizeRevenue(player, aircraft_cat, 1)
+    jsr     (ROM_BASE+$006A2E).l                        ; jsr $006A2E  ; FinalizeRevenue(player, aircraft_cat, 1)
 
 ; draw char info panel (stat display)
     move.w  d7,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9f4a                           ; jsr $009F4A  ; DrawCharInfoPanel(aircraft_cat) -- renders stat bar
+    jsr     (ROM_BASE+$009F4A).l                        ; jsr $009F4A  ; DrawCharInfoPanel(aircraft_cat) -- renders stat bar
 
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748  ; VBlank sync
+    jsr     (ROM_BASE+$01D748).l                        ; jsr $01D748  ; VBlank sync
 
 ; present scenario description text dialog
     pea     ($0001).w
@@ -171,7 +171,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7912                           ; jsr $007912  ; ShowScenarioDialog(player, a4, 0, 0, 1)
+    jsr     (ROM_BASE+$007912).l                        ; jsr $007912  ; ShowScenarioDialog(player, a4, 0, 0, 1)
     lea     $0030(sp),sp
 
 ; --- Phase: Menu row rendering -- dispatch on display variant (d6) ---
@@ -192,7 +192,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     movea.l d0,a0
     move.l  (a5,a0.l),-(sp)                            ; a5+variant*4 = scenario display string ptr (ROM table $0004_83F0)
     move.l  a4,-(sp)                                   ; display buffer
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C  ; RenderRouteDisplay(a4, scenario_str, route_type_str)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C  ; RenderRouteDisplay(a4, scenario_str, route_type_str)
 
 ; render price/score panel line below the portrait
     move.w  d6,d0
@@ -201,7 +201,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     move.l  (a0,d0.w),-(sp)                            ; secondary label string (price row label)
     move.l  $0010(a5),-(sp)                            ; a5+$10 = separator/spacer string from ptr table
     pea     -$0106(a6)                                 ; local price text buffer at -$106(a6)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C  ; RenderPricePanel(-$106(a6), sep, label)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C  ; RenderPricePanel(-$106(a6), sep, label)
     lea     $0018(sp),sp
     lea     -$0106(a6),a3                              ; a3 -> formatted price text (used by input handler below)
     dc.w    $6000,$00b0                                 ; bra.w $02C576 ; jump to input handler

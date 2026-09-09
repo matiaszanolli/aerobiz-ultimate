@@ -43,7 +43,7 @@ FillTileRect:                                                  ; $006760
     move.w  d3,d0
     move.l  d0,-(sp)
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520
+    jsr     (ROM_BASE+$01D520).l
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -52,7 +52,7 @@ FillTileRect:                                                  ; $006760
     move.w  d7,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     lea     $001c(sp),sp
     move.w  d6,d0
     add.w   d0,d0
@@ -84,7 +84,7 @@ FillTileRect:                                                  ; $006760
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     sub.w   (a3),d4
     clr.w   d5
@@ -103,7 +103,7 @@ FillTileRect:                                                  ; $006760
     move.w  d3,d0
     move.l  d0,-(sp)
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520
+    jsr     (ROM_BASE+$01D520).l
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -112,7 +112,7 @@ FillTileRect:                                                  ; $006760
     move.w  d7,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     lea     $001c(sp),sp
     move.w  $001e(a6),d3
     moveq   #$d,d0
@@ -137,7 +137,7 @@ FillTileRect:                                                  ; $006760
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
 .l68c0:                                                 ; $0068C0
     movem.l -$0048(a6),d2-d7/a2-a4
     unlk    a6

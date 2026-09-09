@@ -25,7 +25,7 @@ ShowCharStats:                                                  ; $01B0CE
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     move.w  d5,d0
     ext.l   d0
@@ -45,7 +45,7 @@ ShowCharStats:                                                  ; $01B0CE
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$a5a8                           ; jsr $03A5A8
+    jsr     (ROM_BASE+$03A5A8).l
     lea     $0018(sp),sp
     addi.w  #$f,d2
     addq.w  #$1,d3
@@ -73,12 +73,12 @@ ShowCharStats:                                                  ; $01B0CE
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     pea     ($0020).w
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
     lea     $002c(sp),sp
     move.w  d3,d0
     ext.l   d0
@@ -87,7 +87,7 @@ ShowCharStats:                                                  ; $01B0CE
     addq.w  #$8,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.w  $0002(a2),d0
     move.l  d0,-(sp)
@@ -101,7 +101,7 @@ ShowCharStats:                                                  ; $01B0CE
     addi.w  #$9,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.b  $0001(a2),d0
     mulu.w  #$a,d0
@@ -117,7 +117,7 @@ ShowCharStats:                                                  ; $01B0CE
     addq.w  #$4,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.b  $0008(a2),d0
     moveq   #$64,d1
@@ -136,7 +136,7 @@ ShowCharStats:                                                  ; $01B0CE
     addi.w  #$b,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.b  $0009(a2),d0
     moveq   #$64,d1
@@ -146,7 +146,7 @@ ShowCharStats:                                                  ; $01B0CE
     move.l  d0,-(sp)
     pea     ($00041142).l
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     move.l  a4,-(sp)
     pea     ($0004113E).l
     jsr     (a5)
@@ -158,7 +158,7 @@ ShowCharStats:                                                  ; $01B0CE
     addq.w  #$4,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.b  (a3),d0
     andi.l  #$ffff,d0
@@ -168,7 +168,7 @@ ShowCharStats:                                                  ; $01B0CE
     move.l  d0,-(sp)
     pea     ($0004113A).l
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     lea     $0030(sp),sp
     move.l  a4,-(sp)
     pea     ($00041136).l
@@ -181,14 +181,14 @@ ShowCharStats:                                                  ; $01B0CE
     addi.w  #$b,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.b  $0001(a3),d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
     pea     ($00041132).l
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     move.l  a4,-(sp)
     pea     ($0004112E).l
     jsr     (a5)

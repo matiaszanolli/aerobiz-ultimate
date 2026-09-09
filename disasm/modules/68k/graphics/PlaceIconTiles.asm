@@ -66,7 +66,7 @@ PlaceIconTiles:                                                  ; $00595E
     move.l  d0,-(sp)
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     movem.l -$001c(a6),d2-d7
     unlk    a6
     rts

@@ -36,11 +36,11 @@ ShowQuarterSummary:                                                  ; $012E92
     ; call with args (1, 0): enable sprite layer / init display subsystem
     pea     ($0001).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     ; call with args ($3B=59, 4): set display mode parameter (sprite count or page select)
     pea     ($0004).w
     pea     ($003B).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     ; call $0131DA(screen_id): screen-variant setup sub-function
     ; returns: 1 = there are routes available for this player to review, other = different state
     move.w  d3,d0
@@ -71,7 +71,7 @@ ShowQuarterSummary:                                                  ; $012E92
     pea     ($001E).w
     clr.l   -(sp)
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520
+    jsr     (ROM_BASE+$01D520).l
     ; call $013614(buf=a5, player=d2, screen=d3): populate route list into a5 scratch buffer
     move.l  a5,-(sp)
     move.w  d3,d0
@@ -96,14 +96,14 @@ ShowQuarterSummary:                                                  ; $012E92
 ; --- Phase: Route selection inner loop -- load screen, pick slot, show result ---
 .l12f4a:                                                ; $012F4A
     ; ResourceUnload ($01D748): release any previously loaded graphics resource
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748
+    jsr     (ROM_BASE+$01D748).l
     ; ManageRouteSlots ($0112EE) with mode=3 and player=d2: let player select a route slot
     ; returns d4 = selected route slot index, or $FF if player cancelled
     pea     ($0003).w
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$12ee                           ; jsr $0112EE
+    jsr     (ROM_BASE+$0112EE).l
     addq.l  #$8,sp
     ; d4 = selected slot index
     move.w  d0,d4
@@ -112,7 +112,7 @@ ShowQuarterSummary:                                                  ; $012E92
     beq.w   .l1319a
 .l12f6c:                                                ; $012F6C
     ; ResourceLoad ($01D71C): load graphics resource for the selected route's screen
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
     ; LoadScreen ($006A2E) with mode=1, screen=d3, player=d2: load and init the summary screen
     pea     ($0001).w
     move.w  d3,d0
@@ -121,7 +121,7 @@ ShowQuarterSummary:                                                  ; $012E92
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     ; call $01325C(player=d2, screen=d3, slot=d4, buf=a5): evaluate selected route slot
     ; returns d5 = action code (what the player chose to do with this route)
     move.l  a5,-(sp)
@@ -181,7 +181,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ext.l   d0
     move.l  d0,-(sp)
     ; ShowTextDialog: displays action-result message and waits for player confirmation
-    dc.w    $4eb9,$0001,$183a                           ; jsr $01183A
+    jsr     (ROM_BASE+$01183A).l
     ; --- Phase: Update $FF0338 route-display record for this player/slot ---
     ; $FF0338 = per-player route-display record table; stride $20 (32) per player, $8 per slot
     move.w  d2,d0
@@ -228,7 +228,7 @@ ShowQuarterSummary:                                                  ; $012E92
     move.l  ($000479C2).l,-(sp)
     move.l  a4,-(sp)
     ; sprintf: format "you earned X this quarter" style message into a4 buffer
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     ; ShowTextDialog: display the profit confirmation message with purchase option
     clr.l   -(sp)
     pea     ($0001).w
@@ -241,7 +241,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ext.l   d0
     move.l  d0,-(sp)
     ; ShowTextDialog with pre-formatted string in a4; returns 1 if player confirms purchase
-    dc.w    $4eb9,$0001,$183a                           ; jsr $01183A
+    jsr     (ROM_BASE+$01183A).l
     lea     $0024(sp),sp
     ; if player did not confirm, fall through to slot-clear path
     cmpi.w  #$1,d0
@@ -257,7 +257,7 @@ ShowQuarterSummary:                                                  ; $012E92
     pea     ($0005).w
     pea     ($000A).w
     pea     ($0013).w
-    dc.w    $4eb9,$0000,$5ff6                           ; jsr $005FF6
+    jsr     (ROM_BASE+$005FF6).l
     ; ShowTextDialog: show final purchase-complete message ($479D6 format, slot=d4)
     pea     ($0001).w
     clr.l   -(sp)
@@ -271,7 +271,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ext.l   d0
     move.l  d0,-(sp)
     ; ShowTextDialog: confirm the deduction to the player
-    dc.w    $4eb9,$0001,$183a                           ; jsr $01183A
+    jsr     (ROM_BASE+$01183A).l
     lea     $0024(sp),sp
     ; loop back to slot selection (let player choose another route to review)
     bra.w   .l12f4a
@@ -295,7 +295,7 @@ ShowQuarterSummary:                                                  ; $012E92
     clr.l   -(sp)
     pea     ($001A).w
     ; GameCommand #$1A = ClearTileArea: erase summary region before showing alternate text
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     ; look up screen-variant string for this screen_id from $5EC84 table
     ; $5EC84 = ROM screen-type string pointer table (screen_id * 4)
@@ -316,7 +316,7 @@ ShowQuarterSummary:                                                  ; $012E92
     clr.l   -(sp)
     pea     ($001A).w
     ; GameCommand #$1A: clear the same summary tile region
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     ; screen-variant string for "no profitable routes" message
     move.w  d3,d0
@@ -336,7 +336,7 @@ ShowQuarterSummary:                                                  ; $012E92
     clr.l   -(sp)
     pea     ($001A).w
     ; GameCommand #$1A: clear summary tile area for the fallback message
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
     ; screen-variant string: same $5EC84 table lookup
     move.w  d3,d0
@@ -350,7 +350,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ; sprintf($03B22C): format the chosen message string into a4 buffer
     move.l  a4,-(sp)
     ; sprintf: format message (format ptr and arg already on stack from above)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     ; ShowDialog ($007912): display the formatted summary message and wait for player input
     ; args: player=d2, buf=a4, mode=2, confirm=1, 0, 0
     pea     ($0001).w
@@ -361,12 +361,12 @@ ShowQuarterSummary:                                                  ; $012E92
     ext.l   d0
     move.l  d0,-(sp)
     ; ShowDialog: display text dialog with optional player confirmation button
-    dc.w    $4eb9,$0000,$7912                           ; jsr $007912
+    jsr     (ROM_BASE+$007912).l
     lea     $0020(sp),sp
 ; --- Phase: Final screen load -- show character relationship panel to conclude summary ---
 .l1319a:                                                ; $01319A
     ; ResourceLoad ($01D71C): load graphics for the final summary relationship panel
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
     ; LoadScreen ($006A2E) with mode=1, screen=d3, player=d2: load the end-of-summary screen
     pea     ($0001).w
     move.w  d3,d0
@@ -376,7 +376,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ext.l   d0
     move.l  d0,-(sp)
     ; LoadScreen: initialise and display the relationship/portfolio screen
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     ; ShowRelPanel ($006B78): display character relationship/affinity panel
     ; args: player=d2, screen=screen_id (re-read from $FF9A1C), mode=2
     pea     ($0002).w
@@ -388,7 +388,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ext.l   d0
     move.l  d0,-(sp)
     ; ShowRelPanel: shows the player's character relationship panel as the final summary view
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
     movem.l -$0094(a6),d2-d6/a2-a5
     unlk    a6
     rts

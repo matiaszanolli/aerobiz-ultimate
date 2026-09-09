@@ -115,7 +115,7 @@ RenderTileStrip:                                                  ; $005CFE
     movea.l #$00048a7c,a0
     pea     (a0,d0.w)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d538                           ; jsr $01D538
+    jsr     (ROM_BASE+$01D538).l
     addq.w  #$8,(a3)
     clr.w   d2
 .l5e22:                                                 ; $005E22

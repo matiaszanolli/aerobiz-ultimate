@@ -28,9 +28,9 @@ CalcCharScore:                                                  ; $02F4EE
     move.l  d1,d0
     moveq   #$0,d1
     move.w  $0004(a2),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     movem.l (sp)+,d2/a2
     rts

@@ -10,58 +10,58 @@ ShowGameStatus:                                                  ; $0271C6
     ; Initialize two local-frame display words used as DisplaySetup data sources
     move.w  #$7c00,-$0002(a6)       ; local -$2: $7C00 = tile attribute word (palette 3, priority, no flip)
     clr.w   -$0004(a6)              ; local -$4: 0 (secondary display parameter, cleared)
-    dc.w    $4eb9,$0001,$d71c       ; jsr ResourceLoad ($01D71C): load game-status screen resource if not loaded
+    jsr     (ROM_BASE+$01D71C).l    ; jsr ResourceLoad ($01D71C): load game-status screen resource if not loaded
     ; GameCommand #$10: clear screen (scroll planes)
     pea     ($0040).w               ; priority flag $40
     clr.l   -(sp)                   ; arg = 0
     pea     ($0010).w               ; GameCommand #$10 = clear screen
-    dc.w    $4eb9,$0000,$0d64       ; jsr GameCommand ($000D64)
+    jsr     (ROM_BASE+$000D64).l    ; jsr GameCommand ($000D64)
     ; ClearScreen ($00538E): second screen clear (clears both BG planes)
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$538e       ; jsr ClearScreen ($00538E)
+    jsr     (ROM_BASE+$00538E).l    ; jsr ClearScreen ($00538E)
     ; LoadScreen ($006A2E/near): load and initialize the game-status screen (screen index 4)
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($0004).w               ; screen index 4 = game status screen
-    dc.w    $4eb9,$0000,$68ca       ; jsr LoadScreen ($0068CA): loads gfx/tileset for game status screen
+    jsr     (ROM_BASE+$0068CA).l    ; jsr LoadScreen ($0068CA): loads gfx/tileset for game status screen
     ; SetTextWindow: define 27-row × 32-col text window at origin (0,0)
     pea     ($001B).w               ; window height = $1B = 27
     pea     ($0020).w               ; window width  = $20 = 32
     clr.l   -(sp)                   ; top  = 0
     clr.l   -(sp)                   ; left = 0
-    dc.w    $4eb9,$0003,$a942       ; jsr SetTextWindow ($03A942)
+    jsr     (ROM_BASE+$03A942).l    ; jsr SetTextWindow ($03A942)
     lea     $002c(sp),sp            ; clean up 11 longwords
     ; DisplaySetup (×4): configure 4 display parameter blocks for the status screen
     ; Block 1: height=4, width=$21 (33), data = player_word_tab ($FF0118)
     pea     ($0004).w               ; height = 4
     pea     ($0021).w               ; width  = $21 = 33 columns
     pea     ($00FF0118).l           ; player_word_tab: 4 words, one per player (indices/flags)
-    dc.w    $4eb9,$0000,$5092       ; jsr DisplaySetup ($005092)
+    jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092)
     ; Block 2: height=1, width=$25 (37), data = local -$2 ($7C00 tile attribute word)
     pea     ($0001).w               ; height = 1
     pea     ($0025).w               ; width  = $25 = 37
     pea     -$0002(a6)              ; &local -$2: $7C00 tile attr (palette 3, priority flag set)
-    dc.w    $4eb9,$0000,$5092       ; jsr DisplaySetup ($005092)
+    jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092)
     ; Block 3: height=1, width=$26 (38), data = local -$4 (0)
     pea     ($0001).w
     pea     ($0026).w               ; width = $26 = 38
     pea     -$0004(a6)              ; &local -$4: 0 (clear parameter)
-    dc.w    $4eb9,$0000,$5092       ; jsr DisplaySetup ($005092)
+    jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092)
     ; Block 4: height=$10 (16), width=$30 (48), data = ROM layout at $76A9E
     pea     ($0010).w               ; height = $10 = 16
     pea     ($0030).w               ; width  = $30 = 48
     pea     ($00076A9E).l           ; ROM: display tile-layout descriptor for game status BG
-    dc.w    $4eb9,$0000,$5092       ; jsr DisplaySetup ($005092)
+    jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092)
     lea     $0030(sp),sp            ; clean up 12 longwords
     ; LZ decompress top banner graphic and place into VRAM
     move.l  ($000A1B68).l,-(sp)     ; ROM compressed data ptr from pointer table at $A1B68
     pea     ($00FF1804).l           ; dest = save_buf_base ($FF1804): staging buffer
-    dc.w    $4eb9,$0000,$3fec       ; jsr LZ_Decompress ($003FEC): decompress banner graphic
+    jsr     (ROM_BASE+$003FEC).l    ; jsr LZ_Decompress ($003FEC): decompress banner graphic
     ; CmdPlaceTile: place the banner tiles at row $15, attribute word $030F
     pea     ($0015).w               ; tile row = $15 = 21
     pea     ($030F).w               ; tile attribute: palette 0, priority 1, char# offset
     pea     ($00FF1804).l           ; src = decompressed tile data in staging buffer
-    dc.w    $4eb9,$0000,$4668       ; jsr CmdPlaceTile ($004668): DMA tile data to VRAM
+    jsr     (ROM_BASE+$004668).l    ; jsr CmdPlaceTile ($004668): DMA tile data to VRAM
     ; GameCommand #$1B: draw the status-screen border box
     pea     ($00073378).l           ; ROM: border tile pattern for status screen frame
     pea     ($0002).w               ; box height = 2
@@ -70,7 +70,7 @@ ShowGameStatus:                                                  ; $0271C6
     pea     ($0001).w               ; box top row = 1
     pea     ($0001).w               ; box left col = 1
     pea     ($001B).w               ; GameCommand #$1B = draw bordered rectangle
-    dc.w    $4eb9,$0000,$0d64       ; jsr GameCommand ($000D64)
+    jsr     (ROM_BASE+$000D64).l    ; jsr GameCommand ($000D64)
     lea     $0030(sp),sp            ; clean up 12 longwords
     ; --- Phase: Compute Tile Base Index and Print Screen Title ---
     ; Same frame_counter→tile-index computation as RenderQuarterReport (shared pattern)
@@ -85,13 +85,13 @@ ShowGameStatus:                                                  ; $0271C6
     ; SetTextCursor at (col=1, row=5) for screen title
     pea     ($0001).w               ; cursor X = col 1
     pea     ($0005).w               ; cursor Y = row 5
-    dc.w    $4eb9,$0003,$ab2c       ; jsr SetTextCursor ($03AB2C)
+    jsr     (ROM_BASE+$03AB2C).l    ; jsr SetTextCursor ($03AB2C)
     ; PrintfWide: render the screen title using the computed tile base index
     moveq   #$0,d0
     move.w  d2,d0                   ; d0 = tile base index
     move.l  d0,-(sp)               ; numeric arg for title format
     pea     ($00041598).l           ; ROM: "Game Status" screen title format string
-    dc.w    $4eb9,$0003,$b270       ; jsr PrintfWide ($03B270)
+    jsr     (ROM_BASE+$03B270).l    ; jsr PrintfWide ($03B270)
     lea     $0010(sp),sp            ; clean up 4 longwords
     ; --- Phase: City Column Header Loop (7 city columns across the top) ---
     ; $5FAA6 = ROM table of city column descriptor bytes: byte[0]=col tile X, byte[1]=col tile width
@@ -142,7 +142,7 @@ ShowGameStatus:                                                  ; $0271C6
     move.l  d0,-(sp)               ; Y position
     clr.l   -(sp)                   ; arg = 0
     pea     ($001B).w               ; GameCommand #$1B = draw bordered tile block
-    dc.w    $4eb9,$0000,$0d64       ; jsr GameCommand ($000D64)
+    jsr     (ROM_BASE+$000D64).l    ; jsr GameCommand ($000D64)
     ; LZ decompress the portrait/icon graphic for this city column
     moveq   #$0,d0
     move.w  d3,d0
@@ -150,12 +150,12 @@ ShowGameStatus:                                                  ; $0271C6
     movea.l #$000a1ac8,a0           ; a0 = ROM city-column graphics pointer table at $A1AC8
     move.l  (a0,d0.l),-(sp)        ; push compressed graphics ptr for this city column
     pea     ($00FF899C).l           ; dest = screen_buf ($FF899C: $3A4-byte tile staging buffer)
-    dc.w    $4eb9,$0000,$3fec       ; jsr LZ_Decompress ($003FEC): decompress column icon graphic
+    jsr     (ROM_BASE+$003FEC).l    ; jsr LZ_Decompress ($003FEC): decompress column icon graphic
     ; Place decompressed tiles: height=$10, tile_char_base=d5, dest=screen_buf
     pea     ($0010).w               ; height = $10 = 16 tiles
     move.l  d5,-(sp)               ; tile char# base for this column (computed above)
     pea     ($00FF899C).l           ; src = screen_buf (decompressed tile data)
-    dc.w    $4eb9,$0000,$45e6       ; jsr VRAMBulkLoad ($0045E6): DMA tiles to VRAM at char# d5
+    jsr     (ROM_BASE+$0045E6).l    ; jsr VRAMBulkLoad ($0045E6): DMA tiles to VRAM at char# d5
     lea     $0030(sp),sp            ; clean up 12 longwords
     ; Advance to next city column
     addq.l  #$2,a2                  ; a2 += 2: next 2-byte city column descriptor
@@ -178,7 +178,7 @@ ShowGameStatus:                                                  ; $0271C6
     move.b  $0001(a5),d0            ; d0 = player_record[+$01] = hub_city index (0-88, $FF = none)
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648       ; jsr RangeLookup ($00D648): map hub_city → range category 0-7
+    jsr     (ROM_BASE+$00D648).l    ; jsr RangeLookup ($00D648): map hub_city → range category 0-7
     addq.l  #$4,sp
     move.w  d0,d4                   ; d4 = hub_city range category (used to identify player's "home column")
     ; Set up city-column descriptor pointer and two RAM table pointers for this player
@@ -228,7 +228,7 @@ ShowGameStatus:                                                  ; $0271C6
     ext.l   d0
     move.l  d0,-(sp)               ; Y position
     pea     ($0001).w               ; attr = 1 (palette 0)
-    dc.w    $4eb9,$0000,$6760       ; jsr FillTileRect ($006760): draw filled tile token for this player/city
+    jsr     (ROM_BASE+$006760).l    ; jsr FillTileRect ($006760): draw filled tile token for this player/city
     ; SetTextCursor at same position for rank number overlay
     moveq   #$0,d0
     move.b  $0001(a2),d0            ; column tile X
@@ -242,11 +242,11 @@ ShowGameStatus:                                                  ; $0271C6
     move.b  (a2),d0                 ; column tile Y (row)
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c       ; jsr SetTextCursor ($03AB2C)
+    jsr     (ROM_BASE+$03AB2C).l    ; jsr SetTextCursor ($03AB2C)
     ; PrintfNarrow: render the rank value (city count) from this player's slot record
     move.l  (a4),-(sp)             ; city-slot value (rank or city count) from $FF0130 record
     pea     ($00041592).l           ; ROM: narrow-font format string for rank number
-    dc.w    $4eb9,$0003,$b246       ; jsr PrintfNarrow ($03B246): render rank in narrow font
+    jsr     (ROM_BASE+$03B246).l    ; jsr PrintfNarrow ($03B246): render rank in narrow font
     lea     $0030(sp),sp            ; clean up 12 longwords
     ; PlaceIconPair ($00595E): place a small 1×1 icon 7 rows below the token (sub-indicator)
     moveq   #$0,d0
@@ -262,7 +262,7 @@ ShowGameStatus:                                                  ; $0271C6
     move.l  d0,-(sp)
     pea     ($0001).w
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$595e       ; jsr PlaceIconPair ($00595E): place sub-indicator icon
+    jsr     (ROM_BASE+$00595E).l    ; jsr PlaceIconPair ($00595E): place sub-indicator icon
     lea     $0010(sp),sp
     bra.b   .l274ce                 ; skip blank-token path, go to hub-city portrait check
 .l27492:                                                ; $027492
@@ -286,7 +286,7 @@ ShowGameStatus:                                                  ; $0271C6
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$6760       ; jsr FillTileRect ($006760): draw empty city-slot placeholder
+    jsr     (ROM_BASE+$006760).l    ; jsr FillTileRect ($006760): draw empty city-slot placeholder
     lea     $0020(sp),sp
 .l274ce:                                                ; $0274CE
     ; Check whether this city column is the player's hub city column (d4 = hub range category)
@@ -317,11 +317,11 @@ ShowGameStatus:                                                  ; $0271C6
     move.w  d2,d0                   ; d0 = player_index (selects palette/sprite for this player)
     move.l  d0,-(sp)
     pea     ($0760).w               ; tile char# $760 = character portrait tile base
-    dc.w    $4eb9,$0001,$e044       ; jsr TilePlacement ($01E044): place portrait tile at computed coords
+    jsr     (ROM_BASE+$01E044).l    ; jsr TilePlacement ($01E044): place portrait tile at computed coords
     ; GameCommand #$E (= #14): request display update / commit tiles to screen
     pea     ($0001).w
     pea     ($000E).w               ; GameCommand #$E = display update / refresh
-    dc.w    $4eb9,$0000,$0d64       ; jsr GameCommand ($000D64)
+    jsr     (ROM_BASE+$000D64).l    ; jsr GameCommand ($000D64)
     lea     $0024(sp),sp
 .l27522:                                                ; $027522
     ; Advance inner loop: a2+=2 (next descriptor), a3+=1 (next slot byte), a4+=4 (next slot record)
@@ -378,7 +378,7 @@ ShowGameStatus:                                                  ; $0271C6
     ext.l   d0
     move.l  d0,-(sp)               ; Y
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$6760       ; jsr FillTileRect ($006760): draw player route-count token
+    jsr     (ROM_BASE+$006760).l    ; jsr FillTileRect ($006760): draw player route-count token
     ; SetTextCursor at same computed position for text overlay
     moveq   #$0,d0
     move.b  $0001(a2),d0            ; descriptor tile X
@@ -393,13 +393,13 @@ ShowGameStatus:                                                  ; $0271C6
     move.b  (a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c       ; jsr SetTextCursor ($03AB2C)
+    jsr     (ROM_BASE+$03AB2C).l    ; jsr SetTextCursor ($03AB2C)
     ; PrintfWide: print player name from $FF00A8 display-name buffer (16-byte stride per player)
     move.w  d2,d0
     lsl.w   #$4,d0                  ; d0 = player_index * $10 (16-byte stride into $FF00A8 name buffer)
     movea.l #$00ff00a8,a0           ; a0 = $FF00A8: player display name buffer (64 bytes, 4 × 16)
     pea     (a0,d0.w)               ; ptr to this player's 16-byte name entry
-    dc.w    $4eb9,$0003,$b270       ; jsr PrintfWide ($03B270): render player name at cursor
+    jsr     (ROM_BASE+$03B270).l    ; jsr PrintfWide ($03B270): render player name at cursor
     lea     $002c(sp),sp            ; clean up 11 longwords
     ; Advance to next player
     addq.l  #$8,a3                  ; a3 += 8 (stride to next player's route-count position byte)
@@ -407,7 +407,7 @@ ShowGameStatus:                                                  ; $0271C6
     cmpi.w  #$4,d2                  ; done all 4 players?
     bcs.w   .l27558                 ; no: loop
     ; --- Phase: Epilogue ---
-    dc.w    $4eb9,$0001,$d748       ; jsr ResourceUnload ($01D748): unload game-status screen resources
+    jsr     (ROM_BASE+$01D748).l    ; jsr ResourceUnload ($01D748): unload game-status screen resources
     movem.l -$0104(a6),d2-d5/a2-a5 ; restore saved registers (offset -$104 = -$E4 frame - $20 movem save)
     unlk    a6
     rts

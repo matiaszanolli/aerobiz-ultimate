@@ -36,7 +36,7 @@ DiagonalWipe:                                                  ; $01ACBA
     addi.w  #$a,d4
 ; LoadDisplaySet: load graphics mode 4 (display state for mode-1 wipe)
     pea     ($0004).w
-    dc.w    $4eb9,$0001,$d444                           ; jsr $01D444
+    jsr     (ROM_BASE+$01D444).l
     addq.l  #$4,sp
 ; Jump into loop check first (d2 starts at 0, must reach $14 before placing any tile)
     bra.b   .l1ad46
@@ -74,7 +74,7 @@ DiagonalWipe:                                                  ; $01ACBA
     move.w  d2,d0
     ext.l   d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.w  #$2,d0
     add.w   d0,d2
 ; Loop until d2 >= $14 (20 pixels = Phase A coverage complete)
@@ -116,14 +116,14 @@ DiagonalWipe:                                                  ; $01ACBA
     move.w  d2,d0
     ext.l   d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.w  #$1,d0
     add.w   d0,d2
 ; Advance d3 (backward strip): step = d2/$14 + 1 (same computation, applied to d3)
     move.w  d2,d0
     ext.l   d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.w  #$1,d0
     add.w   d0,d3
 ; Extra +1 per iteration ensures wipe completes within bounded frame count
@@ -145,7 +145,7 @@ DiagonalWipe:                                                  ; $01ACBA
     move.w  d0,d4
 ; LoadDisplaySet: load graphics mode 5 (display state for mode-0/reveal wipe)
     pea     ($0005).w
-    dc.w    $4eb9,$0001,$d444                           ; jsr $01D444
+    jsr     (ROM_BASE+$01D444).l
     addq.l  #$4,sp
     bra.b   .l1ae3c
 ; --- Mode 0, Phase A: bilateral expansion from origin ---
@@ -187,7 +187,7 @@ DiagonalWipe:                                                  ; $01ACBA
     sub.l   d0,d1
     move.l  d1,d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.w  #$1,d0
     add.w   d0,d2
 ; Advance d3 using same formula (symmetric easing for the rightward direction)
@@ -197,7 +197,7 @@ DiagonalWipe:                                                  ; $01ACBA
     sub.l   d0,d1
     move.l  d1,d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.w  #$1,d0
     add.w   d0,d3
 ; Loop until d3 >= $22 (34 pixels -- same band width as mode-1)
@@ -239,7 +239,7 @@ DiagonalWipe:                                                  ; $01ACBA
     move.w  d2,d0
     ext.l   d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.w  #$1,d0
     add.w   d0,d2
     addq.w  #$1,d2
@@ -255,7 +255,7 @@ DiagonalWipe:                                                  ; $01ACBA
 ; GameCmd16 #$0F mode 1: clear wipe overlay sprite layer
     pea     ($0001).w
     pea     ($000F).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     lea     $000c(sp),sp
     movem.l (sp)+,d2-d7/a2-a3
     rts
@@ -291,7 +291,7 @@ ShowPlayerCompare:                                                  ; $01AEB8
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044
+    jsr     (ROM_BASE+$01E044).l
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a2)
@@ -309,7 +309,7 @@ ShowPlayerCompare:                                                  ; $01AEB8
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044
+    jsr     (ROM_BASE+$01E044).l
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a2)
@@ -319,7 +319,7 @@ ShowPlayerCompare:                                                  ; $01AEB8
 .l1af6c:                                                ; $01AF6C
     pea     ($0002).w
     pea     ($0039).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a2)
@@ -328,7 +328,7 @@ ShowPlayerCompare:                                                  ; $01AEB8
     moveq   #$1,d2
 .l1af8a:                                                ; $01AF8A
     pea     ($000A).w
-    dc.w    $4eb9,$0001,$e2f4                           ; jsr $01E2F4
+    jsr     (ROM_BASE+$01E2F4).l
     addq.l  #$4,sp
     move.w  d0,d5
     ext.l   d0
@@ -338,7 +338,7 @@ ShowPlayerCompare:                                                  ; $01AEB8
     beq.w   .l1aeee
     pea     ($0002).w
     pea     ($0039).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a2)

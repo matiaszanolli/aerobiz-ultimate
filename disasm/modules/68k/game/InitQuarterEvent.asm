@@ -22,7 +22,7 @@ InitQuarterEvent:                                                  ; $02949A
     move.w  d0,($00FF1294).l
     clr.l   -(sp)
     pea     ($0002).w
-    dc.w    $4eb9,$0002,$1fd4                           ; jsr $021FD4
+    jsr     (ROM_BASE+$021FD4).l
     addq.l  #$8,sp
     cmpi.w  #$1,d0
     bne.b   .l294f4

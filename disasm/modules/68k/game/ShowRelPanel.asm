@@ -80,7 +80,7 @@ ShowRelPanel:                                                ; $006B78
     pea     ($0030).w
     pea     ($0007).w
     pea     ($0010).w
-    dc.w    $4eb9,$0000,$0d64        ; jsr GameCommand ($000D64): cmd=$10 (display mode)
+    jsr     (ROM_BASE+$000D64).l     ; jsr GameCommand ($000D64): cmd=$10 (display mode)
     lea     $000c(sp),sp
 
     lea     -$c4(a6),a2             ; a2 = result buffer base (A6-$C4)
@@ -239,7 +239,7 @@ ShowRelPanel:                                                ; $006B78
     moveq   #0,d0
     move.b  (a3),d0               ; CharRangeScoreMap byte[0] = col coord
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$dfbe     ; jsr $01DFBE: draw revenue/affinity bar graphic
+    jsr     (ROM_BASE+$01DFBE).l  ; jsr $01DFBE: draw revenue/affinity bar graphic
     lea     $0014(sp),sp
     addq.w  #1,d6                  ; advance screen col position
 .l1_nobar:                               ; $006CD4
@@ -355,11 +355,11 @@ ShowRelPanel:                                                ; $006B78
     moveq   #0,d0
     move.b  (a3),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$dfbe     ; jsr $01DFBE: draw revenue bar
+    jsr     (ROM_BASE+$01DFBE).l  ; jsr $01DFBE: draw revenue bar
     ; Flush display: GameCommand $0E after each bar in loop2 (loop1 did not flush per-entry)
     pea     ($0002).w
     pea     ($000e).w
-    dc.w    $4eb9,$0000,$0d64     ; jsr GameCommand $0E: commit bar tile to display
+    jsr     (ROM_BASE+$000D64).l  ; jsr GameCommand $0E: commit bar tile to display
     lea     $001c(sp),sp
     addq.w  #1,d6                 ; advance screen col
 .l2_nobar:                               ; $006DDA
@@ -388,7 +388,7 @@ ShowRelPanel:                                                ; $006B78
     move.l  d0,-(sp)
     pea     ($0007).w
     pea     ($000f).w
-    dc.w    $4eb9,$0000,$0d64    ; jsr GameCommand $0F: render result buffer as panel
+    jsr     (ROM_BASE+$000D64).l ; jsr GameCommand $0F: render result buffer as panel
     ; Call char detail display functions
     move.w  $000e(a6),d0         ; char_index
     ext.l   d0
@@ -396,7 +396,7 @@ ShowRelPanel:                                                ; $006B78
     move.w  $000a(a6),d0         ; player_index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9e1c    ; jsr DrawPlayerRoutes ($009E1C): draw player route icons on map
+    jsr     (ROM_BASE+$009E1C).l ; jsr DrawPlayerRoutes ($009E1C): draw player route icons on map
     move.w  $000e(a6),d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -483,7 +483,7 @@ ShowRelPanel:                                                ; $006B78
     move.l  d0,-(sp)
     pea     ($0007).w
     pea     ($000f).w
-    dc.w    $4eb9,$0000,$0d64   ; jsr GameCommand $0F: render acquaintance panel
+    jsr     (ROM_BASE+$000D64).l ; jsr GameCommand $0F: render acquaintance panel
 
 ; --- Phase: Exit ---
 .exit:                                   ; $006EE0

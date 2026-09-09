@@ -30,19 +30,19 @@ RunQuarterScreen:                                                  ; $023EA8
 ; --- Phase: screen initialization -- clear display, sync audio, show quarter header ---
     pea     ($0001).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e0b8           ; jsr $01E0B8  -- clear/init display area (mode=1, param=0)
+    jsr     (ROM_BASE+$01E0B8).l        ; jsr $01E0B8  -- clear/init display area (mode=1, param=0)
     pea     ($0004).w
     pea     ($003B).w
-    dc.w    $4eb9,$0001,$e0b8           ; jsr $01E0B8  -- init second display region (mode=4, y=$3B)
-    dc.w    $4eb9,$0001,$d71c           ; jsr $01D71C  -- VBlank sync
+    jsr     (ROM_BASE+$01E0B8).l        ; jsr $01E0B8  -- init second display region (mode=4, y=$3B)
+    jsr     (ROM_BASE+$01D71C).l        ; jsr $01D71C  -- VBlank sync
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$538e           ; jsr $00538E  -- audio tick (param=0)
+    jsr     (ROM_BASE+$00538E).l        ; jsr $00538E  -- audio tick (param=0)
 
 ; Load and validate char code for current player
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)                    ; arg: player index
-    dc.w    $4eb9,$0001,$c43c           ; jsr $01C43C  -- lookup char code for this player
+    jsr     (ROM_BASE+$01C43C).l        ; jsr $01C43C  -- lookup char code for this player
     lea     $0018(sp),sp
     bsr.w ValidateCharCode              ; validate / clamp char code (modifies d3)
 
@@ -65,7 +65,7 @@ RunQuarterScreen:                                                  ; $023EA8
 
 ; Wait for initial input (confirms player is ready to proceed)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec           ; jsr $01E1EC  -- wait for input (timeout=0)
+    jsr     (ROM_BASE+$01E1EC).l        ; jsr $01E1EC  -- wait for input (timeout=0)
     lea     $0028(sp),sp
     tst.w   d0                          ; d0 = 0 if no input / timeout
     beq.b   .l23f50
@@ -78,7 +78,7 @@ RunQuarterScreen:                                                  ; $023EA8
     clr.w   -$0004(a6)                 ; accumulated input state = 0
     clr.w   (a4)                        ; input_mode_flag ($FF13FC) = 0
     clr.w   ($00FFA7D8).l              ; input_init_flag ($FFA7D8) = 0
-    dc.w    $4eb9,$0001,$d748           ; jsr $01D748  -- VBlank sync
+    jsr     (ROM_BASE+$01D748).l        ; jsr $01D748  -- VBlank sync
     clr.w   d6                          ; d6 = sub-screen mode (0 = root/main)
     clr.w   d5                          ; d5 = animation frame counter
 
@@ -88,7 +88,7 @@ RunQuarterScreen:                                                  ; $023EA8
 .l23f6c:                                                ; $023F6C
     cmpi.w  #$1,d4                      ; d4==1 -> forced redraw/refresh requested?
     bne.w   .l23ffe                     ; no -> check input_pending
-    dc.w    $4eb9,$0001,$d71c           ; jsr $01D71C  -- VBlank sync
+    jsr     (ROM_BASE+$01D71C).l        ; jsr $01D71C  -- VBlank sync
 
 ; Finalize revenue + expenses for current player (called on display refresh)
     pea     ($0001).w
@@ -99,7 +99,7 @@ RunQuarterScreen:                                                  ; $023EA8
     move.b  ($00FF0016).l,d0            ; current_player
     ext.l   d0
     move.l  d0,-(sp)                    ; arg: player index
-    dc.w    $4eb9,$0000,$6a2e           ; jsr $006A2E  -- finalize revenue (quarter_accum_a)
+    jsr     (ROM_BASE+$006A2E).l        ; jsr $006A2E  -- finalize revenue (quarter_accum_a)
     pea     ($0002).w
     move.w  d7,d0
     ext.l   d0
@@ -108,13 +108,13 @@ RunQuarterScreen:                                                  ; $023EA8
     move.b  ($00FF0016).l,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78           ; jsr $006B78  -- finalize expenses (quarter_accum_b)
+    jsr     (ROM_BASE+$006B78).l        ; jsr $006B78  -- finalize expenses (quarter_accum_b)
 
 ; Refresh char code and re-draw portrait after finance update
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$c43c           ; jsr $01C43C  -- refresh char code for player
+    jsr     (ROM_BASE+$01C43C).l        ; jsr $01C43C  -- refresh char code for player
     lea     $001c(sp),sp
     bsr.w ValidateCharCode
     move.l  #$8000,-(sp)
@@ -133,14 +133,14 @@ RunQuarterScreen:                                                  ; $023EA8
     jsr     (a3)                        ; GameCommand $E: confirm redraw
     lea     $0024(sp),sp
     clr.w   d4                          ; clear redraw flag
-    dc.w    $4eb9,$0001,$d748           ; jsr $01D748  -- VBlank sync
+    jsr     (ROM_BASE+$01D748).l        ; jsr $01D748  -- VBlank sync
 
 ; Check input_pending flag -- poll if pending
 .l23ffe:                                                ; $023FFE
     tst.w   -$0002(a6)                  ; input_pending?
     beq.b   .l24014                     ; no -> continue to button processing
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec           ; jsr $01E1EC  -- poll for more input
+    jsr     (ROM_BASE+$01E1EC).l        ; jsr $01E1EC  -- poll for more input
     addq.l  #$4,sp
     tst.w   d0
     bne.w   .l23f6c                     ; still active -> stay in loop
@@ -187,7 +187,7 @@ RunQuarterScreen:                                                  ; $023EA8
     bne.b   .l24098
     pea     ($0002).w
     pea     ($0039).w
-    dc.w    $4eb9,$0001,$e0b8           ; jsr $01E0B8  -- partial display refresh (mode=2, y=$39)
+    jsr     (ROM_BASE+$01E0B8).l        ; jsr $01E0B8  -- partial display refresh (mode=2, y=$39)
     addq.l  #$8,sp
     bra.b   .l24072
 
@@ -211,7 +211,7 @@ RunQuarterScreen:                                                  ; $023EA8
     move.w  -$0004(a6),d0              ; accumulated button state
     move.l  d0,-(sp)                    ; arg: previous state
     pea     ($000A).w                   ; arg: $A = 10-frame timeout
-    dc.w    $4eb9,$0001,$e290           ; jsr $01E290  -- ProcessInput: read buttons
+    jsr     (ROM_BASE+$01E290).l        ; jsr $01E290  -- ProcessInput: read buttons
     addq.l  #$8,sp
     andi.w  #$3f,d0                     ; mask to 6 action bits
     move.w  d0,-$0004(a6)              ; update accumulated state

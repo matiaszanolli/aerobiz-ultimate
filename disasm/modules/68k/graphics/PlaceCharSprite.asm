@@ -25,13 +25,13 @@ PlaceCharSprite:                                                  ; $00883A
     movea.l #$00095a22,a0
     move.l  (a0,d0.l),-(sp)
     pea     -$00c0(a6)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     pea     ($0006).w
     moveq   #$0,d0
     move.w  d3,d0
     move.l  d0,-(sp)
     pea     -$00c0(a6)
-    dc.w    $4eb9,$0000,$45e6                           ; jsr $0045E6
+    jsr     (ROM_BASE+$0045E6).l
     clr.l   -(sp)
     pea     ($0002).w
     pea     ($0003).w
@@ -47,11 +47,11 @@ PlaceCharSprite:                                                  ; $00883A
     moveq   #$0,d0
     move.w  d3,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044
+    jsr     (ROM_BASE+$01E044).l
     lea     $0030(sp),sp
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
 .l88e0:                                                 ; $0088E0
     movem.l -$00cc(a6),d2-d3/a2
     unlk    a6

@@ -26,7 +26,7 @@ BrowseMapPages:                                                  ; $017566
     move.l  a5,d0
     addq.l  #$2,d0                  ; d0 = a5+2: adjusted pointer into graphics table
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$5092       ; jsr DisplaySetup ($005092): set up background display
+    jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092): set up background display
     ; GameCommand #$1B: draw map list panel tile block
     move.l  a5,d0
     moveq   #$22,d1
@@ -44,7 +44,7 @@ BrowseMapPages:                                                  ; $017566
     addi.l  #$0722,d0               ; d0 = a5+$722: compressed map tile data in ROM
     move.l  d0,-(sp)
     pea     ($00FF1804).l           ; save_buf_base: decompression output
-    dc.w    $4eb9,$0000,$3fec       ; jsr LZ_Decompress: decompress map tiles
+    jsr     (ROM_BASE+$003FEC).l    ; jsr LZ_Decompress: decompress map tiles
     lea     $0030(sp),sp            ; clean up $30 ($C args)
     ; VRAMBulkLoad: DMA map tiles to VRAM
     pea     ($0001).w               ; flags
@@ -52,17 +52,17 @@ BrowseMapPages:                                                  ; $017566
     pea     ($00FF1804).l           ; tile buffer
     pea     ($0104).w               ; $104 = 260 tiles
     pea     ($0001).w               ; mode 1
-    dc.w    $4eb9,$0001,$d568       ; jsr VRAMBulkLoad ($01D568)
-    dc.w    $4eb9,$0001,$d748       ; jsr ResourceUnload ($01D748)
+    jsr     (ROM_BASE+$01D568).l    ; jsr VRAMBulkLoad ($01D568)
+    jsr     (ROM_BASE+$01D748).l    ; jsr ResourceUnload ($01D748)
     ; SetTextWindow: full-screen window for city list display
     pea     ($0020).w               ; height = $20 rows
     pea     ($0020).w               ; width = $20 cols
     clr.l   -(sp)                   ; Y = 0
     clr.l   -(sp)                   ; X = 0
-    dc.w    $4eb9,$0003,$a942       ; jsr SetTextWindow ($03A942)
+    jsr     (ROM_BASE+$03A942).l    ; jsr SetTextWindow ($03A942)
     ; ReadInput: initial button read to determine d4 (secondary input mode)
     clr.l   -(sp)                   ; mode = 0
-    dc.w    $4eb9,$0001,$e1ec       ; jsr ReadInput ($01E1EC): read joypad via GameCmd #10
+    jsr     (ROM_BASE+$01E1EC).l    ; jsr ReadInput ($01E1EC): read joypad via GameCmd #10
     lea     $0028(sp),sp            ; clean up $A args
     ; d4 = secondary input flag: 1 if input was pressed (nonzero), else 0
     tst.w   d0
@@ -84,13 +84,13 @@ BrowseMapPages:                                                  ; $017566
     ext.l   d2
     move.l  d2,d0
     moveq   #$b,d1                  ; stride = $B cols per page
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 = d3 * $B
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 = d3 * $B
     move.l  d0,d2
     addq.l  #$3,d2                  ; d2 = d3*$B + 3 (left column offset)
     ; SetTextCursor: position text cursor at column d2, row 2
     move.l  d2,-(sp)                ; X = d2
     pea     ($0002).w               ; Y = 2
-    dc.w    $4eb9,$0003,$ab2c       ; jsr SetTextCursor ($03AB2C)
+    jsr     (ROM_BASE+$03AB2C).l    ; jsr SetTextCursor ($03AB2C)
     ; TilePlacement: place first tile column at left position
     ; tile_char=$544 (first column icon), X = d2*8, Y=$10, width=2, priority=$8000
     move.l  #$8000,-(sp)            ; priority = $8000 (high priority)
@@ -111,7 +111,7 @@ BrowseMapPages:                                                  ; $017566
     tst.w   d4                      ; secondary input mode?
     beq.b   .l17692                 ; no -> go straight to ProcessInputLoop
     clr.l   -(sp)                   ; mode = 0
-    dc.w    $4eb9,$0001,$e1ec       ; jsr ReadInput: read secondary controller
+    jsr     (ROM_BASE+$01E1EC).l    ; jsr ReadInput: read secondary controller
     addq.l  #$4,sp
     tst.w   d0                      ; any input?
     beq.b   .l17692                 ; no -> fall through to ProcessInputLoop
@@ -129,7 +129,7 @@ BrowseMapPages:                                                  ; $017566
     move.w  d5,d0
     move.l  d0,-(sp)                ; push previous button state
     pea     ($000A).w               ; timeout = $A frames
-    dc.w    $4eb9,$0001,$e290       ; jsr ProcessInputLoop ($01E290): block until input or timeout
+    jsr     (ROM_BASE+$01E290).l    ; jsr ProcessInputLoop ($01E290): block until input or timeout
     addq.l  #$8,sp
     andi.w  #$33,d0                 ; mask: $33 = bits 0,1,4,5 (Up/Down/Left/Right d-pad bits)
     move.w  d0,d5                   ; d5 = masked button word (d-pad only)
@@ -148,7 +148,7 @@ BrowseMapPages:                                                  ; $017566
     ; Validate selection via VerifyChecksum
     move.w  d3,d0
     move.l  d0,-(sp)                ; push current page/item index
-    dc.w    $4eb9,$0000,$f552       ; jsr VerifyChecksum ($00F552): validate data at d3
+    jsr     (ROM_BASE+$00F552).l    ; jsr VerifyChecksum ($00F552): validate data at d3
     addq.l  #$4,sp
     tst.w   d0                      ; valid?
     beq.w   .l177a4                 ; failed -> loop (don't advance)
@@ -161,7 +161,7 @@ BrowseMapPages:                                                  ; $017566
     move.w  d3,d0
     ext.l   d0
     moveq   #$b,d1
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 = d3 * $B
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 = d3 * $B
     addq.l  #$3,d0                  ; d0 = d3*$B + 3
     move.l  d0,d2                   ; d2 = column offset for this entry
     lsl.l   #$3,d0                  ; d0 = column * 8 (pixel X)

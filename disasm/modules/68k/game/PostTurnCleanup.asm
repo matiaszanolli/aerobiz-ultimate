@@ -223,7 +223,7 @@ RunAIStrategy:                                                  ; $03204A
     move.b  $0001(a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     moveq   #$0,d0
     move.w  d2,d0
     move.l  d0,-(sp)
@@ -306,7 +306,7 @@ RunAIStrategy:                                                  ; $03204A
     move.w  ($00FF0002).l,d0
     ext.l   d0
     move.l  #$01f4,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     addi.l  #$01f4,d0
     cmp.l   $0006(a2),d0
     ble.b   .l3216a
@@ -320,7 +320,7 @@ RunAIStrategy:                                                  ; $03204A
     move.w  ($00FF0002).l,d0
     ext.l   d0
     move.l  #$1f40,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     addi.l  #$3e80,d0
     cmp.l   $0006(a2),d0
     bge.b   .l32198
@@ -338,7 +338,7 @@ RunAIStrategy:                                                  ; $03204A
     move.w  ($00FF0006).l,d0
     ext.l   d0
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     moveq   #$1,d1
     cmp.l   d0,d1
     bne.b   .l321c8

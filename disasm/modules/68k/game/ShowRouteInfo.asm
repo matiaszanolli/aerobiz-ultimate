@@ -43,14 +43,14 @@ ShowRouteInfo:                                                  ; $00F104
 ; d3 = 1: top row of left panel
     move.w  d3,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
 ; SetTextCursor ($03AB2C): position at (d2+1, row 3) inside the box for "EMPTY" label
     move.w  d2,d0
     ext.l   d0
     addq.l  #$1,d0
     move.l  d0,-(sp)
     pea     ($0003).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     lea     $0018(sp),sp
 ; PrintfWide: print "empty slot" label string at $3EA6C; shared tail jumps to epilogue
     pea     ($0003EA6C).l
@@ -88,7 +88,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($0003).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print char name string (pointer at a3) with format $3EA66
     move.l  a3,-(sp)
     pea     ($0003EA66).l
@@ -98,7 +98,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($000B).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; look up city A name pointer: (a2)+$00 = city_a index (route slot field +$00)
 ; city name pointer table at $5F926: indexed by city_a * 4
     moveq   #$0,d0
@@ -114,7 +114,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($000F).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; look up city B name pointer: (a2)+$01 = city_b index (route slot field +$01)
 ; city name pointer table at $5E680: same structure, but destination city table
     moveq   #$0,d0
@@ -157,7 +157,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print "FREQUENCY:" label from $3EA58
     pea     ($0003EA58).l
     jsr     (a5)
@@ -166,7 +166,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001C).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; a4+$06 = save_buf_base+$06: route frequency byte (+1 to convert 0-based to 1-based display)
 ; Route slot +$03 = frequency field; here accessed via save buffer at a4+$06
     moveq   #$0,d0
@@ -185,7 +185,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print "PRICE:" label from $3EA50
     pea     ($0003EA50).l
     jsr     (a5)
@@ -194,7 +194,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001C).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     lea     $0030(sp),sp
 ; a4+$07 = ticket_price byte from save buffer (route slot +$04 = ticket_price word, low byte here)
     moveq   #$0,d0
@@ -216,7 +216,7 @@ ShowRouteInfo:                                                  ; $00F104
     addq.l  #$3,d0
     moveq   #$4,d1
 ; SignedMod ($03E146): d0 mod 4 -> d0 = tier index 0..3
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
 ; d4 = tier * 3: multiply by 3 to get display icon offset
     move.l  d0,d4
     mulu.w  #$3,d4
@@ -226,7 +226,7 @@ ShowRouteInfo:                                                  ; $00F104
     addq.l  #$3,d0
     moveq   #$c,d1
 ; SignedMod: d0 mod 12 -> d0 = service category index (0..11)
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
 ; d4 = final service category index for the graphic lookup table
     move.w  d0,d4
 ; compute display score label tile ID: (d3 + bias) / 4 + $7A3
@@ -251,7 +251,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($0019).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print quality score tile (d3) using format at $3EA48
     move.w  d3,d0
     ext.l   d0
@@ -265,7 +265,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     lea     $0020(sp),sp
 ; look up category name string pointer: d4 * 4 into table at $5F096
 ; $5F096 = route category name pointer table (domestic, international, etc.)
@@ -295,14 +295,14 @@ ShowRouteInfo:                                                  ; $00F104
     move.l  d0,-(sp)
     move.w  d3,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
 ; SetTextCursor: position at (d2+1, row 3) for "empty" label
     move.w  d2,d0
     ext.l   d0
     addq.l  #$1,d0
     move.l  d0,-(sp)
     pea     ($0003).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     lea     $0018(sp),sp
 ; PrintfWide: print right-panel "empty" label at $3EA36 (different string from left $3EA6C)
 ; then share tail at .lf168 (call a5 + branch to epilogue)
@@ -333,7 +333,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($0003).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; right-panel char name format $3EA30 (vs left-panel $3EA66)
     move.l  a3,-(sp)
     pea     ($0003EA30).l
@@ -343,7 +343,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($000B).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.b  (a2),d0
     lsl.w   #$2,d0
@@ -357,7 +357,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($000F).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     moveq   #$0,d0
     move.b  $0001(a2),d0
     lsl.w   #$2,d0
@@ -392,7 +392,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     pea     ($0003EA22).l
     jsr     (a5)
 ; SetTextCursor: position for frequency value (right-panel format $3EA1E)
@@ -400,7 +400,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001C).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; a4+$06 = frequency byte (+1 for 1-based display)
     moveq   #$0,d0
     move.b  $0006(a4),d0
@@ -415,7 +415,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     pea     ($0003EA1A).l
     jsr     (a5)
 ; SetTextCursor: position for price value (right-panel format $3EA16)
@@ -423,7 +423,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001C).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     lea     $0030(sp),sp
 ; a4+$07 = ticket price byte (+1 for 1-based display)
     moveq   #$0,d0
@@ -441,14 +441,14 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     addq.l  #$3,d0
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     move.l  d0,d4
     mulu.w  #$3,d4
     move.w  d4,d0
     ext.l   d0
     addq.l  #$3,d0
     moveq   #$c,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
 ; d4 = service category index (0..11) for right panel
     move.w  d0,d4
 ; same arithmetic-shift tile ID formula as left panel
@@ -467,7 +467,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($0019).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -479,7 +479,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
     lea     $0020(sp),sp
 ; look up route category string pointer: d4 * 4 into $5F096 category name table
     move.w  d4,d0

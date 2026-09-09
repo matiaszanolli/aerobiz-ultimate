@@ -76,7 +76,7 @@ CalcCompatScore:                                                  ; $007412
 .l74be:                                                 ; $0074BE
     sub.l   d1,d0
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d3
 .l74ca:                                                 ; $0074CA
     cmpi.w  #$1e,d3

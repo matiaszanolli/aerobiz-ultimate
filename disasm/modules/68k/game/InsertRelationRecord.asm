@@ -48,7 +48,7 @@ InsertRelationRecord:                                                  ; $0082E4
     moveq   #$0,d0
     move.b  (a2),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7158                           ; jsr $007158
+    jsr     (ROM_BASE+$007158).l
     lea     $001c(sp),sp
     cmpi.w  #$1,d0
     bne.b   .l83a0

@@ -19,7 +19,7 @@ FindRelationRecord:                                                  ; $0081D2
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7158                           ; jsr $007158
+    jsr     (ROM_BASE+$007158).l
     addq.l  #$8,sp
     tst.w   d0
     bne.b   .l8272

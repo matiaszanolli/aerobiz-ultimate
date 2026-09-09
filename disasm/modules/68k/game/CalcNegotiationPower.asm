@@ -28,37 +28,37 @@ CalcNegotiationPower:                                                  ; $00865E
     moveq   #$0,d1
     move.b  $0003(a2),d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,-(sp)
     moveq   #$0,d0
     move.b  $0002(a2),d0
     ext.l   d0
     move.w  (a4),d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     add.l   (sp)+,d0
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     moveq   #$0,d0
     move.b  $0003(a3),d0
     andi.l  #$ffff,d0
     moveq   #$5a,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addi.w  #$a,d0
     move.w  d0,d3
     moveq   #$0,d0
     move.b  $0001(a3),d0
     moveq   #$0,d1
     move.w  d2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$0,d1
     move.w  d3,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$50,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.w  d0,d7
     move.w  (a4),d0
     ext.l   d0
@@ -68,37 +68,37 @@ CalcNegotiationPower:                                                  ; $00865E
     moveq   #$0,d1
     move.b  $0003(a3),d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,-(sp)
     moveq   #$0,d0
     move.b  $0002(a3),d0
     ext.l   d0
     move.w  (a4),d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     add.l   (sp)+,d0
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     moveq   #$0,d0
     move.b  $0003(a2),d0
     andi.l  #$ffff,d0
     moveq   #$5a,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addi.w  #$a,d0
     move.w  d0,d3
     moveq   #$0,d0
     move.b  $0001(a2),d0
     moveq   #$0,d1
     move.w  d2,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$0,d1
     move.w  d3,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$50,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.w  d0,d2
     moveq   #$0,d0
     move.w  d7,d0
@@ -107,7 +107,7 @@ CalcNegotiationPower:                                                  ; $00865E
     add.l   d1,d0
     moveq   #$0,d1
     move.w  d6,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     moveq   #$0,d0
     move.w  d4,d0
@@ -115,7 +115,7 @@ CalcNegotiationPower:                                                  ; $00865E
     moveq   #$0,d0
     move.w  d5,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7610                           ; jsr $007610
+    jsr     (ROM_BASE+$007610).l
     addq.l  #$8,sp
     move.w  d0,d3
     cmpi.w  #$3,d3
@@ -145,7 +145,7 @@ CalcNegotiationPower:                                                  ; $00865E
     moveq   #$0,d0
     move.w  d2,d0
     moveq   #$5,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     sub.w   d0,d2
 .l87fa:                                                 ; $0087FA
     tst.w   (a5)
@@ -175,7 +175,7 @@ CalcNegotiationPower:                                                  ; $00865E
     moveq   #$0,d0
     move.w  d2,d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     sub.w   d0,d2
 .l8832:                                                 ; $008832
     move.w  d2,d0

@@ -21,7 +21,7 @@ ShowText:                                                  ; $02FBD6
     move.w  d1,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$183a                           ; jsr $01183A
+    jsr     (ROM_BASE+$01183A).l
     lea     $0018(sp),sp
     movem.l (sp)+,d2-d3
     rts

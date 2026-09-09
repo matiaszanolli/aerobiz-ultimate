@@ -125,7 +125,7 @@ CalcCharOutput:                                                  ; $00969A
     andi.l  #$ffff,d1
     add.l   d1,d0                   ; d0 = sum of all 3 components
     moveq   #$3,d1                  ; divisor = 3
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv ($03E08A): d0 = sum / 3
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv ($03E08A): d0 = sum / 3
 .l97b0:                                                 ; $0097B0
     ; --- Phase: Apply time-slot adjustment (modulo-8 time index) ---
     move.w  d0,d2                   ; d2 = base_value from computation above
@@ -139,7 +139,7 @@ CalcCharOutput:                                                  ; $00969A
     move.w  d4,d1                   ; d1 = slot_field
     add.l   d1,d0                   ; d0 = stat_type + secondary_slot + slot_field
     moveq   #$8,d1                  ; modulus = 8
-    dc.w    $4eb9,$0003,$e146       ; jsr SignedMod ($03E146): d0 = d0 mod 8
+    jsr     (ROM_BASE+$03E146).l    ; jsr SignedMod ($03E146): d0 = d0 mod 8
     move.w  d0,d3                   ; d3 = time_index (0..7)
     ; Map time_index to adjustment factor: if >= 5, mirror around 8 (fold to 0..4)
     cmpi.w  #$5,d3
@@ -155,19 +155,19 @@ CalcCharOutput:                                                  ; $00969A
     move.b  (a4),d0                 ; d0 = action_descriptor[0] (scale factor A)
     moveq   #$0,d1
     move.w  d2,d1                   ; d1 = base_value
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 = action_A * base_value
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 = action_A * base_value
     ; Step 2: result *= (descriptor[+1] + $32)  ; $32 = 50 decimal bias
     moveq   #$0,d1
     move.b  $0001(a3),d1            ; d1 = char_stat_descriptor[+1] (skill/rating)
     addi.l  #$32,d1                 ; d1 += 50 (center around 50 rating)
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 *= (skill + 50)
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 *= (skill + 50)
     ; Step 3: result *= time_adjustment (d3: 8..12)
     move.w  d3,d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 *= time_adjustment
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 *= time_adjustment
     ; Step 4: result /= 100 (normalize)
     moveq   #$64,d1                 ; $64 = 100
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv: d0 /= 100
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv: d0 /= 100
     move.l  d0,(a2)                 ; store intermediate result to *output_ptr
     ; Clamp to minimum 1
     moveq   #$1,d0
@@ -184,23 +184,23 @@ CalcCharOutput:                                                  ; $00969A
     move.w  ($00FF0006).l,d0        ; d0 = frame_counter ($FF0006): incremented each main loop tick
     ext.l   d0
     moveq   #$6,d1
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv: d0 = frame_counter / 6
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv: d0 = frame_counter / 6
     ; NOTE: SignedDiv returns quotient; we want remainder. This may be intended as mod via repeated calls.
     addi.l  #$46,d0                 ; d0 += $46 = 70 (range: 70..75)
     move.l  (a2),d1                 ; d1 = current result
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 = (frame_mod+70) * result
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 = (frame_mod+70) * result
     moveq   #$64,d1                 ; divisor = 100
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv: d0 /= 100 (normalize)
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv: d0 /= 100 (normalize)
     moveq   #$5,d1                  ; divisor = 5
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv: d0 /= 5 (further reduce)
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv: d0 /= 5 (further reduce)
     move.l  d0,(a2)                 ; update *output_ptr with randomized result
     ; --- Phase: Apply action[+1] multiplier ---
     moveq   #$0,d0
     move.b  $0001(a4),d0            ; d0 = action_descriptor[1] (scale factor B)
     move.l  (a2),d1                 ; d1 = current result
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 = action_B * result
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 = action_B * result
     moveq   #$a,d1                  ; divisor = 10
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv: d0 /= 10
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv: d0 /= 10
     ; --- Phase: Apply stat_scale ($FF1294) adjustment ---
     ; stat_scale = scenario difficulty modifier; formula: (0x82 - stat_scale) as factor
     move.w  ($00FF1294).l,d1        ; d1 = stat_scale ($FF1294): ranges ~50-100, events may set to 100
@@ -208,9 +208,9 @@ CalcCharOutput:                                                  ; $00969A
     move.l  #$82,d2                 ; d2 = $82 = 130 (base)
     sub.l   d1,d2                   ; d2 = 130 - stat_scale (higher scale = less reduction)
     move.l  d2,d1
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 *= (130 - stat_scale)
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 *= (130 - stat_scale)
     moveq   #$64,d1                 ; divisor = 100
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv: d0 /= 100 (normalize percent)
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv: d0 /= 100 (normalize percent)
     move.l  d0,d2                   ; d2 = scaled result after stat_scale adjustment
     ; --- Phase: Final time-adjustment multiplication ---
     ; Adjust by (time_index - 9) factor, halved
@@ -218,7 +218,7 @@ CalcCharOutput:                                                  ; $00969A
     ext.l   d0
     subi.l  #$9,d0                  ; d0 = time_index - 9 (range: -1..3)
     move.l  d2,d1                   ; d1 = d2 (scaled result)
-    dc.w    $4eb9,$0003,$e05c       ; jsr Multiply32: d0 = result * (time_idx-9)
+    jsr     (ROM_BASE+$03E05C).l    ; jsr Multiply32: d0 = result * (time_idx-9)
     ; Arithmetic right shift with signed rounding
     tst.l   d0
     bge.b   .l989e                  ; non-negative -> skip sign fixup

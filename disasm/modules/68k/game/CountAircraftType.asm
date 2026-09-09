@@ -35,10 +35,10 @@ RunPurchaseMenu:                                                  ; $02C9C8
     moveq   #$0,d4
     move.b  ($00FF0016).l,d4
     jsr     (a3)
-    dc.w    $4eb9,$0001,$e398                           ; jsr $01E398
+    jsr     (ROM_BASE+$01E398).l
     pea     ($0001).w
     pea     ($0009).w
-    dc.w    $4eb9,$0001,$d3ac                           ; jsr $01D3AC
+    jsr     (ROM_BASE+$01D3AC).l
     dc.w    $4eba,$00fa                                 ; jsr $02CAF6
     nop
     moveq   #$0,d0
@@ -100,7 +100,7 @@ RunPurchaseMenu:                                                  ; $02C9C8
     cmpi.w  #$b,d2
     bhi.b   .l2cab2
     jsr     (a3)
-    dc.w    $4eb9,$0001,$e398                           ; jsr $01E398
+    jsr     (ROM_BASE+$01E398).l
     moveq   #$0,d0
     move.w  d2,d0
     move.l  d0,-(sp)
@@ -109,13 +109,13 @@ RunPurchaseMenu:                                                  ; $02C9C8
     dc.w    $4eba,$04ae                                 ; jsr $02CF50
     nop
     lea     $000c(sp),sp
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748
+    jsr     (ROM_BASE+$01D748).l
     bra.b   .l2ca36
 .l2cab2:                                                ; $02CAB2
     move.w  (a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9f4a                           ; jsr $009F4A
+    jsr     (ROM_BASE+$009F4A).l
     jsr     (a3)
     pea     ($0001).w
     move.w  (a2),d0
@@ -124,7 +124,7 @@ RunPurchaseMenu:                                                  ; $02C9C8
     moveq   #$0,d0
     move.w  d4,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     pea     ($0002).w
     move.w  (a2),d0
     ext.l   d0
@@ -132,7 +132,7 @@ RunPurchaseMenu:                                                  ; $02C9C8
     moveq   #$0,d0
     move.w  d4,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
     movem.l -$0018(a6),d2-d4/a2-a3
     unlk    a6
     rts

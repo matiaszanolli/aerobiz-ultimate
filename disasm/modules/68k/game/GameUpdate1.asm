@@ -139,12 +139,12 @@ ShowQuarterReport:                                                  ; $02F712
     movea.l #$00ff0018,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
     move.w  d2,d0
     move.l  d0,-(sp)
     dc.w    $4eba,$04c4                                 ; jsr $02FC14
     nop
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748
+    jsr     (ROM_BASE+$01D748).l
     clr.w   ($00FF99A0).l
     clr.l   -(sp)
     move.l  ($00047B48).l,-(sp)
@@ -186,12 +186,12 @@ ShowQuarterReport:                                                  ; $02F712
 .l2f7c8:                                                ; $02F7C8
     move.w  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$ff76                           ; jsr $00FF76
+    jsr     (ROM_BASE+$00FF76).l
     move.w  d0,d4
     clr.l   -(sp)
     move.w  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$fff8                           ; jsr $00FFF8
+    jsr     (ROM_BASE+$00FFF8).l
     lea     $000c(sp),sp
     move.w  d0,d6
     cmpi.w  #$46,($00FF1294).l
@@ -200,7 +200,7 @@ ShowQuarterReport:                                                  ; $02F712
     move.l  ($00047B28).l,-(sp)
     pea     ($0003).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr $01D6A4
+    jsr     (ROM_BASE+$01D6A4).l
     addq.l  #$8,sp
     move.l  d0,-(sp)
     move.w  d2,d0

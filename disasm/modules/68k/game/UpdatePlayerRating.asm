@@ -181,7 +181,7 @@ RemoveCharRelation:                                                  ; $034CC4
     moveq   #$0,d0
     move.w  d2,d0
     move.l  #$0320,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
 ; a2 = route_slots + player_offset + slot_offset = pointer to this specific route_slot
     lea     (a4,d0.l),a0
     adda.l  (sp)+,a0
@@ -196,7 +196,7 @@ RemoveCharRelation:                                                  ; $034CC4
     move.l  (a0,d0.w),-(sp)
 ; sprintf into -$1E(a6) (30-byte local buffer): char A's name
     pea     -$001e(a6)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
 ; route_slot+$01 = city_b (byte): destination city -> char B name
     moveq   #$0,d0
     move.b  $0001(a2),d0
@@ -205,7 +205,7 @@ RemoveCharRelation:                                                  ; $034CC4
     move.l  (a0,d0.w),-(sp)
 ; sprintf into -$3C(a6) (second 30-byte local buffer): char B's name
     pea     -$003c(a6)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
 ; --- Phase: Compute Relation Value ---
 ; CalcRelationValue(mode=3, char_a=city_a_byte, char_b=city_b_byte)
 ; Multi-mode character value calculator; mode 3 = negotiation / relation score
@@ -216,7 +216,7 @@ RemoveCharRelation:                                                  ; $034CC4
     moveq   #$0,d0
     move.b  (a2),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$a506                           ; jsr $01A506
+    jsr     (ROM_BASE+$01A506).l
 ; Round up result toward zero before dividing by 2 (arithmetic rounding)
     bge.b   .l34d8c
     addq.l  #$1,d0
@@ -230,17 +230,17 @@ RemoveCharRelation:                                                  ; $034CC4
     move.b  $0001(a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
 ; d4 = region category for char B (0-7)
     move.w  d0,d4
 ; GetByteField4($74E0): extract packed 4-bit byte field from route_slot[0] (char A slot data)
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0
+    jsr     (ROM_BASE+$0074E0).l
 ; d7 = byte field value from char A (used for bitfield table indexing)
     move.w  d0,d7
 ; GetLowNibble($7402): extract low nibble from route_slot[0] (char A sub-category)
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$7402                           ; jsr $007402
+    jsr     (ROM_BASE+$007402).l
     lea     $0028(sp),sp
 ; d6 = low nibble of char A slot (char sub-type)
     move.w  d0,d6
@@ -361,7 +361,7 @@ RemoveCharRelation:                                                  ; $034CC4
     move.l  d0,-(sp)
     clr.l   -(sp)
 ; MemCopy($1D538): safe overlapping memmove for route slot compaction
-    dc.w    $4eb9,$0001,$d538                           ; jsr $01D538
+    jsr     (ROM_BASE+$01D538).l
     lea     $0014(sp),sp
 .l34eaa:                                                ; $034EAA
 ; --- Phase: Clear Last Slot (now a duplicate after compaction) ---
@@ -373,19 +373,19 @@ RemoveCharRelation:                                                  ; $034CC4
     move.w  d2,d0
     move.l  #$0320,d1
 ; Multiply32(player_index, $320) = player byte offset in route_slots
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     lea     (a4,d0.l),a0
 ; $30C = offset of slot 39 within the 800-byte player block ($320 - $14)
     lea     $030c(a0),a0
     move.l  a0,-(sp)
 ; MemFillByte: fill 20 bytes with 0x00 (clear the vacated last slot)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520
+    jsr     (ROM_BASE+$01D520).l
     lea     $000c(sp),sp
 ; Set city_a byte of last slot to $FF (marks slot as empty / unused)
     moveq   #$0,d0
     move.w  d2,d0
     move.l  #$0320,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     movea.l d0,a0
     lea     $030c(a4),a1
 ; route_slots[player][39].city_a = $FF (empty sentinel)
@@ -394,7 +394,7 @@ RemoveCharRelation:                                                  ; $034CC4
     moveq   #$0,d0
     move.w  d2,d0
     move.l  #$0320,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     movea.l d0,a0
     lea     $030d(a4),a1
 ; route_slots[player][39].city_b = $FF
@@ -408,7 +408,7 @@ RemoveCharRelation:                                                  ; $034CC4
     pea     ($001C).w
     pea     ($0011).w
     pea     ($0002).w
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
 ; PrintfWide: print "char_a removed from char_b's route" confirmation message
 ; Args: player name block at $FF00A8[player_index*16] (unknown block $FF00A8, stride $10)
     pea     -$003c(a6)
@@ -419,14 +419,14 @@ RemoveCharRelation:                                                  ; $034CC4
     pea     (a0,d0.w)
 ; Format string at $448E4: removal confirmation text with two char names
     pea     ($000448E4).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
 ; LoadScreenGfx($68CA): load portrait for char B (player_index=d2, with resource flag=1)
     pea     ($0001).w
     clr.l   -(sp)
     moveq   #$0,d0
     move.w  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$68ca                           ; jsr $0068CA
+    jsr     (ROM_BASE+$0068CA).l
     lea     $002c(sp),sp
 ; ShowRelPanel($6B78): display the relation panel at (col=2, row=7) for char B
     pea     ($0002).w
@@ -434,10 +434,10 @@ RemoveCharRelation:                                                  ; $034CC4
     moveq   #$0,d0
     move.w  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
 ; PollInputChange($30 frames = 48): wait up to 48 frames for any input before returning
     pea     ($001E).w
-    dc.w    $4eb9,$0001,$e2f4                           ; jsr $01E2F4
+    jsr     (ROM_BASE+$01E2F4).l
 .l34f80:                                                ; $034F80
     movem.l -$0060(a6),d2-d7/a2-a4
     unlk    a6

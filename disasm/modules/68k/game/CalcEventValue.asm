@@ -38,7 +38,7 @@ CalcEventValue:                                                  ; $022554
     move.w  d3,d1
     add.l   d1,d0
     moveq   #$20,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
 .l225b2:                                                ; $0225B2
     movem.l (sp)+,d2-d4/a2
     rts

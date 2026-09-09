@@ -7,13 +7,13 @@ ShowPlayerScreen:                                                  ; $03CB36
     movem.l d2/a2-a3,-(sp)
     move.l  $0010(sp),d2
     movea.l #$0001d3ac,a3
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
-    dc.w    $4eb9,$0001,$e398                           ; jsr $01E398
+    jsr     (ROM_BASE+$01D71C).l
+    jsr     (ROM_BASE+$01E398).l
     move.w  #$1,($00FF000C).l
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$d340                           ; jsr $01D340
+    jsr     (ROM_BASE+$01D340).l
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$d37a                           ; jsr $01D37A
+    jsr     (ROM_BASE+$01D37A).l
     addq.l  #$8,sp
     move.w  d2,d0
     mulu.w  #$24,d0
@@ -60,7 +60,7 @@ ShowPlayerScreen:                                                  ; $03CB36
     addq.l  #$4,sp
 .l3cbdc:                                                ; $03CBDC
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$b428                           ; jsr $03B428
+    jsr     (ROM_BASE+$03B428).l
     addq.l  #$4,sp
     movem.l (sp)+,d2/a2-a3
     rts

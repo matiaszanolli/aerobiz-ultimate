@@ -50,7 +50,7 @@ RunAssignmentUI:                                                  ; $016958
     pea     ($0010).w                  ; VRAM tile offset
     pea     ($0010).w                  ; tile count
     pea     ($0004C976).l              ; ptr to compressed tile data at $4C976
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092 -- DisplaySetup($4C976, $10, $10)
+    jsr     (ROM_BASE+$005092).l                        ; jsr $005092 -- DisplaySetup($4C976, $10, $10)
     lea     $0028(sp),sp
 
 ; GameCommand $1B: draw the char-type panel with sprite data from $4CD56
@@ -91,7 +91,7 @@ RunAssignmentUI:                                                  ; $016958
     move.l  d0,-(sp)
     pea     ($0003).w                  ; sprite width = 3
     pea     ($0001).w                  ; sprite height = 1
-    dc.w    $4eb9,$0000,$6760                           ; jsr $006760 -- PlaceSpriteIcon(1, 3, col, 7, 2, $10, idx, tile)
+    jsr     (ROM_BASE+$006760).l                        ; jsr $006760 -- PlaceSpriteIcon(1, 3, col, 7, 2, $10, idx, tile)
     lea     $0020(sp),sp
     addq.w  #$1,d2
     cmpi.w  #$4,d2
@@ -101,18 +101,18 @@ RunAssignmentUI:                                                  ; $016958
     pea     ($0010).w
     pea     ($0030).w
     pea     ($00076A5E).l              ; ptr to assignment grid tile data at $76A5E
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092 -- DisplaySetup($76A5E, $30, $10)
+    jsr     (ROM_BASE+$005092).l                        ; jsr $005092 -- DisplaySetup($76A5E, $30, $10)
 
 ; LZ_Decompress: decompress assignment grid graphics from $0A1B08 into save_buf_base
     move.l  ($000A1B08).l,-(sp)       ; ptr to compressed assignment grid LZ data
     pea     ($00FF1804).l              ; dest: save_buf_base ($FF1804)
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC -- LZ_Decompress
+    jsr     (ROM_BASE+$003FEC).l                        ; jsr $003FEC -- LZ_Decompress
 
 ; CmdPlaceTile: stamp decompressed tiles into VRAM at position ($6B, $10F)
     pea     ($006B).w                  ; tile row $6B
     pea     ($010F).w                  ; tile column $10F
     pea     ($00FF1804).l              ; source data
-    dc.w    $4eb9,$0000,$4668                           ; jsr $004668 -- CmdPlaceTile($FF1804, $10F, $6B)
+    jsr     (ROM_BASE+$004668).l                        ; jsr $004668 -- CmdPlaceTile($FF1804, $10F, $6B)
     lea     $0020(sp),sp
 
 ; GameCommand $1B: draw the char name label panel from $71A64
@@ -142,9 +142,9 @@ RunAssignmentUI:                                                  ; $016958
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942 -- WaitVBlank/DisplaySync($20, $20, 0, 0)
+    jsr     (ROM_BASE+$03A942).l                        ; jsr $03A942 -- WaitVBlank/DisplaySync($20, $20, 0, 0)
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC -- ReadInputOnce(0) -> d0 (flush stale input)
+    jsr     (ROM_BASE+$01E1EC).l                        ; jsr $01E1EC -- ReadInputOnce(0) -> d0 (flush stale input)
     lea     $0030(sp),sp
     tst.w   d0
     beq.b   .l16aa6
@@ -204,7 +204,7 @@ RunAssignmentUI:                                                  ; $016958
 .l16b16:                                                ; $016B16
     clr.l   -(sp)
     pea     ($0740).w                  ; blink tile ID $0740 (cursor sprite)
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044 -- DrawSprite($0740, 0, x, y, 2, 2, $8000)
+    jsr     (ROM_BASE+$01E044).l                        ; jsr $01E044 -- DrawSprite($0740, 0, x, y, 2, 2, $8000)
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a4)                       ; GameCommand($E, 1) -- display flush
@@ -238,7 +238,7 @@ RunAssignmentUI:                                                  ; $016958
     pea     ($0001).w
     clr.l   -(sp)                      ; tile = 0 (blank)
 .l16b76:                                                ; $016B76
-    dc.w    $4eb9,$0001,$e044                           ; jsr $01E044 -- DrawSprite(tile, 1, x, y, 1, 1, attr)
+    jsr     (ROM_BASE+$01E044).l                        ; jsr $01E044 -- DrawSprite(tile, 1, x, y, 1, 1, attr)
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a4)                       ; GameCommand($E, 1)
@@ -248,7 +248,7 @@ RunAssignmentUI:                                                  ; $016958
     tst.w   -$0002(a6)                ; has_input_flag?
     beq.b   .l16bae                    ; not set -- skip to ProcessInputLoop
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e1ec                           ; jsr $01E1EC -- ReadInputOnce(0) -> d0
+    jsr     (ROM_BASE+$01E1EC).l                        ; jsr $01E1EC -- ReadInputOnce(0) -> d0
     addq.l  #$4,sp
     tst.w   d0
     beq.b   .l16bae
@@ -271,7 +271,7 @@ RunAssignmentUI:                                                  ; $016958
     move.w  -$0004(a6),d0             ; last_input_raw
     move.l  d0,-(sp)
     pea     ($000A).w                  ; timeout = $A frames
-    dc.w    $4eb9,$0001,$e290                           ; jsr $01E290 -- ProcessInputLoop(raw, $A) -> d0
+    jsr     (ROM_BASE+$01E290).l                        ; jsr $01E290 -- ProcessInputLoop(raw, $A) -> d0
     lea     $0010(sp),sp
 
 ; Decode button bits: lower 6 bits = D-pad (bits 0-3) + action keys (bits 4-5)
@@ -325,10 +325,10 @@ RunAssignmentUI:                                                  ; $016958
 ; Render the updated name in the display box
     pea     ($000F).w                  ; display row $F
     pea     ($0016).w                  ; display column $16
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C -- SetDisplayCursor($16, $F)
+    jsr     (ROM_BASE+$03AB2C).l                        ; jsr $03AB2C -- SetDisplayCursor($16, $F)
     pea     -$001a(a6)                 ; ptr to typed_name_buf
     pea     ($0003F948).l             ; format string for name display at $3F948
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270 -- PrintString(fmt, buf)
+    jsr     (ROM_BASE+$03B270).l                        ; jsr $03B270 -- PrintString(fmt, buf)
     lea     $0010(sp),sp
 
 ; If name is now full (d5 == d7), move cursor to the "return" key position
@@ -367,11 +367,11 @@ RunAssignmentUI:                                                  ; $016958
 ; Re-render name with one fewer char
     pea     ($000F).w
     pea     ($0016).w
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C -- SetDisplayCursor($16, $F)
+    jsr     (ROM_BASE+$03AB2C).l                        ; jsr $03AB2C -- SetDisplayCursor($16, $F)
     lea     $0024(sp),sp
     pea     -$001a(a6)
     pea     ($0003F944).l             ; format string for delete/clear at $3F944
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270 -- PrintString(fmt, buf)
+    jsr     (ROM_BASE+$03B270).l                        ; jsr $03B270 -- PrintString(fmt, buf)
     bra.w   .l16ba8                    ; loop back
 
 ; ============================================================================
@@ -654,7 +654,7 @@ RunAssignmentUI:                                                  ; $016958
     lsl.w   #$4,d0                     ; player_index * $10 (16 bytes per player block)
     movea.l #$00ff00a8,a0             ; $FF00A8: player name lookup / assignment block
     pea     (a0,d0.w)                  ; ptr to this player's block
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C -- LookupCharByName(player_block, typed_name)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- LookupCharByName(player_block, typed_name)
     addq.l  #$8,sp
 
 ; ============================================================================
@@ -664,7 +664,7 @@ RunAssignmentUI:                                                  ; $016958
 ; Display sync + clear assignment panel
     pea     ($0002).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8 -- WaitFrames(0, 2) (2 frame delay)
+    jsr     (ROM_BASE+$01E0B8).l                        ; jsr $01E0B8 -- WaitFrames(0, 2) (2 frame delay)
 
 ; GameCommand $1A: restore original background display area
     clr.l   -(sp)
@@ -682,7 +682,7 @@ RunAssignmentUI:                                                  ; $016958
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942 -- WaitVBlank($20, $20, 0, 0)
+    jsr     (ROM_BASE+$03A942).l                        ; jsr $03A942 -- WaitVBlank($20, $20, 0, 0)
     lea     $0010(sp),sp
 
 ; ============================================================================
@@ -713,14 +713,14 @@ RunAssignmentUI:                                                  ; $016958
     addq.l  #$3,d0                     ; same row calculation
     move.l  d0,-(sp)
     pea     ($0003).w                  ; column 3
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C -- SetDisplayCursor(3, row)
+    jsr     (ROM_BASE+$03AB2C).l                        ; jsr $03AB2C -- SetDisplayCursor(3, row)
 
 ; Print player name from $FF00A8 + player*$10 block
     move.w  d4,d0
     lsl.w   #$4,d0                     ; player * $10 (16 bytes per player block)
     movea.l #$00ff00a8,a0             ; $FF00A8: player name block base
     pea     (a0,d0.w)                  ; ptr to this player's block
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270 -- PrintString(block_ptr)
+    jsr     (ROM_BASE+$03B270).l                        ; jsr $03B270 -- PrintString(block_ptr)
     lea     $0028(sp),sp
     addq.w  #$1,d4
     cmpi.w  #$4,d4

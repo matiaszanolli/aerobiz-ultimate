@@ -64,7 +64,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.b  $0001(a2),d0                ; player_record.hub_city
     ext.l   d0
     move.l  d0,-(sp)                    ; arg: city code
-    dc.w    $4eb9,$0000,$d648           ; jsr $00D648  -- RangeLookup: city -> region (0-6)
+    jsr     (ROM_BASE+$00D648).l        ; jsr $00D648  -- RangeLookup: city -> region (0-6)
     addq.l  #$4,sp
     move.w  d0,-$0002(a6)              ; save aircraft_region = RangeLookup(hub_city)
 
@@ -128,7 +128,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)                    ; arg: player index
-    dc.w    $4eb9,$0000,$6eea           ; jsr $006EEA  -- BitFieldSearch: check year boundary
+    jsr     (ROM_BASE+$006EEA).l        ; jsr $006EEA  -- BitFieldSearch: check year boundary
     addq.l  #$8,sp
     cmpi.w  #$ff,d0                     ; returned $FF -> year boundary marker
     bne.b   .l2beba
@@ -198,7 +198,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$74f8           ; jsr $0074F8  -- CalcPlayerWealth: d0 = solvency score
+    jsr     (ROM_BASE+$0074F8).l        ; jsr $0074F8  -- CalcPlayerWealth: d0 = solvency score
     addq.l  #$8,sp
     move.w  d0,d2                       ; d2 = solvency (0 = broke, >0 = solvent)
     tst.w   d2
@@ -214,7 +214,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.l  (a0,d0.w),-(sp)            ; arg: region name string ptr
     move.l  $0024(a5),-(sp)            ; a5+$24 = ROM dialog ptr [9] (bankruptcy msg template)
     move.l  a3,-(sp)                   ; arg: report buffer
-    dc.w    $4eb9,$0003,$b22c           ; jsr $03B22C  -- format report string
+    jsr     (ROM_BASE+$03B22C).l        ; jsr $03B22C  -- format report string
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($0002).w
@@ -226,7 +226,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     jsr     (a4)                        ; display report (a4 = $0001183A)
     move.l  $0028(a5),-(sp)            ; a5+$28 = ROM dialog ptr [10] (second msg)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0003,$b22c           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     lea     $002c(sp),sp
     bra.w   .l2c2aa
 
@@ -255,7 +255,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     pea     (a0,d0.w)                   ; arg: rival's record at $FF00A8[rival]
     move.l  ($0004843C).l,-(sp)        ; ROM indirect ptr at $4843C (competitor msg template)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0003,$b22c           ; jsr $03B22C  -- format report
+    jsr     (ROM_BASE+$03B22C).l        ; jsr $03B22C  -- format report
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($0002).w
@@ -272,7 +272,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     pea     (a0,d0.w)
     move.l  $0004(a5),-(sp)            ; a5+$4 = ROM dialog ptr [1] (follow-up msg)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0003,$b22c           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     lea     $000c(sp),sp
     pea     ($0001).w
     clr.l   -(sp)
@@ -296,7 +296,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     pea     ($00042ECE).l              ; ROM string: generic expansion text
     move.l  $0008(a5),-(sp)            ; a5+$8 = ROM dialog ptr [2] (milestone msg A)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0003,$b22c           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     pea     ($0001).w
     clr.l   -(sp)
     clr.l   -(sp)
@@ -322,7 +322,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.l  (a0,d0.w),-(sp)            ; arg: route slot's region name
     move.l  $0008(a5),-(sp)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0003,$b22c           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     pea     ($0001).w
     clr.l   -(sp)
     clr.l   -(sp)
@@ -374,7 +374,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.w  ($00FF0006).l,d0           ; d0 = frame_counter
     ext.l   d0
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146           ; jsr $03E146  -- d0 = frame_counter mod 4
+    jsr     (ROM_BASE+$03E146).l        ; jsr $03E146  -- d0 = frame_counter mod 4
     move.w  d0,d2                      ; d2 = variant selector (0-3)
     tst.w   d2
     bne.b   .l2c170
@@ -397,7 +397,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.l  d0,-(sp)                   ; arg: index offset
     move.l  $0018(a5),-(sp)           ; a5+$18 = ROM dialog ptr [6] (year-N msg base)
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0003,$b22c           ; jsr $03B22C  -- format "year N" message
+    jsr     (ROM_BASE+$03B22C).l        ; jsr $03B22C  -- format "year N" message
     lea     $000c(sp),sp
     pea     ($0001).w
     clr.l   -(sp)
@@ -479,7 +479,7 @@ ShowAnnualReport:                                                  ; $02BDB8
 .l2c23a:                                                ; $02C23A
     move.l  d2,d0                     ; d0 = competitor_value
     moveq   #$b,d1                    ; d1 = 11
-    dc.w    $4eb9,$0003,$e05c         ; jsr $03E05C  -- d0 = d0 mod d1 (competitor metric)
+    jsr     (ROM_BASE+$03E05C).l      ; jsr $03E05C  -- d0 = d0 mod d1 (competitor metric)
     move.l  d0,-(sp)                  ; save competitor metric
     move.l  d5,d0                     ; d0 = player's license value
     lsl.l   #$2,d0                    ; d0 = d5 * 4
@@ -523,7 +523,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     move.l  $0020(a5),-(sp)          ; a5+$20 = ROM dialog ptr [8] (best-route msg template)
 .l2c29e:                                                ; $02C29E
     move.l  a3,-(sp)                  ; arg: report buffer
-    dc.w    $4eb9,$0003,$b22c         ; jsr $03B22C  -- format best-route report
+    jsr     (ROM_BASE+$03B22C).l      ; jsr $03B22C  -- format best-route report
     lea     $0010(sp),sp
 
 ; --- Phase: common display tail -- call a4 with extra parameters to show final dialog ---

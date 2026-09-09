@@ -52,7 +52,7 @@ FindOpenSlot:                                                  ; $00FDC4
     move.l  d0,-(sp)
     move.w  d6,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E
+    jsr     (ROM_BASE+$00E08E).l
     lea     $000c(sp),sp
     move.l  d0,d3
     cmp.l   $0006(a2),d3
@@ -88,7 +88,7 @@ FindOpenSlot:                                                  ; $00FDC4
     move.l  d0,-(sp)
     move.w  d6,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E
+    jsr     (ROM_BASE+$00E08E).l
     lea     $000c(sp),sp
     move.l  d0,d3
     cmp.l   $0006(a2),d3

@@ -23,13 +23,13 @@ ShowRelationAction:                                                  ; $0199FA
 ; LZ_Decompress ($003FEC): decompress background graphic from ROM ptr at $A1AE4 to save_buf_base ($FF1804)
     move.l  ($000A1AE4).l,-(sp)
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
 ; CmdPlaceTile ($004668): place decompressed background tile at column $20, row $694
 ; (large row value likely encodes VRAM destination directly)
     pea     ($0020).w
     pea     ($0694).w
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$4668                           ; jsr $004668
+    jsr     (ROM_BASE+$004668).l
 ; GameCommand #$1B: place action-panel header tile from $70F38 (count=4, x=4)
 ; at (a5) = X position, $E(a6) = Y position from stack args
     pea     ($00070F38).l
@@ -54,7 +54,7 @@ ShowRelationAction:                                                  ; $0199FA
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
-    dc.w    $4eb9,$0003,$a942                           ; jsr $03A942
+    jsr     (ROM_BASE+$03A942).l
     lea     $0010(sp),sp
 ; d6 = $E(a6) + 4: Y row for bar graph rows (offset down 4 rows from panel top)
     move.w  $000e(a6),d6
@@ -107,7 +107,7 @@ ShowRelationAction:                                                  ; $0199FA
     move.w  $0006(a2),d0
     move.l  d0,-(sp)
 ; $01E11C = percentage ratio function: (current * 100) / base -> d0 = percent (0..100)
-    dc.w    $4eb9,$0001,$e11c                           ; jsr $01E11C
+    jsr     (ROM_BASE+$01E11C).l
     lea     $0028(sp),sp
 ; d3 = raw percentage result (0..100)
     move.w  d0,d3
@@ -115,7 +115,7 @@ ShowRelationAction:                                                  ; $0199FA
 ; SignedDiv ($03E08A): d0 / 10 -> d0 = number of filled tiles (0..10)
 ; divides by $A to convert 0-100% to 0-10 tile count
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
 ; d2 = number of bar tiles to fill (0..10)
     move.w  d0,d2
 ; if d2 == 0: nothing to fill, skip to drawing the tail tile
@@ -158,12 +158,12 @@ ShowRelationAction:                                                  ; $0199FA
     ext.l   d0
     moveq   #$a,d1
 ; SignedMod ($03E146): d0 = d3 mod $A = remainder after full tiles
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
 ; multiply remainder × 8 to get sub-tile pixel offset (8 sub-steps per tile)
     lsl.l   #$3,d0
 ; SignedDiv: divide by $A to convert 0..79 range to 0..7 sub-tile offset index
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
 ; d0 now holds sub-tile partial fill index (0..7)
 ; add d7 (tile base $0331) to get actual tile ID for partial fill graphic
     add.w   d7,d0
@@ -272,13 +272,13 @@ ShowRelationAction:                                                  ; $0199FA
     move.w  $000e(a2),d0
     move.l  d0,-(sp)
 ; $01E11C: percentage ratio (defence/attack × 100) -> d0
-    dc.w    $4eb9,$0001,$e11c                           ; jsr $01E11C
+    jsr     (ROM_BASE+$01E11C).l
     lea     $0028(sp),sp
     move.w  d0,d3
     ext.l   d0
 ; SignedDiv: d3 / 10 -> d2 = number of filled defence-bar tiles
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.w  d0,d2
     tst.w   d2
     ble.b   .l19c58
@@ -314,11 +314,11 @@ ShowRelationAction:                                                  ; $0199FA
     move.w  d3,d0
     ext.l   d0
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
 ; shift × 8 (3 bits left) to expand to 8 sub-steps per tile
     lsl.l   #$3,d0
     moveq   #$a,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
 ; add sub-step to d7 (defence tile base $0328) to select the partial defence tile graphic
     add.w   d0,d7
 ; position = d4 + d7 (now partial tile ID): place partial tile at (d5, d6+d2)
@@ -422,17 +422,17 @@ ShowRelationAction:                                                  ; $0199FA
 ; +4 rows below panel top: footer label row
     addq.l  #$4,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; print a2+$0E (attack event count) using PrintfWide format string at $41116
     moveq   #$0,d0
     move.w  $000e(a2),d0
     move.l  d0,-(sp)
     pea     ($00041116).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
 ; $0074E0 = CalcCompatScore: compute compatibility index for relation record at a2
 ; returns compatibility score in d0 (0..n)
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0
+    jsr     (ROM_BASE+$0074E0).l
 ; d2 = raw compatibility index
     move.w  d0,d2
 ; look up colour/rank byte from bitfield_tab ($FFA6B9) at offset index*12
@@ -452,7 +452,7 @@ ShowRelationAction:                                                  ; $0199FA
     move.w  $0010(a2),d0
     move.l  d0,-(sp)
 ; $01E11C: percentage function (rank_percent × a2+$10) / 100 -> d0
-    dc.w    $4eb9,$0001,$e11c                           ; jsr $01E11C
+    jsr     (ROM_BASE+$01E11C).l
 ; d3 = computed compatibility percentage
     move.w  d0,d3
 ; clamp d3 to maximum $64 = 100% (can't exceed 100%)
@@ -476,13 +476,13 @@ ShowRelationAction:                                                  ; $0199FA
 ; +9 rows: one row below the event-count label
     addi.l  #$9,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0003,$ab2c                           ; jsr $03AB2C
+    jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print clamped compatibility % (d3) at format string $41110
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
     pea     ($00041110).l
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
 ; --- Phase: Epilogue ---
     movem.l -$0028(a6),d2-d7/a2-a5
     unlk    a6

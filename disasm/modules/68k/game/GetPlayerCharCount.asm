@@ -58,11 +58,11 @@ RecruitCharacter:                                                  ; $036F12
     pea     ($0014).w            ; arg: row $14 (20) -- display init position
     clr.l   -(sp)                ; arg: 0
     move.l  a2,-(sp)             ; arg: scratch buffer ptr
-    dc.w    $4eb9,$0001,$d520    ; jsr $01D520 -- initialize recruit selection panel
+    jsr     (ROM_BASE+$01D520).l ; jsr $01D520 -- initialize recruit selection panel
     move.w  (a4),d3              ; d3 = current recruit slot count from $FF9A1C
-    dc.w    $4eb9,$0001,$d71c    ; jsr $01D71C -- display sync / frame advance
+    jsr     (ROM_BASE+$01D71C).l ; jsr $01D71C -- display sync / frame advance
     clr.l   -(sp)
-    dc.w    $4eb9,$0000,$538e    ; jsr $00538E -- load/initialize recruit display resources
+    jsr     (ROM_BASE+$00538E).l ; jsr $00538E -- load/initialize recruit display resources
     pea     ($0001).w
     clr.l   -(sp)
     jsr     (a5)                 ; GameCommand #$0: display init (arg 0)
@@ -70,7 +70,7 @@ RecruitCharacter:                                                  ; $036F12
     pea     ($003B).w            ; arg: GameCommand #$3B
     jsr     (a5)                 ; GameCommand #$3B: set up tile area for recruit panel
     lea     $0020(sp),sp         ; clean up 8 args (8*4=32=$20 bytes)
-    dc.w    $4eb9,$0001,$d748    ; jsr $01D748 = ResourceUnload: free previously loaded resource
+    jsr     (ROM_BASE+$01D748).l ; jsr $01D748 = ResourceUnload: free previously loaded resource
     ; --- Phase: Check if player has room to recruit (player_record +$4 + +$5 < $28 = 40) ---
     ; player_record +$04 = occupied slot count A, +$05 = occupied slot count B
     moveq   #$0,d0
@@ -88,7 +88,7 @@ RecruitCharacter:                                                  ; $036F12
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)             ; arg 1: player_index
-    dc.w    $4eb9,$0000,$6eea    ; jsr $006EEA = BitFieldSearch: find first available slot for player
+    jsr     (ROM_BASE+$006EEA).l ; jsr $006EEA = BitFieldSearch: find first available slot for player
     addq.l  #$8,sp
     move.b  d0,(a2)              ; store found slot index at (a2)+$00 in scratch buffer
     cmpi.b  #$ff,d0              ; $FF = no slot found (all full)?
@@ -112,7 +112,7 @@ RecruitCharacter:                                                  ; $036F12
     bne.w   .l37110              ; cancelled/failed: jump to cleanup epilogue
 .l36fde:                                                ; $036FDE
     ; --- Phase: Confirmed -- show character name dialog and second UI phase ---
-    dc.w    $4eb9,$0001,$d748    ; jsr $01D748 = ResourceUnload
+    jsr     (ROM_BASE+$01D748).l ; jsr $01D748 = ResourceUnload
     moveq   #$0,d0
     move.b  (a2),d0              ; slot index stored at scratch+$00
     lsl.w   #$2,d0               ; d0 *= 4 (long pointer table index)
@@ -120,7 +120,7 @@ RecruitCharacter:                                                  ; $036F12
     move.l  (a0,d0.w),-(sp)      ; push char name string ptr
     move.l  ($000485F6).l,-(sp)  ; push ROM format string ptr ($485F6) for name dialog
     pea     -$0080(a6)           ; destination = local sprintf buffer (-$80(a6), $80 bytes)
-    dc.w    $4eb9,$0003,$b22c    ; jsr $03B22C = sprintf: format char name into buffer
+    jsr     (ROM_BASE+$03B22C).l ; jsr $03B22C = sprintf: format char name into buffer
     ; ShowDialog args: player_index, formatted_string, mode_2, 0, 0
     pea     ($0001).w            ; arg 5: 1
     clr.l   -(sp)                ; arg 4: 0
@@ -129,7 +129,7 @@ RecruitCharacter:                                                  ; $036F12
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)             ; arg 1: player_index
-    dc.w    $4eb9,$0000,$7912    ; jsr $007912 = ShowDialog: display the character name confirm dialog
+    jsr     (ROM_BASE+$007912).l ; jsr $007912 = ShowDialog: display the character name confirm dialog
     ; --- Phase: Second character slot selection UI ---
     moveq   #$0,d0
     move.b  (a2),d0              ; primary slot index
@@ -175,9 +175,9 @@ RecruitCharacter:                                                  ; $036F12
     move.w  (a4),d0              ; reload slot count from $FF9A1C
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9f4a    ; jsr $009F4A: refresh/update display after recruit
-    dc.w    $4eb9,$0001,$d71c    ; jsr $01D71C: display sync
-    dc.w    $4eb9,$0001,$e398    ; jsr $01E398: additional post-recruit display update
+    jsr     (ROM_BASE+$009F4A).l ; jsr $009F4A: refresh/update display after recruit
+    jsr     (ROM_BASE+$01D71C).l ; jsr $01D71C: display sync
+    jsr     (ROM_BASE+$01E398).l ; jsr $01E398: additional post-recruit display update
     pea     ($0001).w
     move.w  (a4),d0
     ext.l   d0
@@ -185,7 +185,7 @@ RecruitCharacter:                                                  ; $036F12
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e    ; jsr $006A2E: update player summary panel (mode 1)
+    jsr     (ROM_BASE+$006A2E).l ; jsr $006A2E: update player summary panel (mode 1)
     pea     ($0002).w
     move.w  (a4),d0
     ext.l   d0
@@ -193,7 +193,7 @@ RecruitCharacter:                                                  ; $036F12
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78    ; jsr $006B78: update player detail panel (mode 2)
+    jsr     (ROM_BASE+$006B78).l ; jsr $006B78: update player detail panel (mode 2)
     lea     $0024(sp),sp         ; clean up 9 args from the block above ($24 = 36 bytes)
 .l370c8:                                                ; $0370C8
     ; --- Phase: Check done flag -- retry loop or exit ---
@@ -225,11 +225,11 @@ RecruitCharacter:                                                  ; $036F12
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)             ; arg 1: player_index
-    dc.w    $4eb9,$0000,$7912    ; jsr $007912 = ShowDialog: display error message to player
+    jsr     (ROM_BASE+$007912).l ; jsr $007912 = ShowDialog: display error message to player
     lea     $0014(sp),sp         ; clean up 5 args
 .l37110:                                                ; $037110
     ; --- Phase: Epilogue -- restore display and return ---
-    dc.w    $4eb9,$0001,$d71c    ; jsr $01D71C: display sync
+    jsr     (ROM_BASE+$01D71C).l ; jsr $01D71C: display sync
     pea     ($0004).w            ; GameCommand mode $04
     pea     ($0037).w            ; GameCommand #$37: restore recruit panel / close UI
     jsr     (a5)                 ; GameCommand
@@ -241,7 +241,7 @@ RecruitCharacter:                                                  ; $036F12
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e    ; jsr $006A2E: update player summary panel
+    jsr     (ROM_BASE+$006A2E).l ; jsr $006A2E: update player summary panel
     pea     ($0002).w
     move.w  (a4),d0
     ext.l   d0
@@ -249,11 +249,11 @@ RecruitCharacter:                                                  ; $036F12
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78    ; jsr $006B78: update player detail panel
+    jsr     (ROM_BASE+$006B78).l ; jsr $006B78: update player detail panel
     move.w  (a4),d0              ; reload final slot count
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9f4a    ; jsr $009F4A: final display refresh
+    jsr     (ROM_BASE+$009F4A).l ; jsr $009F4A: final display refresh
     movem.l -$009c(a6),d2-d4/a2-a5
     unlk    a6
     rts

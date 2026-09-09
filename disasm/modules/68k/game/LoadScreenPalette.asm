@@ -15,7 +15,7 @@ LoadScreenPalette:                                                  ; $0100F2
     pea     ($0010).w
     move.l  a3,-(sp)
     pea     ($00076ACE).l
-    dc.w    $4eb9,$0000,$45b2                           ; jsr $0045B2
+    jsr     (ROM_BASE+$0045B2).l
     clr.w   d2
 .l10128:                                                ; $010128
     cmp.w   d2,d5
@@ -38,13 +38,13 @@ LoadScreenPalette:                                                  ; $0100F2
     blt.b   .l10128
     pea     ($0004A63A).l
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($00FF1804).l
     pea     ($0025).w
     pea     ($0330).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a2)
@@ -63,7 +63,7 @@ LoadScreenPalette:                                                  ; $0100F2
     pea     ($0008).w
     pea     ($0038).w
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     movem.l -$0028(a6),d2-d5/a2-a3
     unlk    a6
     rts

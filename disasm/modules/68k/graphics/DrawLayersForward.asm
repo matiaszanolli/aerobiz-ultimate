@@ -26,7 +26,7 @@ DrawLayersForward:                                                  ; $004D04
     move.w  d3,d0
     move.l  d0,-(sp)
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
 .l4d46:                                                 ; $004D46
     addq.w  #$1,d2

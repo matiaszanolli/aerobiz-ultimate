@@ -145,7 +145,7 @@ UpdateRouteMask:                                                  ; $011BB2
     moveq   #$0,d0
     move.w  d6,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     addq.l  #$4,sp
     move.l  d0,-(sp)
     move.w  d4,d0

@@ -36,10 +36,10 @@ CalcRevenue:                                                  ; $0092BC
     move.b  (a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6f42                           ; jsr $006F42
+    jsr     (ROM_BASE+$006F42).l
     move.w  d0,d2
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0
+    jsr     (ROM_BASE+$0074E0).l
     lea     $000c(sp),sp
     mulu.w  #$c,d0
     movea.l #$00ffa6c1,a0
@@ -49,13 +49,13 @@ CalcRevenue:                                                  ; $0092BC
     moveq   #$0,d0
     move.w  d2,d0
     move.l  #$0320,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.l  #$4,d0
     moveq   #$0,d1
     move.b  $0003(a2),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  (sp)+,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     add.l   d0,d4
 .l9372:                                                 ; $009372
     moveq   #$14,d0
@@ -73,7 +73,7 @@ CalcRevenue:                                                  ; $0092BC
     bgt.w   .l9302
     move.l  d4,d0
     moveq   #$32,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d4
     moveq   #$a,d0
     cmp.l   d4,d0
@@ -86,7 +86,7 @@ CalcRevenue:                                                  ; $0092BC
     move.l  d0,d4
     move.l  #$1388,d1
 .l93b0:                                                 ; $0093B0
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,d1
     add.l   d0,d0
     add.l   d1,d0
@@ -109,10 +109,10 @@ CalcRevenue:                                                  ; $0092BC
     move.b  (a2),d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6f42                           ; jsr $006F42
+    jsr     (ROM_BASE+$006F42).l
     move.w  d0,d2
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr $0074E0
+    jsr     (ROM_BASE+$0074E0).l
     lea     $000c(sp),sp
     mulu.w  #$c,d0
     movea.l #$00ffa6b9,a0
@@ -122,13 +122,13 @@ CalcRevenue:                                                  ; $0092BC
     moveq   #$0,d0
     move.w  d2,d0
     move.l  #$0320,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addq.l  #$4,d0
     moveq   #$0,d1
     move.b  $0003(a2),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  (sp)+,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     move.l  d0,d1
     lsl.l   #$2,d0
     add.l   d1,d0
@@ -151,7 +151,7 @@ CalcRevenue:                                                  ; $0092BC
     bgt.w   .l93d4
     move.l  d4,d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d4
     moveq   #$a,d0
     cmp.l   d4,d0
@@ -180,7 +180,7 @@ CalcRevenue:                                                  ; $0092BC
     move.b  $0001(a2),d0
     moveq   #$0,d1
     move.b  $0003(a2),d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     add.l   d0,d4
 .l94be:                                                 ; $0094BE
     addq.l  #$4,a2
@@ -199,7 +199,7 @@ CalcRevenue:                                                  ; $0092BC
     movea.l d1,a0
     move.b  $3(a4,a0.l),d1
     andi.l  #$ff,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     cmp.l   d4,d0
     bcc.b   .l94fe
     move.l  d4,d0
@@ -217,29 +217,29 @@ CalcRevenue:                                                  ; $0092BC
     movea.l d1,a0
     move.b  $3(a4,a0.l),d1
     andi.l  #$ff,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
 .l952c:                                                 ; $00952C
     move.l  d0,d4
     moveq   #$32,d1
 .l9530:                                                 ; $009530
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d3
     moveq   #$0,d0
     move.w  d5,d0
     move.l  d3,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d3
     move.w  ($00FF0006).l,d0
     ext.l   d0
     moveq   #$3,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     addi.l  #$1e,d0
     move.l  d3,d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$64,d1
-    dc.w    $4eb9,$0003,$e0c6                           ; jsr $03E0C6
+    jsr     (ROM_BASE+$03E0C6).l
     move.l  d0,d3
     movem.l (sp)+,d2-d5/a2-a4
     rts

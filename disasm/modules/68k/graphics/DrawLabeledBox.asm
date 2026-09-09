@@ -10,9 +10,9 @@ DrawLabeledBox:                                                  ; $02377C
     pea     ($001D).w
     pea     ($0011).w
     pea     ($0001).w
-    dc.w    $4eb9,$0000,$5a04                           ; jsr $005A04
+    jsr     (ROM_BASE+$005A04).l
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0003,$b270                           ; jsr $03B270
+    jsr     (ROM_BASE+$03B270).l
     lea     $0014(sp),sp
     movea.l (sp)+,a2
     rts

@@ -11,10 +11,10 @@ ProcessRouteAction:                                                  ; $00F5AA
     move.w  ($00FF9A1C).l,d3
     pea     ($0001).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     pea     ($0004).w
     pea     ($003B).w
-    dc.w    $4eb9,$0001,$e0b8                           ; jsr $01E0B8
+    jsr     (ROM_BASE+$01E0B8).l
     clr.l   -(sp)
     pea     ($000D).w
     pea     ($0020).w
@@ -22,7 +22,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $002c(sp),sp
     move.w  d4,d0
     ext.l   d0
@@ -43,7 +43,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$12ee                           ; jsr $0112EE
+    jsr     (ROM_BASE+$0112EE).l
     addq.l  #$8,sp
     move.w  d0,d4
     cmpi.w  #$4,d4
@@ -54,7 +54,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6eea                           ; jsr $006EEA
+    jsr     (ROM_BASE+$006EEA).l
     addq.l  #$8,sp
     move.w  d0,d5
     cmpi.w  #$ff,d0
@@ -81,7 +81,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     move.l  (a0,d0.w),-(sp)
     pea     ($0003EA7A).l
     pea     -$0054(a6)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C
+    jsr     (ROM_BASE+$03B22C).l
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($0002).w
@@ -92,7 +92,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$183a                           ; jsr $01183A
+    jsr     (ROM_BASE+$01183A).l
     lea     $0024(sp),sp
     bra.b   .lf6e6
 .lf6be:                                                 ; $00F6BE
@@ -113,7 +113,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     cmpi.w  #$ff,d4
     bne.w   .lf61e
 .lf6e6:                                                 ; $00F6E6
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
     pea     ($0001).w
     move.w  d3,d0
     ext.l   d0
@@ -121,7 +121,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     pea     ($0002).w
     move.w  d3,d0
     ext.l   d0
@@ -129,7 +129,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6b78                           ; jsr $006B78
+    jsr     (ROM_BASE+$006B78).l
     movem.l -$0064(a6),d2-d5
     unlk    a6
     rts

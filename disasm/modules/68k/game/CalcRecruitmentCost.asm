@@ -175,11 +175,11 @@ FindBestCharForSlot:                                                  ; $0332DE
     move.b  (a3),d0              ; route_slot+$00 = city_a index
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6f42                           ; jsr CharCodeCompare ($006F42)
+    jsr     (ROM_BASE+$006F42).l                        ; jsr CharCodeCompare ($006F42)
     move.w  d0,-$0002(a6)        ; local $-2(a6) = char code compatibility index for this route
 ; GetByteField4($74E0): read byte field 4 from slot -> char category/type index
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr GetByteField4 ($0074E0): slot byte field 4
+    jsr     (ROM_BASE+$0074E0).l                        ; jsr GetByteField4 ($0074E0): slot byte field 4
     lea     $000c(sp),sp
     move.w  d0,d2                ; d2 = char category index (reused as loop var below)
 
@@ -203,7 +203,7 @@ FindBestCharForSlot:                                                  ; $0332DE
 ; GetByteField4 again with flag=1 (high nibble) to get alternate field
     pea     ($0001).w
     move.l  a3,-(sp)
-    dc.w    $4eb9,$0000,$74e0                           ; jsr GetByteField4 ($0074E0) high nibble
+    jsr     (ROM_BASE+$0074E0).l                        ; jsr GetByteField4 ($0074E0) high nibble
     addq.l  #$4,sp
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
@@ -216,7 +216,7 @@ FindBestCharForSlot:                                                  ; $0332DE
     move.b  (a3),d0              ; route_slot+$00 = city_a
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$06ee                           ; jsr CalcCharProfit ($0206EE)
+    jsr     (ROM_BASE+$0206EE).l                        ; jsr CalcCharProfit ($0206EE)
     lea     $0010(sp),sp
     move.w  d0,d3                ; d3 = reference profit score (beat-this threshold)
 
@@ -272,7 +272,7 @@ FindBestCharForSlot:                                                  ; $0332DE
     move.l  d0,-(sp)             ; candidate index
     move.w  $000a(a6),d0
     move.l  d0,-(sp)             ; player index
-    dc.w    $4eb9,$0000,$8016                           ; jsr CalcWeightedStat ($008016)
+    jsr     (ROM_BASE+$008016).l                        ; jsr CalcWeightedStat ($008016)
     addq.l  #$8,sp
     cmpi.w  #$ffff,d0            ; $FFFF = no contribution (char not useful for this player)
     beq.b   .l33444
@@ -308,7 +308,7 @@ FindBestCharForSlot:                                                  ; $0332DE
     move.b  (a3),d0              ; route_slot+$00 = city_a
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$06ee                           ; jsr CalcCharProfit ($0206EE)
+    jsr     (ROM_BASE+$0206EE).l                        ; jsr CalcCharProfit ($0206EE)
     lea     $0010(sp),sp
     move.w  d0,d4                ; d4 = candidate's profit score
     cmp.w   d3,d4                ; candidate profit >= current best? (lower is better here)

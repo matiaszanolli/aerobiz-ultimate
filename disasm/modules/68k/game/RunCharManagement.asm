@@ -79,7 +79,7 @@ RunCharManagement:                                                  ; $01861A
     andi.l  #$ff,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(airport_type) -> category
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(airport_type) -> category
     addq.l  #$4,sp
     move.w  d0,-$00b0(a6)             ; resolved_airport_type = category result
 
@@ -117,14 +117,14 @@ RunCharManagement:                                                  ; $01861A
     move.b  $0001(a2),d0              ; route_slot.city_b (destination city index)
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(city_b) -> dest category
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(city_b) -> dest category
     addq.l  #$4,sp
     move.l  d0,-(sp)                   ; save dest category
     moveq   #$0,d0
     move.b  (a2),d0                    ; route_slot.city_a (source city index)
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(city_a) -> src category
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(city_a) -> src category
     addq.l  #$4,sp
     move.l  (sp)+,d1                   ; d1 = dest category
     cmp.w   d1,d0                      ; src category == dest category?
@@ -133,7 +133,7 @@ RunCharManagement:                                                  ; $01861A
     move.b  $0001(a2),d0              ; city_b again (for airport type comparison)
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(city_b) -> category
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(city_b) -> category
     addq.l  #$4,sp
     cmp.w   -$00b0(a6),d0             ; matches resolved hub airport type?
     beq.b   .l187ae                    ; skip if same type as hub (not a candidate)
@@ -163,7 +163,7 @@ RunCharManagement:                                                  ; $01861A
     pea     ($0064).w                  ; arg: 100 (score scale factor)
     move.w  d2,d0
     move.l  d0,-(sp)                   ; arg: frequency
-    dc.w    $4eb9,$0001,$e11c                           ; jsr $01E11C -- CalcServiceScore(quality, 100, freq) -> d0
+    jsr     (ROM_BASE+$01E11C).l                        ; jsr $01E11C -- CalcServiceScore(quality, 100, freq) -> d0
     lea     $000c(sp),sp
     move.w  d0,d2                      ; d2 = computed service score
     cmp.w   d5,d2                      ; score < current best (lower = worse performance)?
@@ -198,7 +198,7 @@ RunCharManagement:                                                  ; $01861A
     pea     ($000C).w
     pea     ($00FF).w
     pea     -$000e(a6)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520 -- MemFill(local_buf, $FF, $0C)
+    jsr     (ROM_BASE+$01D520).l                        ; jsr $01D520 -- MemFill(local_buf, $FF, $0C)
     move.w  (a4),d0                    ; player_index
     mulu.w  #$0320,d0                  ; player offset
     move.w  -$0002(a6),d1            ; slot index
@@ -211,7 +211,7 @@ RunCharManagement:                                                  ; $01861A
 ; Determine which city endpoint to use for char lookup
     pea     ($0001).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr $01D6A4 -- GetCityEndpoint(0, 1) -> d0
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr $01D6A4 -- GetCityEndpoint(0, 1) -> d0
     tst.l   d0
     bne.b   .l18816                    ; d0 != 0: use city_b (destination)
     moveq   #$0,d3
@@ -224,7 +224,7 @@ RunCharManagement:                                                  ; $01861A
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(city) -> category
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(city) -> category
     lea     $0018(sp),sp
 
 ; --- Revenue 3x check: if actual*3 > target*2, look up a char for this route ---
@@ -246,7 +246,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)                   ; city endpoint category
     move.w  (a4),d0
     move.l  d0,-(sp)                   ; player_index
-    dc.w    $4eb9,$0001,$08f2                           ; jsr $0108F2 -- FindCharByValue(player, city_cat, 0)
+    jsr     (ROM_BASE+$0108F2).l                        ; jsr $0108F2 -- FindCharByValue(player, city_cat, 0)
     lea     $000c(sp),sp
     move.w  d0,d2                      ; d2 = char candidate (or -1)
     ext.l   d0
@@ -259,7 +259,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E -- CalcCharCost(d2, d3, player)
+    jsr     (ROM_BASE+$00E08E).l                        ; jsr $00E08E -- CalcCharCost(d2, d3, player)
     lea     $000c(sp),sp
     cmp.l   $0006(a3),d0              ; cost vs player_record.cash (+$06)?
     bls.b   .l18890                    ; affordable -- use this candidate
@@ -270,7 +270,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)                   ; city endpoint category
     move.w  (a4),d0
     move.l  d0,-(sp)                   ; player_index
-    dc.w    $4eb9,$0001,$0686                           ; jsr $010686 -- FindBestCharacter(player, city_cat)
+    jsr     (ROM_BASE+$010686).l                        ; jsr $010686 -- FindBestCharacter(player, city_cat)
     addq.l  #$8,sp
     move.w  d0,d2                      ; d2 = char candidate
 
@@ -292,10 +292,10 @@ RunCharManagement:                                                  ; $01861A
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)                   ; city endpoint category
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(city_cat) -> airport type
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(city_cat) -> airport type
     addq.l  #$4,sp
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$00f2                           ; jsr $0100F2 -- ShowCharIcon(airport_type)
+    jsr     (ROM_BASE+$0100F2).l                        ; jsr $0100F2 -- ShowCharIcon(airport_type)
     addq.l  #$8,sp
 
 ; Dispatch by weight category:
@@ -327,17 +327,17 @@ RunCharManagement:                                                  ; $01861A
     move.l  (a0,d0.w),-(sp)          ; push ptr to char name string
     move.l  ($00047CA4).l,-(sp)      ; ptr to dialog format string at $47CA4
     move.l  a5,-(sp)                   ; local display buffer
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C -- RenderTextBlock(buf, fmt, char, city, type)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, fmt, char, city, type)
     clr.l   -(sp)
     move.l  a5,-(sp)
     pea     ($0003).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr $01D6A4 -- DisplayDialog(0, 3, buf, 0)
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr $01D6A4 -- DisplayDialog(0, 3, buf, 0)
     addq.l  #$8,sp
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$fbd6                           ; jsr $02FBD6 -- ShowNegotiationResult(player, result)
+    jsr     (ROM_BASE+$02FBD6).l                        ; jsr $02FBD6 -- ShowNegotiationResult(player, result)
     lea     $0024(sp),sp
     move.w  #$1,-$00b4(a6)           ; contract_event_flag = 1 (negotiation shown)
     move.w  #$1,-$00b8(a6)           ; contract_printed_flag = 1
@@ -355,17 +355,17 @@ RunCharManagement:                                                  ; $01861A
     move.l  (a0,d0.w),-(sp)          ; city name
     move.l  ($00047CA8).l,-(sp)      ; ptr to dialog format string at $47CA8
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C -- RenderTextBlock(buf, fmt, city, char)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, fmt, city, char)
     clr.l   -(sp)
     move.l  a5,-(sp)
     pea     ($0003).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr $01D6A4 -- DisplayDialog(0, 3, buf, 0)
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr $01D6A4 -- DisplayDialog(0, 3, buf, 0)
     addq.l  #$8,sp
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$fbd6                           ; jsr $02FBD6 -- ShowNegotiationResult(player, result)
+    jsr     (ROM_BASE+$02FBD6).l                        ; jsr $02FBD6 -- ShowNegotiationResult(player, result)
     lea     $0020(sp),sp
     move.w  #$1,-$00b4(a6)           ; contract_event_flag = 1
 
@@ -377,7 +377,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E -- CalcCharCost(char, city, player) -> d0
+    jsr     (ROM_BASE+$00E08E).l                        ; jsr $00E08E -- CalcCharCost(char, city, player) -> d0
     lea     $000c(sp),sp
     move.l  d0,d2
     add.l   d0,d0
@@ -389,7 +389,7 @@ RunCharManagement:                                                  ; $01861A
     pea     ($0004).w                  ; dialog type 4
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$fbd6                           ; jsr $02FBD6 -- ShowNegotiationResult(player, 4, fmt, 0)
+    jsr     (ROM_BASE+$02FBD6).l                        ; jsr $02FBD6 -- ShowNegotiationResult(player, 4, fmt, 0)
     lea     $0010(sp),sp
     move.w  #$1,-$00b6(a6)           ; perf_event_flag = 1
 
@@ -418,7 +418,7 @@ RunCharManagement:                                                  ; $01861A
 ; Determine city endpoint for this route slot
     pea     ($0001).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr $01D6A4 -- GetCityEndpoint(0, 1) -> d0
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr $01D6A4 -- GetCityEndpoint(0, 1) -> d0
     addq.l  #$8,sp
     tst.l   d0
     bne.b   .l18a2a                    ; d0 != 0: use city_b
@@ -445,7 +445,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$0686                           ; jsr $010686 -- FindBestCharacter(player, city_cat)
+    jsr     (ROM_BASE+$010686).l                        ; jsr $010686 -- FindBestCharacter(player, city_cat)
     addq.l  #$8,sp
     bra.b   .l18a6c
 
@@ -455,7 +455,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$08f2                           ; jsr $0108F2 -- FindCharByValue(player, city_cat, 1)
+    jsr     (ROM_BASE+$0108F2).l                        ; jsr $0108F2 -- FindCharByValue(player, city_cat, 1)
     lea     $000c(sp),sp
 
 .l18a6c:                                                ; $018A6C
@@ -476,10 +476,10 @@ RunCharManagement:                                                  ; $01861A
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(city) -> airport type
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(city) -> airport type
     addq.l  #$4,sp
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$00f2                           ; jsr $0100F2 -- ShowCharIcon(airport_type)
+    jsr     (ROM_BASE+$0100F2).l                        ; jsr $0100F2 -- ShowCharIcon(airport_type)
     addq.l  #$8,sp
 
 ; Dispatch by weight category for performance dialog:
@@ -499,7 +499,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$e08e                           ; jsr $00E08E -- CalcCharCost(char, city, player) -> d0
+    jsr     (ROM_BASE+$00E08E).l                        ; jsr $00E08E -- CalcCharCost(char, city, player) -> d0
     lea     $000c(sp),sp
     lsl.l   #$2,d0                     ; cost * 4 (threshold multiplier)
     cmp.l   $0006(a3),d0              ; cost*4 vs player cash
@@ -536,13 +536,13 @@ RunCharManagement:                                                  ; $01861A
     move.l  ($00047CC4).l,-(sp)      ; ptr to dialog header format at $47CC4
 .l18b28:                                                ; $018B28
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C -- RenderTextBlock(buf, header, city, char)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, header, city, char)
     lea     $0014(sp),sp
     clr.l   -(sp)
     move.l  a5,-(sp)
     pea     ($0003).w
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$d6a4                           ; jsr $01D6A4 -- DisplayDialog(0, 3, buf, 0)
+    jsr     (ROM_BASE+$01D6A4).l                        ; jsr $01D6A4 -- DisplayDialog(0, 3, buf, 0)
     addq.l  #$8,sp
     move.l  d0,-(sp)
     bra.w   .l18c5e
@@ -555,7 +555,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$0686                           ; jsr $010686 -- FindBestCharacter(player, city_cat)
+    jsr     (ROM_BASE+$010686).l                        ; jsr $010686 -- FindBestCharacter(player, city_cat)
     addq.l  #$8,sp
     bra.b   .l18b7a
 
@@ -565,7 +565,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  d0,-(sp)
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$08f2                           ; jsr $0108F2 -- FindCharByValue(player, city_cat, 0)
+    jsr     (ROM_BASE+$0108F2).l                        ; jsr $0108F2 -- FindCharByValue(player, city_cat, 0)
     lea     $000c(sp),sp
 
 .l18b7a:                                                ; $018B7A
@@ -580,10 +580,10 @@ RunCharManagement:                                                  ; $01861A
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648 -- RangeLookup(city) -> airport type
+    jsr     (ROM_BASE+$00D648).l                        ; jsr $00D648 -- RangeLookup(city) -> airport type
     addq.l  #$4,sp
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$00f2                           ; jsr $0100F2 -- ShowCharIcon
+    jsr     (ROM_BASE+$0100F2).l                        ; jsr $0100F2 -- ShowCharIcon
     addq.l  #$8,sp
 
 ; Dispatch dialog variant by contract_event_flag
@@ -649,7 +649,7 @@ RunCharManagement:                                                  ; $01861A
     move.l  ($00047B78).l,-(sp)      ; ptr to event format string at $47B78
     move.l  ($00047CBC).l,-(sp)      ; ptr to data arg at $47CBC
     move.l  a5,-(sp)
-    dc.w    $4eb9,$0003,$b22c                           ; jsr $03B22C -- RenderTextBlock(buf, fmt, arg)
+    jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, fmt, arg)
     lea     $000c(sp),sp
     clr.l   -(sp)
     move.l  a5,-(sp)
@@ -657,7 +657,7 @@ RunCharManagement:                                                  ; $01861A
 .l18c5e:                                                ; $018C5E
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0002,$fbd6                           ; jsr $02FBD6 -- ShowNegotiationResult(player, result)
+    jsr     (ROM_BASE+$02FBD6).l                        ; jsr $02FBD6 -- ShowNegotiationResult(player, result)
     lea     $0010(sp),sp
 
 ; ============================================================================
@@ -666,7 +666,7 @@ RunCharManagement:                                                  ; $01861A
 .l18c6c:                                                ; $018C6C
     move.w  (a4),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$01ca                           ; jsr $0101CA -- ShowCharManagementList(player)
+    jsr     (ROM_BASE+$0101CA).l                        ; jsr $0101CA -- ShowCharManagementList(player)
     movem.l -$00e4(a6),d2-d7/a2-a5
     unlk    a6
     rts

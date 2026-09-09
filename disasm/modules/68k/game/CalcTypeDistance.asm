@@ -68,7 +68,7 @@ CalcCharRating:                                                  ; $00769C
     moveq   #$0,d0
     move.w  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     move.w  d0,d5
     moveq   #$0,d0
     move.w  d5,d0
@@ -76,7 +76,7 @@ CalcCharRating:                                                  ; $00769C
     moveq   #$0,d0
     move.w  d4,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6eea                           ; jsr $006EEA
+    jsr     (ROM_BASE+$006EEA).l
     lea     $0014(sp),sp
     ext.l   d0
     moveq   #$0,d1

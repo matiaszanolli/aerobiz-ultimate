@@ -7,16 +7,16 @@ RunScreenLoop:                                                  ; $00A006
     movem.l d2-d3/a2,-(sp)
     movea.l #$0004c974,a2
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$d340                           ; jsr $01D340
+    jsr     (ROM_BASE+$01D340).l
     pea     ($0001).w
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$d3ac                           ; jsr $01D3AC
+    jsr     (ROM_BASE+$01D3AC).l
     lea     $000c(sp),sp
     dc.w    $4eba,$04f8                                 ; jsr $00A526
     nop
     dc.w    $4eba,$1718                                 ; jsr $00B74C
     nop
-    dc.w    $4eb9,$0003,$a8d6                           ; jsr $03A8D6
+    jsr     (ROM_BASE+$03A8D6).l
     clr.w   d2
     clr.w   ($00FF17C4).l
     bra.w   .la12a
@@ -37,7 +37,7 @@ RunScreenLoop:                                                  ; $00A006
     move.l  a2,d0
     addq.l  #$2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     move.l  a2,d0
     moveq   #$22,d1
     add.l   d1,d0
@@ -48,25 +48,25 @@ RunScreenLoop:                                                  ; $00A006
     clr.l   -(sp)
     pea     ($0001).w
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     move.l  a2,d0
     addi.l  #$0722,d0
     move.l  d0,-(sp)
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0030(sp),sp
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($00FF1804).l
     pea     ($0104).w
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
-    dc.w    $4eb9,$0001,$77c4                           ; jsr $0177C4
+    jsr     (ROM_BASE+$01D568).l
+    jsr     (ROM_BASE+$0177C4).l
     clr.l   -(sp)
-    dc.w    $4eb9,$0001,$7566                           ; jsr $017566
+    jsr     (ROM_BASE+$017566).l
     lea     $0018(sp),sp
     move.w  d0,d3
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
     move.w  d3,d0
     ext.l   d0
     moveq   #-$1,d1
@@ -79,9 +79,9 @@ RunScreenLoop:                                                  ; $00A006
     nop
     dc.w    $4eba,$310a                                 ; jsr $00D20E
     nop
-    dc.w    $4eb9,$0002,$949a                           ; jsr $02949A
+    jsr     (ROM_BASE+$02949A).l
     pea     ($0001).w
-    dc.w    $4eb9,$0001,$819c                           ; jsr $01819C
+    jsr     (ROM_BASE+$01819C).l
     addq.l  #$8,sp
     move.w  #$1,($00FF17C4).l
     moveq   #$1,d2
@@ -95,7 +95,7 @@ RunScreenLoop:                                                  ; $00A006
     moveq   #$0,d0
     move.w  d2,d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$e98e                           ; jsr $01E98E
+    jsr     (ROM_BASE+$01E98E).l
     addq.l  #$4,sp
     addq.w  #$1,d2
     cmpi.w  #$7,d2

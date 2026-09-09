@@ -17,9 +17,9 @@ UpdateCharField:                                                  ; $0073A6
     ext.l   d0
     move.w  d2,d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e08a                           ; jsr $03E08A
+    jsr     (ROM_BASE+$03E08A).l
     move.b  d0,$000b(a2)
     move.b  $0003(a2),d0
     cmp.b   $000b(a2),d0

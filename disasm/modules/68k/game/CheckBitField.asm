@@ -14,7 +14,7 @@ CheckBitField:                                                  ; $007A24
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     addq.l  #$4,sp
     move.w  d0,d2
 .l7a4c:                                                 ; $007A4C
@@ -81,7 +81,7 @@ AdjustScrollPos:                                                  ; $007A74
     move.w  (a2),d0
     addq.l  #$2,d0
     move.l  #$0100,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     move.w  d0,(a2)
 .l7af8:                                                 ; $007AF8
     move.w  d2,d0
@@ -91,7 +91,7 @@ AdjustScrollPos:                                                  ; $007A74
     move.w  (a2),d0
     addi.l  #$fe,d0
     move.l  #$0100,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     move.w  d0,(a2)
 .l7b18:                                                 ; $007B18
     movem.l (sp)+,d2/a2

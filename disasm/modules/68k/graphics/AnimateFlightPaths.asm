@@ -11,7 +11,7 @@ AnimateFlightPaths:                                                  ; $01ABB0
     pea     ($0020).w
     clr.l   -(sp)
     move.l  a4,-(sp)
-    dc.w    $4eb9,$0001,$d520                           ; jsr $01D520
+    jsr     (ROM_BASE+$01D520).l
     lea     $000c(sp),sp
     clr.w   d4
     clr.w   d5
@@ -42,7 +42,7 @@ AnimateFlightPaths:                                                  ; $01ABB0
     move.l  d0,-(sp)
     move.w  $0008(a2),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$e346                           ; jsr $01E346
+    jsr     (ROM_BASE+$01E346).l
     move.w  d0,d3
     move.w  d6,d0
     move.l  d0,-(sp)
@@ -52,7 +52,7 @@ AnimateFlightPaths:                                                  ; $01ABB0
     move.l  d0,-(sp)
     move.w  $000a(a2),d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0001,$e346                           ; jsr $01E346
+    jsr     (ROM_BASE+$01E346).l
     lea     $0020(sp),sp
     move.w  d0,d2
     addi.w  #$7c,d0
@@ -79,7 +79,7 @@ AnimateFlightPaths:                                                  ; $01ABB0
     pea     ($0004).w
     pea     ($0037).w
     pea     ($000F).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0018(sp),sp
     tst.w   d5
     bne.b   .l1acb0

@@ -106,7 +106,7 @@ PlaceFormattedTiles:                                                  ; $01DFBE
     lea     $0030(sp),sp
     pea     ($0001).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     movem.l -$002c(a6),d2-d4
     unlk    a6
     rts

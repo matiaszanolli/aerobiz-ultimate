@@ -10,7 +10,7 @@ DecompressTilePair:                                                  ; $023A8A
     moveq   #$0,d0
     move.w  d2,d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     move.w  d0,d2
     add.w   d0,d0
     movea.l #$000482ac,a0
@@ -20,11 +20,11 @@ DecompressTilePair:                                                  ; $023A8A
     movea.l #$00088c90,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     moveq   #$0,d0
     move.w  d3,d0
     moveq   #$14,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     move.w  d0,d2
     add.w   d0,d0
     movea.l #$000482ac,a0
@@ -34,7 +34,7 @@ DecompressTilePair:                                                  ; $023A8A
     movea.l #$00088c90,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF3804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0010(sp),sp
     movem.l (sp)+,d2-d3
     rts

@@ -11,7 +11,7 @@ CountMatchingChars:                                                  ; $0074F8
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$d648                           ; jsr $00D648
+    jsr     (ROM_BASE+$00D648).l
     move.w  d0,d5
     moveq   #$0,d0
     move.w  d5,d0

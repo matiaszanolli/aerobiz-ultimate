@@ -39,7 +39,7 @@ CalcRouteRevenue:                                                  ; $011906
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)                ; arg: player_index
-    dc.w    $4eb9,$0001,$afca       ; jsr GetModeRowOffset ($01AFCA) -> d0 = row offset
+    jsr     (ROM_BASE+$01AFCA).l    ; jsr GetModeRowOffset ($01AFCA) -> d0 = row offset
     move.w  d0,d3                   ; d3 = row Y offset (replaces slot_index for next call)
     ; Re-point a2 to same slot entry (d5/d4 offsets reconstructed)
     movea.w d5,a2
@@ -53,7 +53,7 @@ CalcRouteRevenue:                                                  ; $011906
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)                ; arg: player_index
-    dc.w    $4eb9,$0000,$769c       ; jsr CalcCharRating ($00769C) -> d0 = base rating score
+    jsr     (ROM_BASE+$00769C).l    ; jsr CalcCharRating ($00769C) -> d0 = base rating score
     lea     $0010(sp),sp            ; clean up 4 args
     ; Net revenue formula: (base_rating - slot_cost + row_offset - 1) / row_offset
     move.w  d0,d2                   ; d2 = base rating (CalcCharRating result)
@@ -67,7 +67,7 @@ CalcRouteRevenue:                                                  ; $011906
     subq.l  #$1,d0                  ; d0 -= 1 (bias before division)
     move.w  d3,d1
     ext.l   d1                      ; d1 = divisor (row_offset)
-    dc.w    $4eb9,$0003,$e08a       ; jsr SignedDiv ($03E08A): d0 = d0 / d1 (signed 32/32)
+    jsr     (ROM_BASE+$03E08A).l    ; jsr SignedDiv ($03E08A): d0 = d0 / d1 (signed 32/32)
     move.w  d0,d2                   ; d2 = net revenue quotient
     bra.b   .l119a8
 .l11996:                                                ; $011996
@@ -159,7 +159,7 @@ ProcessRouteChange:                                                  ; $0119B4
     move.w  d0,d4
     cmpi.w  #$1,d4
     bne.w   .l11b00
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
     pea     ($0001).w
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
@@ -167,16 +167,16 @@ ProcessRouteChange:                                                  ; $0119B4
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6a2e                           ; jsr $006A2E
+    jsr     (ROM_BASE+$006A2E).l
     clr.l   -(sp)
     pea     ($000F).w
-    dc.w    $4eb9,$0001,$d3ac                           ; jsr $01D3AC
+    jsr     (ROM_BASE+$01D3AC).l
     pea     ($0005).w
     pea     ($000A).w
     pea     ($0017).w
-    dc.w    $4eb9,$0000,$5ff6                           ; jsr $005FF6
+    jsr     (ROM_BASE+$005FF6).l
     lea     $0020(sp),sp
-    dc.w    $4eb9,$0001,$d748                           ; jsr $01D748
+    jsr     (ROM_BASE+$01D748).l
     pea     ($0001).w
     clr.l   -(sp)
     clr.l   -(sp)
@@ -184,7 +184,7 @@ ProcessRouteChange:                                                  ; $0119B4
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$7912                           ; jsr $007912
+    jsr     (ROM_BASE+$007912).l
     move.w  d2,d0
     ext.l   d0
     lsl.l   #$2,d0
@@ -201,7 +201,7 @@ ProcessRouteChange:                                                  ; $0119B4
     move.w  ($00FF9A1C).l,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$9f4a                           ; jsr $009F4A
+    jsr     (ROM_BASE+$009F4A).l
     lea     $0020(sp),sp
     bra.b   .l11b20
 .l11b00:                                                ; $011B00
@@ -216,7 +216,7 @@ ProcessRouteChange:                                                  ; $0119B4
     dc.w    $4eba,$12f0                                 ; jsr $012E04
     nop
     addq.l  #$4,sp
-    dc.w    $4eb9,$0001,$d71c                           ; jsr $01D71C
+    jsr     (ROM_BASE+$01D71C).l
 .l11b20:                                                ; $011B20
     movem.l (sp)+,d2-d4/a2-a4
     rts

@@ -11,7 +11,7 @@ ShowPlayerChart:                                                  ; $0101CA
     pea     ($0010).w
     move.l  a2,-(sp)
     pea     ($00076ACE).l
-    dc.w    $4eb9,$0000,$45b2                           ; jsr $0045B2
+    jsr     (ROM_BASE+$0045B2).l
     clr.w   d2
 .l101ee:                                                ; $0101EE
     move.w  d3,d0
@@ -39,17 +39,17 @@ ShowPlayerChart:                                                  ; $0101CA
     pea     ($0008).w
     pea     ($0030).w
     pea     ($00076ABE).l
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     pea     ($0004A63A).l
     pea     ($00FF1804).l
-    dc.w    $4eb9,$0000,$3fec                           ; jsr $003FEC
+    jsr     (ROM_BASE+$003FEC).l
     lea     $0020(sp),sp
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($00FF1804).l
     pea     ($0025).w
     pea     ($0330).w
-    dc.w    $4eb9,$0001,$d568                           ; jsr $01D568
+    jsr     (ROM_BASE+$01D568).l
     pea     ($0004A5DA).l
     pea     ($0006).w
     pea     ($0008).w
@@ -57,12 +57,12 @@ ShowPlayerChart:                                                  ; $0101CA
     pea     ($0015).w
     clr.l   -(sp)
     pea     ($001B).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0030(sp),sp
     pea     ($0008).w
     pea     ($0038).w
     move.l  a2,-(sp)
-    dc.w    $4eb9,$0000,$5092                           ; jsr $005092
+    jsr     (ROM_BASE+$005092).l
     pea     ($6330).w
     pea     ($0006).w
     pea     ($000A).w
@@ -70,7 +70,7 @@ ShowPlayerChart:                                                  ; $0101CA
     pea     ($0014).w
     pea     ($0001).w
     pea     ($001A).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     movem.l -$001c(a6),d2-d3/a2
     unlk    a6
     rts

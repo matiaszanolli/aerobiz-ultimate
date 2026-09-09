@@ -84,7 +84,7 @@ BrowsePartners:                                                  ; $01A2CE
     ext.l   d0
     addq.l  #$3,d0
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     move.w  d0,d2
     ext.l   d0
     add.l   d0,d0
@@ -101,7 +101,7 @@ BrowsePartners:                                                  ; $01A2CE
     ext.l   d0
     addq.l  #$1,d0
     moveq   #$4,d1
-    dc.w    $4eb9,$0003,$e146                           ; jsr $03E146
+    jsr     (ROM_BASE+$03E146).l
     move.w  d0,d2
     ext.l   d0
     add.l   d0,d0
@@ -121,7 +121,7 @@ BrowsePartners:                                                  ; $01A2CE
 .l1a408:                                                ; $01A408
     clr.l   -(sp)
     pea     ($0003).w
-    dc.w    $4eb9,$0001,$d62c                           ; jsr $01D62C
+    jsr     (ROM_BASE+$01D62C).l
     addq.l  #$8,sp
     move.w  d0,d4
     cmpi.w  #$10,d0

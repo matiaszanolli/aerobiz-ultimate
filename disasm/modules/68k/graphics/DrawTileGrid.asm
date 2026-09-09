@@ -27,12 +27,12 @@ DrawTileGrid:                                                  ; $01D7BE
     lsl.l   #$5,d0
     move.w  d2,d1
     ext.l   d1
-    dc.w    $4eb9,$0003,$e05c                           ; jsr $03E05C
+    jsr     (ROM_BASE+$03E05C).l
     pea     (a2,d0.l)
     pea     ($0010).w
     pea     ($0002).w
     pea     ($0005).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     lea     $0018(sp),sp
     addi.w  #$20,d3
     addq.w  #$1,d2
@@ -47,7 +47,7 @@ DrawTileGrid:                                                  ; $01D7BE
     blt.b   .l1d7dc
     pea     ($0002).w
     pea     ($000E).w
-    dc.w    $4eb9,$0000,$0d64                           ; jsr $000D64
+    jsr     (ROM_BASE+$000D64).l
     addq.l  #$8,sp
     movem.l (sp)+,d2-d6/a2
     rts

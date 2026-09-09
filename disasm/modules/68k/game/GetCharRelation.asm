@@ -26,7 +26,7 @@ GetCharRelation:                                                  ; $018EBA
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    dc.w    $4eb9,$0000,$6eea                           ; jsr $006EEA
+    jsr     (ROM_BASE+$006EEA).l
     addq.l  #$8,sp
     cmp.w   d2,d0
     bne.b   .l18f14
