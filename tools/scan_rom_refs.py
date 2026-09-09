@@ -78,6 +78,36 @@ HAND_REGISTER = {
 # disasm/sections/header.asm is the Genesis vector table. On the 32X the live
 # vectors are in the boot half at cartridge $000000 and this copy is inert
 # (see disasm/ultimate_game.asm), so rebasing it would be noise.
+# A 32-bit ROM pointer can also be emitted as two consecutive dc.w words, which
+# neither the dc.l handling nor the hand-encoded-instruction handling sees. The
+# disassembly does this for pointer tables ("GraphicSequencePtrs" and friends).
+#
+# Telling a pointer table from compressed data or a counter table needs a strict
+# rule, because the loose one ("some pair reads as a ROM address") matches 2,697
+# lines of graphics data. Require, on one line: at least two pairs, every pair a
+# ROM address, the high word identical across all of them, and the low words all
+# distinct. That keeps $0007,$67FE,$0007,$681E,... and rejects $0005,$0006,
+# $0007,$0008,... which is an index sequence.
+DCW_TABLE = re.compile(r"\bdc\.w\s+(\S.*?)\s*(?:;.*)?$")
+DCW_WORD = re.compile(r"\$([0-9A-Fa-f]{1,4})\b")
+
+
+def dcw_pointers(operands):
+    """Return the pointer list if this dc.w operand list is a ROM pointer table."""
+    words = [int(w, 16) for w in DCW_WORD.findall(operands)]
+    if len(words) < 4 or len(words) % 2:
+        return None
+    pairs = [(words[i], words[i + 1]) for i in range(0, len(words), 2)]
+    if not all(hi <= 0x000F and in_rom((hi << 16) | lo) for hi, lo in pairs):
+        return None
+    if len({hi for hi, _ in pairs}) != 1:
+        return None
+    lows = [lo for _, lo in pairs]
+    if len(set(lows)) != len(lows):
+        return None
+    return [(hi << 16) | lo for hi, lo in pairs]
+
+
 EXCLUDED = {"disasm/sections/header.asm"}
 
 # A dc.w hand-encoding usually carries the decoded instruction as a comment.
@@ -113,6 +143,15 @@ def scan(paths):
                             findings.append(
                                 (path, num, "safe",
                                  f"dc.w {HAND_OPCODES[opcode]} abs.l", line.strip())
+                            )
+
+                dcw = DCW_TABLE.search(line)
+                if dcw:
+                    table = dcw_pointers(dcw.group(1))
+                    if table:
+                        for _ in table:
+                            findings.append(
+                                (path, num, "safe", "dc.w pointer table", line.strip())
                             )
 
                 dc_long = DC_LONG_LINE.search(line)
@@ -198,6 +237,17 @@ def rewrite_code(code):
                 return indent + mnemonic.ljust(8) + operand, [
                     f"dc.w {mnemonic} abs.l"
                 ], target
+
+    dcw = DCW_TABLE.search(code)
+    if dcw:
+        table = dcw_pointers(dcw.group(1))
+        if table:
+            indent = code[: len(code) - len(code.lstrip())]
+            # dc.l of the same values is byte-for-byte identical and says what
+            # the data actually is.
+            values = ",".join(rebase("%06X" % v) for v in table)
+            return (indent + "dc.l".ljust(8) + values,
+                    ["dc.w pointer table"] * len(table), None)
 
     dc_long = DC_LONG_LINE.search(code)
     if dc_long:
