@@ -376,14 +376,18 @@ rate instead of Genesis CRAM tricks.
    wrong -- the source register was never the constraint.
 
    The narrow part that remained -- **is `$880000-$9FFFFF` still readable while
-   `RV = 1`?** -- is answered by `make 32x-rvprobe`: under PicoDrive both
-   windows read identically with `RV` set and clear, while the cartridge is also
-   visible at its own offsets. That is emulator behaviour, not the manual, which
-   says only what appears at `$000100-$3FFFFF` when `RV = 1`
-   (32x-hardware-manual.md:237) and what `$880000-$9FFFFF` holds when `RV = 0`
-   (:238). The thunk therefore keeps its windowed sequence in RAM regardless;
-   the answer buys a simplification later, not correctness now. **Re-run the
-   probe on hardware before relying on it.**
+   `RV = 1`?** -- is **still open, and cannot be answered on PicoDrive.** The
+   emulator does not implement the `RV` bit at all: `pico/32x/memory.c:2358`
+   says "don't need to care about RV - not emulated", and :2481 says "we take
+   the easy way and don't unmap ROM, so that we can avoid handling the RV bit",
+   leaving `m68k_map_unmap(0x000000, 0x3fffff)` commented out.
+
+   So `make 32x-rvprobe` reporting that both windows survive `RV = 1` is not
+   evidence: nothing was ever remapped. An earlier revision of this section
+   recorded that as an answer; it was not one. The whole `RV` mechanism is
+   currently unverifiable here -- the thunk can be shown not to break anything,
+   but not to work. Settling this needs real hardware or an emulator that
+   models `RV`.
 4. ~~**SH2 C toolchain.**~~ **Resolved.** marsdev is installed at
    `/mnt/data/src/marsdev` and carries `sh-elf-gcc` 15.1.0 at
    `mars/sh-elf/bin/sh-elf-gcc`. Nothing needs building; the SH2 side can move

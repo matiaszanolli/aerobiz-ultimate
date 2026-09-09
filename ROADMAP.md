@@ -190,9 +190,11 @@ VDP registers 21-23, and runs the windowed sequence from below the stack
 pointer. A work-RAM source takes neither and hands off to the game's own
 trigger stub.
 
-`make 32x-rvprobe` answers §5.3: under PicoDrive both cartridge windows survive
-`RV = 1` while the cartridge is also visible at its own offsets. Emulator
-behaviour, not the manual, so the sequence stays RAM-resident.
+`make 32x-rvprobe` does **not** answer §5.3 after all: PicoDrive does not
+implement the `RV` bit (`pico/32x/memory.c:2358`, :2481), so the probe was
+observing a mapping that never changed. The window is unverifiable on this
+emulator -- the thunk demonstrably breaks nothing, and cannot be shown to work.
+Keep the probe; it will answer the question on hardware.
 
 Exercised: 616 thunk entries over 3,000 frames, 31 of them on the cartridge
 path. **None in the first 900 frames** -- an earlier sample over that range

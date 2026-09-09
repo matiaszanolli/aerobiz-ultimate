@@ -11,6 +11,42 @@ manual section or the tool output that backs it.
 
 ## 2026-09-09
 
+### Retraction: the RV probe answered nothing
+
+PicoDrive does not emulate the `RV` bit. `pico/32x/memory.c:2358` -- "c0: don't
+need to care about RV - not emulated" -- and :2481, "we take the easy way and
+don't unmap ROM, so that we can avoid handling the RV bit", with the
+`m68k_map_unmap(0x000000, 0x3fffff)` left commented out.
+
+So the probe result recorded earlier today -- both cartridge windows reading
+identically with `RV` set and clear -- was measuring a mapping that never
+changed. It is not evidence for anything. §5.3 is open again, and the `RV`
+window is unverifiable on this emulator: U-020 can be shown not to break
+anything, and cannot be shown to work.
+
+Confirmed independently: building the thunk so that it never translates gives
+byte-for-byte the same VRAM as building it so that it always does. Under
+PicoDrive the translation is a no-op in both directions.
+
+The lesson is narrower than "check the emulator". The probe was well designed
+for the question and the result was internally consistent -- both windows equal,
+the cartridge visible at its own offsets, exactly what a working `RV` would
+produce. A negative control was missing: read the same addresses with `RV`
+never set. That would have shown the same answer and exposed the test as inert.
+
+### Hypothesis (2), the VRAM fill, is disproved
+
+`ConfigVDPColors` uses mode `$9780`, a VRAM fill, which writes a pattern without
+reading ROM -- a candidate for filling VRAM with `$FF` that would survive every
+pointer fix. It is not the cause: the fill value at `$28(a5)` reads `$0000` in
+both builds at frame 1450.
+
+Also worth recording from that comparison: the savestate work-RAM chunk is
+word-byte-swapped, so `ff 00 7a ef` is `$00FFEF7A`. The 32X's DMA source at that
+moment decodes to `$00973780` -- correctly rebased, in the bank window -- so the
+pointer feeding DMA is right and the fetch still yields `$FF`.
+
+
 ### The display fault is unrebased pointers, and savestates proved it
 
 Comparing PicoDrive savestates turned out to be the instrument we needed, and it
