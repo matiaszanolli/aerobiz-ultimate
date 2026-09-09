@@ -72,7 +72,7 @@ DrawCharInfoPanel:                                                  ; $00643C
     move.w  d0,d6
     ; --- Phase: Decompress and DMA Background Tiles ---
     ; LZ_Decompress: expand tile graphics from ROM $4DFB8 into save_buf_base ($FF1804)
-    pea     ($0004DFB8).l
+    pea     (ROM_BASE+$0004DFB8).l
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l
     ; VRAMBulkLoad: DMA the decompressed tiles to VRAM at tile index $2E1
@@ -91,7 +91,7 @@ DrawCharInfoPanel:                                                  ; $00643C
     ; --- Phase: Draw Panel Background and Stat Bar ---
     ; GameCommand #$1B: place ROM tile block from $4DD9C
     ; at position (col=$1E=30, row=$9=9, height=d2-1)
-    pea     ($0004DD9C).l
+    pea     (ROM_BASE+$0004DD9C).l
     pea     ($0009).w
     pea     ($001E).w
     moveq   #$0,d0
@@ -281,7 +281,7 @@ DrawCharInfoPanel:                                                  ; $00643C
     jsr     (ROM_BASE+$006298).l
     ; PrintfNarrow: print a short label from ROM $3E182 next to the secondary bar
     move.l  $0024(a6),-(sp)
-    pea     ($0003E182).l
+    pea     (ROM_BASE+$0003E182).l
     jsr     (ROM_BASE+$03B246).l
     lea     $0028(sp),sp
     ; --- Phase: Configure Third Scroll Bar (Tertiary / background overlay bar) ---

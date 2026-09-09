@@ -42,7 +42,7 @@ l_265c4:
     pea     ($0004).w               ; cursor Y = row 4
     jsr SetTextCursor
     ; Print the screen title string using the computed tile base (d2 = tile char# index)
-    pea     ($00041560).l           ; ROM ptr to title format string for quarter report header
+    pea     (ROM_BASE+$00041560).l  ; ROM ptr to title format string for quarter report header
     jsr     (a4)                    ; PrintfWide: render title at current cursor position
     lea     $28(a7), a7             ; clean up 10 longwords from stack ($28 bytes)
     ; Define the main text rendering window: 27 rows, 32 cols, origin (0,0)
@@ -54,10 +54,10 @@ l_265c4:
     ; DisplaySetup with ROM data at $76A9E, width=$30 (48), height=$10 (16)
     pea     ($0010).w               ; height = 16 tiles
     pea     ($0030).w               ; width  = 48 tiles
-    pea     ($00076A9E).l           ; ROM: display parameter/tile layout data for report BG
+    pea     (ROM_BASE+$00076A9E).l  ; ROM: display parameter/tile layout data for report BG
     jsr DisplaySetup                ; configure display parameters for the BG tile area
     ; LZ decompress first graphics block and place tiles (top panel)
-    move.l  ($000A1B68).l, -(a7)   ; ROM compressed graphics ptr from pointer table at $A1B68
+    move.l  (ROM_BASE+$000A1B68).l, -(a7) ; ROM compressed graphics ptr from pointer table at $A1B68
     pea     ($00FF1804).l           ; dest = save_buf_base ($FF1804): decompress into staging buffer
     jsr LZ_Decompress               ; LZSS decompress first report graphic asset
     ; Place the decompressed tiles at tile position ($0F, $21) with attributes $030F
@@ -67,7 +67,7 @@ l_265c4:
     jsr CmdPlaceTile                ; copy decompressed tiles from staging buffer into VRAM at target
     lea     $30(a7), a7             ; clean up 12 longwords ($30 bytes)
     ; GameCommand #$1B (draw box): place decorative border at (1,2) size ($1E cols × 1 row × 1 depth)
-    pea     ($00073378).l           ; ROM: border tile pattern data for report window frame
+    pea     (ROM_BASE+$00073378).l  ; ROM: border tile pattern data for report window frame
     pea     ($0002).w               ; box height = 2
     pea     ($001E).w               ; box width  = $1E = 30 columns
     pea     ($0001).w               ; arg 4 = 1
@@ -76,7 +76,7 @@ l_265c4:
     pea     ($001B).w               ; GameCommand #$1B = draw bordered rectangle
     jsr     (a5)                    ; GameCommand: draw the report window border
     ; LZ decompress second graphics block and place tiles (bottom panel)
-    move.l  ($000A1B24).l, -(a7)   ; ROM compressed graphics ptr from pointer table at $A1B24
+    move.l  (ROM_BASE+$000A1B24).l, -(a7) ; ROM compressed graphics ptr from pointer table at $A1B24
     pea     ($00FF1804).l           ; dest = save_buf_base staging buffer
     jsr LZ_Decompress               ; LZSS decompress second report graphic asset
     pea     ($001A).w               ; tile row = $1A
@@ -111,13 +111,13 @@ l_265c4:
     dc.w    $0010                   ; case 1 (Q2): offset to pea $41558
     dc.w    $0018                   ; case 2 (Q3): offset to pea $41554
     dc.w    $0020                   ; case 3 (Q4): offset to pea $41550
-    pea     ($0004155C).l           ; case 0 = "1st Quarter" string ptr
+    pea     (ROM_BASE+$0004155C).l  ; case 0 = "1st Quarter" string ptr
     bra.b   l_26722
-    pea     ($00041558).l           ; case 1 = "2nd Quarter" string ptr
+    pea     (ROM_BASE+$00041558).l  ; case 1 = "2nd Quarter" string ptr
     bra.b   l_26722
-    pea     ($00041554).l           ; case 2 = "3rd Quarter" string ptr
+    pea     (ROM_BASE+$00041554).l  ; case 2 = "3rd Quarter" string ptr
     bra.b   l_26722
-    pea     ($00041550).l           ; case 3 = "4th Quarter" string ptr
+    pea     (ROM_BASE+$00041550).l  ; case 3 = "4th Quarter" string ptr
 l_26722:
     jsr     (a4)                    ; PrintfWide: display the selected quarter-name label
     addq.l  #$4, a7                 ; clean up: 1 longword (the string pointer)
@@ -129,7 +129,7 @@ l_26726:
     moveq   #$0,d0
     move.w  d2, d0                  ; d0 = tile base index (computed at top from frame_counter/4 + $7A3)
     move.l  d0, -(a7)              ; pass tile index as numeric arg to PrintfWide
-    pea     ($0004154C).l           ; ROM: format string for the year/tile-index field
+    pea     (ROM_BASE+$0004154C).l  ; ROM: format string for the year/tile-index field
     jsr     (a4)                    ; PrintfWide: render the year/report-number value
     lea     $10(a7), a7             ; clean up 4 longwords
     ; --- Phase: Route Column Loop (draws 4 player route-status rows in background) ---
@@ -152,10 +152,10 @@ l_26760:
     add.w   d0, d4                  ; d4 = total active route categories for this player
     cmpi.w  #$1, d4                 ; does player have more than 1 route type?
     ble.b   l_2677c                 ; only domestic (or none): use single-route icon
-    pea     ($0007257E).l           ; ROM: tile data for dual-route (domestic+international) column icon
+    pea     (ROM_BASE+$0007257E).l  ; ROM: tile data for dual-route (domestic+international) column icon
     bra.b   l_26782
 l_2677c:
-    pea     ($00072524).l           ; ROM: tile data for single-route (domestic only) column icon
+    pea     (ROM_BASE+$00072524).l  ; ROM: tile data for single-route (domestic only) column icon
 l_26782:
     ; GameCommand #$1B: draw player column header box at computed tile position
     pea     ($0005).w               ; box height = 5 rows
@@ -225,7 +225,7 @@ l_26782:
     move.w  d4, d0
     ext.l   d0                      ; sign-extend for PrintfWide numeric arg
     move.l  d0, -(a7)              ; push route count as numeric argument
-    pea     ($00041548).l           ; ROM: format string for route-count field (e.g., "%d routes")
+    pea     (ROM_BASE+$00041548).l  ; ROM: format string for route-count field (e.g., "%d routes")
     jsr     (a4)                    ; PrintfWide: display total route count
     lea     $10(a7), a7             ; clean up 4 longwords
     ; Advance to next player: a2 += $24 (next player_record), a3 += 2 (next offset word)
@@ -291,7 +291,7 @@ l_2687e:
     pea     ($0004).w               ; cursor Y = row 4
     jsr SetTextCursor               ; position cursor for page title text
     lea     $2c(a7), a7             ; clean up 11 longwords
-    pea     ($00041536).l           ; ROM: "Cargo" page title string ptr
+    pea     (ROM_BASE+$00041536).l  ; ROM: "Cargo" page title string ptr
     bra.w   l_26a16                 ; jump to PrintfWide call for page title
 
     ; -- Case 1: Passengers page --
@@ -311,7 +311,7 @@ l_2687e:
     pea     ($0004).w
     jsr SetTextCursor
     lea     $2c(a7), a7
-    pea     ($00041524).l           ; ROM: "Passengers" page title string ptr
+    pea     (ROM_BASE+$00041524).l  ; ROM: "Passengers" page title string ptr
     bra.w   l_26a16
 
     ; -- Case 2: Funds page --
@@ -331,7 +331,7 @@ l_2687e:
     pea     ($0004).w
     jsr SetTextCursor
     lea     $2c(a7), a7
-    pea     ($00041512).l           ; ROM: "Funds" page title string ptr
+    pea     (ROM_BASE+$00041512).l  ; ROM: "Funds" page title string ptr
     bra.w   l_26a16
 
     ; -- Case 3: Quarterly results page --
@@ -350,7 +350,7 @@ l_2687e:
     pea     ($0004).w
     jsr SetTextCursor
     lea     $28(a7), a7             ; clean up (DrawQuarterResultsScreen takes 1 arg, not 2)
-    pea     ($00041500).l           ; ROM: "Results" page title string ptr
+    pea     (ROM_BASE+$00041500).l  ; ROM: "Results" page title string ptr
     bra.b   l_26a16
 
     ; -- Case 4: All pages combined (compact multi-panel view) --
@@ -383,7 +383,7 @@ l_2687e:
     pea     ($0004).w
     jsr SetTextCursor
     lea     $24(a7), a7
-    pea     ($000414EE).l           ; ROM: combined-view title string ptr (e.g., "All Routes")
+    pea     (ROM_BASE+$000414EE).l  ; ROM: combined-view title string ptr (e.g., "All Routes")
 l_26a16:
     jsr     (a4)                    ; PrintfWide: display the selected page title string
     addq.l  #$4, a7                 ; clean up the string pointer pushed above

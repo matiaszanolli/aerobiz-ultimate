@@ -24,12 +24,12 @@ OrchestrateGraphicsPipeline:
 ; Load chart header background tiles from ROM $4978E; 16×16 region
     pea     ($0010).w            ; height = $10
     pea     ($0010).w            ; width = $10
-    pea     ($0004978E).l        ; ROM: compressed background tile data for chart header
+    pea     (ROM_BASE+$0004978E).l ; ROM: compressed background tile data for chart header
     jsr DisplaySetup             ; decompress and place background
 
 ; GameCommand #$1B: place header tile strip (column labels row)
 ; col=2, row=$1E, layer=1, count=1 (one strip)
-    pea     ($0004E116).l        ; ROM: tile strip data for column headers
+    pea     (ROM_BASE+$0004E116).l ; ROM: tile strip data for column headers
     pea     ($0002).w            ; col = 2
     pea     ($001E).w            ; row = $1E = 30
     pea     ($0001).w            ; layer = 1
@@ -39,7 +39,7 @@ OrchestrateGraphicsPipeline:
     jsr GameCommand              ; GameCommand #$1B: place header tile strip
 
 ; Decompress char icon tiles to work buffer at save_buf_base ($FF1804)
-    pea     ($0004E18E).l        ; ROM source: LZ-compressed char icon tile data
+    pea     (ROM_BASE+$0004E18E).l ; ROM source: LZ-compressed char icon tile data
     pea     ($00FF1804).l        ; dest: save_buf_base ($FF1804) work buffer
     jsr LZ_Decompress            ; LZSS decompress char icon graphics
     lea     $30(a7), a7
@@ -67,7 +67,7 @@ OrchestrateGraphicsPipeline:
     addq.l  #$1, d0             ; row = d4+1 = 3
     move.l  d0, -(a7)
     jsr     (a5)                 ; SetTextCursor(col=1, row=d4+1)
-    pea     ($000413CE).l        ; ROM string: column header 1 (char name label)
+    pea     (ROM_BASE+$000413CE).l ; ROM string: column header 1 (char name label)
     jsr     (a4)                 ; PrintfWide: print name column header
     lea     $30(a7), a7
 
@@ -78,7 +78,7 @@ OrchestrateGraphicsPipeline:
     addi.l  #$a, d0             ; row = d4+10
     move.l  d0, -(a7)
     jsr     (a5)
-    pea     ($000413C6).l        ; ROM string: column header 2 (relation delta label)
+    pea     (ROM_BASE+$000413C6).l ; ROM string: column header 2 (relation delta label)
     jsr     (a4)
 
 ; Header 3: col=1, row=d4+$11 (= d4+17)
@@ -88,7 +88,7 @@ OrchestrateGraphicsPipeline:
     addi.l  #$11, d0            ; row = d4+17
     move.l  d0, -(a7)
     jsr     (a5)
-    pea     ($000413C0).l        ; ROM string: column header 3 (availability count label)
+    pea     (ROM_BASE+$000413C0).l ; ROM string: column header 3 (availability count label)
     jsr     (a4)
 
 ; Header 4: col=1, row=d4+$17 (= d4+23)
@@ -98,7 +98,7 @@ OrchestrateGraphicsPipeline:
     addi.l  #$17, d0            ; row = d4+23
     move.l  d0, -(a7)
     jsr     (a5)
-    pea     ($000413BA).l        ; ROM string: column header 4 (aircraft count label)
+    pea     (ROM_BASE+$000413BA).l ; ROM string: column header 4 (aircraft count label)
     jsr     (a4)
     lea     $24(a7), a7
 
@@ -133,12 +133,12 @@ OrchestrateGraphicsPipeline:
 ; Load per-row char portrait background (16×32 tile region at ROM $4E0F6)
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($0004E0F6).l        ; ROM: char portrait tile data (row background)
+    pea     (ROM_BASE+$0004E0F6).l ; ROM: char portrait tile data (row background)
     jsr DisplaySetup
 
 ; GameCommand #$1B: place tile strip at row's Y position
 ; col=d4, row=d5+d2*2, count=$1E, layer=1
-    pea     ($0004E116).l        ; tile strip data (same header strip reused per-row)
+    pea     (ROM_BASE+$0004E116).l ; tile strip data (same header strip reused per-row)
     pea     ($0002).w            ; col = 2
     pea     ($001E).w            ; count = $1E = 30
     move.w  d5, d0
@@ -156,7 +156,7 @@ OrchestrateGraphicsPipeline:
     jsr GameCommand              ; GameCommand #$1B: place row tile strip
 
 ; Decompress and DMA char portrait icon (same asset, per-row instance)
-    pea     ($0004E18E).l
+    pea     (ROM_BASE+$0004E18E).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
     lea     $30(a7), a7
@@ -198,7 +198,7 @@ OrchestrateGraphicsPipeline:
     lsl.w   #$2, d0              ; name_index * 4 (long pointer table stride)
     movea.l  #$0005ECFC,a0       ; ROM: city/char name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push name string pointer
-    pea     ($000413B6).l        ; ROM format string: "%s" (character name)
+    pea     (ROM_BASE+$000413B6).l ; ROM format string: "%s" (character name)
     jsr     (a4)                 ; PrintfWide: display character name
 
 ; Column 2: City relation delta
@@ -222,7 +222,7 @@ OrchestrateGraphicsPipeline:
     move.b  $1(a2), d1           ; event_records byte 1: city B assignment/count
     sub.l   d1, d0               ; delta = city_A - city_B
     move.l  d0, -(a7)
-    pea     ($000413B2).l        ; ROM format string: "%+d" or delta format
+    pea     (ROM_BASE+$000413B2).l ; ROM format string: "%+d" or delta format
     jsr     (a4)                 ; PrintfWide: display city relation delta
 
 ; Column 3: Availability count (event_records byte 1 = available count)
@@ -241,7 +241,7 @@ OrchestrateGraphicsPipeline:
     moveq   #$0,d0
     move.b  $1(a2), d0           ; event_records+$1 = availability or scheduled count
     move.l  d0, -(a7)
-    pea     ($000413AE).l        ; ROM format string: "%d" availability
+    pea     (ROM_BASE+$000413AE).l ; ROM format string: "%d" availability
     jsr     (a4)                 ; PrintfWide: display availability count
 
 ; Column 4: Aircraft count -- scan $FF02E8 char slot group for matching char index
@@ -287,7 +287,7 @@ OrchestrateGraphicsPipeline:
     move.w  d7, d0               ; d7 = aircraft count (from $FF02E8 scan, or 0)
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($000413AA).l        ; ROM format string: "%d" aircraft count
+    pea     (ROM_BASE+$000413AA).l ; ROM format string: "%d" aircraft count
     jsr     (a4)                 ; PrintfWide: display aircraft count
     addq.l  #$8, a7
     addq.w  #$1, d2              ; next row

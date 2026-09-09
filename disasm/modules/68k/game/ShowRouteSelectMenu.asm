@@ -14,7 +14,7 @@ ShowRouteSelectMenu:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($0004211E).l
+    pea     (ROM_BASE+$0004211E).l
     move.w  d7, d0
     ext.l   d0
     move.l  d0, -(a7)

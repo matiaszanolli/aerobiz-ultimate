@@ -15,7 +15,7 @@ LoadMapGraphics:
     movea.l  #$000045B2,a5       ; a5 = ROM sub at $45B2 (palette/LZ/tile operation helper)
     ; --- Phase: Decompress Route Tiles (Asset 1) ---
     ; LZ_Decompress(src, dest): decompress first route/city map tile set to $FF1804
-    move.l  ($000B753C).l, -(a7) ; arg: LZ source pointer (loaded from ROM table at $B753C)
+    move.l  (ROM_BASE+$000B753C).l, -(a7) ; arg: LZ source pointer (loaded from ROM table at $B753C)
     move.l  a4, -(a7)            ; arg: dest = $FF1804 (save_buf_base / tile staging buffer)
     jsr LZ_Decompress            ; decompress first map tile graphic to $FF1804
     ; CmdPlaceTile($FF1804, tile_count=1, dest_vram=$BF):
@@ -26,7 +26,7 @@ LoadMapGraphics:
     jsr CmdPlaceTile             ; DMA/copy tile data to VRAM
     ; --- Phase: Decompress Route Tiles (Asset 2) ---
     ; Second LZ asset into $FF1804, to be tiled in chunks in the loop below
-    move.l  ($000B7540).l, -(a7) ; arg: second LZ source pointer (from ROM table $B7540)
+    move.l  (ROM_BASE+$000B7540).l, -(a7) ; arg: second LZ source pointer (from ROM table $B7540)
     move.l  a4, -(a7)            ; arg: dest = $FF1804
     jsr LZ_Decompress            ; decompress second map tile graphic set
     lea     $1c(a7), a7          ; clean up all args pushed since before first LZ (7 × 4 = $1C)
@@ -72,7 +72,7 @@ l_3c22e:
     bcs.b   l_3c208              ; loop until entire asset uploaded
     ; --- Phase: Decompress City Tiles (Asset 3) and Upload to VRAM $400+ ---
     ; Third LZ asset = city tile graphics. Uploaded in $80-word chunks to VRAM base $400.
-    move.l  ($000B7544).l, -(a7) ; arg: third LZ source pointer (from ROM table $B7544)
+    move.l  (ROM_BASE+$000B7544).l, -(a7) ; arg: third LZ source pointer (from ROM table $B7544)
     move.l  a4, -(a7)            ; arg: dest = $FF1804
     jsr LZ_Decompress            ; decompress city tile graphics
     addq.l  #$8, a7              ; pop 2 args
@@ -118,7 +118,7 @@ l_3c2a0:
     ; GameCommand #$1B = render text/graphic from ROM address at given screen position.
     ; Format: cmd=$1B, col, row=0, w=$20, h=?, row2=?, src_ptr
     ; First overlay: text/graphic at $7486E, row=0, col=$0A, w=$20, h=0 (header label)
-    pea     ($0007486E).l        ; source address in ROM ($7486E = first map region label)
+    pea     (ROM_BASE+$0007486E).l ; source address in ROM ($7486E = first map region label)
     pea     ($000A).w            ; col = $0A
     pea     ($0020).w            ; width = $20 tiles
     clr.l   -(a7)               ; row = 0
@@ -131,7 +131,7 @@ l_3c2a0:
     jsr     (a2)
     lea     $24(a7), a7          ; pop args
     ; Second overlay: ROM $74AEE (second region label), positioned at col=0, row=$0A, h=$12
-    pea     ($00074AEE).l        ; source = $74AEE (second map label graphic)
+    pea     (ROM_BASE+$00074AEE).l ; source = $74AEE (second map label graphic)
     pea     ($0012).w            ; h = $12
     pea     ($0020).w            ; w = $20
     pea     ($000A).w            ; row = $0A
@@ -146,7 +146,7 @@ l_3c2a0:
     ; Third overlay: ROM $7586E at col=$0F, row=0, w=$20, h=$80, x=$80 (left panel?)
     pea     ($0080).w            ; h = $80
     pea     ($0080).w            ; x offset = $80 (horizontal scroll offset for this panel)
-    pea     ($0007586E).l        ; source = $7586E (third map panel graphic)
+    pea     (ROM_BASE+$0007586E).l ; source = $7586E (third map panel graphic)
     pea     ($0020).w            ; w = $20
     clr.l   -(a7)               ; extra = 0
     pea     ($000F).w            ; col = $0F (panel column = row position on screen)
@@ -158,7 +158,7 @@ l_3c2a0:
     ; Fourth overlay: ROM $7596E at col=$0F, row=$20, w=$20, h=$80, x=$100 (right panel?)
     pea     ($0100).w            ; x offset = $100 (second panel, offset right)
     pea     ($0080).w            ; h = $80
-    pea     ($0007596E).l        ; source = $7596E (fourth map panel graphic)
+    pea     (ROM_BASE+$0007596E).l ; source = $7596E (fourth map panel graphic)
     pea     ($0020).w            ; w = $20
     pea     ($0020).w            ; row = $20
     pea     ($000F).w            ; col = $0F
@@ -171,7 +171,7 @@ l_3c2a0:
     ; Four strips are loaded into a3+0, a3+$20, a3+$40, a3+$60 (one per map region quadrant).
     pea     ($0020).w            ; count = $20 (32 bytes per strip)
     move.l  a3, -(a7)            ; dest = a3 + 0 (first quadrant color strip)
-    pea     ($00076F16).l        ; source = ROM $76F16 (first palette strip: NW quadrant)
+    pea     (ROM_BASE+$00076F16).l ; source = ROM $76F16 (first palette strip: NW quadrant)
     jsr     (a5)                 ; copy 32-byte palette strip
     lea     $2c(a7), a7          ; pop 3 args (count, dest, src) + trailing args from earlier
     pea     ($0020).w
@@ -179,21 +179,21 @@ l_3c2a0:
     moveq   #$20,d1
     add.l   d1, d0               ; dest = a3 + $20 (second quadrant)
     move.l  d0, -(a7)
-    pea     ($00076F36).l        ; source = $76F36 (NE quadrant palette strip)
+    pea     (ROM_BASE+$00076F36).l ; source = $76F36 (NE quadrant palette strip)
     jsr     (a5)
     pea     ($0020).w
     move.l  a3, d0
     moveq   #$40,d1
     add.l   d1, d0               ; dest = a3 + $40 (third quadrant)
     move.l  d0, -(a7)
-    pea     ($00076F96).l        ; source = $76F96 (SW quadrant palette strip)
+    pea     (ROM_BASE+$00076F96).l ; source = $76F96 (SW quadrant palette strip)
     jsr     (a5)
     pea     ($0020).w
     move.l  a3, d0
     moveq   #$60,d1
     add.l   d1, d0               ; dest = a3 + $60 (fourth quadrant)
     move.l  d0, -(a7)
-    pea     ($00076F76).l        ; source = $76F76 (SE quadrant palette strip)
+    pea     (ROM_BASE+$00076F76).l ; source = $76F76 (SE quadrant palette strip)
     jsr     (a5)
     lea     $24(a7), a7          ; pop remaining palette-copy args
     ; --- Phase: Initial Color Tileset Render ---
@@ -203,19 +203,19 @@ l_3c2a0:
     pea     ($0040).w            ; count = $40 (64 color entries to process)
     clr.l   -(a7)               ; extra param = 0
     move.l  a3, -(a7)            ; 4-strip work buffer with loaded palette data
-    pea     ($00048D30).l        ; ROM palette/color table at $48D30 (main map color table)
+    pea     (ROM_BASE+$00048D30).l ; ROM palette/color table at $48D30 (main map color table)
     bsr.w RenderColorTileset     ; apply initial color scheme to map tiles
     ; Update two strips for the animated scroll preview phase (alternate palette)
     pea     ($0020).w
     move.l  a3, -(a7)            ; dest = a3 + 0 (overwrite first strip for scroll anim)
-    pea     ($00076F36).l        ; source = $76F36 (alternate NE palette used during scroll)
+    pea     (ROM_BASE+$00076F36).l ; source = $76F36 (alternate NE palette used during scroll)
     jsr     (a5)
     pea     ($0020).w
     move.l  a3, d0
     moveq   #$20,d1
     add.l   d1, d0               ; dest = a3 + $20
     move.l  d0, -(a7)
-    pea     ($00076F56).l        ; source = $76F56 (alternate second strip for scroll)
+    pea     (ROM_BASE+$00076F56).l ; source = $76F56 (alternate second strip for scroll)
     jsr     (a5)
     lea     $2c(a7), a7          ; pop RenderColorTileset args + 2 palette-copy args
     ; --- Phase: GameCommand #$23 (Animated Map Preview Setup) ---
@@ -244,7 +244,7 @@ l_3c42e:
     sub.l   d0, d1               ; d1 = $80 - frame (decreasing x position: panel slides in)
     move.l  d1, -(a7)            ; arg: x position for this frame
     pea     ($0080).w            ; arg: width = $80
-    pea     ($0007586E).l        ; arg: source = $7586E (left map panel graphic)
+    pea     (ROM_BASE+$0007586E).l ; arg: source = $7586E (left map panel graphic)
     pea     ($0020).w            ; arg: stride = $20
     clr.l   -(a7)               ; arg: y = 0
     pea     ($000F).w            ; arg: col = $0F
@@ -265,7 +265,7 @@ l_3c46a:
     addi.l  #$100, d0            ; d0 = $100 + frame (increasing x: right panel scrolls in)
     move.l  d0, -(a7)            ; arg: x position
     pea     ($0080).w            ; arg: width = $80
-    pea     ($0007596E).l        ; arg: source = $7596E (right map panel graphic)
+    pea     (ROM_BASE+$0007596E).l ; arg: source = $7596E (right map panel graphic)
     pea     ($0020).w            ; arg: stride
     pea     ($0020).w            ; arg: y = $20 (lower half of screen)
     pea     ($000F).w            ; arg: col = $0F
@@ -301,7 +301,7 @@ l_3c46a:
     bsr.w UpdateScrollRegisters  ; write H/V scroll values to display registers
     ; --- Phase: Decompress Fourth Asset and Prep Second Map Region ---
     ; LZ asset 4 = world overview map tiles, placed at VRAM $0400, $0120 tiles
-    move.l  ($000B7548).l, -(a7) ; arg: fourth LZ source (from ROM table $B7548)
+    move.l  (ROM_BASE+$000B7548).l, -(a7) ; arg: fourth LZ source (from ROM table $B7548)
     move.l  a4, -(a7)            ; arg: dest = $FF1804
     jsr LZ_Decompress            ; decompress world overview map tiles
     pea     ($0120).w            ; arg: tile count = $120 (288 tiles)
@@ -310,7 +310,7 @@ l_3c46a:
     jsr CmdPlaceTile             ; DMA 288 tiles to VRAM $0400
     lea     $20(a7), a7          ; pop 5 args (both LZ + CmdPlaceTile)
     ; Place a text/graphic overlay from ROM $75A6E at row=0, col=0, w=$20, h=$10
-    pea     ($00075A6E).l        ; source = $75A6E (world map header graphic)
+    pea     (ROM_BASE+$00075A6E).l ; source = $75A6E (world map header graphic)
     pea     ($0010).w            ; h = $10
     pea     ($0020).w            ; w = $20
     clr.l   -(a7)               ; y = 0
@@ -348,10 +348,10 @@ l_3c52e:
     beq.b   l_3c558              ; yes: place second region label
     bra.b   l_3c57a              ; no label this frame: go to wait
 l_3c550:
-    pea     ($000753EE).l        ; first region label graphic (at scroll $150)
+    pea     (ROM_BASE+$000753EE).l ; first region label graphic (at scroll $150)
     bra.b   l_3c55e
 l_3c558:
-    pea     ($00074F6E).l        ; second region label graphic (at scroll $1A8)
+    pea     (ROM_BASE+$00074F6E).l ; second region label graphic (at scroll $1A8)
 l_3c55e:
     ; GameCommand #$1B: place label at col=$0A, row=0, w=$20, h=$12
     pea     ($0012).w            ; h = $12
@@ -434,13 +434,13 @@ l_3c5e4:
     beq.b   l_3c61c
     bra.b   l_3c63e              ; no label at this scroll position
 l_3c60c:
-    pea     ($00075F2E).l        ; region 2 label C (at scroll $1B8)
+    pea     (ROM_BASE+$00075F2E).l ; region 2 label C (at scroll $1B8)
     bra.b   l_3c622
 l_3c614:
-    pea     ($00075ECE).l        ; region 2 label B (at scroll $160)
+    pea     (ROM_BASE+$00075ECE).l ; region 2 label B (at scroll $160)
     bra.b   l_3c622
 l_3c61c:
-    pea     ($00075E6E).l        ; region 2 label A (at scroll $108)
+    pea     (ROM_BASE+$00075E6E).l ; region 2 label A (at scroll $108)
 l_3c622:
     ; GameCommand #$1B: place label at col=$09, row=$0C, w=$0C, h=$04
     pea     ($0004).w            ; h = 4 tiles

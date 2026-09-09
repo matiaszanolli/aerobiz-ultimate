@@ -141,7 +141,7 @@ l_0f82a:
     pea     ($000B).w
     jsr SetTextCursor
 ; Format string at $3EBB4 = character panel header label
-    pea     ($0003EBB4).l
+    pea     (ROM_BASE+$0003EBB4).l
     jsr     (a5)
 ; Move cursor to col=$06, row=$0E: character name display area
     pea     ($000E).w
@@ -154,14 +154,14 @@ l_0f82a:
     movea.l  #$0005E680,a0
 ; PrintfWide: display character name from pointer table
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003EBB0).l
+    pea     (ROM_BASE+$0003EBB0).l
     jsr     (a5)
 ; Move cursor to col=$02, row=$06: skill label row
     pea     ($0006).w
     pea     ($0002).w
     jsr SetTextCursor
 ; Format string $3EB9C = stat/skill label text
-    pea     ($0003EB9C).l
+    pea     (ROM_BASE+$0003EB9C).l
     jsr     (a5)
 ; Move cursor to col=$17, row=$06: market price value display position
     pea     ($0006).w
@@ -171,14 +171,14 @@ l_0f82a:
     moveq   #$0,d0
     move.w  d7, d0
     move.l  d0, -(a7)
-    pea     ($0003EB96).l
+    pea     (ROM_BASE+$0003EB96).l
     jsr     (a5)
 ; Move cursor to col=$02, row=$09: cost label row
     pea     ($0009).w
     pea     ($0002).w
     jsr SetTextCursor
 ; Format string $3EB82 = "optimal price:" label
-    pea     ($0003EB82).l
+    pea     (ROM_BASE+$0003EB82).l
     jsr     (a5)
     lea     $30(a7), a7
 ; Move cursor to col=$17, row=$09: optimal price value display position
@@ -189,7 +189,7 @@ l_0f82a:
     moveq   #$0,d0
     move.w  d4, d0
     move.l  d0, -(a7)
-    pea     ($0003EB7C).l
+    pea     (ROM_BASE+$0003EB7C).l
     jsr     (a5)
 ; --- Phase: Build confirm-dialog string ---
 ; MemFillByte: zero the 64-byte string buffer at a4 (stack scratch area)
@@ -198,7 +198,7 @@ l_0f82a:
     move.l  a4, -(a7)
     jsr MemFillByte
 ; sprintf: format character type code into string buffer a4 using format at $477BC
-    move.l  ($000477BC).l, -(a7)
+    move.l  (ROM_BASE+$000477BC).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
 ; sprintf: format character name into secondary buffer -$80(a6) using format at $477C0
@@ -207,7 +207,7 @@ l_0f82a:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($000477C0).l, -(a7)
+    move.l  (ROM_BASE+$000477C0).l, -(a7)
     pea     -$80(a6)
     jsr sprintf
     lea     $30(a7), a7
@@ -263,7 +263,7 @@ l_0f82a:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($000477C8).l, -(a7)
+    move.l  (ROM_BASE+$000477C8).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
 ; ShowTextDialog: confirmation dialog ("Confirm purchase?")
@@ -350,7 +350,7 @@ l_0f82a:
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($000477D0).l, -(a7)
+    move.l  (ROM_BASE+$000477D0).l, -(a7)
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -390,7 +390,7 @@ l_0fb2c:
     ext.l   d0
     move.l  d0, -(a7)
 ; Format string at $477C4 = "insufficient funds" message
-    move.l  ($000477C4).l, -(a7)
+    move.l  (ROM_BASE+$000477C4).l, -(a7)
     bra.b   l_0fb5a
 ; --- Phase: "Not available" dialog ---
 ; Character already hired or ineligible (char_session_blk byte low bits != 0)
@@ -402,7 +402,7 @@ l_0fb44:
     ext.l   d0
     move.l  d0, -(a7)
 ; Format string at $477CC = "not available" / "already hired" message
-    move.l  ($000477CC).l, -(a7)
+    move.l  (ROM_BASE+$000477CC).l, -(a7)
 ; Shared ShowTextDialog call for both error paths (funds / eligibility)
 l_0fb5a:
     move.w  d2, d0

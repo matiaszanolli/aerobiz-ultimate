@@ -10,7 +10,7 @@ InitGameScreen:
     move.w  #$1, ($00FFA7DC).l
     pea     ($0010).w
     clr.l   -(a7)
-    pea     ($0007651E).l
+    pea     (ROM_BASE+$0007651E).l
     jsr DisplaySetup
     pea     ($001A).w
     pea     ($001D).w

@@ -28,7 +28,7 @@ ShowRouteInfoDlg:
 ; PreLoopInit: one-time display/timer initialization before main logic
     jsr PreLoopInit
 ; LZ_Decompress: decompress background tile data from ROM $95118 to save_buf_base ($FF1804)
-    move.l  ($00095118).l, -(a7) ; ROM source pointer (compressed tile data for this screen)
+    move.l  (ROM_BASE+$00095118).l, -(a7) ; ROM source pointer (compressed tile data for this screen)
     pea     ($00FF1804).l        ; dest = save_buf_base ($FF1804)
     jsr LZ_Decompress
     lea     $14(a7), a7
@@ -189,7 +189,7 @@ ShowRouteInfoDlg:
     jsr CmdPlaceTile2
 ; GameCommand #$1B: configure display window at ROM $70198
 ; Params: addr=$70198, width=$20, height=$14, row=0, col=0, layer 1
-    pea     ($00070198).l
+    pea     (ROM_BASE+$00070198).l
     pea     ($0014).w
     pea     ($0020).w
     clr.l   -(a7)
@@ -201,7 +201,7 @@ ShowRouteInfoDlg:
 ; DisplaySetup: configure text window at ROM $7677E (16 wide, 16 tall)
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0007677E).l
+    pea     (ROM_BASE+$0007677E).l
     jsr DisplaySetup
     lea     $c(a7), a7
 
@@ -211,7 +211,7 @@ ShowRouteInfoDlg:
     cmpi.w  #$1, d3
     bne.b   .l126dc              ; count != 1: use plural format
 ; Exactly 1 city: use singular format string from ROM $3F238
-    pea     ($0003F238).l        ; ROM string: "1 city" (singular)
+    pea     (ROM_BASE+$0003F238).l ; ROM string: "1 city" (singular)
     pea     -$f0(a6)             ; dest: city-count string buffer
     jsr     (a5)                 ; sprintf -> -$f0(a6)
     addq.l  #$8, a7
@@ -221,7 +221,7 @@ ShowRouteInfoDlg:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)            ; push city count value
-    move.l  ($0004799A).l, -(a7) ; push ROM format string pointer for plural city count
+    move.l  (ROM_BASE+$0004799A).l, -(a7) ; push ROM format string pointer for plural city count
     pea     -$f0(a6)             ; dest: city-count string buffer
     jsr     (a5)                 ; sprintf -> -$f0(a6)
     lea     $c(a7), a7
@@ -233,7 +233,7 @@ ShowRouteInfoDlg:
     cmpi.w  #$1, d4
     bne.b   .l12708              ; count != 1: use plural format
 ; Exactly 1 relation: use singular format string from ROM $3F230
-    pea     ($0003F230).l        ; ROM string: "1 route" (singular)
+    pea     (ROM_BASE+$0003F230).l ; ROM string: "1 route" (singular)
     pea     -$140(a6)            ; dest: relation-count string buffer
     jsr     (a5)                 ; sprintf -> -$140(a6)
     addq.l  #$8, a7
@@ -243,7 +243,7 @@ ShowRouteInfoDlg:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)            ; push relation count value
-    move.l  ($0004799E).l, -(a7) ; push ROM format string pointer for plural route count
+    move.l  (ROM_BASE+$0004799E).l, -(a7) ; push ROM format string pointer for plural route count
     pea     -$140(a6)            ; dest: relation-count string buffer
     jsr     (a5)                 ; sprintf -> -$140(a6)
     lea     $c(a7), a7
@@ -258,7 +258,7 @@ ShowRouteInfoDlg:
     bne.b   .l12738              ; yes: go check city count too
 ; d4 == 0: no pending routes -- use city-count string only
     pea     -$f0(a6)             ; push city-count string (-$f0(a6))
-    pea     ($0003F22C).l        ; push ROM format: city-only message template
+    pea     (ROM_BASE+$0003F22C).l ; push ROM format: city-only message template
 .l1272c:
 ; Common sprintf: format combined message -> -$190(a6) result buffer
     pea     -$190(a6)            ; dest = combined dialog string buffer
@@ -272,14 +272,14 @@ ShowRouteInfoDlg:
     bne.b   .l12748              ; yes: combine both strings
 ; d3 == 0: no established cities -- use route-count string only
     pea     -$140(a6)            ; push route-count string (-$140(a6))
-    pea     ($0003F228).l        ; push ROM format: route-only message template
+    pea     (ROM_BASE+$0003F228).l ; push ROM format: route-only message template
     bra.b   .l1272c
 
 .l12748:
 ; Both d3 and d4 nonzero: format both city-count and route-count into combined message
     pea     -$140(a6)            ; push route-count string
     pea     -$f0(a6)             ; push city-count string
-    move.l  ($000479A2).l, -(a7) ; push ROM format: "%s and %s" combined template
+    move.l  (ROM_BASE+$000479A2).l, -(a7) ; push ROM format: "%s and %s" combined template
     pea     -$190(a6)            ; dest = combined string buffer
     jsr     (a5)                 ; sprintf -> -$190(a6)
     lea     $10(a7), a7
@@ -288,7 +288,7 @@ ShowRouteInfoDlg:
 ; Wrap -$190(a6) into the final 80-byte result buffer -$a0(a6) using ROM wrapper format
 .l12760:
     pea     -$190(a6)            ; push combined message string
-    move.l  ($000479A6).l, -(a7) ; push ROM final wrapper format string pointer
+    move.l  (ROM_BASE+$000479A6).l, -(a7) ; push ROM final wrapper format string pointer
     pea     -$a0(a6)             ; dest = final result buffer
     jsr     (a5)                 ; sprintf -> -$a0(a6)
     jsr ResourceUnload           ; release graphics resource
@@ -324,7 +324,7 @@ ShowRouteInfoDlg:
     clr.l   -(a7)
     pea     ($0001).w
     clr.l   -(a7)
-    move.l  ($000479AA).l, -(a7) ; ROM format string for final summary message
+    move.l  (ROM_BASE+$000479AA).l, -(a7) ; ROM format string for final summary message
     move.w  $a(a6), d0
     ext.l   d0
     move.l  d0, -(a7)

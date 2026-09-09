@@ -70,7 +70,7 @@ HandleScenarioTurns:
     ext.l   d0
     addq.l  #$1, d0                 ; d0 = player index + 1 (1-based for display: "1 AIRLINE")
     move.l  d0, -(a7)               ; arg: player number (1-4)
-    pea     ($0003E570).l           ; arg: format string at $03E570 ("%d %s" or similar)
+    pea     (ROM_BASE+$0003E570).l  ; arg: format string at $03E570 ("%d %s" or similar)
     jsr     (a3)                    ; PrintfNarrow: print "N name" at (row, col)
 ; Print description line at row d3+1, col 6.
     move.w  d3, d0
@@ -100,7 +100,7 @@ HandleScenarioTurns:
     clr.l   -(a7)                   ; arg5: 0
     clr.l   -(a7)                   ; arg4: 0
     clr.l   -(a7)                   ; arg3: 0
-    move.l  ($000475DC).l, -(a7)    ; arg2: msg ptr from ScenarioStrPtrs ($0475DC) -> "SELECT PLAYER"
+    move.l  (ROM_BASE+$000475DC).l, -(a7) ; arg2: msg ptr from ScenarioStrPtrs ($0475DC) -> "SELECT PLAYER"
     clr.l   -(a7)                   ; arg1: 0 (display mode)
     jsr (DisplayMessageWithParams,PC)
     nop
@@ -255,7 +255,7 @@ HandleScenarioTurns:
     ext.l   d0
     addq.l  #$1, d0                 ; 1-based player number
     move.l  d0, -(a7)
-    pea     ($0003E562).l           ; format string: player number label
+    pea     (ROM_BASE+$0003E562).l  ; format string: player number label
     jsr     (a3)                    ; PrintfNarrow
 
 ; Print player's primary description string (from ScenarioDescPtrs[$047630]).
@@ -264,7 +264,7 @@ HandleScenarioTurns:
     lsl.l   #$2, d0                 ; index * 4 (longword stride)
     movea.l d0, a0
     move.l  (a5,a0.l), -(a7)       ; arg: name string ptr from ScenarioDescPtrs[index]
-    pea     ($0003E55E).l           ; format string: name display format
+    pea     (ROM_BASE+$0003E55E).l  ; format string: name display format
     jsr     (a3)
 
 ; Print player's secondary description string (parallel sub-table at a5+$10 stride).
@@ -273,7 +273,7 @@ HandleScenarioTurns:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  $10(a5, a0.l), -(a7)   ; description line 2 ptr
-    pea     ($0003E55A).l           ; format string: description line format
+    pea     (ROM_BASE+$0003E55A).l  ; format string: description line format
     jsr     (a3)
 
 ; Set text window for the detail section (columns $10-$1B, rows 1-2).
@@ -294,7 +294,7 @@ HandleScenarioTurns:
     lsl.w   #$2, d0                 ; index * 4
     movea.l  #$00047650,a0          ; a0 -> hub city string ptr table ($047650)
     move.l  (a0,d0.w), -(a7)       ; arg: hub city string ptr
-    pea     ($0003E556).l           ; format string at $03E556 (e.g. "HUB: %s")
+    pea     (ROM_BASE+$0003E556).l  ; format string at $03E556 (e.g. "HUB: %s")
     jsr     (a3)
 
 ; Print the player's region or secondary info string (from $047660 table).
@@ -305,13 +305,13 @@ HandleScenarioTurns:
     lsl.w   #$2, d0
     movea.l  #$00047660,a0          ; a0 -> region/secondary info ptr table ($047660)
     move.l  (a0,d0.w), -(a7)       ; arg: region info string ptr
-    pea     ($0003E538).l           ; format string at $03E538
+    pea     (ROM_BASE+$0003E538).l  ; format string at $03E538
     jsr     (a3)
 
 ; Format and display an additional parameter line using sprintf.
 ; Format at $03E52A (e.g. "BUDGET: %d") with a value from ScenarioStrPtrs ($0475F0).
-    pea     ($0003E52A).l           ; format string at $03E52A
-    move.l  ($000475F0).l, -(a7)   ; parameter from ScenarioStrPtrs+$14 offset ($0475F0)
+    pea     (ROM_BASE+$0003E52A).l  ; format string at $03E52A
+    move.l  (ROM_BASE+$000475F0).l, -(a7) ; parameter from ScenarioStrPtrs+$14 offset ($0475F0)
     pea     -$80(a6)                ; output buffer: -$80(a6), 128 bytes local
     jsr sprintf                     ; format the numeric parameter into local buffer
     lea     $24(a7), a7
@@ -369,7 +369,7 @@ HandleScenarioTurns:
     ext.l   d0
     addq.l  #$1, d0                 ; 1-based player number
     move.l  d0, -(a7)
-    pea     ($0003E522).l           ; format string for player list entry (rebuild path uses $E522)
+    pea     (ROM_BASE+$0003E522).l  ; format string for player list entry (rebuild path uses $E522)
     jsr     (a3)
     move.w  d3, d0
     ext.l   d0
@@ -393,7 +393,7 @@ HandleScenarioTurns:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000475DC).l, -(a7)    ; ScenarioStrPtrs[$0475DC] -> "SELECT PLAYER" message
+    move.l  (ROM_BASE+$000475DC).l, -(a7) ; ScenarioStrPtrs[$0475DC] -> "SELECT PLAYER" message
     clr.l   -(a7)
     jsr (DisplayMessageWithParams,PC)
     nop

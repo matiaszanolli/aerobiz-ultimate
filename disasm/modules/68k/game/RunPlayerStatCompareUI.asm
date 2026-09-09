@@ -14,7 +14,7 @@ RunPlayerStatCompareUI:
     clr.l   -(a7)
     clr.l   -(a7)
     pea     ($0004).w
-    move.l  ($000477A4).l, -(a7)
+    move.l  (ROM_BASE+$000477A4).l, -(a7)
     move.w  $a(a6), d0
     ext.l   d0
     move.l  d0, -(a7)

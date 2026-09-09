@@ -31,15 +31,15 @@ ProcessAllianceChange:
     ble.w   .l309c8
     cmpi.w  #$1, d2
     bne.b   .l30864
-    pea     ($000447BC).l
+    pea     (ROM_BASE+$000447BC).l
     bra.b   .l3086a
 .l30864:
-    pea     ($000447B4).l
+    pea     (ROM_BASE+$000447B4).l
 .l3086a:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($00047B94).l, -(a7)
+    move.l  (ROM_BASE+$00047B94).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     clr.l   -(a7)
@@ -148,7 +148,7 @@ ProcessAllianceChange:
     blt.b   .l3094e
     bra.b   .l30a04
 .l3098c:
-    pea     ($000447A4).l
+    pea     (ROM_BASE+$000447A4).l
     move.l  $4(a5), -(a7)
     move.l  a4, -(a7)
     jsr sprintf

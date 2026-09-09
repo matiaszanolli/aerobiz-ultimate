@@ -6,14 +6,14 @@ RunManagementMenu:
     link    a6,#$0
     movem.l d2-d3, -(a7)
     move.l  $8(a6), d3
-    move.l  ($000A1B28).l, -(a7)
+    move.l  (ROM_BASE+$000A1B28).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($003E).w
     pea     ($0109).w
     pea     ($00FF1804).l
     jsr CmdPlaceTile
-    pea     ($000725D8).l
+    pea     (ROM_BASE+$000725D8).l
     pea     ($0008).w
     pea     ($0008).w
     pea     ($0008).w
@@ -29,7 +29,7 @@ l_2fa82:
     clr.l   -(a7)
     clr.l   -(a7)
     pea     ($0004).w
-    move.l  ($00047B4C).l, -(a7)
+    move.l  (ROM_BASE+$00047B4C).l, -(a7)
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -49,7 +49,7 @@ l_2fa82:
     pea     ($0001).w
     clr.l   -(a7)
     pea     ($0004).w
-    move.l  ($00047B50).l, -(a7)
+    move.l  (ROM_BASE+$00047B50).l, -(a7)
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)

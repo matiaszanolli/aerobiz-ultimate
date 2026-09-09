@@ -31,14 +31,14 @@ l_1c57c:
     ext.l   d0
     addq.l  #$1, d0
     move.l  d0, -(a7)
-    pea     ($00041164).l
+    pea     (ROM_BASE+$00041164).l
     bra.b   l_1c5b8
 l_1c5aa:
     move.w  d2, d0
     ext.l   d0
     addq.l  #$1, d0
     move.l  d0, -(a7)
-    pea     ($0004115C).l
+    pea     (ROM_BASE+$0004115C).l
 l_1c5b8:
     jsr PrintfNarrow
     lea     $10(a7), a7

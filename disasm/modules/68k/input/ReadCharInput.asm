@@ -29,10 +29,10 @@ ReadCharInput:
 ; DisplaySetup: initialize display with resource table at $76A3E, palette indices $10/$10
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($00076A3E).l
+    pea     (ROM_BASE+$00076A3E).l
     jsr DisplaySetup
 ; LZ_Decompress: decompress graphics from ROM pointer at $A1B04 into save_buf_base ($FF1804)
-    move.l  ($000A1B04).l, -(a7)
+    move.l  (ROM_BASE+$000A1B04).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
 ; CmdPlaceTile: place background panel tile at row $11, column $59 from decompressed buffer
@@ -43,7 +43,7 @@ ReadCharInput:
     lea     $20(a7), a7
 ; --- Phase: Screen Setup -- Draw Column Headers ---
 ; GameCommand #$1B: place salary-column header tile from $7194C (count=6) at (d3, d2) = (10, $15)
-    pea     ($0007194C).l
+    pea     (ROM_BASE+$0007194C).l
     pea     ($0006).w
     pea     ($000A).w
 ; push d3 as column X ($A = 10)
@@ -104,7 +104,7 @@ ReadCharInput:
     bcs.b   .l2ec50
 ; --- Phase: Initial Display -- Render Header Tiles and Budget Values ---
 ; GameCommand #$1B: place count-column header tile from $71A14 (count=4) at (d6, d5) = (1, $14)
-    pea     ($00071A14).l
+    pea     (ROM_BASE+$00071A14).l
     pea     ($0004).w
     pea     ($000A).w
 ; push d5 = $14 (row Y for the count column)
@@ -141,14 +141,14 @@ ReadCharInput:
     addq.l  #$1, d0
 ; PrintfWide: print remaining budget value using format string at $44704
     move.l  d0, -(a7)
-    pea     ($00044704).l
+    pea     (ROM_BASE+$00044704).l
     jsr     (a3)
 ; SetTextCursor: position cursor at ($E, $1B) for label "remaining" below budget figure
     pea     ($000E).w
     pea     ($001B).w
     jsr     (a4)
 ; PrintfWide: print budget label string at $44700 (e.g. "BUDGET" or "REMAIN")
-    pea     ($00044700).l
+    pea     (ROM_BASE+$00044700).l
     jsr     (a3)
 ; SetTextCursor: position cursor at ($10, $13) for total-cost display
     pea     ($0010).w
@@ -165,7 +165,7 @@ ReadCharInput:
     jsr Multiply32
 ; PrintfWide: print total cost at $446FA format string
     move.l  d0, -(a7)
-    pea     ($000446FA).l
+    pea     (ROM_BASE+$000446FA).l
     jsr     (a3)
     lea     $2c(a7), a7
 ; GameCommand #$A: flush display command (commit pending tile writes)
@@ -190,7 +190,7 @@ ReadCharInput:
     sub.l   d1, d0
 ; PrintfWide: print updated remaining budget at $446F6
     move.l  d0, -(a7)
-    pea     ($000446F6).l
+    pea     (ROM_BASE+$000446F6).l
     jsr     (a3)
 ; HandleCharInteraction: animate character portrait / run character interaction; arg=1 = initial display
     pea     ($0001).w
@@ -204,7 +204,7 @@ ReadCharInput:
     move.w  (a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($000446F2).l
+    pea     (ROM_BASE+$000446F2).l
     jsr     (a3)
     lea     $2c(a7), a7
 ; if d7 - 1 > 0: max quantity > 1, so quantity column header stays active (d2 left at 1)
@@ -215,7 +215,7 @@ ReadCharInput:
     bgt.b   .l2ed7a
 ; GameCommand #$1B: replace count-column header with locked/unavailable header tile ($719C4)
 ; count=4, at (d6, d5) -- overwrites active quantity header with a greyed-out variant
-    pea     ($000719C4).l
+    pea     (ROM_BASE+$000719C4).l
     pea     ($0004).w
     pea     ($000A).w
     move.w  d5, d0
@@ -331,7 +331,7 @@ ReadCharInput:
     move.w  (a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($000446EE).l
+    pea     (ROM_BASE+$000446EE).l
     jsr     (a3)
 ; SetTextCursor: position at ($10, $13) for total cost display
     pea     ($0010).w
@@ -345,14 +345,14 @@ ReadCharInput:
     jsr Multiply32
 ; PrintfWide: print updated total cost at $446E8
     move.l  d0, -(a7)
-    pea     ($000446E8).l
+    pea     (ROM_BASE+$000446E8).l
     jsr     (a3)
     lea     $20(a7), a7
 ; if d2 is already set (column header active), skip re-placing header tile
     tst.w   d2
     bne.b   .l2eebe
 ; d2 was 0 (locked header): now that count > 0 is possible, restore active header
-    pea     ($00071A14).l
+    pea     (ROM_BASE+$00071A14).l
     pea     ($0004).w
     pea     ($000A).w
     move.w  d5, d0
@@ -390,7 +390,7 @@ ReadCharInput:
     ext.l   d1
     sub.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($000446E4).l
+    pea     (ROM_BASE+$000446E4).l
 ; shared tail: print remaining value and loop back to animation counter
 .l2eeee:
     jsr     (a3)
@@ -426,7 +426,7 @@ ReadCharInput:
     ext.l   d1
     sub.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($000446E0).l
+    pea     (ROM_BASE+$000446E0).l
     jsr     (a3)
 ; HandleCharInteraction: animate character (arg=1 = new-selection notification)
     pea     ($0001).w
@@ -446,7 +446,7 @@ ReadCharInput:
     bne.b   .l2ef84
 ; GameCommand #$1B: replace active count header with locked/greyed-out version ($719C4)
 ; signals player can't add more (at capacity)
-    pea     ($000719C4).l
+    pea     (ROM_BASE+$000719C4).l
     pea     ($0004).w
     pea     ($000A).w
     move.w  d5, d0
@@ -475,7 +475,7 @@ ReadCharInput:
     move.w  (a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($000446DC).l
+    pea     (ROM_BASE+$000446DC).l
     jsr     (a3)
 ; SetTextCursor: position at ($10, $13) to redraw total cost
     pea     ($0010).w
@@ -490,7 +490,7 @@ ReadCharInput:
     jsr Multiply32
 ; PrintfWide: print updated total cost at $446D6, then branch to shared remaining-display tail
     move.l  d0, -(a7)
-    pea     ($000446D6).l
+    pea     (ROM_BASE+$000446D6).l
 ; share tail with Down-decrement path: print remaining and loop to animation counter
     bra.w   .l2eeee
 ; --- Phase: Function Return ---

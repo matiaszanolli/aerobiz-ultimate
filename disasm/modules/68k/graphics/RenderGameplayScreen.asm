@@ -173,7 +173,7 @@ l_37272:
     moveq   #$0,d0
     move.w  d6, d0                    ; d0 = compatibility category (1-N)
     move.l  d0, -(a7)
-    pea     ($00044F76).l             ; format string for compatibility label
+    pea     (ROM_BASE+$00044F76).l    ; format string for compatibility label
     jsr PrintfNarrow                  ; display category name in narrow font
     pea     ($0017).w
     pea     ($0002).w
@@ -188,7 +188,7 @@ l_37272:
     jsr CalcRelationValue             ; compute numeric relation score for char pair (d3, d4)
     lea     $c(a7), a7
     move.l  d0, -(a7)                 ; result = relation score
-    pea     ($00044F6C).l             ; format string (e.g. "REL: %d")
+    pea     (ROM_BASE+$00044F6C).l    ; format string (e.g. "REL: %d")
     jsr PrintfNarrow                  ; display numeric relation value
     addq.l  #$8, a7
     bra.w   l_37424                   ; done with tile-changed update
@@ -222,7 +222,7 @@ l_37388:
     movea.l (a0,d0.w), a3            ; a3 = pointer to player name string
     move.l  a3, -(a7)                 ; arg: player name string (×2, format uses it twice)
     move.l  a3, -(a7)
-    pea     ($00044F46).l             ; format string: player's own city (e.g. "%s Hub: %s")
+    pea     (ROM_BASE+$00044F46).l    ; format string: player's own city (e.g. "%s Hub: %s")
     jsr PrintfNarrow                  ; display player name/hub city label
     lea     $1c(a7), a7
     bra.b   l_3740e
@@ -233,7 +233,7 @@ l_373e8:
     pea     ($0017).w
     pea     ($0002).w
     jsr SetTextWindow
-    pea     ($00044F12).l             ; format string for "no relation" info text
+    pea     (ROM_BASE+$00044F12).l    ; format string for "no relation" info text
     jsr PrintfNarrow                  ; display the no-relation message
     lea     $14(a7), a7
 l_3740e:
@@ -379,7 +379,7 @@ l_37576:
     clr.l   -(a7)
     clr.l   -(a7)
     pea     ($0002).w                 ; dialog mode 2
-    move.l  ($00048642).l, -(a7)     ; pointer to dialog text data (cost-too-high message)
+    move.l  (ROM_BASE+$00048642).l, -(a7) ; pointer to dialog text data (cost-too-high message)
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)                 ; arg = d5 (player index, for name substitution)
@@ -389,7 +389,7 @@ l_37576:
     lsl.w   #$2, d0                   ; d0 = player_index * 4
     movea.l  #$0005E680,a0            ; a0 = player name pointer table
     move.l  (a0,d0.w), -(a7)         ; arg = player name string
-    move.l  ($000485F6).l, -(a7)     ; arg = format string for cost message
+    move.l  (ROM_BASE+$000485F6).l, -(a7) ; arg = format string for cost message
     pea     -$b6(a6)                  ; output buffer in stack frame
     jsr sprintf                       ; format message into local buffer
     lea     $20(a7), a7
@@ -404,7 +404,7 @@ l_375c2:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($00044EDC).l             ; pointer to "alliance not permitted" message string
+    pea     (ROM_BASE+$00044EDC).l    ; pointer to "alliance not permitted" message string
     bra.b   l_37626                   ; display refusal dialog
 ; --- Already Has Relation Dialog ---
 l_375d8:
@@ -413,7 +413,7 @@ l_375d8:
     pea     ($0001).w
     clr.l   -(a7)
     pea     ($0002).w                 ; mode = 2
-    move.l  ($00048636).l, -(a7)     ; pointer to "relation already exists" message
+    move.l  (ROM_BASE+$00048636).l, -(a7) ; pointer to "relation already exists" message
     bra.b   l_37626
 ; --- Own Hub City Dialog ---
 ; Player confirmed on their own hub city — show a flavor/status message about it
@@ -425,7 +425,7 @@ l_375f0:
     lsl.w   #$2, d0                   ; d0 = player_index * 4
     movea.l  #$0005E680,a0            ; a0 = player name pointer table
     move.l  (a0,d0.w), -(a7)         ; arg = player name string
-    move.l  ($0004861A).l, -(a7)     ; format string for "own hub" message
+    move.l  (ROM_BASE+$0004861A).l, -(a7) ; format string for "own hub" message
     pea     -$b6(a6)                  ; output buffer in stack frame
     jsr sprintf                       ; format message into local buffer
     lea     $c(a7), a7
@@ -529,7 +529,7 @@ l_37720:
     lea     $1c(a7), a7
     ; Load and display the character info panel graphics for the newly selected character
     ; GameCmd #$1B = load compressed tile data into VRAM at specified position
-    pea     ($0004DD9C).l             ; pointer to character panel tile data in ROM
+    pea     (ROM_BASE+$0004DD9C).l    ; pointer to character panel tile data in ROM
     pea     ($0009).w                 ; height = 9
     pea     ($001E).w                 ; width = $1E
     pea     ($0012).w                 ; row = $12
@@ -538,7 +538,7 @@ l_37720:
     pea     ($001B).w                 ; GameCmd #$1B = place compressed tile block
     jsr     (a5)
     ; Decompress portrait/stat graphics for the newly selected character into save_buf_base ($FF1804)
-    pea     ($0004DFB8).l             ; compressed portrait data address in ROM
+    pea     (ROM_BASE+$0004DFB8).l    ; compressed portrait data address in ROM
     pea     ($00FF1804).l             ; $FF1804 = save_buf_base (decompression staging buffer)
     jsr LZ_Decompress                 ; decompress character portrait graphics to $FF1804
     lea     $24(a7), a7

@@ -53,7 +53,7 @@ RunAircraftStatsDisplay:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($0003E5F2).l
+    pea     (ROM_BASE+$0003E5F2).l
     jsr     (a3)
     lea     $30(a7), a7
     move.w  d2, d0
@@ -68,7 +68,7 @@ RunAircraftStatsDisplay:
     lsl.w   #$2, d0
     movea.l  #$0005F926,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003E5EE).l
+    pea     (ROM_BASE+$0003E5EE).l
     jsr     (a3)
     move.w  d2, d0
     ext.l   d0
@@ -82,7 +82,7 @@ RunAircraftStatsDisplay:
     lsl.w   #$2, d0
     movea.l  #$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003E5EA).l
+    pea     (ROM_BASE+$0003E5EA).l
     jsr     (a3)
     lea     $20(a7), a7
     moveq   #$24,d0
@@ -93,7 +93,7 @@ RunAircraftStatsDisplay:
     pea     ($0003).w
     pea     ($001A).w
     jsr     (a4)
-    pea     ($0003E5E4).l
+    pea     (ROM_BASE+$0003E5E4).l
     jsr     (a3)
     pea     ($0005).w
     pea     ($001C).w
@@ -102,7 +102,7 @@ RunAircraftStatsDisplay:
     ext.l   d0
     addq.l  #$1, d0
     move.l  d0, -(a7)
-    pea     ($0003E5E0).l
+    pea     (ROM_BASE+$0003E5E0).l
     jsr     (a3)
     pea     ($0008).w
     pea     ($001A).w
@@ -111,7 +111,7 @@ RunAircraftStatsDisplay:
     ext.l   d0
     addq.l  #$1, d0
     move.l  d0, -(a7)
-    pea     ($0003E5DA).l
+    pea     (ROM_BASE+$0003E5DA).l
     jsr     (a3)
     lea     $2c(a7), a7
     jsr ResourceUnload
@@ -133,7 +133,7 @@ RunAircraftStatsDisplay:
     clr.l   -(a7)
     pea     ($0001).w
     clr.l   -(a7)
-    move.l  ($000475F8).l, -(a7)
+    move.l  (ROM_BASE+$000475F8).l, -(a7)
     clr.l   -(a7)
     jsr (DisplayMessageWithParams,PC)
     nop

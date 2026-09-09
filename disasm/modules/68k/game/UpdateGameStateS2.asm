@@ -65,7 +65,7 @@ l_22ff8:
     lsl.w   #$4, d0              ; d0 *= $10 (player_name_tab stride = 16 bytes)
     movea.l  #$00FF00A8,a0       ; a0 = player_name_tab ($FF00A8)
     pea     (a0, d0.w)           ; push &player_name_tab[player_index] as sprintf arg
-    pea     ($000480DC).l        ; ROM format string for trade offer box (e.g. "Player: %s\nRoute: %s -> %s")
+    pea     (ROM_BASE+$000480DC).l ; ROM format string for trade offer box (e.g. "Player: %s\nRoute: %s -> %s")
     move.l  a5, -(a7)            ; destination = local sprintf buffer
     jsr sprintf                  ; format trade offer info string
     move.l  a5, -(a7)            ; push formatted string
@@ -117,7 +117,7 @@ l_230c2:
     cmpi.w  #$1, d0              ; trade accepted?
     bne.b   l_23102              ; no: skip acceptance dialog
     ; Trade accepted: show result dialog from ROM $48114
-    pea     ($00048114).l        ; ROM string: trade accepted notification text
+    pea     (ROM_BASE+$00048114).l ; ROM string: trade accepted notification text
     jsr (DrawLabeledBox,PC)      ; draw the trade-accepted labeled box
     nop
     pea     ($0001).w
@@ -176,7 +176,7 @@ l_23132:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)           ; &player_name_tab[player_index]
-    pea     ($00048158).l        ; ROM format string for route notification (different from $480DC)
+    pea     (ROM_BASE+$00048158).l ; ROM format string for route notification (different from $480DC)
     move.l  a5, -(a7)            ; sprintf destination
     jsr sprintf
     move.l  a5, -(a7)
@@ -243,7 +243,7 @@ l_2320e:
     jsr StringConcat             ; concatenate player name into -$a0(a6) buffer
     ; Format first notification box: format string $48198
     pea     -$a0(a6)             ; arg: concatenated player name string
-    pea     ($00048198).l        ; ROM format string for first notify box
+    pea     (ROM_BASE+$00048198).l ; ROM format string for first notify box
     move.l  a5, -(a7)            ; sprintf destination
     jsr sprintf
     move.l  a5, -(a7)
@@ -254,7 +254,7 @@ l_2320e:
     jsr PollAction               ; wait for button press
     ; Format second notification box: format string $481DA (different message for same player)
     pea     -$a0(a6)             ; arg: same player name string (already in buffer)
-    pea     ($000481DA).l        ; ROM format string for second notify box
+    pea     (ROM_BASE+$000481DA).l ; ROM format string for second notify box
     move.l  a5, -(a7)
     jsr sprintf
     lea     $30(a7), a7          ; clean combined stack: StringConcat(2)+sprintf1(3)+DrawLabeledBox(1)+PollAction(2)+sprintf2(3) args

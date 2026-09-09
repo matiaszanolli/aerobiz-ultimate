@@ -16,7 +16,7 @@ ProcessCrewSalary:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($0004847A).l, -(a7)
+    move.l  (ROM_BASE+$0004847A).l, -(a7)
 .l2d31c:
     moveq   #$0,d0
     move.w  d3, d0
@@ -45,7 +45,7 @@ ProcessCrewSalary:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($0004847E).l, -(a7)
+    move.l  (ROM_BASE+$0004847E).l, -(a7)
     bra.b   .l2d31c
 .l2d36c:
     moveq   #$1,d2

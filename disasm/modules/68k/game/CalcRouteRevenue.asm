@@ -180,7 +180,7 @@ ProcessRouteChange:                                                  ; $0119B4
     pea     ($0001).w
     clr.l   -(sp)
     clr.l   -(sp)
-    pea     ($0003F212).l
+    pea     (ROM_BASE+$0003F212).l
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)

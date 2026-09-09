@@ -13,7 +13,7 @@ RenderCharStats:
     movea.l  #$00003FEC,a5
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($00052142).l
+    pea     (ROM_BASE+$00052142).l
     jsr DisplaySetup
     move.l  a4, -(a7)
     move.l  a3, -(a7)
@@ -63,7 +63,7 @@ l_3cf8c:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0005FD7E).l
+    pea     (ROM_BASE+$0005FD7E).l
     pea     ($0007).w
     clr.l   -(a7)
     pea     ($000F).w
@@ -109,7 +109,7 @@ l_3cfc0:
     jsr LoadDisplaySet
     clr.l   -(a7)
     pea     ($76A0).w
-    pea     ($00052282).l
+    pea     (ROM_BASE+$00052282).l
     pea     ($0240).w
     pea     ($0002).w
     pea     ($0005).w
@@ -121,7 +121,7 @@ l_3cfc0:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0005FDB6).l
+    pea     (ROM_BASE+$0005FDB6).l
     pea     ($0004).w
     clr.l   -(a7)
     pea     ($000F).w

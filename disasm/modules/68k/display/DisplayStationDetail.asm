@@ -56,11 +56,11 @@ DisplayStationDetail:
     ; DisplaySetup: set text window bounds ($10 wide x $10 tall) with layout data from ROM $4A0EE
     pea     ($0010).w            ; arg 3: height = $10 (16 tiles)
     pea     ($0010).w            ; arg 2: width = $10 (16 tiles)
-    pea     ($0004A0EE).l        ; arg 1: ROM layout descriptor pointer for station tile window
+    pea     (ROM_BASE+$0004A0EE).l ; arg 1: ROM layout descriptor pointer for station tile window
     jsr     (a4)                 ; DisplaySetup: configure text window for station panel
     ; --- Phase: Decompress and DMA-load station background tileset ---
     ; LZ_Decompress: ROM source $4A25E -> decompressed to VRAM staging buffer $FF1804
-    pea     ($0004A25E).l        ; arg 2: ROM LZ-compressed station background tileset
+    pea     (ROM_BASE+$0004A25E).l ; arg 2: ROM LZ-compressed station background tileset
     move.l  a3, -(a7)            ; arg 1: destination = $FF1804 (staging buffer)
     jsr LZ_Decompress            ; decompress station background into staging buffer
     lea     $30(a7), a7          ; clean combined stack from the block above
@@ -72,7 +72,7 @@ DisplayStationDetail:
     pea     ($0025).w            ; arg 1: VRAM char# destination = $25 (tile 37)
     jsr VRAMBulkLoad             ; DMA tile data to VRAM
     ; GameCommand #$1B: render background tiles from ROM layout $4A10E at position ($E,$C) with $3 rows and $C cols
-    pea     ($0004A10E).l        ; tile layout data ptr
+    pea     (ROM_BASE+$0004A10E).l ; tile layout data ptr
     pea     ($000C).w            ; width = $C (12 tiles)
     pea     ($000E).w            ; height = $E (14 tiles)
     pea     ($0003).w            ; palette = 3
@@ -83,7 +83,7 @@ DisplayStationDetail:
     lea     $30(a7), a7
     ; --- Phase: Decompress and DMA-load station portrait tileset ---
     ; ROM $49F78 = LZ-compressed char/station portrait tile data
-    pea     ($00049F78).l        ; ROM source: LZ-compressed portrait tiles
+    pea     (ROM_BASE+$00049F78).l ; ROM source: LZ-compressed portrait tiles
     move.l  a3, -(a7)            ; destination: $FF1804 staging buffer
     jsr LZ_Decompress
     ; VRAMBulkLoad: portrait tiles to VRAM char $1, count $24, mode $1
@@ -95,7 +95,7 @@ DisplayStationDetail:
     jsr VRAMBulkLoad
     lea     $1c(a7), a7          ; clean 7 args
     ; GameCommand #$1B: draw portrait panel outline from ROM $49DC8 at position ($1,$E) with $3 rows
-    pea     ($00049DC8).l        ; ROM layout data for portrait panel border
+    pea     (ROM_BASE+$00049DC8).l ; ROM layout data for portrait panel border
     pea     ($000C).w            ; width = $C
     pea     ($0012).w            ; height = $12 (18)
     pea     ($0003).w            ; palette = 3
@@ -126,7 +126,7 @@ DisplayStationDetail:
     jsr ShowCharPortrait         ; render character/station portrait tiles to screen
     ; --- Phase: Decompress and DMA-load facility icon tileset ---
     ; ROM $4A514 = LZ-compressed facility icon tiles (airport, hotel, etc.)
-    pea     ($0004A514).l        ; ROM source: LZ-compressed facility icons
+    pea     (ROM_BASE+$0004A514).l ; ROM source: LZ-compressed facility icons
     move.l  a3, -(a7)            ; destination: $FF1804 staging buffer
     jsr LZ_Decompress
     lea     $20(a7), a7          ; clean ShowCharPortrait (6 args) + LZ (2 args) = 8 args = $20
@@ -139,7 +139,7 @@ DisplayStationDetail:
     jsr VRAMBulkLoad
     ; GameCommand #$1B: draw facility icon panel from ROM $4A504 at computed position
     ; Position: col = d4-3 = $12-3 = $F, row = d3+3 = $7+3 = $A
-    pea     ($0004A504).l        ; ROM layout data for facility icon strip
+    pea     (ROM_BASE+$0004A504).l ; ROM layout data for facility icon strip
     pea     ($0002).w            ; width/cols = 2
     pea     ($0004).w            ; height/rows = 4
     move.w  d3, d0
@@ -159,10 +159,10 @@ DisplayStationDetail:
     ; Select ownership string: d5==1 -> owned by this player ($4277E), else unowned ($42776)
     cmpi.w  #$1, d5              ; ownership_flag == 1?
     bne.b   l_2bbd0              ; no: push "unowned" string
-    pea     ($0004277E).l        ; ROM string: facility owned by current player
+    pea     (ROM_BASE+$0004277E).l ; ROM string: facility owned by current player
     bra.b   l_2bbd6
 l_2bbd0:
-    pea     ($00042776).l        ; ROM string: facility not owned by current player
+    pea     (ROM_BASE+$00042776).l ; ROM string: facility not owned by current player
 l_2bbd6:
     ; Look up owner name from char name table:
     ; $FF1278 = city_owner_tab (byte per city = owner player index)
@@ -176,7 +176,7 @@ l_2bbd6:
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)            ; push ownership_flag as sprintf arg (e.g. for "Owned by %s" / "Open")
-    pea     ($00042784).l        ; ROM format string for facility ownership line (e.g. "%s\n%s")
+    pea     (ROM_BASE+$00042784).l ; ROM format string for facility ownership line (e.g. "%s\n%s")
     pea     -$82(a6)             ; destination = local sprintf buffer (-$82(a6))
     jsr sprintf                  ; format ownership/name string into buffer
     ; ShowDialog: display station name + ownership text
@@ -270,7 +270,7 @@ l_2bcca:
     ; DisplaySetup: restore layout data from ROM $7651E (world map layout)
     pea     ($0010).w            ; arg 3: $10
     clr.l   -(a7)                ; arg 2: 0
-    pea     ($0007651E).l        ; arg 1: ROM world-map layout descriptor pointer
+    pea     (ROM_BASE+$0007651E).l ; arg 1: ROM world-map layout descriptor pointer
     jsr     (a4)                 ; DisplaySetup: restore world-map tile window configuration
     ; Restore decompressor state: call a5 with mode 7, d3 portrait row, 0, 0
     clr.l   -(a7)                ; arg 4: 0

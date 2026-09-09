@@ -311,7 +311,7 @@ RankCharCandidatesFull:
     pea     ($0001).w          ; dialog column
     clr.l   -(a7)              ; padding
     pea     ($0002).w          ; dialog type = 2 (error/info box)
-    pea     ($0003F7FC).l      ; pointer to dialog text string in ROM
+    pea     (ROM_BASE+$0003F7FC).l ; pointer to dialog text string in ROM
     move.w  d6, d0
     ext.l   d0
     move.l  d0, -(a7)          ; player_index

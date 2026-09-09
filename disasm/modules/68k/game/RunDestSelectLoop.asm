@@ -39,13 +39,13 @@ RunDestSelectLoop:
 .l0c912:
     pea     ($000E).w
     move.l  a3, -(a7)
-    pea     ($000767AE).l
+    pea     (ROM_BASE+$000767AE).l
     jsr MemMove
     move.w  d2, d0
     ext.l   d0
     add.l   d0, d0
     movea.l d0, a0
-    move.w  ($000767BC).l, (a3,a0.l)
+    move.w  (ROM_BASE+$000767BC).l, (a3,a0.l)
     pea     ($0007).w
     pea     ($0038).w
     move.l  a3, -(a7)

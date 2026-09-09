@@ -14,7 +14,7 @@ DisplayRouteInfo:
     move.l  d0, -(a7)
     jsr GetCharStat
     move.w  d0, d2
-    move.l  ($000A1AF4).l, -(a7)
+    move.l  (ROM_BASE+$000A1AF4).l, -(a7)
     pea     ($00FF899C).l
     jsr LZ_Decompress
     pea     ($0006).w

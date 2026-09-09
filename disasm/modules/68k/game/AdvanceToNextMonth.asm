@@ -33,7 +33,7 @@ AdvanceToNextMonth:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($000477E4).l, -(a7)
+    move.l  (ROM_BASE+$000477E4).l, -(a7)
     move.l  a2, -(a7)
     jsr sprintf
     clr.l   -(a7)
@@ -81,7 +81,7 @@ l_0fd68:
     lsl.w   #$2, d0
     movea.l  #$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($000477E0).l, -(a7)
+    move.l  (ROM_BASE+$000477E0).l, -(a7)
     move.l  a2, -(a7)
     jsr sprintf
     pea     ($0001).w

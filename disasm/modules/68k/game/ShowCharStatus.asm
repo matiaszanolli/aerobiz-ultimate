@@ -56,7 +56,7 @@ ShowCharStatus:
     pea     ($0001).w
     clr.l   -(a7)
     pea     ($0001).w
-    pea     ($00042730).l
+    pea     (ROM_BASE+$00042730).l
     moveq   #$0,d0
     move.w  d2, d0
     move.l  d0, -(a7)
@@ -65,7 +65,7 @@ ShowCharStatus:
     moveq   #$0,d0
     move.w  d3, d0
     move.l  d0, -(a7)
-    pea     ($000426C2).l
+    pea     (ROM_BASE+$000426C2).l
     pea     -$c8(a6)
     jsr sprintf
     pea     ($0001).w
@@ -80,7 +80,7 @@ ShowCharStatus:
     pea     ($0001).w
     clr.l   -(a7)
     pea     ($0002).w
-    pea     ($0004267A).l
+    pea     (ROM_BASE+$0004267A).l
     moveq   #$0,d0
     move.w  d2, d0
     move.l  d0, -(a7)
@@ -88,7 +88,7 @@ ShowCharStatus:
     pea     ($0001).w
     clr.l   -(a7)
     pea     ($0001).w
-    pea     ($0004263A).l
+    pea     (ROM_BASE+$0004263A).l
     moveq   #$0,d0
     move.w  d2, d0
     move.l  d0, -(a7)

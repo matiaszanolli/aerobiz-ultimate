@@ -45,8 +45,8 @@ ShowStatsSummary:                                                  ; $018214
     ; d2==0 means this is the player's first quarter or no routes active.
     ; Use sprintf($03B22C) with a "welcome / getting started" format string.
     ; Format string pointers from ROM at $47B7C and $47C1C (specific to rank-0 message).
-    move.l  ($00047B7C).l,-(sp)  ; arg: format string pointer for rank-0 (first quarter)
-    move.l  ($00047C1C).l,-(sp)  ; arg: second format part (continuation string)
+    move.l  (ROM_BASE+$00047B7C).l,-(sp) ; arg: format string pointer for rank-0 (first quarter)
+    move.l  (ROM_BASE+$00047C1C).l,-(sp) ; arg: second format part (continuation string)
     move.l  a5,-(sp)             ; arg: output buffer (a5 = local stack string buffer)
     jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C) -- format rank-0 message
     lea     $000c(sp),sp
@@ -68,16 +68,16 @@ ShowStatsSummary:                                                  ; $018214
     ;   rank != 1: use $4109C or $410A4 (other rank: "Holding at rank N")
     cmpi.w  #$1,d2               ; rank == 1 (top position)?
     bne.b   .l18292
-    pea     ($000410A4).l        ; format string for "holding at 1st place" message
+    pea     (ROM_BASE+$000410A4).l ; format string for "holding at 1st place" message
     bra.b   .l18298
 .l18292:                                                ; $018292
-    pea     ($0004109C).l        ; format string for "holding at rank N" (rank != 1)
+    pea     (ROM_BASE+$0004109C).l ; format string for "holding at rank N" (rank != 1)
 .l18298:                                                ; $018298
     ; sprintf(buf=a5, fmt=@stack, rank=d2): format "holding at rank N" message
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)             ; arg: current rank value (for "%d" in format string)
-    move.l  ($00047C2C).l,-(sp)  ; arg: secondary format string (continuation)
+    move.l  (ROM_BASE+$00047C2C).l,-(sp) ; arg: secondary format string (continuation)
     move.l  a5,-(sp)             ; arg: output buffer
     jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C)
     lea     $0010(sp),sp         ; pop 4 args
@@ -91,7 +91,7 @@ ShowStatsSummary:                                                  ; $018214
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)             ; arg: new (lower) rank
-    move.l  ($00047C28).l,-(sp)  ; arg: format string for "dropped to rank N"
+    move.l  (ROM_BASE+$00047C28).l,-(sp) ; arg: format string for "dropped to rank N"
     move.l  a5,-(sp)             ; arg: output buffer
     jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C)
     lea     $000c(sp),sp
@@ -109,10 +109,10 @@ ShowStatsSummary:                                                  ; $018214
     moveq   #$1,d1
     cmp.l   d0,d1
     bne.b   .l182ec              ; gained more than 1 place: use "N places" format
-    pea     ($00041096).l        ; format string: "moved up 1 place to rank N"
+    pea     (ROM_BASE+$00041096).l ; format string: "moved up 1 place to rank N"
     bra.b   .l182f2
 .l182ec:                                                ; $0182EC
-    pea     ($0004108E).l        ; format string: "moved up N places to rank N"
+    pea     (ROM_BASE+$0004108E).l ; format string: "moved up N places to rank N"
 .l182f2:                                                ; $0182F2
     ; sprintf(buf, fmt, rank, places_gained): format "rose N places to rank M"
     move.w  d2,d0
@@ -124,7 +124,7 @@ ShowStatsSummary:                                                  ; $018214
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)             ; arg: new rank (for "%d" #2 in format)
-    move.l  ($00047C24).l,-(sp)  ; arg: format string continuation
+    move.l  (ROM_BASE+$00047C24).l,-(sp) ; arg: format string continuation
     move.l  a5,-(sp)             ; arg: output buffer
     jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C) -- "moved up" message
     lea     $0014(sp),sp         ; pop 5 args
@@ -473,7 +473,7 @@ ShowStatsSummary:                                                  ; $018214
     bne.b   .l185dc
     ; No results at all: use neutral "no change" format
     clr.l   -(sp)
-    move.l  ($00047C30).l,-(sp)  ; format string for "no notable change" result
+    move.l  (ROM_BASE+$00047C30).l,-(sp) ; format string for "no notable change" result
     bra.b   .l185f6
 .l185dc:                                                ; $0185DC
     ; At least one result displayed: select format index based on d3 (0=none, 1=one, 2+=two)

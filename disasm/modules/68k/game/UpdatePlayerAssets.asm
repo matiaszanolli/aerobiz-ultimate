@@ -42,8 +42,8 @@ UpdatePlayerAssets:
     cmp.l   -$c(a6), d2
     blt.b   l_18dc0
     move.l  d2, -(a7)
-    move.l  ($00047B78).l, -(a7)
-    move.l  ($00047CB0).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047CB0).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -66,8 +66,8 @@ l_18dc0:
     ext.l   d0
     move.l  d0, -(a7)
     move.l  d2, -(a7)
-    move.l  ($00047B78).l, -(a7)
-    move.l  ($00047CAC).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047CAC).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $14(a7), a7
@@ -82,8 +82,8 @@ l_18e0c:
     bra.w   l_18ea0
 l_18e12:
     move.l  d2, -(a7)
-    move.l  ($00047B78).l, -(a7)
-    move.l  ($00047CB0).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047CB0).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -95,15 +95,15 @@ l_18e2e:
     move.l  (a0), d0
     cmp.l   (a3), d0
     bne.b   l_18e4e
-    move.l  ($00047B78).l, -(a7)
-    move.l  ($00047CD0).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047CD0).l, -(a7)
     bra.b   l_18e92
 l_18e4e:
     move.l  (a3), d2
     sub.l   (a2), d2
     move.l  d2, -(a7)
-    move.l  ($00047B78).l, -(a7)
-    move.l  ($00047CB4).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047CB4).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     pea     ($0002).w
@@ -115,8 +115,8 @@ l_18e4e:
     lea     $20(a7), a7
     tst.l   $6(a4)
     bge.b   l_18eb0
-    move.l  ($00047B78).l, -(a7)
-    move.l  ($00047CB8).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047CB8).l, -(a7)
 l_18e92:
     move.l  a5, -(a7)
     jsr sprintf

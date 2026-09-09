@@ -213,7 +213,7 @@ l_1f2ba:
     jsr SetTextCursor               ; position text cursor for numeric label
     lea     $2c(a7), a7             ; clean up TilePlacement args ($7 x 4 = $1C) + GameCmd ($8) + SetTextCursor ($8)
     move.l  (a2), -(a7)             ; stat value (numeric)
-    pea     ($000411F2).l           ; format string: "%d" (decimal number)
+    pea     (ROM_BASE+$000411F2).l  ; format string: "%d" (decimal number)
     jsr PrintfNarrow                ; print value label below bar
     ; Place row icon to the right of the label
     move.w  d5, d0

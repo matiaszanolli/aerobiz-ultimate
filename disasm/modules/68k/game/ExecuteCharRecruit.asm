@@ -154,7 +154,7 @@ l_365c6:
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
     ; ROM format string at $44996: "PlayerName hired CharName as RoleName" template
-    pea     ($00044996).l
+    pea     (ROM_BASE+$00044996).l
     ; PrintfWide: render the recruitment announcement in wide 2-tile font
     jsr PrintfWide
     ; DrawPlayerRoutes: refresh the player's route map to show new assignment
@@ -237,7 +237,7 @@ CollectCharRevenue:                                                  ; $0366D0
     lsl.w   #$4,d0
     movea.l #$00ff00a8,a0
     pea     (a0,d0.w)
-    pea     ($000449C8).l
+    pea     (ROM_BASE+$000449C8).l
     jsr     (ROM_BASE+$03B270).l
     pea     ($001E).w
     jsr     (ROM_BASE+$01E2F4).l
@@ -302,7 +302,7 @@ CollectCharRevenue:                                                  ; $0366D0
     lsl.w   #$4,d0
     movea.l #$00ff00a8,a0
     pea     (a0,d0.w)
-    pea     ($000449B2).l
+    pea     (ROM_BASE+$000449B2).l
     jsr     (ROM_BASE+$03B270).l
     pea     ($001E).w
     jsr     (ROM_BASE+$01E2F4).l

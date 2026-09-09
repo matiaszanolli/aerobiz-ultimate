@@ -57,7 +57,7 @@ InitStatusScreenGfx:
     clr.l   -(a7)
     pea     ($001A).w
     jsr     (a2)
-    pea     ($000543E2).l
+    pea     (ROM_BASE+$000543E2).l
     move.l  a3, -(a7)
     jsr     (a4)
     lea     $24(a7), a7
@@ -68,7 +68,7 @@ InitStatusScreenGfx:
     pea     ($0002).w
     pea     ($0005).w
     jsr     (a2)
-    pea     ($00054F82).l
+    pea     (ROM_BASE+$00054F82).l
     move.l  a3, -(a7)
     jsr     (a4)
     lea     $20(a7), a7
@@ -79,7 +79,7 @@ InitStatusScreenGfx:
     pea     ($0002).w
     pea     ($0005).w
     jsr     (a2)
-    pea     ($00050006).l
+    pea     (ROM_BASE+$00050006).l
     move.l  a3, -(a7)
     jsr     (a4)
     lea     $20(a7), a7
@@ -92,10 +92,10 @@ InitStatusScreenGfx:
     jsr     (a2)
     pea     ($0030).w
     pea     ($0010).w
-    pea     ($00053482).l
+    pea     (ROM_BASE+$00053482).l
     jsr DisplaySetup
     lea     $24(a7), a7
-    pea     ($000534E2).l
+    pea     (ROM_BASE+$000534E2).l
     pea     ($001E).w
     pea     ($0020).w
     clr.l   -(a7)
@@ -104,7 +104,7 @@ InitStatusScreenGfx:
     pea     ($001B).w
     jsr     (a2)
     lea     $1c(a7), a7
-    pea     ($00053C62).l
+    pea     (ROM_BASE+$00053C62).l
     pea     ($001E).w
     pea     ($0020).w
     pea     ($001E).w
@@ -113,7 +113,7 @@ InitStatusScreenGfx:
     pea     ($001B).w
     jsr     (a2)
     lea     $1c(a7), a7
-    pea     ($00064140).l
+    pea     (ROM_BASE+$00064140).l
     pea     ($000E).w
     pea     ($0020).w
     pea     ($002E).w
@@ -124,7 +124,7 @@ InitStatusScreenGfx:
     lea     $1c(a7), a7
     clr.l   -(a7)
     pea     ($76A0).w
-    pea     ($00055C54).l
+    pea     (ROM_BASE+$00055C54).l
     pea     ($06C0).w
     pea     ($0002).w
     pea     ($0005).w

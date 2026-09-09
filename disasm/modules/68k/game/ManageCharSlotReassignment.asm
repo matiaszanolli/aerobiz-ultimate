@@ -71,7 +71,7 @@ l_2861e:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($00048330).l, -(a7)
+    move.l  (ROM_BASE+$00048330).l, -(a7)
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -203,11 +203,11 @@ l_286ea:
     cmpi.w  #$1, d2
     bne.b   l_28754
     ; d2 == 1: use singular "slot" template
-    pea     ($00041ACE).l
+    pea     (ROM_BASE+$00041ACE).l
     bra.b   l_2875a
 l_28754:
     ; d2 > 1: use plural "slots" template
-    pea     ($00041AC8).l
+    pea     (ROM_BASE+$00041AC8).l
 l_2875a:
     ; sprintf: format "CharName: N slot(s)" into local buffer at -$50(a6)
     ; Args: buf, format_string(a5[8]), count(d2), singular/plural_word, char_name
@@ -264,7 +264,7 @@ l_287a8:
     move.b  (a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041AC4).l
+    pea     (ROM_BASE+$00041AC4).l
     jsr PrintfNarrow
     ; Decrement tab32_8824[1] (the char's used-slot counter in the global char table)
     subq.b  #$1, $1(a3)
@@ -278,7 +278,7 @@ l_287a8:
     move.b  $1(a3), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041AC0).l
+    pea     (ROM_BASE+$00041AC0).l
     jsr PrintfNarrow
     ; GameCommand #$E: flush/refresh the display after updating the counter text
     pea     ($0005).w
@@ -300,11 +300,11 @@ l_28810:
     cmpi.w  #$1, d5
     bne.b   l_28830
     ; d5 == 1: singular result string
-    pea     ($00041AB6).l
+    pea     (ROM_BASE+$00041AB6).l
     bra.b   l_28836
 l_28830:
     ; d5 > 1: plural result string
-    pea     ($00041AAA).l
+    pea     (ROM_BASE+$00041AAA).l
 l_28836:
     ; sprintf: format "N slot(s) reassigned for CharName" into -$50(a6)
     ; a5[$C] ($4833C) = format string for the result summary message

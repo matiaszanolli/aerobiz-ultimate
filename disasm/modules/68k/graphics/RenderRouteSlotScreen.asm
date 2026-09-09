@@ -32,12 +32,12 @@ RenderRouteSlotScreen:
 ; DisplaySetup parameters: resource_ptr=$4A5BA, tile_count=$30, vram_dest=$10
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($0004A5BA).l
+    pea     (ROM_BASE+$0004A5BA).l
     jsr DisplaySetup             ; DMA the slot-panel background tileset to VRAM
     lea     $28(a7), a7
 ; GameCommand #$1B: place tile data block at (col=$03, row=$02, w=$08, h=$06, base=$4A5DA)
 ; This stamps the route slot panel border/header tiles onto the screen
-    pea     ($0004A5DA).l       ; ROM tile data block address for route slot frame
+    pea     (ROM_BASE+$0004A5DA).l ; ROM tile data block address for route slot frame
     pea     ($0006).w           ; height = 6
     pea     ($0008).w           ; width  = 8
     pea     ($0002).w           ; top row = 2
@@ -47,7 +47,7 @@ RenderRouteSlotScreen:
     jsr     (a4)
 ; --- Phase: Decompress and DMA route-slot tile graphics ---
 ; $4A63A = LZ-compressed route-slot portrait frame tiles in ROM
-    pea     ($0004A63A).l
+    pea     (ROM_BASE+$0004A63A).l
     move.l  a5, -(a7)           ; output to save_buf_base ($FF1804)
     jsr LZ_Decompress            ; decompress slot portrait frame graphics
     lea     $24(a7), a7
@@ -82,7 +82,7 @@ RenderRouteSlotScreen:
     jsr CmdPlaceTile             ; place decompressed portrait tile on screen
 ; GameCommand #$1B: stamp portrait overlay tile block from ROM $71F98
 ; (col=$01, row=$19, w=$03, h=$05, plane=$0004)
-    pea     ($00071F98).l       ; ROM tile block for portrait overlay (char class icon frame)
+    pea     (ROM_BASE+$00071F98).l ; ROM tile block for portrait overlay (char class icon frame)
     pea     ($0004).w           ; plane mask / palette
     pea     ($0005).w           ; height = 5
     pea     ($0003).w           ; width  = 3

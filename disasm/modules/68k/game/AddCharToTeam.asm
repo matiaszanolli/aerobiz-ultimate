@@ -103,8 +103,8 @@ AddCharToTeam:
 ;   ($484BA).l = the dialogue block longword (loaded as name argument)
 ;   $446CA = format string for the name+age display
     move.l  $4(a3), -(a7)           ; arg4: name string ptr (dialogue block +$4)
-    move.l  ($000484BA).l, -(a7)    ; arg3: dialogue block base (character data longword)
-    pea     ($000446CA).l           ; arg2: format string "%-16s%2d" or similar
+    move.l  (ROM_BASE+$000484BA).l, -(a7) ; arg3: dialogue block base (character data longword)
+    pea     (ROM_BASE+$000446CA).l  ; arg2: format string "%-16s%2d" or similar
     pea     -$82(a6)                ; arg1: output buffer (local, -$82(a6), 130 bytes)
     jsr sprintf                     ; format: name_string -> local buffer
 ; Display the formatted string using PrintfNarrow via a4.
@@ -223,7 +223,7 @@ AddCharToTeam:
     jsr SetTextCursor
 ; PrintfWide: display the hire prompt string at $446C6 (e.g. "HIRE?")
     pea     ($0001).w               ; wide font flag = 1
-    pea     ($000446C6).l           ; ptr to "HIRE?" prompt string
+    pea     (ROM_BASE+$000446C6).l  ; ptr to "HIRE?" prompt string
     jsr PrintfWide
 ; PlaceIconTiles args: y=$1E, x=$14, button_id=3, tile_base=2
 ; Draws the A-button icon graphic at the hire prompt position.
@@ -298,7 +298,7 @@ AddCharToTeam:
     moveq   #$0,d0
     move.w  d4, d0
     move.l  d0, -(a7)               ; arg: score value
-    pea     ($000446C0).l           ; format: "%3d" or similar numeric format
+    pea     (ROM_BASE+$000446C0).l  ; format: "%3d" or similar numeric format
     jsr PrintfWide
     lea     $24(a7), a7
 

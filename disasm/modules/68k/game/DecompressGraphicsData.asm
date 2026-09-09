@@ -150,7 +150,7 @@ DecompressGraphicsData:
 .l24838:
     ; --- sub-path: different-range cities -- use generic/fallback portrait at $4E056 ---
     ; $4E056 = ROM address of generic char portrait compressed data
-    pea     ($0004E056).l
+    pea     (ROM_BASE+$0004E056).l
     pea     ($0002).w
     pea     ($001E).w
     ; same column calculation: tile column = d5 + d4*2
@@ -169,7 +169,7 @@ DecompressGraphicsData:
     ; GameCommand #$1B: place generic portrait tile block at slot position
     jsr     (a4)
     ; LZ_Decompress: decompress fallback portrait from $4E0CE to $FF1804
-    pea     ($0004E0CE).l
+    pea     (ROM_BASE+$0004E0CE).l
     move.l  a3, -(a7)
     jsr LZ_Decompress
     lea     $24(a7), a7
@@ -285,7 +285,7 @@ DecompressGraphicsData:
     movea.l  #$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
     ; $41368 = format string for city name display (PrintfWide format)
-    pea     ($00041368).l
+    pea     (ROM_BASE+$00041368).l
     ; PrintfWide: render city_a name at cursor position using 2-tile wide font
     jsr PrintfWide
     ; set cursor to (col=d5+d4*2, row=d6+$F): $F = 15 rows down, for city_b name line
@@ -309,7 +309,7 @@ DecompressGraphicsData:
     movea.l  #$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
     ; $41364 = format string for city_b name line
-    pea     ($00041364).l
+    pea     (ROM_BASE+$00041364).l
     ; PrintfWide: render city_b name
     jsr PrintfWide
     lea     $30(a7), a7
@@ -360,7 +360,7 @@ DecompressGraphicsData:
     ext.l   d0
     move.l  d0, -(a7)
     ; $4135E = format string for relationship percentage (value fits in 0-100 range)
-    pea     ($0004135E).l
+    pea     (ROM_BASE+$0004135E).l
     bra.b   .l24a28
 .l24a0e:
     ; value > 100: cap display at $64 (100%) -- route is at maximum relationship
@@ -377,7 +377,7 @@ DecompressGraphicsData:
     ext.l   d0
     move.l  d0, -(a7)
     ; $41358 = format string for capped/overflow relationship value (">100%" or special indicator)
-    pea     ($00041358).l
+    pea     (ROM_BASE+$00041358).l
 .l24a28:
     ; PrintfWide: render relationship percentage at cursor position
     jsr PrintfWide

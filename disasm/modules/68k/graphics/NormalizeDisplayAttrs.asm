@@ -219,7 +219,7 @@ l_05048:
 InitTileBuffer:                                                  ; $005060
     pea     ($0040).w
     pea     ($00FF14BC).l
-    pea     ($000472CE).l
+    pea     (ROM_BASE+$000472CE).l
     jsr     (ROM_BASE+$01E16C).l
     pea     ($0040).w
     clr.l   -(sp)

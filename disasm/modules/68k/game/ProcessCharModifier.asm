@@ -233,7 +233,7 @@ ProcessCharModifier:
     move.w  d6, d0
     move.l  d0, -(a7)
     ; arg: slot index (d6)
-    pea     ($00042530).l
+    pea     (ROM_BASE+$00042530).l
     ; ROM address $42530 = "no change" format string (fixed message)
     moveq   #$0,d0
     move.w  d5, d0
@@ -267,18 +267,18 @@ ProcessCharModifier:
     cmpi.w  #$1, d4
     bne.b   .l2b214
     ; d4 == 1: gain of exactly 1 -> use singular format ("gained 1 point")
-    pea     ($00042506).l
+    pea     (ROM_BASE+$00042506).l
     ; ROM format string at $42506 = singular "cap reached" template (e.g. "...+1 point max")
     bra.b   .l2b21a
 .l2b214:
-    pea     ($00042500).l
+    pea     (ROM_BASE+$00042500).l
     ; ROM format string at $42500 = plural "cap reached" template (e.g. "...+N points max")
 .l2b21a:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
     ; push advantage value (d4) as the numeric argument to sprintf
-    pea     ($0004250C).l
+    pea     (ROM_BASE+$0004250C).l
     ; ROM format string at $4250C = outer sprintf template (combines char name + points text)
     pea     -$80(a6)
     ; destination = local stack buffer at -$80(a6) ($80 bytes reserved in link frame)
@@ -303,18 +303,18 @@ ProcessCharModifier:
     cmpi.w  #$1, d4
     bne.b   .l2b25a
     ; d4 == 1: singular gain
-    pea     ($000424D0).l
+    pea     (ROM_BASE+$000424D0).l
     ; ROM format string at $424D0 = singular partial-gain template ("+1 point")
     bra.b   .l2b260
 .l2b25a:
-    pea     ($000424CA).l
+    pea     (ROM_BASE+$000424CA).l
     ; ROM format string at $424CA = plural partial-gain template ("+N points")
 .l2b260:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
     ; push numeric gain value
-    pea     ($000424D6).l
+    pea     (ROM_BASE+$000424D6).l
     ; ROM format string at $424D6 = partial-gain outer template
     pea     -$80(a6)
     ; destination = local sprintf buffer

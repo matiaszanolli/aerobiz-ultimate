@@ -23,7 +23,7 @@ ShowCharPanelS2:
     pea     (a0, d0.w)
     bra.b   .l2d15a
 .l2d154:
-    pea     ($0004FEE6).l
+    pea     (ROM_BASE+$0004FEE6).l
 .l2d15a:
     pea     ($0003).w
     pea     ($0003).w
@@ -76,15 +76,15 @@ ShowCharPanelS2:
     move.l  (a0,d0.w), -(a7)
     bra.b   .l2d20e
 .l2d208:
-    pea     ($0004465A).l
+    pea     (ROM_BASE+$0004465A).l
 .l2d20e:
-    pea     ($0004465E).l
+    pea     (ROM_BASE+$0004465E).l
     jsr     (a3)
     pea     ($0010).w
     pea     ($0016).w
     jsr     (a4)
     lea     $18(a7), a7
-    pea     ($00044652).l
+    pea     (ROM_BASE+$00044652).l
     bra.b   .l2d258
 .l2d22c:
     cmpi.w  #$b, d2
@@ -92,13 +92,13 @@ ShowCharPanelS2:
     pea     ($0010).w
     pea     ($0008).w
     jsr     (a4)
-    pea     ($00044646).l
+    pea     (ROM_BASE+$00044646).l
     jsr     (a3)
     pea     ($0010).w
     pea     ($0016).w
     jsr     (a4)
     lea     $14(a7), a7
-    pea     ($00044640).l
+    pea     (ROM_BASE+$00044640).l
 .l2d258:
     jsr     (a3)
 .l2d25a:

@@ -20,7 +20,7 @@ RenderDetailedStats:
 ; Load the initial stat icon graphics tileset via DisplaySetup
     pea     ($0010).w             ; mode/size arg
     pea     ($0020).w             ; palette arg
-    pea     ($00056A94).l         ; ROM pointer to stat-icon graphics data
+    pea     (ROM_BASE+$00056A94).l ; ROM pointer to stat-icon graphics data
     jsr     (a5)                  ; DisplaySetup: decompress and load stat icon tiles
     jsr ResourceUnload            ; release any previously loaded resource
 ; Copy $200 (512) bytes from ROM stat table ($5FE24) to work RAM at $FF1074
@@ -28,7 +28,7 @@ RenderDetailedStats:
     pea     ($0200).w             ; byte count = $200 = 512
     pea     ($00FF1074).l         ; destination = $FF1074 (VRAM address word table in RAM)
     clr.l   -(a7)                 ; flags = 0
-    pea     ($0005FE24).l         ; source = ROM stat address table at $5FE24
+    pea     (ROM_BASE+$0005FE24).l ; source = ROM stat address table at $5FE24
     clr.l   -(a7)                 ; padding
     jsr MemCopy                   ; copy 512 bytes from ROM to $FF1074
     lea     $20(a7), a7           ; pop all args (5 longs = $14, but pea pushed 5 args... = 5*4 = $14, not $20 -- adjust for DisplaySetup args too)
@@ -217,11 +217,11 @@ l_3d612:
 ; Load two sets of city performance graphics (background tiles for city data panels)
     pea     ($0010).w             ; mode/size
     clr.l   -(a7)                 ; palette = 0
-    pea     ($0005CB74).l         ; ROM pointer to city bar background tile data
+    pea     (ROM_BASE+$0005CB74).l ; ROM pointer to city bar background tile data
     jsr     (a5)                  ; DisplaySetup: load city bar background tiles
     pea     ($0010).w             ; mode/size
     pea     ($0020).w             ; palette $20
-    pea     ($0005CB34).l         ; ROM pointer to alternate city performance tiles
+    pea     (ROM_BASE+$0005CB34).l ; ROM pointer to alternate city performance tiles
     jsr     (a5)                  ; DisplaySetup: load alternate city tiles
     lea     $18(a7), a7           ; pop both DisplaySetup calls (3 args each = $0C per call)
 ; --- Phase: City Performance Bar Rendering (First Set) ---
@@ -239,7 +239,7 @@ l_3d660:
     move.w  d2, d0               ; d2 = X position (signed, increases per city)
     ext.l   d0
     move.l  d0, -(a7)            ; X pixel position
-    pea     ($000600B4).l        ; ROM pointer to city bar sprite data table (at $600B4)
+    pea     (ROM_BASE+$000600B4).l ; ROM pointer to city bar sprite data table (at $600B4)
     pea     ($0003).w             ; height = 3 tiles
     pea     ($0012).w             ; width = $12 = 18 tiles
     pea     ($000F).w             ; GameCommand #$0F = place bar tile
@@ -252,7 +252,7 @@ l_3d660:
     move.w  d7, d0               ; d7 = sub-bar value
     ext.l   d0
     move.l  d0, -(a7)            ; push sub-bar value
-    pea     ($00060024).l        ; ROM pointer to sub-bar sprite data (at $60024)
+    pea     (ROM_BASE+$00060024).l ; ROM pointer to sub-bar sprite data (at $60024)
     pea     ($000C).w             ; height = $C = 12
     pea     ($0015).w             ; width = $15 = 21
     pea     ($000F).w             ; GameCommand #$0F
@@ -285,11 +285,11 @@ l_3d6cc:
 ; Load second set of city performance graphics tiles
     pea     ($0010).w
     clr.l   -(a7)
-    pea     ($0005CB94).l         ; ROM pointer to second city bar background tileset
+    pea     (ROM_BASE+$0005CB94).l ; ROM pointer to second city bar background tileset
     jsr     (a5)                  ; DisplaySetup: load second city background tiles
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($0005CB54).l         ; ROM pointer to second city performance tile variant
+    pea     (ROM_BASE+$0005CB54).l ; ROM pointer to second city performance tile variant
     jsr     (a5)                  ; DisplaySetup: load alternate second city tiles
     lea     $24(a7), a7
 ; Reset loop counters for second city performance bar pass
@@ -305,7 +305,7 @@ l_3d70a:
     move.w  d2, d0               ; d2 = X position
     ext.l   d0
     move.l  d0, -(a7)            ; push X position
-    pea     ($00060084).l        ; ROM pointer to second city bar sprite data ($60084)
+    pea     (ROM_BASE+$00060084).l ; ROM pointer to second city bar sprite data ($60084)
     pea     ($0006).w             ; height = 6 tiles
     pea     ($0015).w             ; width = $15 = 21 tiles
     pea     ($000F).w             ; GameCommand #$0F = place bar tile
@@ -318,7 +318,7 @@ l_3d70a:
     move.w  d7, d0               ; value
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($000600CC).l        ; ROM pointer to second city sub-bar data ($600CC)
+    pea     (ROM_BASE+$000600CC).l ; ROM pointer to second city sub-bar data ($600CC)
     pea     ($0003).w             ; height = 3
     pea     ($0012).w             ; width = $12
     pea     ($000F).w             ; GameCommand #$0F
@@ -350,18 +350,18 @@ l_3d776:
 ; Reload stat icon tiles for the second stat-bar rendering pass
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($00056A54).l         ; ROM pointer to stat icon tileset (shared with first pass init)
+    pea     (ROM_BASE+$00056A54).l ; ROM pointer to stat icon tileset (shared with first pass init)
     jsr     (a5)                  ; DisplaySetup: reload stat icons (wide style)
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($00056A54).l         ; same tileset, narrow palette variant
+    pea     (ROM_BASE+$00056A54).l ; same tileset, narrow palette variant
     jsr     (a5)                  ; DisplaySetup: reload stat icons (narrow style)
     lea     $24(a7), a7
 ; Place the divider/title bar between stat sections
 ; Args: (cmd=$5, count=$2, Y=$1970, src=$56AB4, height=$1360, flags=0)
     clr.l   -(a7)                 ; reserved
     pea     ($1360).w             ; height arg for title bar placement
-    pea     ($00056AB4).l         ; ROM pointer to divider bar tile data
+    pea     (ROM_BASE+$00056AB4).l ; ROM pointer to divider bar tile data
     pea     ($1970).w             ; Y pixel position for divider bar ($1970 = large val, screen-wrapped?)
     pea     ($0002).w             ; width = 2
     pea     ($0005).w             ; GameCommand #$05 = place divider bar

@@ -23,7 +23,7 @@ HandleRouteEventType3:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00047FF4).l
+    pea     (ROM_BASE+$00047FF4).l
     bra.b   l_22cb0
 l_22c98:
     moveq   #$0,d0
@@ -31,7 +31,7 @@ l_22c98:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00048020).l
+    pea     (ROM_BASE+$00048020).l
 l_22cb0:
     move.l  a3, -(a7)
     jsr sprintf

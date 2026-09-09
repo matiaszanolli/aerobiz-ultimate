@@ -15,7 +15,7 @@ ShowAllianceScreen:
     pea     ($001A).w
     jsr GameCommand
     clr.l   -(a7)
-    move.l  ($00047B54).l, -(a7)
+    move.l  (ROM_BASE+$00047B54).l, -(a7)
     pea     ($0004).w
     move.w  d2, d0
     move.l  d0, -(a7)

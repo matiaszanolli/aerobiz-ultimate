@@ -27,7 +27,7 @@ ApplyCharacterEffect:
     pea     ($0014).w          ; DrawBox: box height = 20 tiles
     pea     ($0001).w          ; DrawBox: starting column = 1
     jsr DrawBox                ; $005A04: draw bordered dialog box (corners + edges)
-    pea     ($0003F7D8).l      ; ROM string: slot-selection prompt text
+    pea     (ROM_BASE+$0003F7D8).l ; ROM string: slot-selection prompt text
     jsr PrintfNarrow           ; $03B246: format + display narrow-font string
     pea     ($0020).w          ; SetTextWindow: width = 32 (full screen)
     pea     ($0020).w          ; SetTextWindow: height = 32
@@ -247,7 +247,7 @@ ApplyCharacterEffect:
     pea     ($0014).w
     pea     ($0001).w
     jsr DrawBox
-    pea     ($0003F7B4).l      ; alternate slot-selection prompt string (post-browse variant)
+    pea     (ROM_BASE+$0003F7B4).l ; alternate slot-selection prompt string (post-browse variant)
     jsr PrintfNarrow
     pea     ($0020).w
     pea     ($0020).w

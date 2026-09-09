@@ -71,7 +71,7 @@ FindAvailableSlot:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($00048486).l, -(a7)
+    move.l  (ROM_BASE+$00048486).l, -(a7)
     moveq   #$0,d0
     move.w  d5, d0
     move.l  d0, -(a7)
@@ -81,7 +81,7 @@ FindAvailableSlot:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000484E2).l, -(a7)
+    move.l  (ROM_BASE+$000484E2).l, -(a7)
     pea     ($000B).w
     jsr (ShowCharInfoPageS2,PC)
     nop
@@ -89,7 +89,7 @@ FindAvailableSlot:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000484E6).l, -(a7)
+    move.l  (ROM_BASE+$000484E6).l, -(a7)
     pea     ($000B).w
     jsr (ShowCharInfoPageS2,PC)
     nop

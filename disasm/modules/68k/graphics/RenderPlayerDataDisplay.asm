@@ -47,17 +47,17 @@ RenderPlayerDataDisplay:
     pea     ($0009).w
     pea     ($0002).w
     jsr     (a4)
-    pea     ($00041408).l
+    pea     (ROM_BASE+$00041408).l
     jsr     (a3)
     pea     ($0009).w
     pea     ($000D).w
     jsr     (a4)
-    pea     ($000413FE).l
+    pea     (ROM_BASE+$000413FE).l
     jsr     (a3)
     pea     ($0009).w
     pea     ($0019).w
     jsr     (a4)
-    pea     ($000413F8).l
+    pea     (ROM_BASE+$000413F8).l
     jsr     (a3)
     lea     $24(a7), a7
     clr.w   d3
@@ -83,7 +83,7 @@ RenderPlayerDataDisplay:
     lsl.w   #$2, d0
     movea.l  #$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($000413F4).l
+    pea     (ROM_BASE+$000413F4).l
     jsr     (a3)
     move.w  d2, d0
     ext.l   d0
@@ -95,7 +95,7 @@ RenderPlayerDataDisplay:
     lsl.w   #$2, d0
     movea.l  #$0005E2DE,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($000413F0).l
+    pea     (ROM_BASE+$000413F0).l
     jsr     (a3)
     move.w  d2, d0
     ext.l   d0
@@ -108,7 +108,7 @@ RenderPlayerDataDisplay:
     add.l   d0, d0
     add.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($000413EA).l
+    pea     (ROM_BASE+$000413EA).l
     jsr     (a3)
     lea     $18(a7), a7
     addq.w  #$1, d4

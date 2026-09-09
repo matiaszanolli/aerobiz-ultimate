@@ -36,7 +36,7 @@ DisplayModelStats:
     lsl.w   #$2, d0
     movea.l  #$00047670,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003E5C8).l
+    pea     (ROM_BASE+$0003E5C8).l
     jsr PrintfNarrow
     move.w  d3, d0
     ext.l   d0
@@ -47,7 +47,7 @@ DisplayModelStats:
     ext.l   d0
     addq.l  #$1, d0
     move.l  d0, -(a7)
-    pea     ($0003E5BE).l
+    pea     (ROM_BASE+$0003E5BE).l
     jsr PrintfWide
     lea     $20(a7), a7
     addq.w  #$2, d3
@@ -57,7 +57,7 @@ DisplayModelStats:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000475E4).l, -(a7)
+    move.l  (ROM_BASE+$000475E4).l, -(a7)
     clr.l   -(a7)
     jsr (DisplayMessageWithParams,PC)
     nop

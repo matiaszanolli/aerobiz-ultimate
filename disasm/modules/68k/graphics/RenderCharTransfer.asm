@@ -36,7 +36,7 @@ RenderCharTransfer:
     jsr ShowCharProfile
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0004E3AC).l
+    pea     (ROM_BASE+$0004E3AC).l
     jsr DisplaySetup
     lea     $24(a7), a7
 .l2d97e:
@@ -65,7 +65,7 @@ RenderCharTransfer:
     move.b  $6(a2), d0
     addi.l  #$76c, d0
     move.l  d0, -(a7)
-    pea     ($00044674).l
+    pea     (ROM_BASE+$00044674).l
     jsr     (a3)
     move.w  d2, d0
     move.l  d0, -(a7)
@@ -91,7 +91,7 @@ RenderCharTransfer:
     pea     ($0016).w
     pea     ($0002).w
     jsr     (a4)
-    pea     ($0004466E).l
+    pea     (ROM_BASE+$0004466E).l
     jsr     (a3)
     pea     ($0016).w
     pea     ($0007).w
@@ -99,7 +99,7 @@ RenderCharTransfer:
     moveq   #$0,d0
     move.w  d2, d0
     move.l  d0, -(a7)
-    pea     ($00044668).l
+    pea     (ROM_BASE+$00044668).l
     jsr     (a3)
     movem.l -$18(a6), d2-d4/a2-a4
     unlk    a6

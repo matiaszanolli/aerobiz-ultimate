@@ -42,7 +42,7 @@ ShowAlternatePlayerView:
     pea     ($0020).w
     bsr.w FillRectColor
 ; LZ_Decompress: decompress background tile graphics from ROM $64660 to work buffer $FF1804 (save_buf_base)
-    pea     ($00064660).l        ; ROM source: compressed background tile data
+    pea     (ROM_BASE+$00064660).l ; ROM source: compressed background tile data
     pea     ($00FF1804).l        ; dest: save_buf_base work buffer
     jsr LZ_Decompress
     lea     $30(a7), a7
@@ -58,12 +58,12 @@ ShowAlternatePlayerView:
 ; DisplaySetup: configure secondary tile window at ROM $644C0 (10 wide, 16 tall)
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($000644C0).l
+    pea     (ROM_BASE+$000644C0).l
     jsr DisplaySetup
     lea     $24(a7), a7
 ; GameCommand #$1B: place ROM tile block $644E0 into the tile map
 ; Params: tile addr=$644E0, col=$8, row=$6, width=$C, height=$10, layer 1
-    pea     ($000644E0).l
+    pea     (ROM_BASE+$000644E0).l
     pea     ($000C).w
     pea     ($0010).w
     pea     ($0006).w
@@ -183,7 +183,7 @@ l_3dd72:
     asr.l   #$2, d0              ; d0 = frame_counter / 4 = year offset (4 frames per year)
     addi.l  #$7a3, d0            ; d0 = year offset + $7A3 (1955) = current calendar year
     move.l  d0, -(a7)            ; push year value for sprintf
-    move.l  ($0006588E).l, -(a7) ; push ROM format string pointer (e.g., "%d" year template)
+    move.l  (ROM_BASE+$0006588E).l, -(a7) ; push ROM format string pointer (e.g., "%d" year template)
 l_3dd82:
 ; Common sprintf call: format string and args already on stack, dest = a2
     move.l  a2, -(a7)            ; push dest buffer pointer (local stack frame -$80(a6))
@@ -198,7 +198,7 @@ l_3dd8e:
     bne.b   l_3dda2              ; not row 1: skip
     lea     -$80(a6), a2         ; a2 = sprintf output buffer
     move.l  a3, -(a7)            ; push player data block pointer ($FF00A8 + player*$10)
-    move.l  ($00065892).l, -(a7) ; push ROM format string pointer for player name
+    move.l  (ROM_BASE+$00065892).l, -(a7) ; push ROM format string pointer for player name
     bra.b   l_3dd82              ; common sprintf call
 
 ; --- Row 4: Cities owned (clamped to 7) ---
@@ -221,7 +221,7 @@ l_3dda2:
 l_3ddca:
     move.l  #$7, -(a7)           ; push cap value 7 (max cities displayed = 7)
 l_3ddd0:
-    move.l  ($0006589E).l, -(a7) ; push ROM format string pointer for city count
+    move.l  (ROM_BASE+$0006589E).l, -(a7) ; push ROM format string pointer for city count
     bra.b   l_3dd82              ; common sprintf call
 
 ; --- Row 6: Competitor 0 name ---
@@ -234,7 +234,7 @@ l_3ddd8:
     lsl.w   #$4, d0              ; d0 = opponent_index * $10 (stride into $FF00A8 block)
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)           ; push pointer to opponent 0's $FF00A8 data block
-    move.l  ($000658A6).l, -(a7) ; push ROM format string for competitor name
+    move.l  (ROM_BASE+$000658A6).l, -(a7) ; push ROM format string for competitor name
     bra.b   l_3dd82              ; common sprintf call
 
 ; --- Row 7: Competitor 1 name ---
@@ -246,7 +246,7 @@ l_3ddfa:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)           ; push pointer to opponent 1's $FF00A8 data block
-    move.l  ($000658AA).l, -(a7) ; push ROM format string for competitor 1 name
+    move.l  (ROM_BASE+$000658AA).l, -(a7) ; push ROM format string for competitor 1 name
     bra.w   l_3dd82
 
 ; --- Row 8: Competitor 2 name ---
@@ -258,7 +258,7 @@ l_3de1e:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)           ; push pointer to opponent 2's $FF00A8 data block
-    move.l  ($000658AE).l, -(a7) ; push ROM format string for competitor 2 name
+    move.l  (ROM_BASE+$000658AE).l, -(a7) ; push ROM format string for competitor 2 name
     bra.w   l_3dd82
 
 ; --- Row 10 ($A): Extended player data row ---
@@ -268,7 +268,7 @@ l_3de42:
     bne.b   l_3de58              ; not row $A: skip
     lea     -$80(a6), a2         ; a2 = sprintf output buffer
     move.l  a3, -(a7)            ; push current player's $FF00A8 data block pointer
-    move.l  ($000658B6).l, -(a7) ; push ROM format string for extended player data row
+    move.l  (ROM_BASE+$000658B6).l, -(a7) ; push ROM format string for extended player data row
     bra.w   l_3dd82
 
 ; --- All other rows: ROM format string table lookup ---
@@ -284,7 +284,7 @@ l_3de58:
 l_3de66:
 ; PrintfWide: render formatted string a2 into the tile buffer at current cursor position
     move.l  a2, -(a7)            ; push source string (either sprintf output or ROM string)
-    pea     ($00046844).l        ; push font/display parameters for wide-character output
+    pea     (ROM_BASE+$00046844).l ; push font/display parameters for wide-character output
     jsr PrintfWide
 ; GameCommand #$E mode $50: flush text tile row to display
     pea     ($0050).w

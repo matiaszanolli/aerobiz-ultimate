@@ -28,7 +28,7 @@ LoadMapTiles:                                                  ; $01DE92
     movea.l #$00ff1804,a2
     movea.l #$3fec,a3
     movea.l #$0001d568,a4
-    pea     ($0004943A).l
+    pea     (ROM_BASE+$0004943A).l
     move.l  a2,-(sp)
     jsr     (a3)
     move.l  a2,-(sp)
@@ -36,7 +36,7 @@ LoadMapTiles:                                                  ; $01DE92
     pea     ($000A).w
     pea     ($0740).w
     bsr.w DrawTileGrid
-    pea     ($0004959E).l
+    pea     (ROM_BASE+$0004959E).l
     move.l  a2,-(sp)
     jsr     (a3)
     move.l  a2,-(sp)
@@ -44,7 +44,7 @@ LoadMapTiles:                                                  ; $01DE92
     pea     ($0760).w
     bsr.w ProcessTextControl
     lea     $002c(sp),sp
-    pea     ($0004E1D8).l
+    pea     (ROM_BASE+$0004E1D8).l
     move.l  a2,-(sp)
     jsr     (a3)
     clr.l   -(sp)
@@ -53,11 +53,11 @@ LoadMapTiles:                                                  ; $01DE92
     pea     ($077D).w
     jsr     (a4)
     clr.l   -(sp)
-    pea     ($0004E1EC).l
+    pea     (ROM_BASE+$0004E1EC).l
     pea     ($0001).w
     pea     ($077F).w
     jsr     (a4)
-    pea     ($0004E230).l
+    pea     (ROM_BASE+$0004E230).l
     move.l  a2,-(sp)
     jsr     (a3)
     lea     $0030(sp),sp

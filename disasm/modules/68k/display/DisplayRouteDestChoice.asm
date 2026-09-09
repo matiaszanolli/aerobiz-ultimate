@@ -84,7 +84,7 @@ l_0dc12:
     move.w  $e(a6), d0           ; $e(a6) = dialog panel mode / column index
     ext.l   d0
     move.l  d0, -(a7)            ; push panel mode
-    move.l  ($0004778C).l, -(a7) ; pointer to route destination choice dialog title text
+    move.l  (ROM_BASE+$0004778C).l, -(a7) ; pointer to route destination choice dialog title text
     move.w  $a(a6), d0           ; $a(a6) = player index
     ext.l   d0
     move.l  d0, -(a7)            ; push player index
@@ -245,7 +245,7 @@ l_0dc8a:
     lsl.w   #$2, d0              ; * 4 (long pointer table index)
     movea.l  #$0005E2A2,a0       ; a0 -> city name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push city name string pointer
-    pea     ($0003E8CC).l        ; push "%s" city-name format string
+    pea     (ROM_BASE+$0003E8CC).l ; push "%s" city-name format string
     jsr PrintfWide                ; print city name in wide font
     lea     $2c(a7), a7           ; pop SetTextWindow($10) + SetTextCursor($8) + PrintfWide($8) = ... accumulative = $2C total
 ; Print city value score at cursor position ($10, $14)
@@ -253,7 +253,7 @@ l_0dc8a:
     pea     ($0014).w             ; cursor Y = $14 = 20
     jsr SetTextCursor
     move.l  d4, -(a7)            ; push city value score
-    pea     ($0003E8C6).l        ; push format string for numeric value display (e.g. "%d")
+    pea     (ROM_BASE+$0003E8C6).l ; push format string for numeric value display (e.g. "%d")
     jsr PrintfWide                ; print value score
     lea     $10(a7), a7          ; pop SetTextCursor($8) + PrintfWide($8) = $10
 l_0de00:
@@ -347,7 +347,7 @@ l_0deb6:
     lsl.w   #$2, d0              ; * 4 (long pointer table index)
     movea.l  #$0005E2A2,a0       ; a0 -> city name pointer table
     move.l  (a0,d0.w), -(a7)    ; push city name string pointer
-    move.l  ($000477A0).l, -(a7) ; push "assigned to you: %s" format string
+    move.l  (ROM_BASE+$000477A0).l, -(a7) ; push "assigned to you: %s" format string
     pea     -$5e(a6)             ; push output buffer (96-byte frame local at -$5E(a6))
     jsr sprintf                   ; format assignment description into buffer
     lea     $c(a7), a7            ; pop 3 args
@@ -365,7 +365,7 @@ l_0defc:
     lsl.w   #$2, d0              ; * 4
     movea.l  #$0005E2A2,a0       ; a0 -> city name pointer table
     move.l  (a0,d0.w), -(a7)    ; push city name string pointer
-    move.l  ($00047790).l, -(a7) ; push "%s - %s" or "assigned to %s: %s" format string
+    move.l  (ROM_BASE+$00047790).l, -(a7) ; push "%s - %s" or "assigned to %s: %s" format string
     pea     -$5e(a6)             ; push output buffer
     jsr sprintf                   ; format "PlayerName, CityName" into buffer
     lea     $10(a7), a7          ; pop 4 args (player name + city name + format + buffer)
@@ -389,7 +389,7 @@ l_0df3a:
     move.w  $e(a6), d0           ; panel mode
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($0004778C).l, -(a7) ; main title dialog text pointer
+    move.l  (ROM_BASE+$0004778C).l, -(a7) ; main title dialog text pointer
     move.w  $a(a6), d0
     ext.l   d0
     move.l  d0, -(a7)

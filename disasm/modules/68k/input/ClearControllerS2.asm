@@ -132,7 +132,7 @@ ClearControllerS2:
     lsl.w   #$2, d0            ; d0 = d2 * 4 (long pointer index)
     movea.l  #$0005F04C,a0     ; a0 = ROM slot-name pointer table
     move.l  (a0,d0.w), -(a7)  ; push slot name string ptr as sprintf arg
-    move.l  ($00048482).l, -(a7) ; push format template string from ROM data ptr
+    move.l  (ROM_BASE+$00048482).l, -(a7) ; push format template string from ROM data ptr
     pea     -$80(a6)           ; destination = local sprintf buffer
     jsr sprintf                ; format char/slot name into buffer
     pea     ($0001).w

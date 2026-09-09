@@ -93,7 +93,7 @@ l_1ce56:
     andi.l  #$ff, d0                           ; zero-extend byte
     ext.l   d0
     move.l  d0, -(a7)                          ; arg: relation name index
-    pea     ($00041180).l                       ; arg: format string pointer (ROM text table)
+    pea     (ROM_BASE+$00041180).l              ; arg: format string pointer (ROM text table)
     jsr PrintfWide                             ; display wide-font relation name
     lea     $20(a7), a7                        ; clean up: SetTextWindow×4 + SetTextCursor×2 + PrintfWide×2 = 8 longs = $20
 
@@ -215,7 +215,7 @@ l_1cfb6:
     andi.l  #$ff, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041172).l                       ; format string (ROM): relation label variant
+    pea     (ROM_BASE+$00041172).l              ; format string (ROM): relation label variant
     jsr PrintfWide                             ; print updated relation name
     lea     $20(a7), a7
     bra.b   l_1d046                            ; proceed to re-render loop

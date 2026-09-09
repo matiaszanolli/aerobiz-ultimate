@@ -7,7 +7,7 @@ RenderQuarterScreenGrid:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d3
     movea.l  #$00FF1804,a5
-    move.l  ($000A1AF8).l, -(a7)
+    move.l  (ROM_BASE+$000A1AF8).l, -(a7)
     move.l  a5, -(a7)
     jsr LZ_Decompress
     pea     ($0010).w

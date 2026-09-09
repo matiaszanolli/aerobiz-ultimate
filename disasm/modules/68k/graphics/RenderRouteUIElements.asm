@@ -7,7 +7,7 @@ RenderRouteUIElements:
     move.l  $14(a7), d2
     movea.l  #$00000D64,a3
     movea.l  #$0001E044,a4
-    move.l  ($000A1AEC).l, -(a7)
+    move.l  (ROM_BASE+$000A1AEC).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($0026).w
@@ -84,7 +84,7 @@ RenderRouteUIElements:
     mulu.w  #$3, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041210).l
+    pea     (ROM_BASE+$00041210).l
     jsr PrintfNarrow
     pea     ($0020).w
     pea     ($0020).w

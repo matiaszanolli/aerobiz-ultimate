@@ -80,7 +80,7 @@ l_288e6:
     pea     ($0017).w            ; Y = $17 = 23
     pea     ($0013).w            ; X = $13 = 19
     jsr SetTextCursor
-    pea     ($00041AE4).l        ; ROM string: "Slots" or slot-count prompt label
+    pea     (ROM_BASE+$00041AE4).l ; ROM string: "Slots" or slot-count prompt label
     jsr PrintfNarrow             ; print dialog header text
 
 ; Check if first ReadInput returns with an existing held button state
@@ -120,7 +120,7 @@ l_28984:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041AE0).l        ; ROM format string: "%d" (decimal number)
+    pea     (ROM_BASE+$00041AE0).l ; ROM format string: "%d" (decimal number)
     jsr PrintfWide               ; display current selection count (d2) in wide font
     lea     $10(a7), a7
 
@@ -140,7 +140,7 @@ l_28984:
     pea     ($001A).w
     jsr     (a2)                 ; GameCommand #$1A = ClearTileArea
     lea     $24(a7), a7
-    pea     ($00041ADA).l        ; ROM string: "<" or left-limit label
+    pea     (ROM_BASE+$00041ADA).l ; ROM string: "<" or left-limit label
     bra.b   l_28a0a
 l_289f4:
 ; Selection > 1: show the right navigation label instead
@@ -148,7 +148,7 @@ l_289f4:
     pea     ($0013).w
     jsr SetTextCursor
     addq.l  #$8, a7
-    pea     ($00041AD4).l        ; ROM string: ">" or right-nav label
+    pea     (ROM_BASE+$00041AD4).l ; ROM string: ">" or right-nav label
 l_28a0a:
     jsr PrintfNarrow             ; print the directional label
 

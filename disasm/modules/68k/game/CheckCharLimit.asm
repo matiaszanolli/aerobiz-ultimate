@@ -7,7 +7,7 @@ CheckCharLimit:
     clr.l   -(a7)
     pea     ($0001).w
     clr.l   -(a7)
-    move.l  ($000484DA).l, -(a7)
+    move.l  (ROM_BASE+$000484DA).l, -(a7)
     pea     ($000B).w
     jsr (ShowCharInfoPageS2,PC)
     nop
@@ -18,7 +18,7 @@ CheckCharLimit:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000484DE).l, -(a7)
+    move.l  (ROM_BASE+$000484DE).l, -(a7)
     pea     ($000B).w
     jsr (ShowCharInfoPageS2,PC)
     nop

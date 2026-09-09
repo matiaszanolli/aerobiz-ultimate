@@ -70,12 +70,12 @@ l_2f628:
     lsl.w   #$2, d0                      ; d3 * 4 = longword index into season name pointer table
     movea.l  #$0005F096,a0              ; season name pointer table (4 entries x 4 bytes)
     move.l  (a0,d0.w), -(a7)            ; push ptr to season name string (e.g. "SPRING")
-    pea     ($0004472A).l               ; ptr to format string for season label display
+    pea     (ROM_BASE+$0004472A).l      ; ptr to format string for season label display
     jsr     (a3)                         ; print season label string
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)                   ; push year value (e.g. 1955)
-    pea     ($00044726).l               ; ptr to format string for year display
+    pea     (ROM_BASE+$00044726).l      ; ptr to format string for year display
     jsr     (a3)                         ; print year number
     pea     ($000D).w
     jsr LoadDisplaySet                   ; flush display buffer set $D to screen
@@ -105,12 +105,12 @@ l_2f68e:
     lsl.w   #$2, d0
     movea.l  #$0005F096,a0              ; season name pointer table
     move.l  (a0,d0.w), -(a7)
-    pea     ($00044722).l               ; format string for season label (animation variant)
+    pea     (ROM_BASE+$00044722).l      ; format string for season label (animation variant)
     jsr     (a3)
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)                   ; year value
-    pea     ($0004471E).l               ; format string for year (animation variant)
+    pea     (ROM_BASE+$0004471E).l      ; format string for year (animation variant)
     jsr     (a3)
     pea     ($000A).w
     pea     ($000E).w
@@ -147,7 +147,7 @@ ShowQuarterReport:                                                  ; $02F712
     jsr     (ROM_BASE+$01D748).l
     clr.w   ($00FF99A0).l
     clr.l   -(sp)
-    move.l  ($00047B48).l,-(sp)
+    move.l  (ROM_BASE+$00047B48).l,-(sp)
     pea     ($0004).w
     move.w  d2,d0
     move.l  d0,-(sp)
@@ -197,7 +197,7 @@ ShowQuarterReport:                                                  ; $02F712
     cmpi.w  #$46,($00FF1294).l
     blt.b   .l2f818
     pea     ($0002).w
-    move.l  ($00047B28).l,-(sp)
+    move.l  (ROM_BASE+$00047B28).l,-(sp)
     pea     ($0003).w
     clr.l   -(sp)
     jsr     (ROM_BASE+$01D6A4).l
@@ -213,15 +213,15 @@ ShowQuarterReport:                                                  ; $02F712
     ble.b   .l2f858
     cmpi.w  #$1,d4
     bne.b   .l2f82a
-    pea     ($00044754).l
+    pea     (ROM_BASE+$00044754).l
     bra.b   .l2f830
 .l2f82a:                                                ; $02F82A
-    pea     ($0004474C).l
+    pea     (ROM_BASE+$0004474C).l
 .l2f830:                                                ; $02F830
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
-    move.l  ($00047C70).l,-(sp)
+    move.l  (ROM_BASE+$00047C70).l,-(sp)
     move.l  a3,-(sp)
     jsr     (a5)
     pea     ($0002).w
@@ -237,15 +237,15 @@ ShowQuarterReport:                                                  ; $02F712
     ble.b   .l2f898
     cmpi.w  #$1,d6
     bne.b   .l2f86a
-    pea     ($00044744).l
+    pea     (ROM_BASE+$00044744).l
     bra.b   .l2f870
 .l2f86a:                                                ; $02F86A
-    pea     ($0004473A).l
+    pea     (ROM_BASE+$0004473A).l
 .l2f870:                                                ; $02F870
     move.w  d6,d0
     ext.l   d0
     move.l  d0,-(sp)
-    move.l  ($00047C74).l,-(sp)
+    move.l  (ROM_BASE+$00047C74).l,-(sp)
     move.l  a3,-(sp)
     jsr     (a5)
     pea     ($0002).w
@@ -261,7 +261,7 @@ ShowQuarterReport:                                                  ; $02F712
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($0004).w
-    move.l  ($00047B44).l,-(sp)
+    move.l  (ROM_BASE+$00047B44).l,-(sp)
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -291,7 +291,7 @@ ShowQuarterReport:                                                  ; $02F712
     lsl.w   #$2,d0
     movea.l #$00047b60,a0
     move.l  (a0,d0.w),-(sp)
-    move.l  ($00047B40).l,-(sp)
+    move.l  (ROM_BASE+$00047B40).l,-(sp)
     move.l  a3,-(sp)
     jsr     (a5)
     clr.l   -(sp)

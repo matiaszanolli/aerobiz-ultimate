@@ -5,7 +5,7 @@
 ClearSoundBuffer:
     pea     ($000D).w
     jsr GameCommand
-    move.l  ($000AF190).l, -(a7)
+    move.l  (ROM_BASE+$000AF190).l, -(a7)
     pea     ($4000).w
     jsr DecompressVDPTiles
     pea     ($000C).w

@@ -15,7 +15,7 @@ LoadScreen:                                                  ; $006A2E
     clr.l   -(sp)
     jsr CmdSetBackground
     clr.l   -(sp)
-    pea     ($0004E1EC).l
+    pea     (ROM_BASE+$0004E1EC).l
     pea     ($0001).w
     pea     ($077F).w
     jsr VRAMBulkLoad
@@ -39,10 +39,10 @@ LoadScreen:                                                  ; $006A2E
     jsr     (a2)                                         ; GameCommand($1A,...)
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0007677E).l
+    pea     (ROM_BASE+$0007677E).l
     jsr DisplaySetup
     lea     $28(sp),sp
-    pea     ($00070198).l
+    pea     (ROM_BASE+$00070198).l
     pea     ($0016).w
     pea     ($0020).w
     clr.l   -(sp)

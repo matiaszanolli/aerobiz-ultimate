@@ -71,7 +71,7 @@ LoadRouteDataS2:
     move.w  -$8(a6), d0
     lsl.l   #$4, d0
     pea     (a5, d0.l)
-    pea     ($0004219C).l
+    pea     (ROM_BASE+$0004219C).l
     move.l  a4, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -88,14 +88,14 @@ LoadRouteDataS2:
     move.w  -$8(a6), d0
     lsl.l   #$4, d0
     pea     (a5, d0.l)
-    pea     ($0004217A).l
+    pea     (ROM_BASE+$0004217A).l
     move.l  a4, -(a7)
     jsr sprintf
     lea     $14(a7), a7
     bra.b   .l2a8f2
 .l2a8de:
     move.l  (a3), -(a7)
-    pea     ($00042152).l
+    pea     (ROM_BASE+$00042152).l
     move.l  a4, -(a7)
     jsr sprintf
     lea     $c(a7), a7

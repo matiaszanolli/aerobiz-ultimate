@@ -15,8 +15,8 @@ ComputeQuarterResults:
     move.w  d0, d2
     tst.w   d2
     bne.b   l_18cc0
-    move.l  ($00047B78).l, -(a7)
-    move.l  ($00047C9C).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047C9C).l, -(a7)
     move.l  a2, -(a7)
     jsr sprintf
     lea     $c(a7), a7
@@ -24,15 +24,15 @@ ComputeQuarterResults:
 l_18cc0:
     cmpi.w  #$1, d2
     bne.b   l_18cce
-    pea     ($000410C6).l
+    pea     (ROM_BASE+$000410C6).l
     bra.b   l_18cd4
 l_18cce:
-    move.l  ($00047B78).l, -(a7)
+    move.l  (ROM_BASE+$00047B78).l, -(a7)
 l_18cd4:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($00047CA0).l, -(a7)
+    move.l  (ROM_BASE+$00047CA0).l, -(a7)
     move.l  a2, -(a7)
     jsr sprintf
     lea     $10(a7), a7

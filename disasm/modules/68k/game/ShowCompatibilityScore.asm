@@ -39,13 +39,13 @@ ShowCompatibilityScore:
     pea     ($0015).w
     pea     ($000D).w
     jsr     (a4)
-    pea     ($000411A0).l
+    pea     (ROM_BASE+$000411A0).l
     jsr     (a3)
     pea     ($0015).w
     pea     ($0016).w
     jsr     (a4)
     move.l  d4, -(a7)
-    pea     ($00041198).l
+    pea     (ROM_BASE+$00041198).l
     jsr     (a3)
     pea     ($0017).w
     pea     ($000D).w
@@ -58,7 +58,7 @@ ShowCompatibilityScore:
     jsr CalcRelationValue
     lea     $c(a7), a7
     move.l  d0, -(a7)
-    pea     ($0004118E).l
+    pea     (ROM_BASE+$0004118E).l
     jsr     (a3)
     lea     $2c(a7), a7
     pea     ($0001).w
@@ -99,7 +99,7 @@ ShowCompatibilityScore:
     pea     ($001A).w
     jsr     (a2)
     lea     $1c(a7), a7
-    pea     ($0004DD9C).l
+    pea     (ROM_BASE+$0004DD9C).l
     pea     ($0009).w
     pea     ($001E).w
     pea     ($0012).w
@@ -107,7 +107,7 @@ ShowCompatibilityScore:
     clr.l   -(a7)
     pea     ($001B).w
     jsr     (a2)
-    pea     ($0004DFB8).l
+    pea     (ROM_BASE+$0004DFB8).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
     lea     $24(a7), a7

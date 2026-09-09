@@ -94,10 +94,10 @@ ShowRoutePanel:
     jsr     (a4)
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0004A7DA).l
+    pea     (ROM_BASE+$0004A7DA).l
     jsr DisplaySetup
     lea     $28(a7), a7
-    pea     ($0004A7FA).l
+    pea     (ROM_BASE+$0004A7FA).l
     pea     ($000C).w
     pea     ($0020).w
     moveq   #$0,d0
@@ -110,7 +110,7 @@ ShowRoutePanel:
     pea     ($0001).w
     pea     ($001B).w
     jsr     (a4)
-    pea     ($0004AAFA).l
+    pea     (ROM_BASE+$0004AAFA).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
     lea     $24(a7), a7

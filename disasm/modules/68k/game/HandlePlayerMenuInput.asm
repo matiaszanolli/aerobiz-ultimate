@@ -32,7 +32,7 @@ HandlePlayerMenuInput:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($00048606).l, -(a7)        ; ptr to dialog header format string
+    move.l  (ROM_BASE+$00048606).l, -(a7) ; ptr to dialog header format string
     move.w  $a(a6), d0
     ext.l   d0
     move.l  d0, -(a7)                   ; player_index
@@ -44,7 +44,7 @@ HandlePlayerMenuInput:
     lea     $18(a7), a7
     tst.w   d0
     beq.b   l_38ee2                     ; zero match slots: skip match-available notice
-    move.l  ($00048612).l, -(a7)        ; ptr to "match available" message
+    move.l  (ROM_BASE+$00048612).l, -(a7) ; ptr to "match available" message
     jsr PrintfNarrow
     addq.l  #$4, a7
 l_38ee2:
@@ -382,7 +382,7 @@ l_39206:
     move.w  d4, d0                      ; current selection (frequency cursor)
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FEE).l               ; format: selection index display
+    pea     (ROM_BASE+$00044FEE).l      ; format: selection index display
     jsr PrintfWide
     pea     ($0004).w                   ; cursor col = 4
     pea     ($0005).w                   ; cursor row = 5
@@ -394,7 +394,7 @@ l_39206:
     ext.l   d1
     add.l   d1, d0                      ; supply + selection offset
     move.l  d0, -(a7)
-    pea     ($00044FEA).l               ; narrow format string for city_a stat
+    pea     (ROM_BASE+$00044FEA).l      ; narrow format string for city_a stat
     jsr PrintfNarrow
     pea     ($0004).w
     pea     ($0015).w                   ; cursor row = 21
@@ -406,7 +406,7 @@ l_39206:
     ext.l   d1
     add.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($00044FE6).l               ; narrow format string for city_b stat
+    pea     (ROM_BASE+$00044FE6).l      ; narrow format string for city_b stat
     jsr PrintfNarrow
     lea     $30(a7), a7
     move.w  d6, d0
@@ -421,7 +421,7 @@ l_39206:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FE2).l
+    pea     (ROM_BASE+$00044FE2).l
     jsr PrintfWide
     pea     -$40(a6)
     pea     ($0001).w
@@ -753,12 +753,12 @@ l_395c6:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($00048606).l, -(a7)        ; ptr to dialog format string
+    move.l  (ROM_BASE+$00048606).l, -(a7) ; ptr to dialog format string
     move.w  $a(a6), d0
     ext.l   d0
     move.l  d0, -(a7)
     jsr ShowDialog
-    move.l  ($00048612).l, -(a7)        ; ptr to match-available notice
+    move.l  (ROM_BASE+$00048612).l, -(a7) ; ptr to match-available notice
     jsr PrintfNarrow
     pea     ($0020).w
     pea     ($0020).w

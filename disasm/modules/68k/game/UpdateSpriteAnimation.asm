@@ -34,9 +34,9 @@ UpdateSpriteAnimation:
     jsr ShowPlayerInfo
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($0007651E).l
+    pea     (ROM_BASE+$0007651E).l
     jsr DisplaySetup
-    move.l  ($000A1B20).l, -(a7)
+    move.l  (ROM_BASE+$000A1B20).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($006E).w
@@ -44,7 +44,7 @@ UpdateSpriteAnimation:
     pea     ($00FF1804).l
     jsr CmdPlaceTile
     lea     $24(a7), a7
-    pea     ($00071FC0).l
+    pea     (ROM_BASE+$00071FC0).l
     pea     ($0017).w
     pea     ($001E).w
     pea     ($0001).w
@@ -60,7 +60,7 @@ UpdateSpriteAnimation:
     lea     $2c(a7), a7
     move.l  $e(a5), -(a7)
     move.l  $a(a5), -(a7)
-    pea     ($0004139E).l
+    pea     (ROM_BASE+$0004139E).l
     jsr PrintfWide
     pea     ($0004).w
     pea     ($0010).w
@@ -69,7 +69,7 @@ UpdateSpriteAnimation:
     jsr SetTextWindow
     move.l  $4(a4), -(a7)
     move.l  (a4), -(a7)
-    pea     ($00041392).l
+    pea     (ROM_BASE+$00041392).l
     jsr PrintfWide
     lea     $28(a7), a7
     pea     ($0006).w
@@ -86,7 +86,7 @@ UpdateSpriteAnimation:
     moveq   #$0,d0
     move.w  (a3), d0
     move.l  d0, -(a7)
-    pea     ($00041380).l
+    pea     (ROM_BASE+$00041380).l
     jsr PrintfWide
     pea     ($0006).w
     pea     ($0010).w
@@ -103,7 +103,7 @@ UpdateSpriteAnimation:
     moveq   #$0,d0
     move.w  (a2), d0
     move.l  d0, -(a7)
-    pea     ($0004136C).l
+    pea     (ROM_BASE+$0004136C).l
     jsr PrintfWide
     lea     $10(a7), a7
     jsr ResourceUnload

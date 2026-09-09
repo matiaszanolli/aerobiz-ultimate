@@ -60,7 +60,7 @@ ProcessCharAnimS2:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00042244).l
+    pea     (ROM_BASE+$00042244).l
 .l2a9d0:
     move.l  a4, -(a7)
     jsr sprintf
@@ -79,7 +79,7 @@ ProcessCharAnimS2:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00042212).l
+    pea     (ROM_BASE+$00042212).l
     bra.b   .l2a9d0
 .l2aa0c:
     cmpi.b  #$5, $1(a2)
@@ -118,7 +118,7 @@ ProcessCharAnimS2:
     lsl.w   #$2, d0
     movea.l  #$0005E2A2,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($000421DC).l
+    pea     (ROM_BASE+$000421DC).l
     bra.b   .l2aab8
 .l2aa7e:
     cmpi.b  #$6, $1(a2)
@@ -137,7 +137,7 @@ ProcessCharAnimS2:
     lsl.l   #$2, d0
     movea.l  #$0005E296,a0
     move.l  (a0,d0.l), -(a7)
-    pea     ($000421B8).l
+    pea     (ROM_BASE+$000421B8).l
 .l2aab8:
     move.l  a4, -(a7)
     jsr sprintf

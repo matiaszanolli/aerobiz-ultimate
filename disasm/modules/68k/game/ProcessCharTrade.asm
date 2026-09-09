@@ -41,7 +41,7 @@ ProcessCharTrade:
 
 ; --- Phase: Decompress and render trade background ---
 ; $A1B54 holds a ROM pointer to the LZ-compressed trade screen tile data.
-    move.l  ($000A1B54).l, -(a7)    ; push src: ROM ptr to LZ-compressed trade background
+    move.l  (ROM_BASE+$000A1B54).l, -(a7) ; push src: ROM ptr to LZ-compressed trade background
     pea     ($00FF1804).l           ; push dst: save_buf_base ($FF1804)
     jsr LZ_Decompress               ; unpack trade background tilemap into save buffer
 ; Place the decompressed tilemap on screen.
@@ -52,7 +52,7 @@ ProcessCharTrade:
     jsr CmdPlaceTile
 ; GameCommand $001B: draw the outer frame/border box.
 ; Args (pushed right-to-left): cmd=$1B, 0, y=$D, x=$15, w=$12, h=$4, attr=$72DCC
-    pea     ($00072DCC).l           ; tile attribute word for border
+    pea     (ROM_BASE+$00072DCC).l  ; tile attribute word for border
     pea     ($0004).w               ; height = 4 tiles
     pea     ($0012).w               ; width = 18 tiles
     pea     ($0015).w               ; x position
@@ -380,7 +380,7 @@ l_1c92e:
     move.l  d0, -(a7)
     bsr.w RunMainMenu               ; re-display the main menu for char_mode
 ; --- Phase: Restore trade background (after browser/menu) ---
-    move.l  ($000A1B54).l, -(a7)    ; ROM ptr to LZ-compressed trade background
+    move.l  (ROM_BASE+$000A1B54).l, -(a7) ; ROM ptr to LZ-compressed trade background
     pea     ($00FF1804).l           ; destination: save_buf_base
     jsr LZ_Decompress
     lea     $30(a7), a7
@@ -388,7 +388,7 @@ l_1c92e:
     pea     ($02E1).w               ; tile count = 737
     pea     ($00FF1804).l
     jsr CmdPlaceTile
-    pea     ($00072DCC).l           ; border tile attribute
+    pea     (ROM_BASE+$00072DCC).l  ; border tile attribute
     pea     ($0004).w
     pea     ($0012).w
     pea     ($0015).w
@@ -503,7 +503,7 @@ l_1ca4a:
     move.l  d0, -(a7)
     bsr.w RunMainMenu
 ; Re-decompress and re-render trade background.
-    move.l  ($000A1B54).l, -(a7)    ; ROM ptr to LZ-compressed trade background
+    move.l  (ROM_BASE+$000A1B54).l, -(a7) ; ROM ptr to LZ-compressed trade background
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($0047).w
@@ -511,7 +511,7 @@ l_1ca4a:
     pea     ($00FF1804).l
     jsr CmdPlaceTile
     lea     $30(a7), a7
-    pea     ($00072DCC).l
+    pea     (ROM_BASE+$00072DCC).l
     pea     ($0004).w
     pea     ($0012).w
     pea     ($0015).w

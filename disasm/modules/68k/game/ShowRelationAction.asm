@@ -21,7 +21,7 @@ ShowRelationAction:                                                  ; $0199FA
 ; if not first call, skip background load entirely
     bne.b   .l19a6c
 ; LZ_Decompress ($003FEC): decompress background graphic from ROM ptr at $A1AE4 to save_buf_base ($FF1804)
-    move.l  ($000A1AE4).l,-(sp)
+    move.l  (ROM_BASE+$000A1AE4).l,-(sp)
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l
 ; CmdPlaceTile ($004668): place decompressed background tile at column $20, row $694
@@ -32,7 +32,7 @@ ShowRelationAction:                                                  ; $0199FA
     jsr     (ROM_BASE+$004668).l
 ; GameCommand #$1B: place action-panel header tile from $70F38 (count=4, x=4)
 ; at (a5) = X position, $E(a6) = Y position from stack args
-    pea     ($00070F38).l
+    pea     (ROM_BASE+$00070F38).l
     pea     ($0004).w
     pea     ($0004).w
 ; push (a5) = column X position for the bar graph panel
@@ -427,7 +427,7 @@ ShowRelationAction:                                                  ; $0199FA
     moveq   #$0,d0
     move.w  $000e(a2),d0
     move.l  d0,-(sp)
-    pea     ($00041116).l
+    pea     (ROM_BASE+$00041116).l
     jsr     (ROM_BASE+$03B270).l
 ; $0074E0 = CalcCompatScore: compute compatibility index for relation record at a2
 ; returns compatibility score in d0 (0..n)
@@ -481,7 +481,7 @@ ShowRelationAction:                                                  ; $0199FA
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    pea     ($00041110).l
+    pea     (ROM_BASE+$00041110).l
     jsr     (ROM_BASE+$03B270).l
 ; --- Phase: Epilogue ---
     movem.l -$0028(a6),d2-d7/a2-a5

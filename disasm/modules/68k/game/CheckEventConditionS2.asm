@@ -51,7 +51,7 @@ l_29052:
     lsl.w   #$2, d0
     movea.l  #$0004838C,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($000483A0).l, -(a7)
+    move.l  (ROM_BASE+$000483A0).l, -(a7)
     move.l  a3, -(a7)
     jsr sprintf
     move.l  a3, -(a7)
@@ -93,14 +93,14 @@ l_290be:
     lea     $c(a7), a7
     cmpi.w  #$3b, d2
     bne.b   l_29102
-    move.l  ($00048388).l, -(a7)
+    move.l  (ROM_BASE+$00048388).l, -(a7)
     bra.b   l_29124
 l_29102:
     move.w  d2, d0
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($00048384).l, -(a7)
+    move.l  (ROM_BASE+$00048384).l, -(a7)
     move.l  a3, -(a7)
     jsr sprintf
     lea     $c(a7), a7

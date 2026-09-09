@@ -18,7 +18,7 @@ ShowPlayerInfo:                                                  ; $01C43C
     movea.l #$00076520,a0
     pea     (a0,d0.w)
     jsr     (ROM_BASE+$005092).l
-    pea     ($0004975E).l
+    pea     (ROM_BASE+$0004975E).l
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l
     pea     ($0001).w
@@ -37,7 +37,7 @@ ShowPlayerInfo:                                                  ; $01C43C
     pea     ($001A).w
     jsr     (ROM_BASE+$000D64).l
     lea     $001c(sp),sp
-    pea     ($00049706).l
+    pea     (ROM_BASE+$00049706).l
     pea     ($0002).w
     pea     ($0016).w
     pea     ($0019).w
@@ -58,13 +58,13 @@ ShowPlayerInfo:                                                  ; $01C43C
     lsl.w   #$4,d0
     movea.l #$00ff00a8,a0
     pea     (a0,d0.w)
-    pea     ($00041158).l
+    pea     (ROM_BASE+$00041158).l
     jsr     (ROM_BASE+$03B270).l
     pea     ($0019).w
     pea     ($0013).w
     jsr     (ROM_BASE+$03AB2C).l
     move.l  $0006(a2),-(sp)
-    pea     ($00041152).l
+    pea     (ROM_BASE+$00041152).l
     jsr     (ROM_BASE+$03B270).l
     lea     $0020(sp),sp
     movem.l (sp)+,d2/a2

@@ -89,7 +89,7 @@ l_380bc:
     pea     ($0001).w             ; wait for confirm button
     clr.l   -(a7)
     pea     ($0002).w             ; dialog mode 2 (error/no-options style)
-    move.l  ($0004863A).l, -(a7) ; pointer to "no compatible partner" dialog text string
+    move.l  (ROM_BASE+$0004863A).l, -(a7) ; pointer to "no compatible partner" dialog text string
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)            ; player index
@@ -105,7 +105,7 @@ l_380e4:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000485FE).l, -(a7) ; pointer to "select partner" dialog text string
+    move.l  (ROM_BASE+$000485FE).l, -(a7) ; pointer to "select partner" dialog text string
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)            ; player index
@@ -120,7 +120,7 @@ l_380e4:
     cmpi.w  #$1, d0              ; was a match slot already filled?
     bne.b   l_38120              ; no: skip the warning
 ; Print "match slot occupied" warning message in narrow font
-    move.l  ($00048612).l, -(a7) ; pointer to "slot is full" narrow-font warning string
+    move.l  (ROM_BASE+$00048612).l, -(a7) ; pointer to "slot is full" narrow-font warning string
     jsr PrintfNarrow              ; print warning at current cursor position
     addq.l  #$4, a7
 ; --- Phase: Render Character Detail Panel and Stat Comparison ---
@@ -151,7 +151,7 @@ l_38120:
     lsl.w   #$2, d0              ; * 4 (each entry in name-pointer table is a long)
     movea.l  #$0005E7E4,a0       ; a0 -> char name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push charA name string pointer
-    pea     ($00044FB2).l        ; push format string "%s" for name display
+    pea     (ROM_BASE+$00044FB2).l ; push format string "%s" for name display
     jsr PrintfWide                ; print charA's name in wide font
     lea     $2c(a7), a7          ; pop all SetTextWindow + SetTextCursor + PrintfWide args
 ; Place UI icon pairs (heart / compatibility markers) on the panel
@@ -186,7 +186,7 @@ l_38120:
     addq.l  #$8, a7
     andi.l  #$ffff, d0           ; zero-extend result word
     move.l  d0, -(a7)            ; push compat score for format string
-    pea     ($00044FAE).l        ; push format string for compatibility percentage display
+    pea     (ROM_BASE+$00044FAE).l ; push format string for compatibility percentage display
     jsr PrintfWide                ; print compatibility score (e.g. "74%")
 ; Print charB's name at cursor (1, $14)
     pea     ($0001).w             ; cursor X = 1
@@ -197,7 +197,7 @@ l_38120:
     lsl.w   #$2, d0              ; * 4 (long pointer offset)
     movea.l  #$0005E7E4,a0       ; a0 -> char name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push charB name string pointer
-    pea     ($00044FAA).l        ; push format string "%s" for name display
+    pea     (ROM_BASE+$00044FAA).l ; push format string "%s" for name display
     jsr PrintfWide                ; print charB's name in wide font
 ; Determine single-choice mode: if max_compatible_index == 0, only one char is available
     tst.w   -$26(a6)             ; is max index == 0? (only 1 compatible char)
@@ -407,7 +407,7 @@ l_38402:
     clr.l   -(a7)
     clr.l   -(a7)
     pea     ($0002).w             ; dialog mode 2 (error / acknowledge style)
-    move.l  ($00048646).l, -(a7) ; pointer to "character unavailable" error text
+    move.l  (ROM_BASE+$00048646).l, -(a7) ; pointer to "character unavailable" error text
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)            ; player index
@@ -418,7 +418,7 @@ l_38402:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000485FE).l, -(a7) ; pointer to "select partner" main dialog text
+    move.l  (ROM_BASE+$000485FE).l, -(a7) ; pointer to "select partner" main dialog text
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)            ; player index
@@ -493,12 +493,12 @@ l_38482:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000485FE).l, -(a7) ; "select partner" dialog text
+    move.l  (ROM_BASE+$000485FE).l, -(a7) ; "select partner" dialog text
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)            ; player index
     jsr ShowDialog                ; redisplay selection dialog (refreshes after sub-UI)
-    move.l  ($00048612).l, -(a7) ; "slot full" / status line text for PrintfNarrow
+    move.l  (ROM_BASE+$00048612).l, -(a7) ; "slot full" / status line text for PrintfNarrow
     jsr PrintfNarrow              ; print status line
 ; Reset text window to full screen
     pea     ($0020).w             ; width = 32

@@ -22,7 +22,7 @@ HandleRouteEventType2:
     jsr InitInfoPanel
     cmpi.b  #$2, $1(a3)
     bne.b   l_22ba2
-    pea     ($00041316).l
+    pea     (ROM_BASE+$00041316).l
     bra.b   l_22bb4
 l_22ba2:
     moveq   #$0,d0
@@ -31,7 +31,7 @@ l_22ba2:
     movea.l  #$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
 l_22bb4:
-    pea     ($00047FCE).l
+    pea     (ROM_BASE+$00047FCE).l
     move.l  a4, -(a7)
     jsr sprintf
     move.l  a4, -(a7)

@@ -74,7 +74,7 @@ UpdateCharStateS2:
     lsl.w   #$2, d0
     movea.l  #$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0004227A).l
+    pea     (ROM_BASE+$0004227A).l
     pea     -$80(a6)
     jsr sprintf
     pea     ($0001).w

@@ -22,7 +22,7 @@ RenderGameDialogs:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($0004860A).l, -(a7)
+    move.l  (ROM_BASE+$0004860A).l, -(a7)
     ; $4860A = ROM pointer to dialog descriptor table for the negotiation screen
     ; (differs from $48602 used in RenderPlayerInterface -- different dialog variant)
     move.w  $a(a6), d0
@@ -39,7 +39,7 @@ RenderGameDialogs:
     tst.w   d0
     beq.b   l_396e4
     ; valid matches found: print availability message
-    move.l  ($00048612).l, -(a7)
+    move.l  (ROM_BASE+$00048612).l, -(a7)
     jsr PrintfNarrow
     addq.l  #$4, a7
 l_396e4:
@@ -233,14 +233,14 @@ l_3983a:
     addi.l  #$32, d0
     ; d0 = 50 - d2 = how far below neutral (displayed as negative offset)
     move.l  d0, -(a7)
-    pea     ($0004502C).l
+    pea     (ROM_BASE+$0004502C).l
     ; $4502C = format string for below-midpoint offer (e.g. "-N%" indicator)
     jsr PrintfWide
     lea     $10(a7), a7
     cmpi.w  #$1, -$c(a6)
     bne.w   l_3991c
     ; -$c(a6) == 1: first frame -- also print the offer-type label
-    pea     ($0004501E).l
+    pea     (ROM_BASE+$0004501E).l
     ; $4501E = format string for low offer label (e.g. "OFFER LOW" or directional arrow)
 l_398a2:
     jsr PrintfWide
@@ -259,13 +259,13 @@ l_398b0:
     subi.l  #$32, d0
     ; d0 = d2 - 50 = how far above neutral
     move.l  d0, -(a7)
-    pea     ($0004501A).l
+    pea     (ROM_BASE+$0004501A).l
     ; $4501A = format string for above-midpoint offer (e.g. "+N%" indicator)
     jsr PrintfWide
     lea     $10(a7), a7
     cmpi.w  #$1, -$c(a6)
     bne.b   l_3991c
-    pea     ($0004500C).l
+    pea     (ROM_BASE+$0004500C).l
     ; $4500C = format string for high offer label (first-frame only)
     bra.b   l_398a2
     ; shared tail: print label, clear first-frame flag
@@ -282,7 +282,7 @@ l_398ea:
     pea     ($001A).w
     jsr     (a3)
     ; PrintfWide: display the "EQUAL" or equilibrium offer string
-    pea     ($00044FFE).l
+    pea     (ROM_BASE+$00044FFE).l
     ; $44FFE = format string for balanced offer state (e.g. "EQUAL" or dash)
     jsr PrintfWide
     lea     $20(a7), a7
@@ -304,7 +304,7 @@ l_3991c:
     move.w  (a4), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FF8).l
+    pea     (ROM_BASE+$00044FF8).l
     ; $44FF8 = format string for offer score number (narrow font)
     jsr PrintfNarrow
     ; SetTextCursor at col $0A, row $19 -- position for offer percentage delta label
@@ -318,7 +318,7 @@ l_3991c:
     ; d0 = d2 - 50 (signed offset from neutral, displayed as +/- value)
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FF2).l
+    pea     (ROM_BASE+$00044FF2).l
     ; $44FF2 = format string for percentage offset label (narrow font)
     jsr PrintfNarrow
     lea     $20(a7), a7
@@ -798,7 +798,7 @@ l_39cda:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($0004860A).l, -(a7)
+    move.l  (ROM_BASE+$0004860A).l, -(a7)
     ; $4860A = negotiation dialog descriptor table pointer
     move.w  $a(a6), d0
     ext.l   d0
@@ -806,7 +806,7 @@ l_39cda:
     jsr ShowDialog
     lea     $30(a7), a7
     ; Reprint the match slot availability message
-    move.l  ($00048612).l, -(a7)
+    move.l  (ROM_BASE+$00048612).l, -(a7)
     jsr PrintfNarrow
     ; PollAction: wait for input confirmation (mode 1, 3-frame timeout)
     pea     ($0001).w

@@ -35,7 +35,7 @@ GetAirlineScenarioInfo:
     lsl.w   #$2, d0
     movea.l  #$0005EB2C,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00042F6A).l
+    pea     (ROM_BASE+$00042F6A).l
     jsr PrintfWide
     lea     $24(a7), a7
     pea     ($0001).w

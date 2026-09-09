@@ -18,27 +18,27 @@ RunIntroLoop:
 ; Layer 0: source pointer from ROM table at $77016 (first scenario preview background)
     pea     ($0010).w
     clr.l   -(a7)
-    move.l  ($00077016).l, -(a7)
+    move.l  (ROM_BASE+$00077016).l, -(a7)
     jsr DisplaySetup
 ; Layer 1: second background from $7702E (alternate scenario preview)
     pea     ($0010).w
     pea     ($0010).w
-    move.l  ($0007702E).l, -(a7)
+    move.l  (ROM_BASE+$0007702E).l, -(a7)
     jsr DisplaySetup
 ; Layer 2: third background from $77046 (cycling between 2 entries via SignedMod later)
     pea     ($0010).w
     pea     ($0020).w
-    move.l  ($00077046).l, -(a7)
+    move.l  (ROM_BASE+$00077046).l, -(a7)
     jsr DisplaySetup
 ; Layer 3: title/logo graphic from ROM $76EF6 (main title screen static layer)
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($00076EF6).l
+    pea     (ROM_BASE+$00076EF6).l
     jsr DisplaySetup
     lea     $30(a7), a7
 ; --- Phase: Load and Place Intro Graphics ---
 ; Decompress compressed graphic from ROM ($B7530) into $FF1804 (save_buf_base staging)
-    move.l  ($000B7530).l, -(a7)
+    move.l  (ROM_BASE+$000B7530).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
 ; CmdPlaceTile: place decompressed tile data at VRAM offset $37F, row $01
@@ -48,7 +48,7 @@ RunIntroLoop:
     pea     ($00FF1804).l
     jsr CmdPlaceTile
 ; Second compressed element ($B7534): overlay graphic (title lettering or globe)
-    move.l  ($000B7534).l, -(a7)
+    move.l  (ROM_BASE+$000B7534).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
 ; Place at VRAM $3C0, tile row $3C ($60 = 96 pixel offset)
@@ -57,7 +57,7 @@ RunIntroLoop:
     pea     ($00FF1804).l
     jsr CmdPlaceTile
 ; Third compressed element ($B7538): another overlay (secondary intro graphic)
-    move.l  ($000B7538).l, -(a7)
+    move.l  (ROM_BASE+$000B7538).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     lea     $30(a7), a7
@@ -69,7 +69,7 @@ RunIntroLoop:
 ; --- Phase: Configure Scroll and Menu for Intro ---
 ; GameCommand #$1B: place tile block from ROM $739CE (text/UI overlay tiles)
 ; Width=$20, height=$1C, col=0, row=0, page=1
-    pea     ($000739CE).l
+    pea     (ROM_BASE+$000739CE).l
     pea     ($001C).w
     pea     ($0020).w
     clr.l   -(a7)
@@ -80,7 +80,7 @@ RunIntroLoop:
     lea     $28(a7), a7
 ; GameCommand #$1B: second tile block from $740CE (scenario text panel)
 ; Width=$20, height=$1C, col=0, row=0, all layers
-    pea     ($000740CE).l
+    pea     (ROM_BASE+$000740CE).l
     pea     ($001C).w
     pea     ($0020).w
     clr.l   -(a7)
@@ -199,7 +199,7 @@ l_3bf5e:
     sub.l   d0, d1
     move.l  d1, -(a7)
     pea     ($0068).w
-    pea     ($0007480E).l
+    pea     (ROM_BASE+$0007480E).l
     pea     ($0002).w
     clr.l   -(a7)
     pea     ($000F).w
@@ -341,7 +341,7 @@ l_3c070:
     move.l  d0, -(a7)
 ; GameCommand #$F: place globe sprite tile $7481E at computed (X-$30, Y-$30)
 ; $7481E = globe sprite tile graphic (animated spinning globe during intro flyover)
-    pea     ($0007481E).l
+    pea     (ROM_BASE+$0007481E).l
     pea     ($000A).w
     clr.l   -(a7)
     pea     ($000F).w
@@ -373,7 +373,7 @@ l_3c070:
     pea     ($0006).w
     pea     ($0040).w
     clr.l   -(a7)
-    pea     ($00048D30).l
+    pea     (ROM_BASE+$00048D30).l
     move.l  a4, -(a7)
     bsr.w RenderColorTileset
     lea     $2c(a7), a7

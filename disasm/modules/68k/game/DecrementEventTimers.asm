@@ -34,7 +34,7 @@ l_28b8c:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a5,a0.l), -(a7)
-    move.l  ($00048348).l, -(a7)
+    move.l  (ROM_BASE+$00048348).l, -(a7)
 l_28bde:
     pea     -$80(a6)
     jsr sprintf
@@ -61,7 +61,7 @@ l_28c1e:
     moveq   #$10,d2
     cmpi.b  #$2, $7(a2)
     bcc.b   l_28c48
-    pea     ($00041F72).l
+    pea     (ROM_BASE+$00041F72).l
 l_28c36:
     moveq   #$0,d0
     move.b  $5(a2), d0
@@ -73,7 +73,7 @@ l_28c36:
 l_28c48:
     cmpi.b  #$4, $7(a2)
     bcc.b   l_28c58
-    pea     ($00041F6A).l
+    pea     (ROM_BASE+$00041F6A).l
     bra.b   l_28c36
 l_28c58:
     moveq   #$0,d0

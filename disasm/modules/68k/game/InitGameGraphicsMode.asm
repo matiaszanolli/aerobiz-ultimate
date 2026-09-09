@@ -21,7 +21,7 @@ InitGameGraphicsMode:
     jsr SetScrollOffset
     pea     ($0033).w
     pea     ($0200).w
-    pea     ($00001D88).l
+    pea     (ROM_BASE+$00001D88).l
     jsr CmdPlaceTile2
     lea     $28(a7), a7
     clr.w   d2
@@ -47,7 +47,7 @@ InitGameGraphicsMode:
     jsr     (a2)
     pea     ($0010).w
     clr.l   -(a7)
-    pea     ($000476FC).l
+    pea     (ROM_BASE+$000476FC).l
     jsr DisplaySetup
     pea     ($0004).w
     jsr     (a2)

@@ -38,7 +38,7 @@ HandleRouteEventType0:
     lsl.w   #$2, d0                 ; x4: longword-indexed table
     movea.l  #$00047D7C,a0          ; ROM table: group name strings (longword pointers)
     move.l  (a0,d0.w), -(a7)        ; push group name string pointer
-    pea     ($00047E22).l           ; push format string (e.g. "%s has arrived!")
+    pea     (ROM_BASE+$00047E22).l  ; push format string (e.g. "%s has arrived!")
     move.l  a4, -(a7)               ; push output buffer
     jsr     (a5)                    ; sprintf(buf, fmt, group_name)
     move.l  a4, -(a7)               ; push formatted string to display
@@ -88,14 +88,14 @@ l_22750:
     lsl.w   #$2, d0
     movea.l  #$0005EB2C,a0          ; char type name string table
     move.l  (a0,d0.w), -(a7)        ; push first char type name
-    pea     ($0004130C).l           ; format string: "%s and %s" (or equivalent)
+    pea     (ROM_BASE+$0004130C).l  ; format string: "%s and %s" (or equivalent)
     pea     -$c0(a6)                ; output buffer
     jsr     (a5)                    ; sprintf(buf, fmt, first_name, second_name)
     lea     $10(a7), a7             ; clean up 4 args
 l_227a6:
     ; --- Phase: Show second dialog (character description) ---
     pea     -$c0(a6)                ; push formatted character description string
-    pea     ($00047E3E).l           ; push dialog format/template string
+    pea     (ROM_BASE+$00047E3E).l  ; push dialog format/template string
     move.l  a4, -(a7)               ; push header buffer
     jsr     (a5)                    ; sprintf(header, template, description)
     move.l  a4, -(a7)
@@ -168,7 +168,7 @@ l_2285c:
     lsl.w   #$2, d0
     movea.l  #$00047D7C,a0          ; group name string pointer table
     move.l  (a0,d0.w), -(a7)        ; push group name
-    pea     ($00047E5C).l           ; alternate format string (not-yet-arrived message)
+    pea     (ROM_BASE+$00047E5C).l  ; alternate format string (not-yet-arrived message)
     move.l  a4, -(a7)
     jsr     (a5)                    ; sprintf(buf, fmt, group_name)
     move.l  a4, -(a7)
@@ -190,7 +190,7 @@ l_2285c:
     lsl.w   #$2, d0
     movea.l  #$00047D7C,a0
     move.l  (a0,d0.w), -(a7)        ; push group name
-    pea     ($00047E98).l           ; outcome format string
+    pea     (ROM_BASE+$00047E98).l  ; outcome format string
     move.l  a4, -(a7)
     jsr     (a5)                    ; sprintf(buf, fmt, group_name)
     move.l  a4, -(a7)

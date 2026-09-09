@@ -66,7 +66,7 @@ l_0fc02:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a4,a0.l), -(a7)
-    move.l  ($000477D4).l, -(a7)
+    move.l  (ROM_BASE+$000477D4).l, -(a7)
     move.l  a3, -(a7)
     jsr     (a5)
     lea     $10(a7), a7
@@ -83,7 +83,7 @@ l_0fc54:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a4,a0.l), -(a7)
-    move.l  ($000477DC).l, -(a7)
+    move.l  (ROM_BASE+$000477DC).l, -(a7)
     bra.b   l_0fc7a
 l_0fc68:
     move.w  d3, d0
@@ -91,7 +91,7 @@ l_0fc68:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a4,a0.l), -(a7)
-    move.l  ($000477D8).l, -(a7)
+    move.l  (ROM_BASE+$000477D8).l, -(a7)
 l_0fc7a:
     move.l  a3, -(a7)
     jsr     (a5)

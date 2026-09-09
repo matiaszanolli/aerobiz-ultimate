@@ -58,7 +58,7 @@ l_27918:
     move.l  d0, d3
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($00041718).l
+    pea     (ROM_BASE+$00041718).l
     move.l  a3, -(a7)
     jsr sprintf
     lea     $24(a7), a7
@@ -73,7 +73,7 @@ l_27918:
     clr.l   -(a7)
     pea     ($0001).w
     clr.l   -(a7)
-    pea     ($000416EC).l
+    pea     (ROM_BASE+$000416EC).l
     moveq   #$0,d0
     move.w  d2, d0
     move.l  d0, -(a7)
@@ -96,7 +96,7 @@ l_27918:
     jsr ResourceUnload
     movea.l  #$00FF00A8,a0
     pea     (a0, d3.w)
-    pea     ($000416D4).l
+    pea     (ROM_BASE+$000416D4).l
     move.l  a3, -(a7)
     jsr sprintf
     lea     $24(a7), a7

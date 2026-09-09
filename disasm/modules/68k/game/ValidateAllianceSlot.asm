@@ -41,20 +41,20 @@ ValidateAllianceSlot:
     move.w  d0, d3
     cmpi.w  #$1, d3
     bne.b   .l30736
-    pea     ($00044794).l
+    pea     (ROM_BASE+$00044794).l
     bra.b   .l3073c
 .l30736:
-    pea     ($0004478C).l
+    pea     (ROM_BASE+$0004478C).l
 .l3073c:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
     cmpi.w  #$1, d3
     bne.b   .l30750
-    pea     ($000447A0).l
+    pea     (ROM_BASE+$000447A0).l
     bra.b   .l30756
 .l30750:
-    pea     ($0004479C).l
+    pea     (ROM_BASE+$0004479C).l
 .l30756:
     move.l  $18(a4), -(a7)
     pea     -$a0(a6)
@@ -82,7 +82,7 @@ ValidateAllianceSlot:
     bra.b   .l307e6
 .l3079c:
     clr.l   -(a7)
-    move.l  ($00047B0C).l, -(a7)
+    move.l  (ROM_BASE+$00047B0C).l, -(a7)
     pea     ($0001).w
     move.w  d2, d0
     move.l  d0, -(a7)

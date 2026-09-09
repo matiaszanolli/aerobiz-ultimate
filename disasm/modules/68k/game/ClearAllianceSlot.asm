@@ -12,7 +12,7 @@ ClearAllianceSlot:
     move.b  ($00FF0016).l, d3
     pea     ($0010).w
     move.l  a2, -(a7)
-    pea     ($00076ACE).l
+    pea     (ROM_BASE+$00076ACE).l
     jsr MemMove
     clr.w   d2
 .l30cc0:

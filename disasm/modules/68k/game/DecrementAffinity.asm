@@ -19,7 +19,7 @@ DecrementAffinity:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($00044970).l
+    pea     (ROM_BASE+$00044970).l
     jsr PrintfWide
     pea     ($003C).w
     jsr PollInputChange
@@ -28,7 +28,7 @@ DecrementAffinity:
     pea     ($0011).w
     pea     ($0002).w
     jsr DrawBox
-    pea     ($0004494E).l
+    pea     (ROM_BASE+$0004494E).l
     jsr PrintfWide
     lea     $30(a7), a7
     pea     ($003C).w

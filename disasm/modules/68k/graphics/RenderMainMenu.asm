@@ -8,13 +8,13 @@ RenderMainMenu:
     movea.l  #$0003B994,a3
     pea     ($0010).w
     clr.l   -(a7)
-    pea     ($0007651E).l
+    pea     (ROM_BASE+$0007651E).l
     jsr DisplaySetup
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($00076FF6).l
+    pea     (ROM_BASE+$00076FF6).l
     jsr DisplaySetup
-    move.l  ($000B754C).l, -(a7)
+    move.l  (ROM_BASE+$000B754C).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($01A0).w
@@ -22,7 +22,7 @@ RenderMainMenu:
     pea     ($00FF1804).l
     jsr CmdPlaceTile
     lea     $2c(a7), a7
-    pea     ($000760A6).l
+    pea     (ROM_BASE+$000760A6).l
     pea     ($0008).w
     pea     ($001A).w
     pea     ($0003).w
@@ -33,7 +33,7 @@ RenderMainMenu:
     pea     ($0001).w
     jsr     (a3)
     lea     $20(a7), a7
-    pea     ($00076246).l
+    pea     (ROM_BASE+$00076246).l
     pea     ($0006).w
     pea     ($001A).w
     pea     ($0009).w
@@ -44,7 +44,7 @@ RenderMainMenu:
     pea     ($0001).w
     jsr     (a3)
     lea     $20(a7), a7
-    pea     ($00075F8E).l
+    pea     (ROM_BASE+$00075F8E).l
     pea     ($0004).w
     pea     ($001B).w
     pea     ($000F).w
@@ -56,7 +56,7 @@ RenderMainMenu:
     pea     ($0080).w
     jsr     (a3)
     lea     $20(a7), a7
-    pea     ($00076066).l
+    pea     (ROM_BASE+$00076066).l
     pea     ($0002).w
     pea     ($0010).w
     pea     ($0014).w

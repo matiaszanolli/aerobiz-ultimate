@@ -9,9 +9,9 @@ ProcessGameUpdateS2:
     jsr PreLoopInit
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($00076AFE).l
+    pea     (ROM_BASE+$00076AFE).l
     jsr DisplaySetup
-    move.l  ($000A1B5C).l, -(a7)
+    move.l  (ROM_BASE+$000A1B5C).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($00C2).w
@@ -19,7 +19,7 @@ ProcessGameUpdateS2:
     pea     ($00FF1804).l
     jsr CmdPlaceTile
     lea     $20(a7), a7
-    pea     ($00072E5C).l
+    pea     (ROM_BASE+$00072E5C).l
     pea     ($0012).w
     pea     ($0020).w
     clr.l   -(a7)

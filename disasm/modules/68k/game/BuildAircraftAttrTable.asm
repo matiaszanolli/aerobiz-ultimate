@@ -8,26 +8,26 @@ BuildAircraftAttrTable:
     pea     ($0039).w
     pea     ($00FF99A4).l
     clr.l   -(a7)
-    pea     ($0005EC10).l
+    pea     (ROM_BASE+$0005EC10).l
     clr.l   -(a7)
     jsr MemCopy
     pea     ($00C0).w
     pea     ($00FF1704).l
     clr.l   -(a7)
-    pea     ($0005F0C6).l
+    pea     (ROM_BASE+$0005F0C6).l
     clr.l   -(a7)
     jsr MemCopy
     lea     $28(a7), a7
     pea     ($00E4).w
     pea     ($00FF1620).l
     clr.l   -(a7)
-    pea     ($0005F186).l
+    pea     (ROM_BASE+$0005F186).l
     clr.l   -(a7)
     jsr MemCopy
     pea     ($0040).w
     pea     ($00FF0728).l
     clr.l   -(a7)
-    pea     ($0005F532).l
+    pea     (ROM_BASE+$0005F532).l
     clr.l   -(a7)
     jsr MemCopy
     lea     $28(a7), a7
@@ -36,14 +36,14 @@ BuildAircraftAttrTable:
     pea     ($0164).w
     pea     ($00FF1298).l
     clr.l   -(a7)
-    pea     ($0005F26A).l
+    pea     (ROM_BASE+$0005F26A).l
     clr.l   -(a7)
     jsr MemCopy
     lea     $14(a7), a7
     pea     ($00B2).w
     pea     ($00FF8824).l
     clr.l   -(a7)
-    pea     ($0005F572).l
+    pea     (ROM_BASE+$0005F572).l
 .l0c73a:
     clr.l   -(a7)
     jsr MemCopy
@@ -55,14 +55,14 @@ BuildAircraftAttrTable:
     pea     ($0164).w
     pea     ($00FF1298).l
     clr.l   -(a7)
-    pea     ($0005F3CE).l
+    pea     (ROM_BASE+$0005F3CE).l
     clr.l   -(a7)
     jsr MemCopy
     lea     $14(a7), a7
     pea     ($00B2).w
     pea     ($00FF8824).l
     clr.l   -(a7)
-    pea     ($0005F624).l
+    pea     (ROM_BASE+$0005F624).l
     bra.b   .l0c73a
 .l0c786:
     movea.l  #$0005F26A,a4

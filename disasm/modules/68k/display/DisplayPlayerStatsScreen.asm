@@ -70,7 +70,7 @@ DisplayPlayerStatsScreen:
     ; --- Phase: Display setup and second ShowPlayerInfo (refreshes after screen load) ---
     pea     ($0010).w                               ; arg
     pea     ($0010).w
-    pea     ($0004A598).l                           ; display setup parameter table
+    pea     (ROM_BASE+$0004A598).l                  ; display setup parameter table
     jsr DisplaySetup
     move.w  d2, d0
     ext.l   d0
@@ -89,7 +89,7 @@ DisplayPlayerStatsScreen:
     pea     ($0002).w                               ; cursor x = 2
     pea     ($0006).w                               ; cursor y = 6
     jsr     (a5)                                    ; SetTextCursor
-    pea     ($000414DA).l                           ; "PROFIT/LOSS" header string
+    pea     (ROM_BASE+$000414DA).l                  ; "PROFIT/LOSS" header string
     jsr     (a4)                                    ; PrintfNarrow
     ; --- Phase: Set text window and print region name ---
     pea     ($0009).w                               ; window width = 9
@@ -103,7 +103,7 @@ DisplayPlayerStatsScreen:
     lsl.w   #$2, d0                                 ; region * 4
     movea.l  #$0005EC84,a0                          ; region name pointer table
     move.l  (a0,d0.w), -(a7)                        ; push region name string
-    pea     ($00041498).l                           ; format string for region display
+    pea     (ROM_BASE+$00041498).l                  ; format string for region display
     jsr     (a4)                                    ; PrintfNarrow: "Region: <name>"
     ; --- Phase: Print profit/loss value at (x=9, y=6) ---
     pea     ($0009).w
@@ -117,13 +117,13 @@ DisplayPlayerStatsScreen:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041476).l                           ; below-threshold profit format string
+    pea     (ROM_BASE+$00041476).l                  ; below-threshold profit format string
     jsr     (a4)
     addq.l  #$8, a7
     bra.b   .l25f5c
 .l25f52:
     ; At or above threshold: print "FULL" / max-profit indicator
-    pea     ($00041452).l                           ; above-threshold / max profit string
+    pea     (ROM_BASE+$00041452).l                  ; above-threshold / max profit string
     jsr     (a4)
     addq.l  #$4, a7
 .l25f5c:
@@ -132,28 +132,28 @@ DisplayPlayerStatsScreen:
     pea     ($000B).w                               ; cursor x = $B = 11
     pea     ($0006).w                               ; cursor y = 6
     jsr     (a5)
-    pea     ($00041438).l                           ; route-type icon char 5
+    pea     (ROM_BASE+$00041438).l                  ; route-type icon char 5
     jsr     (a4)
     pea     ($0004).w
     pea     ($0005).w
     jsr     (a5)
-    pea     ($00041436).l                           ; route-type icon char 4
+    pea     (ROM_BASE+$00041436).l                  ; route-type icon char 4
     jsr     (a4)
     pea     ($0006).w
     pea     ($0005).w
     jsr     (a5)
-    pea     ($00041434).l                           ; route-type icon char 3
+    pea     (ROM_BASE+$00041434).l                  ; route-type icon char 3
     jsr     (a4)
     pea     ($0009).w
     pea     ($0005).w
     jsr     (a5)
-    pea     ($00041432).l                           ; route-type icon char 2
+    pea     (ROM_BASE+$00041432).l                  ; route-type icon char 2
     jsr     (a4)
     lea     $30(a7), a7
     pea     ($000B).w
     pea     ($0005).w
     jsr     (a5)
-    pea     ($00041430).l                           ; route-type icon char 1
+    pea     (ROM_BASE+$00041430).l                  ; route-type icon char 1
     jsr     (a4)
     ; --- Phase: Expand text window to full area for the employment table ---
     pea     ($0020).w                               ; full width
@@ -192,7 +192,7 @@ DisplayPlayerStatsScreen:
     ; Special string for row 2; others look up via $5EC84 region table
     cmpi.w  #$2, d2                                 ; row == 2?
     bne.b   .l26016
-    pea     ($0004141C).l                           ; special label for row 2
+    pea     (ROM_BASE+$0004141C).l                  ; special label for row 2
     bra.b   .l26024
 .l26016:
     move.w  d2, d0
@@ -200,7 +200,7 @@ DisplayPlayerStatsScreen:
     movea.l  #$0005EC84,a0                          ; region name/category string table
     move.l  (a0,d0.w), -(a7)                        ; category string for this row
 .l26024:
-    pea     ($0004142C).l                           ; row label format string
+    pea     (ROM_BASE+$0004142C).l                  ; row label format string
     jsr     (a4)                                    ; PrintfNarrow: print category label
     ; Print employment count/status at (x=d3, y=$16)
     move.w  d3, d0
@@ -219,13 +219,13 @@ DisplayPlayerStatsScreen:
     moveq   #$0,d0
     move.b  (a2), d0                                ; $FF0270[player][row] = employment count byte
     move.l  d0, -(a7)
-    pea     ($00041418).l                           ; format string "%d"
+    pea     (ROM_BASE+$00041418).l                  ; format string "%d"
     jsr     (a4)                                    ; PrintfNarrow: print count
     addq.l  #$8, a7
     bra.b   .l26064
 .l2605a:
     ; Zero or negative: print "none" string
-    pea     ($00041414).l                           ; "none" / empty employment string
+    pea     (ROM_BASE+$00041414).l                  ; "none" / empty employment string
     jsr     (a4)
     addq.l  #$4, a7
 .l26064:
@@ -259,7 +259,7 @@ DisplayPlayerStatsScreen:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0004140E).l                           ; year display format string
+    pea     (ROM_BASE+$0004140E).l                  ; year display format string
     jsr     (a4)                                    ; PrintfNarrow
     lea     $20(a7), a7
     ; --- Phase: Unload resources, then wait for A or Start button ---

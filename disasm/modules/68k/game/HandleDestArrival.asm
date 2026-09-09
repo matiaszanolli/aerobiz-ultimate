@@ -8,7 +8,7 @@ HandleDestArrival:
     move.l  $14(a6), d3
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($000767DE).l
+    pea     (ROM_BASE+$000767DE).l
     jsr DisplaySetup
     move.w  $a(a6), d0
     ext.l   d0

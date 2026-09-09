@@ -148,7 +148,7 @@ RunAIMainLoop:
     lsl.w   #$4, d0                     ; * $10 = offset into player name block at $FF00A8
     movea.l  #$00FF00A8,a0              ; $FF00A8 = unknown player data block (4 * $10 entries)
     pea     (a0, d0.w)                  ; push pointer to matching player's name/data
-    move.l  ($00047BD0).l, -(a7)        ; ptr to format string (greeting with named rival)
+    move.l  (ROM_BASE+$00047BD0).l, -(a7) ; ptr to format string (greeting with named rival)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $c(a7), a7
@@ -159,7 +159,7 @@ RunAIMainLoop:
     cmpi.w  #$2, d6                     ; 2 or more rival players on same route?
     blt.b   .l314a2
     clr.l   -(a7)
-    move.l  ($00047BD4).l, -(a7)        ; ptr to generic multi-rival format string
+    move.l  (ROM_BASE+$00047BD4).l, -(a7) ; ptr to generic multi-rival format string
 .l31486:
     pea     ($0003).w                   ; max random dialogue variant = 3
     clr.l   -(a7)
@@ -260,8 +260,8 @@ RunAIMainLoop:
     cmpi.b  #$e, $3(a4)                 ; frequency < $E (14 = max)?
     bcc.b   .l315a0                     ; already at max frequency: skip
     ; Offer frequency upgrade: format message with route city names, then branch to ShowText
-    pea     ($000448B0).l               ; ptr to "consider increasing flights" format string
-    move.l  ($00047BB0).l, -(a7)        ; ptr to city name format argument
+    pea     (ROM_BASE+$000448B0).l      ; ptr to "consider increasing flights" format string
+    move.l  (ROM_BASE+$00047BB0).l, -(a7) ; ptr to city name format argument
     move.l  a5, -(a7)
     jsr sprintf
     lea     $c(a7), a7
@@ -368,15 +368,15 @@ RunAIMainLoop:
     lsl.w   #$2, d0                     ; * 4 = longword index into AircraftModelPtrs
     movea.l  #$0005ECFC,a0              ; AircraftModelPtrs table ($5ECFC)
     move.l  (a0,d0.w), -(a7)           ; push pointer to aircraft model name string
-    pea     ($000448A8).l               ; ptr to named-recommendation format string
-    move.l  ($00047BB4).l, -(a7)        ; additional format arg
+    pea     (ROM_BASE+$000448A8).l      ; ptr to named-recommendation format string
+    move.l  (ROM_BASE+$00047BB4).l, -(a7) ; additional format arg
     move.l  a5, -(a7)
     jsr sprintf
     lea     $10(a7), a7
     bra.b   .l316c0
 .l316b0:
     ; Show generic (no-name) recommendation
-    pea     ($00044878).l               ; ptr to generic recommendation format string
+    pea     (ROM_BASE+$00044878).l      ; ptr to generic recommendation format string
     move.l  a5, -(a7)
     jsr sprintf
     addq.l  #$8, a7
@@ -399,10 +399,10 @@ RunAIMainLoop:
     bne.b   .l31702
 .l316f6:
     clr.l   -(a7)
-    move.l  ($00047BB8).l, -(a7)
+    move.l  (ROM_BASE+$00047BB8).l, -(a7)
     bra.w   .l31ccc
 .l31702:
-    move.l  ($00047BBC).l, -(a7)
+    move.l  (ROM_BASE+$00047BBC).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     addq.l  #$8, a7
@@ -444,13 +444,13 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($00047BC0).l, -(a7)
+    move.l  (ROM_BASE+$00047BC0).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $c(a7), a7
     bra.b   .l317b0
 .l317a0:
-    pea     ($0004483C).l
+    pea     (ROM_BASE+$0004483C).l
     move.l  a5, -(a7)
     jsr sprintf
     addq.l  #$8, a7
@@ -492,7 +492,7 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; push city_a name string ptr
-    move.l  ($00047BF4).l, -(a7)        ; ptr to long-haul loss format string
+    move.l  (ROM_BASE+$00047BF4).l, -(a7) ; ptr to long-haul loss format string
     bra.b   .l31852
 .l3182a:
     ; type_distance == 2: domestic/short-haul loss message (same CityNamePtrs lookup)
@@ -506,7 +506,7 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name ptr
-    move.l  ($00047C04).l, -(a7)        ; ptr to short-haul loss format string
+    move.l  (ROM_BASE+$00047C04).l, -(a7) ; ptr to short-haul loss format string
 .l31852:
     move.l  a5, -(a7)
     jsr sprintf
@@ -527,7 +527,7 @@ RunAIMainLoop:
     cmpi.w  #$1, ($00FF99A0).l          ; $FF99A0 = nonzero if some quota/milestone was reached
     bne.b   .l318ac
     pea     ($0002).w
-    move.l  ($00047BC8).l, -(a7)        ; ptr to quota-achieved format string
+    move.l  (ROM_BASE+$00047BC8).l, -(a7) ; ptr to quota-achieved format string
     pea     ($0003).w
     clr.l   -(a7)
     jsr RandRange                       ; pick random dialogue variant
@@ -615,8 +615,8 @@ RunAIMainLoop:
     blt.w   .l31a4a
     cmpi.w  #$46, -$b4(a6)
     bge.w   .l31a4a
-    pea     ($00044832).l
-    move.l  ($00047BB0).l, -(a7)
+    pea     (ROM_BASE+$00044832).l
+    move.l  (ROM_BASE+$00047BB0).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     pea     ($0002).w
@@ -661,9 +661,9 @@ RunAIMainLoop:
     move.l  (a0,d0.w), -(a7)
     bra.b   .l31a24
 .l31a1e:
-    pea     ($00044824).l
+    pea     (ROM_BASE+$00044824).l
 .l31a24:
-    move.l  ($00047BCC).l, -(a7)
+    move.l  (ROM_BASE+$00047BCC).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     clr.l   -(a7)
@@ -709,14 +709,14 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0004481C).l
-    move.l  ($00047BB4).l, -(a7)
+    pea     (ROM_BASE+$0004481C).l
+    move.l  (ROM_BASE+$00047BB4).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $10(a7), a7
     bra.b   .l31aee
 .l31ade:
-    pea     ($000447EA).l
+    pea     (ROM_BASE+$000447EA).l
     move.l  a5, -(a7)
     jsr sprintf
     addq.l  #$8, a7
@@ -732,7 +732,7 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($00047BC0).l, -(a7)
+    move.l  (ROM_BASE+$00047BC0).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $c(a7), a7
@@ -861,7 +861,7 @@ RunAIMainLoop:
     cmpi.w  #$1, d2
     bne.b   .l31c62
     clr.l   -(a7)
-    move.l  ($00047C08).l, -(a7)
+    move.l  (ROM_BASE+$00047C08).l, -(a7)
     pea     ($0003).w
     clr.l   -(a7)
     jsr RandRange
@@ -878,9 +878,9 @@ RunAIMainLoop:
     bne.b   .l31c9a
     cmpi.w  #$1, -$c(a6)
     bne.b   .l31c92
-    pea     ($000447E4).l
+    pea     (ROM_BASE+$000447E4).l
 .l31c76:
-    move.l  ($00047BEC).l, -(a7)
+    move.l  (ROM_BASE+$00047BEC).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $c(a7), a7
@@ -889,19 +889,19 @@ RunAIMainLoop:
     pea     ($0003).w
     bra.b   .l31c52
 .l31c92:
-    pea     ($000447DA).l
+    pea     (ROM_BASE+$000447DA).l
     bra.b   .l31cb6
 .l31c9a:
     cmpi.w  #$1, d2
     bne.b   .l31ce2
     cmpi.w  #$1, -$c(a6)
     bne.b   .l31cb0
-    pea     ($000447D6).l
+    pea     (ROM_BASE+$000447D6).l
     bra.b   .l31c76
 .l31cb0:
-    pea     ($000447CE).l
+    pea     (ROM_BASE+$000447CE).l
 .l31cb6:
-    move.l  ($00047BF0).l, -(a7)
+    move.l  (ROM_BASE+$00047BF0).l, -(a7)
     move.l  a5, -(a7)
     jsr sprintf
     lea     $c(a7), a7
@@ -944,7 +944,7 @@ RunAIMainLoop:
     bne.w   .l31db0                     ; no open slot: show "slot full" message
     ; Open slot available: show "interested" dialogue then check if upgrade is warranted
     pea     ($0002).w
-    move.l  ($00047BD8).l, -(a7)        ; ptr to "we should expand" format string
+    move.l  (ROM_BASE+$00047BD8).l, -(a7) ; ptr to "we should expand" format string
     pea     ($0003).w
     clr.l   -(a7)
     jsr RandRange
@@ -979,7 +979,7 @@ RunAIMainLoop:
     cmpi.w  #$2, -$b6(a6)              ; type_distance == 2 (domestic)?
     bne.b   .l31d9c
     clr.l   -(a7)
-    move.l  ($00047B38).l, -(a7)        ; domestic upgrade offer format string
+    move.l  (ROM_BASE+$00047B38).l, -(a7) ; domestic upgrade offer format string
 .l31d88:
     pea     ($0003).w
     clr.l   -(a7)
@@ -991,17 +991,17 @@ RunAIMainLoop:
     cmpi.w  #$3, -$b6(a6)              ; type_distance == 3 (international)?
     bne.w   .l31eba
     clr.l   -(a7)
-    move.l  ($00047B3C).l, -(a7)        ; international upgrade offer format string
+    move.l  (ROM_BASE+$00047B3C).l, -(a7) ; international upgrade offer format string
     bra.b   .l31d88
 .l31db0:
     ; No open slot: "all slots occupied" message
     clr.l   -(a7)
-    move.l  ($00047C00).l, -(a7)        ; ptr to "no open slots" format string
+    move.l  (ROM_BASE+$00047C00).l, -(a7) ; ptr to "no open slots" format string
     bra.b   .l31d88
 .l31dba:
     ; Route is profitable: show generic positive/thank-you message
     pea     ($0001).w
-    move.l  ($00047BC4).l, -(a7)        ; ptr to positive acknowledgment format string
+    move.l  (ROM_BASE+$00047BC4).l, -(a7) ; ptr to positive acknowledgment format string
     bra.b   .l31d88
 
 ; --- Phase: Suspended / zero-target route dialogue ---
@@ -1022,7 +1022,7 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name string ptr
-    move.l  ($00047BAC).l, -(a7)        ; ptr to "suspended route" format string
+    move.l  (ROM_BASE+$00047BAC).l, -(a7) ; ptr to "suspended route" format string
     move.l  a5, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -1045,7 +1045,7 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name ptr
-    move.l  ($00047BDC).l, -(a7)        ; ptr to "established route (restart?)" format string
+    move.l  (ROM_BASE+$00047BDC).l, -(a7) ; ptr to "established route (restart?)" format string
     move.l  a5, -(a7)
     jsr sprintf
     clr.l   -(a7)
@@ -1056,7 +1056,7 @@ RunAIMainLoop:
     bsr.w ShowText
     lea     $20(a7), a7
     pea     ($0001).w
-    move.l  ($00047BE0).l, -(a7)        ; ptr to restart-offer follow-up format string
+    move.l  (ROM_BASE+$00047BE0).l, -(a7) ; ptr to restart-offer follow-up format string
     bra.b   .l31eb0
 .l31e64:
     ; No special flag: show generic "no revenue target" message with city names
@@ -1070,7 +1070,7 @@ RunAIMainLoop:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name ptr
-    move.l  ($00047BF8).l, -(a7)        ; ptr to "empty slot" format string
+    move.l  (ROM_BASE+$00047BF8).l, -(a7) ; ptr to "empty slot" format string
     move.l  a5, -(a7)
     jsr sprintf
     clr.l   -(a7)
@@ -1081,7 +1081,7 @@ RunAIMainLoop:
     bsr.w ShowText
     lea     $20(a7), a7
     pea     ($0001).w
-    move.l  ($00047BFC).l, -(a7)        ; ptr to empty-slot follow-up format string
+    move.l  (ROM_BASE+$00047BFC).l, -(a7) ; ptr to empty-slot follow-up format string
 .l31eb0:
     clr.l   -(a7)
 .l31eb2:

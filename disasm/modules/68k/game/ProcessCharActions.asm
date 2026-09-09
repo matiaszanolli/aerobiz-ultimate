@@ -131,7 +131,7 @@ ProcessCharActions:                                                  ; $014202
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($0002).w
-    pea     ($0003F772).l                              ; ptr to "no characters available" dialog string
+    pea     (ROM_BASE+$0003F772).l                     ; ptr to "no characters available" dialog string
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -317,7 +317,7 @@ ProcessCharActions:                                                  ; $014202
     clr.l   -(sp)
     pea     ($0001).w
     clr.l   -(sp)
-    pea     ($0003F748).l                              ; ptr to "confirm route change?" dialog string
+    pea     (ROM_BASE+$0003F748).l                     ; ptr to "confirm route change?" dialog string
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)

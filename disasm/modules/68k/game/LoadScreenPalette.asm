@@ -14,7 +14,7 @@ LoadScreenPalette:                                                  ; $0100F2
     move.b  ($00FF0016).l,d3
     pea     ($0010).w
     move.l  a3,-(sp)
-    pea     ($00076ACE).l
+    pea     (ROM_BASE+$00076ACE).l
     jsr     (ROM_BASE+$0045B2).l
     clr.w   d2
 .l10128:                                                ; $010128
@@ -36,7 +36,7 @@ LoadScreenPalette:                                                  ; $0100F2
     addq.w  #$1,d2
     cmpi.w  #$7,d2
     blt.b   .l10128
-    pea     ($0004A63A).l
+    pea     (ROM_BASE+$0004A63A).l
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l
     clr.l   -(sp)
@@ -49,7 +49,7 @@ LoadScreenPalette:                                                  ; $0100F2
     pea     ($000E).w
     jsr     (a2)
     lea     $0030(sp),sp
-    pea     ($0004A5DA).l
+    pea     (ROM_BASE+$0004A5DA).l
     pea     ($0006).w
     pea     ($0008).w
     clr.l   -(sp)

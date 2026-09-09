@@ -45,7 +45,7 @@ ProcessCharSelectInput:
     pea     ($0018).w
     pea     ($0002).w
     jsr SetTextWindow
-    pea     ($0003F950).l
+    pea     (ROM_BASE+$0003F950).l
     jsr PrintfWide
     pea     ($003C).w
     pea     ($000E).w

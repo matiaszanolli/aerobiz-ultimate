@@ -46,10 +46,10 @@ DrawCharPanelS2:
 ; DisplaySetup: load panel background graphics (16x16 tile region, from ROM $4E3AC)
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0004E3AC).l
+    pea     (ROM_BASE+$0004E3AC).l
     jsr DisplaySetup
 ; LZ_Decompress: decompress panel tile graphics from ROM $4E498 to $FF1804 (save buffer base)
-    pea     ($0004E498).l
+    pea     (ROM_BASE+$0004E498).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
     lea     $30(a7), a7
@@ -61,7 +61,7 @@ DrawCharPanelS2:
     pea     ($005B).w
     jsr VRAMBulkLoad
 ; GameCommand #$1B: place tile strip from ROM $4E3CC, 6 wide x 1 high at col=$11, row=$14
-    pea     ($0004E3CC).l
+    pea     (ROM_BASE+$0004E3CC).l
     pea     ($0006).w
     pea     ($0011).w
     pea     ($0014).w
@@ -182,7 +182,7 @@ DrawCharPanelS2:
     moveq   #$0,d0
     move.w  (a2), d0
     move.l  d0, -(a7)
-    pea     ($000446BC).l
+    pea     (ROM_BASE+$000446BC).l
     jsr PrintfWide
 ; SetTextCursor: move to col=$14, row=$16 (total cost row)
     pea     ($0016).w
@@ -196,7 +196,7 @@ DrawCharPanelS2:
     jsr Multiply32
 ; PrintfWide: display total cost using format string at $446B6
     move.l  d0, -(a7)
-    pea     ($000446B6).l
+    pea     (ROM_BASE+$000446B6).l
     jsr PrintfWide
     lea     $30(a7), a7
 ; d2 = frame counter incremented 0..N; drive periodic sprite refresh

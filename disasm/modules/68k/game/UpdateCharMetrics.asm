@@ -322,7 +322,7 @@ l_33bdc:
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
     ; ROM format string at $448BA: relation result announcement text
-    pea     ($000448BA).l
+    pea     (ROM_BASE+$000448BA).l
     ; PrintfWide: render the result string in 2-tile wide font
     jsr PrintfWide
     lea     $28(a7), a7

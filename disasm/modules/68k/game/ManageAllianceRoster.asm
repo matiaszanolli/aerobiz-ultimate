@@ -153,7 +153,7 @@ ManageAllianceRoster:
     jsr     (a3)                       ; GameCommand(26, 0, $A, 6, $B, $B, 0)
 
 ; sprintf: format alliance header string into local buffer -$16a(a6)
-    move.l  ($00047B58).l, -(a7)      ; ptr to alliance header format string at $47B58
+    move.l  (ROM_BASE+$00047B58).l, -(a7) ; ptr to alliance header format string at $47B58
     pea     -$16a(a6)                  ; dest buffer (local frame)
     jsr sprintf
     lea     $24(a7), a7
@@ -184,7 +184,7 @@ ManageAllianceRoster:
     jsr     (a3)                       ; GameCommand($E, 1) -- display flush
 
 ; LZ_Decompress: load alliance roster graphics from ROM at $4A63A into save buf
-    pea     ($0004A63A).l              ; ptr to LZ-compressed graphic data in ROM
+    pea     (ROM_BASE+$0004A63A).l     ; ptr to LZ-compressed graphic data in ROM
     pea     ($00FF1804).l              ; dest: save_buf_base ($FF1804)
     jsr LZ_Decompress
     lea     $2c(a7), a7
@@ -202,7 +202,7 @@ ManageAllianceRoster:
     lea     $1c(a7), a7
 
 ; GameCommand $1B: draw category icon panel (background sprites for category tabs)
-    pea     ($0004A5DA).l              ; ptr to icon tilemap data at $4A5DA
+    pea     (ROM_BASE+$0004A5DA).l     ; ptr to icon tilemap data at $4A5DA
     pea     ($0006).w
     pea     ($0008).w
     clr.l   -(a7)
@@ -300,7 +300,7 @@ ManageAllianceRoster:
     lsl.w   #$2, d0                    ; category * 4 (longword ptr table)
     movea.l  #$0005ECA0,a0            ; alliance category name pointer table ($05ECA0)
     move.l  (a0,d0.w), -(a7)         ; ptr to category name string
-    pea     ($000447CA).l             ; wide printf format string at $47CA
+    pea     (ROM_BASE+$000447CA).l    ; wide printf format string at $47CA
     jsr PrintfWide
 
 ; ============================================================================
@@ -372,7 +372,7 @@ ManageAllianceRoster:
     lsl.w   #$2, d0                    ; city_index * 4
     movea.l  #$0005E680,a0            ; CityNamePtrs ($05E680)
     move.l  (a0,d0.w), -(a7)         ; ptr to city name string
-    pea     ($000447C6).l             ; wide printf format string at $447C6
+    pea     (ROM_BASE+$000447C6).l    ; wide printf format string at $447C6
     jsr PrintfWide
 
 ; PlaceIconTiles: draw the airline type icon for city_a
@@ -396,7 +396,7 @@ ManageAllianceRoster:
     lsl.w   #$2, d0                    ; city_b_index * 4
     movea.l  #$0005E7E4,a0            ; CharTypePtrs ($05E7E4): airline company name ptrs
     move.l  (a0,d0.w), -(a7)
-    pea     ($000447C2).l             ; wide printf format string at $447C2
+    pea     (ROM_BASE+$000447C2).l    ; wide printf format string at $447C2
     jsr PrintfWide
     lea     $30(a7), a7
 
@@ -530,7 +530,7 @@ ManageAllianceRoster:
     clr.l   -(a7)
     clr.l   -(a7)
     pea     ($0004).w
-    move.l  ($00047B58).l, -(a7)      ; ptr to alliance result format string at $47B58
+    move.l  (ROM_BASE+$00047B58).l, -(a7) ; ptr to alliance result format string at $47B58
     move.w  d7, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -669,7 +669,7 @@ ManageAllianceRoster:
     pea     ($0001).w
     pea     ($000E).w
     jsr     (a3)
-    move.l  ($000A1B28).l, -(a7)      ; ptr to original tileset LZ data at $0A1B28
+    move.l  (ROM_BASE+$000A1B28).l, -(a7) ; ptr to original tileset LZ data at $0A1B28
     pea     ($00FF1804).l
     jsr LZ_Decompress
     lea     $2c(a7), a7
@@ -681,7 +681,7 @@ ManageAllianceRoster:
     jsr CmdPlaceTile
 
 ; GameCommand $1B: restore main map/world tileset
-    pea     ($000725D8).l              ; ptr to world map tileset at $725D8
+    pea     (ROM_BASE+$000725D8).l     ; ptr to world map tileset at $725D8
     pea     ($0008).w
     pea     ($0008).w
     pea     ($0008).w

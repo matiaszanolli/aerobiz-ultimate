@@ -41,7 +41,7 @@ DisplayPlayerLeaderboard:
     jsr ResourceUnload
     cmpi.w  #$7, d3
     bcs.b   l_277ca
-    pea     ($000416D0).l
+    pea     (ROM_BASE+$000416D0).l
     bra.b   l_277e2
 l_277ca:
     moveq   #$0,d0
@@ -53,7 +53,7 @@ l_277ca:
     lea     $c(a7), a7
     pea     -$c8(a6)
 l_277e2:
-    move.l  ($000482D8).l, -(a7)
+    move.l  (ROM_BASE+$000482D8).l, -(a7)
     move.l  a3, -(a7)
     jsr     (a4)
     pea     ($0001).w

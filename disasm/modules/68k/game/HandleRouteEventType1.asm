@@ -31,7 +31,7 @@ HandleRouteEventType1:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00047ECE).l
+    pea     (ROM_BASE+$00047ECE).l
     move.l  a4, -(a7)
     jsr sprintf
     move.l  a4, -(a7)
@@ -75,7 +75,7 @@ l_22a16:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00047EEC).l
+    pea     (ROM_BASE+$00047EEC).l
     move.l  a4, -(a7)
     jsr sprintf
     move.l  a4, -(a7)

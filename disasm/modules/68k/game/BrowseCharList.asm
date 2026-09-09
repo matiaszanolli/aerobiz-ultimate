@@ -192,7 +192,7 @@ BrowseCharList:                                                  ; $008E0C
     lea     $0024(sp),sp
 ; GameCommand #$1B: stamp list tile block from ROM $4DD9C
 ; (col=$01, row=$12, w=$1E, h=$09, plane=$00) = character list rows
-    pea     ($0004DD9C).l       ; ROM tile data block: character list row tiles
+    pea     (ROM_BASE+$0004DD9C).l ; ROM tile data block: character list row tiles
     pea     ($0009).w           ; height = 9
     pea     ($001E).w           ; width  = $1E = 30
     pea     ($0012).w           ; top row = $12 = 18
@@ -201,7 +201,7 @@ BrowseCharList:                                                  ; $008E0C
     pea     ($001B).w           ; GameCommand #$1B = place tile block
     jsr     (a4)
 ; Decompress the list portrait tiles from ROM $4DFB8 to save_buf_base ($FF1804)
-    pea     ($0004DFB8).l       ; LZ-compressed list portrait tiles (ROM address)
+    pea     (ROM_BASE+$0004DFB8).l ; LZ-compressed list portrait tiles (ROM address)
     pea     ($00FF1804).l       ; output = save_buf_base
     jsr     (ROM_BASE+$003FEC).l                        ; jsr LZ_Decompress ($003FEC)
     lea     $0024(sp),sp

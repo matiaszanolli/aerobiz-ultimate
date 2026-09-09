@@ -110,8 +110,8 @@ TransferCharacter:
     ; show a dialog page with the formatted text.
     ; a5+$10 = dialog format string pointer; $000484BA = format data long.
     move.l  $10(a5), -(a7)      ; a5+$10 = dialog string ptr (sprintf format)
-    move.l  ($000484BA).l, -(a7) ; ROM format argument data at $000484BA
-    pea     ($00044662).l        ; sprintf format string at ROM $00044662
+    move.l  (ROM_BASE+$000484BA).l, -(a7) ; ROM format argument data at $000484BA
+    pea     (ROM_BASE+$00044662).l ; sprintf format string at ROM $00044662
     pea     -$84(a6)            ; output buffer: frame local -$84(a6) (132 bytes)
     jsr sprintf
     lea     $10(a7), a7

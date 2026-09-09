@@ -306,7 +306,7 @@ InitMainGameS2:
     ; Print region or player heading above char compare
     cmpi.w  #$2, d2                     ; char_class == 2? (special case: full-name format)
     bne.b   .l2557a
-    pea     ($000413D8).l               ; ROM: format string for class-2 heading (no arg)
+    pea     (ROM_BASE+$000413D8).l      ; ROM: format string for class-2 heading (no arg)
     jsr PrintfNarrow
     addq.l  #$4, a7
     bra.b   .l25596
@@ -316,7 +316,7 @@ InitMainGameS2:
     lsl.w   #$2, d0                     ; char_class * 4 = longword index
     movea.l  #$0005EC84,a0             ; RegionNamePtrs ($05EC84): 14 entries x 4 bytes
     move.l  (a0,d0.w), -(a7)           ; push ptr to region name string
-    pea     ($000413D4).l               ; ROM: "%s" format string for region heading
+    pea     (ROM_BASE+$000413D4).l      ; ROM: "%s" format string for region heading
     jsr PrintfNarrow                    ; print "Region: <name>"
     addq.l  #$8, a7
 

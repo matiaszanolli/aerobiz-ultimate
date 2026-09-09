@@ -75,7 +75,7 @@ ShowRouteDetailsDialog:
     pea     ($0001).w
     jsr FillTileRect
     ; --- Phase: Decompress and place route icon graphic ---
-    move.l  ($000A1B2C).l, -(a7)                   ; push compressed data pointer from $A1B2C
+    move.l  (ROM_BASE+$000A1B2C).l, -(a7)          ; push compressed data pointer from $A1B2C
     pea     ($00FF1804).l                           ; decompress into save_buf_base ($FF1804)
     jsr LZ_Decompress
     lea     $28(a7), a7
@@ -86,7 +86,7 @@ ShowRouteDetailsDialog:
     jsr CmdPlaceTile
     ; --- Phase: Place 3 text labels at fixed dialog positions via GameCommand #$1B ---
     ; GameCommand #$1B = SetTextCursor + print string at (x,y,width,height)
-    pea     ($00072658).l                           ; string ptr: route label 1 text
+    pea     (ROM_BASE+$00072658).l                  ; string ptr: route label 1 text
     pea     ($0002).w                               ; width
     pea     ($0003).w                               ; height
     pea     ($0009).w                               ; y = 9 (row 1)
@@ -95,7 +95,7 @@ ShowRouteDetailsDialog:
     pea     ($001B).w                               ; GameCommand #$1B = DrawText
     jsr GameCommand
     lea     $28(a7), a7
-    pea     ($00072664).l                           ; string ptr: route label 2 text
+    pea     (ROM_BASE+$00072664).l                  ; string ptr: route label 2 text
     pea     ($0002).w
     pea     ($0003).w
     pea     ($000D).w                               ; y = 13 (row 2)
@@ -104,7 +104,7 @@ ShowRouteDetailsDialog:
     pea     ($001B).w
     jsr GameCommand
     lea     $1c(a7), a7
-    pea     ($00072670).l                           ; string ptr: route label 3 text
+    pea     (ROM_BASE+$00072670).l                  ; string ptr: route label 3 text
     pea     ($0002).w
     pea     ($0003).w
     pea     ($000F).w                               ; y = 15 (row 3)
@@ -195,14 +195,14 @@ l_1122e:
     ; --- Select and print the appropriate region/city string ---
     cmpi.w  #$3, d2                                 ; region index == 3?
     bne.b   l_1124a
-    pea     ($0003F116).l                           ; string for region 3
+    pea     (ROM_BASE+$0003F116).l                  ; string for region 3
 l_11246:
     jsr     (a3)                                    ; PrintfNarrow
     bra.b   l_1120c
 l_1124a:
     cmpi.w  #$2, d2                                 ; region index == 2?
     bne.b   l_11258
-    pea     ($0003F10A).l                           ; string for region 2
+    pea     (ROM_BASE+$0003F10A).l                  ; string for region 2
     bra.b   l_11246
 l_11258:
     ; --- Other region: look up in region name table $5EC84 ---
@@ -210,7 +210,7 @@ l_11258:
     lsl.w   #$2, d0                                 ; region * 4
     movea.l  #$0005EC84,a0                          ; region name string pointer table
     move.l  (a0,d0.w), -(a7)                        ; push region name string
-    pea     ($0003F106).l                           ; format string prefix
+    pea     (ROM_BASE+$0003F106).l                  ; format string prefix
     jsr PrintfWide                                  ; print "Region: <name>" wide font
     addq.l  #$8, a7
 l_11274:
@@ -247,12 +247,12 @@ l_11274:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)                               ; revenue value
-    pea     ($0003F0FA).l                           ; format string "%d" for numeric revenue
+    pea     (ROM_BASE+$0003F0FA).l                  ; format string "%d" for numeric revenue
     jsr     (a3)                                    ; PrintfNarrow
     bra.b   l_112e4
 l_112d0:
     ; --- Revenue > $C: print "FULL" or maximum indicator string ---
-    pea     ($0003F0EC).l                           ; string "FULL" or profit-max indicator
+    pea     (ROM_BASE+$0003F0EC).l                  ; string "FULL" or profit-max indicator
     jsr     (a3)                                    ; PrintfNarrow
     addq.l  #$4, a7
     bra.b   l_112e4

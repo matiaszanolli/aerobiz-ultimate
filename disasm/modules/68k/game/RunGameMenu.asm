@@ -25,10 +25,10 @@ RunGameMenu:                                                  ; $016F9E
     ; DisplaySetup: set up background tilemap at palette 0x10, size 0x10
     pea     ($0010).w               ; height param
     pea     ($0010).w               ; width param
-    pea     ($0004C976).l           ; ROM pointer to background tile data / display descriptor
+    pea     (ROM_BASE+$0004C976).l  ; ROM pointer to background tile data / display descriptor
     jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092): init title/BG display
     ; GameCommand #$1B: draw tile block for main menu panel
-    pea     ($0004C996).l           ; tile data pointer for menu panel
+    pea     (ROM_BASE+$0004C996).l  ; tile data pointer for menu panel
     pea     ($001C).w               ; height = $1C rows
     pea     ($0020).w               ; width = $20 cols
     clr.l   -(sp)                   ; Y start = 0
@@ -37,7 +37,7 @@ RunGameMenu:                                                  ; $016F9E
     pea     ($001B).w               ; GameCommand #$1B = draw tile block
     jsr     (a5)                    ; GameCommand
     ; LZ decompress logo/portrait graphics to save buffer $FF1804
-    pea     ($0004D096).l           ; compressed data source pointer (ROM logo data)
+    pea     (ROM_BASE+$0004D096).l  ; compressed data source pointer (ROM logo data)
     pea     ($00FF1804).l           ; save_buf_base: decompression output buffer
     jsr     (ROM_BASE+$003FEC).l    ; jsr LZ_Decompress ($003FEC): decompress logo tiles
     lea     $0030(sp),sp            ; clean up $30 (12 args x 4)
@@ -83,7 +83,7 @@ RunGameMenu:                                                  ; $016F9E
     clr.l   -(sp)                   ; dialog arg 3 = 0
     clr.l   -(sp)                   ; dialog arg 2 = 0
     clr.l   -(sp)                   ; dialog arg 1 = 0
-    pea     ($00047A5E).l           ; ROM: menu item string table (aircraft/routes/staff/finance/end-turn)
+    pea     (ROM_BASE+$00047A5E).l  ; ROM: menu item string table (aircraft/routes/staff/finance/end-turn)
     move.w  (a3),d0                 ; d0 = current_player (from a3 = $FFA792)
     ext.l   d0
     move.l  d0,-(sp)                ; push player_index for dialog header

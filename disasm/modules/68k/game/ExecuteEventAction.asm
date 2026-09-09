@@ -44,7 +44,7 @@ l_2919c:
     lsl.w   #$2, d0
     movea.l  #$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($00048370).l, -(a7)
+    move.l  (ROM_BASE+$00048370).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -63,7 +63,7 @@ l_291fe:
     lsl.w   #$2, d0
     movea.l  #$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($00048378).l, -(a7)
+    move.l  (ROM_BASE+$00048378).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -87,7 +87,7 @@ l_29238:
     lsl.w   #$2, d0
     movea.l  #$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($0004837C).l, -(a7)
+    move.l  (ROM_BASE+$0004837C).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -106,7 +106,7 @@ l_2927c:
     lsl.w   #$2, d0
     movea.l  #$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($00048380).l, -(a7)
+    move.l  (ROM_BASE+$00048380).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     lea     $10(a7), a7
@@ -138,7 +138,7 @@ l_292b4:
     addq.l  #$8, a7
     tst.w   d2
     bne.b   l_2932c
-    move.l  ($00048374).l, -(a7)
+    move.l  (ROM_BASE+$00048374).l, -(a7)
     jsr DrawLabeledBox
     pea     ($0001).w
     pea     ($0003).w

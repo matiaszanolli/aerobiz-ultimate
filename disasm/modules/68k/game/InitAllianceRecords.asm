@@ -362,7 +362,7 @@ InitAllianceRecords:
     move.l  (a0,d0.w), -(a7)
 ; sprintf: format the primary proposal line using format string at $4477A
 ; Output into local buffer -$18a(a6) -- inserts both character names
-    pea     ($0004477A).l
+    pea     (ROM_BASE+$0004477A).l
     pea     -$18a(a6)
     jsr sprintf
 ; Look up the secondary proposal text template by the dialog sequence counter ($E(a6))
@@ -512,7 +512,7 @@ InitAllianceRecords:
 ; d6 name pointer -- pushed as second name argument to sprintf
     move.l  (a0,d0.w), -(a7)
 ; Fixed secondary format string pointer at $47B8C (direct-match dialog variant, as opposed to $47B80 above)
-    move.l  ($00047B8C).l, -(a7)
+    move.l  (ROM_BASE+$00047B8C).l, -(a7)
 ; sprintf: format the complete direct-match proposal dialog string into -$ea(a6)
 ; Args on stack (top→bottom): output buffer, format ptr, d6 name, format ptr 2, d5 name
     pea     -$ea(a6)

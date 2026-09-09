@@ -14,7 +14,7 @@ RefreshCharPanel:
     movea.l  #$00FF0018,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
-    pea     ($0004975E).l
+    pea     (ROM_BASE+$0004975E).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($0001).w
@@ -24,7 +24,7 @@ RefreshCharPanel:
     pea     ($0328).w
     jsr VRAMBulkLoad
     lea     $1c(a7), a7
-    pea     ($00049706).l
+    pea     (ROM_BASE+$00049706).l
     pea     ($0002).w
     pea     ($0016).w
     pea     ($0019).w
@@ -54,7 +54,7 @@ RefreshCharPanel:
     jsr     (a4)
     lea     $c(a7), a7
     move.l  $6(a2), -(a7)
-    pea     ($00044714).l
+    pea     (ROM_BASE+$00044714).l
     bra.b   .l2f340
 .l2f2ea:
     cmpi.w  #$3, d3
@@ -69,7 +69,7 @@ RefreshCharPanel:
     jsr     (a4)
     lea     $c(a7), a7
     move.l  $6(a2), -(a7)
-    pea     ($0004470E).l
+    pea     (ROM_BASE+$0004470E).l
     bra.b   .l2f340
 .l2f316:
     cmpi.w  #$4, d3
@@ -84,7 +84,7 @@ RefreshCharPanel:
     jsr     (a4)
     lea     $c(a7), a7
     move.l  $6(a2), -(a7)
-    pea     ($00044708).l
+    pea     (ROM_BASE+$00044708).l
 .l2f340:
     jsr     (a3)
     addq.l  #$8, a7

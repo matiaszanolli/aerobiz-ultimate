@@ -41,7 +41,7 @@ HandleTextCompression:
     clr.w   d3
 ; --- Phase: Decompress and load screen graphics ---
 ; LZ_Decompress: decompress background graphics from ROM $4E28A to $FF1804 (save buffer)
-    pea     ($0004E28A).l
+    pea     (ROM_BASE+$0004E28A).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
 ; VRAMBulkLoad: DMA transfer $037B tiles worth at tile index $0018 to VRAM
@@ -69,26 +69,26 @@ HandleTextCompression:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041350).l
+    pea     (ROM_BASE+$00041350).l
     bra.b   .l24400
 ; d4>1: use plural format string at $41346 ("N routes assigned")
 .l243f4:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041346).l
+    pea     (ROM_BASE+$00041346).l
 ; PrintfWide: render the slot count string
 .l24400:
     jsr     (a5)
 ; DisplaySetup: load secondary display layer from ROM $4E0F6, 16x16 tile area
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($0004E0F6).l
+    pea     (ROM_BASE+$0004E0F6).l
     jsr DisplaySetup
     lea     $1c(a7), a7
 ; GameCommand #$1B: place tile strip from $4E116 (route list panel tiles)
 ; 1-wide x $1E-high at col=1, row=1, 1 layer
-    pea     ($0004E116).l
+    pea     (ROM_BASE+$0004E116).l
     pea     ($0002).w
     pea     ($001E).w
     pea     ($0001).w
@@ -97,7 +97,7 @@ HandleTextCompression:
     pea     ($001B).w
     jsr     (a3)
 ; LZ_Decompress: decompress slot info panel tiles from ROM $4E18E to $FF1804
-    pea     ($0004E18E).l
+    pea     (ROM_BASE+$0004E18E).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
     lea     $24(a7), a7
@@ -113,20 +113,20 @@ HandleTextCompression:
     pea     ($0001).w
     pea     ($0005).w
     jsr SetTextCursor
-    pea     ($0004133E).l
+    pea     (ROM_BASE+$0004133E).l
     jsr     (a5)
 ; "To" city label at col=$0E, row=$01
     pea     ($0001).w
     pea     ($000E).w
     jsr SetTextCursor
-    pea     ($00041332).l
+    pea     (ROM_BASE+$00041332).l
     jsr     (a5)
     lea     $2c(a7), a7
 ; "Aircraft" / plane type label at col=$1A, row=$01
     pea     ($0001).w
     pea     ($001A).w
     jsr SetTextCursor
-    pea     ($0004132C).l
+    pea     (ROM_BASE+$0004132C).l
     jsr     (a5)
 ; --- Phase: Decompress and render current page of route slot graphics ---
 ; DecompressGraphicsData: decompress route slot icons for page d3, player d7

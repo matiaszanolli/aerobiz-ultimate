@@ -12,7 +12,7 @@ ProcessTradeS2:
     nop
     moveq   #$C,d1
     cmp.b   (a0)+, d0
-    dbls    d1, ($0002331C).l
+    dbls    d1, (ROM_BASE+$0002331C).l
     bne.b   l_23382
     add.l   d1, d1
     dc.w    $303B,$1806                                 ; move.w (6,pc,d1.l),d0

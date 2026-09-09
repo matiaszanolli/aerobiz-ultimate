@@ -10,7 +10,7 @@ LoadGameGraphics:                                                  ; $03A7A0
     movea.l #$3fec,a5
     pea     ($0001).w
     pea     ($0404).w
-    pea     ($00048958).l
+    pea     (ROM_BASE+$00048958).l
     jsr     (a4)
     lea     $000c(sp),sp
     clr.w   d2
@@ -56,14 +56,14 @@ LoadGameGraphics:                                                  ; $03A7A0
     bcs.b   .l3a808
     clr.l   -(sp)
     move.l  #$a4e0,-(sp)
-    pea     ($0004897C).l
+    pea     (ROM_BASE+$0004897C).l
     pea     ($0080).w
     pea     ($0002).w
     pea     ($0005).w
     jsr     (a3)
     clr.l   -(sp)
     move.l  #$a5e0,-(sp)
-    pea     ($00048C7C).l
+    pea     (ROM_BASE+$00048C7C).l
     pea     ($0020).w
     pea     ($0002).w
     pea     ($0005).w
@@ -71,20 +71,20 @@ LoadGameGraphics:                                                  ; $03A7A0
     lea     $0030(sp),sp
     clr.l   -(sp)
     move.l  #$a620,-(sp)
-    pea     ($00048A7C).l
+    pea     (ROM_BASE+$00048A7C).l
     pea     ($0100).w
     pea     ($0002).w
     pea     ($0005).w
     jsr     (a3)
     clr.l   -(sp)
     move.l  #$a820,-(sp)
-    pea     ($00048CBC).l
+    pea     (ROM_BASE+$00048CBC).l
     pea     ($0030).w
     pea     ($0002).w
     pea     ($0005).w
     jsr     (a3)
     lea     $0030(sp),sp
-    move.l  ($000A1B48).l,-(sp)
+    move.l  (ROM_BASE+$000A1B48).l,-(sp)
     move.l  a2,-(sp)
     jsr     (a5)
     pea     ($0006).w

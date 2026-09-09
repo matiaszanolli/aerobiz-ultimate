@@ -74,7 +74,7 @@ ShowCharDetail:                                                  ; $007D92
     cmpi.w  #$1,d6
     bne.b   .l7e50                                  ; d6 != 1 -> skip portrait, go to stats
     ; Decompress char portrait LZ from table at $A1AE8
-    move.l  ($000A1AE8).l,-(sp)                     ; compressed data pointer from $A1AE8
+    move.l  (ROM_BASE+$000A1AE8).l,-(sp)            ; compressed data pointer from $A1AE8
     pea     ($00FF1804).l                           ; decompress into save_buf_base ($FF1804)
     jsr     (ROM_BASE+$003FEC).l                    ; jsr $003FEC (LZ_Decompress)
     ; Place tile: $37 tiles wide, at VRAM index $6B4
@@ -83,7 +83,7 @@ ShowCharDetail:                                                  ; $007D92
     pea     ($00FF1804).l                           ; source: decompressed data
     jsr     (ROM_BASE+$004668).l                    ; jsr $004668 (CmdPlaceTile)
     ; Draw portrait at (col=d3, row=d2) via GameCommand #$1B
-    pea     ($00070F78).l                           ; portrait resource string/ptr
+    pea     (ROM_BASE+$00070F78).l                  ; portrait resource string/ptr
     pea     ($0008).w                               ; width = 8
     pea     ($000E).w                               ; height = $E = 14
     move.w  d2,d0
@@ -121,7 +121,7 @@ ShowCharDetail:                                                  ; $007D92
     moveq   #$0,d0
     move.w  $0002(a2),d0                            ; char record +$02 = secondary stat
     move.l  d0,-(sp)
-    pea     ($0003E1A2).l                           ; format string for secondary stat
+    pea     (ROM_BASE+$0003E1A2).l                  ; format string for secondary stat
     move.l  a4,-(sp)                                ; string buffer
     jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     ; --- Print formatted string; width mode check silently discards result ---
@@ -147,7 +147,7 @@ ShowCharDetail:                                                  ; $007D92
     add.l   d1,d0                                   ; val * 5
     add.l   d0,d0                                   ; val * 10
     move.l  d0,-(sp)
-    pea     ($0003E19E).l                           ; format string for primary rating
+    pea     (ROM_BASE+$0003E19E).l                  ; format string for primary rating
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode == 2?  (result unused)
@@ -169,7 +169,7 @@ ShowCharDetail:                                                  ; $007D92
     moveq   #$64,d1                                 ; $64 = 100
     sub.l   d0,d1                                   ; d1 = 100 - stat_A (invert: higher raw = worse)
     move.l  d1,-(sp)
-    pea     ($0003E19A).l                           ; format string for display stat A
+    pea     (ROM_BASE+$0003E19A).l                  ; format string for display stat A
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode == 2?  (result unused)
@@ -192,7 +192,7 @@ ShowCharDetail:                                                  ; $007D92
     moveq   #$64,d1                                 ; 100
     sub.l   d0,d1                                   ; d1 = 100 - stat_B (inverted)
     move.l  d1,-(sp)
-    pea     ($0003E196).l                           ; format string for display stat B
+    pea     (ROM_BASE+$0003E196).l                  ; format string for display stat B
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode == 2?  (result unused)
@@ -220,7 +220,7 @@ ShowCharDetail:                                                  ; $007D92
     move.b  $0001(a3),d1                            ; event_records[+$1] = event byte B
     sub.l   d1,d0                                   ; d0 = A - B
     move.l  d0,-(sp)
-    pea     ($0003E192).l                           ; format string for A-B delta
+    pea     (ROM_BASE+$0003E192).l                  ; format string for A-B delta
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$03B22C).l                    ; jsr $03B22C (sprintf)
     cmpi.w  #$2,d4                                  ; width mode check (result unused)
@@ -241,7 +241,7 @@ ShowCharDetail:                                                  ; $007D92
     moveq   #$0,d0
     move.b  $0001(a3),d0                            ; event_records[+$1] = event byte B
     move.l  d0,-(sp)
-    pea     ($0003E18E).l                           ; format string for event byte B
+    pea     (ROM_BASE+$0003E18E).l                  ; format string for event byte B
     bra.b   .l8000                                  ; -> sprintf + PrintfWide
 .l7fca:                                            ; $007FCA
     ; --- Non-portrait mode (d6==0): show CalcWeightedStat result ---
@@ -266,7 +266,7 @@ ShowCharDetail:                                                  ; $007D92
     addq.l  #$8,sp
     andi.l  #$ffff,d0                               ; zero-extend result word to long
     move.l  d0,-(sp)                                ; push weighted stat value
-    pea     ($0003E188).l                           ; format string for weighted stat
+    pea     (ROM_BASE+$0003E188).l                  ; format string for weighted stat
 .l8000:                                            ; $008000
     ; --- Common sprintf + PrintfWide for the final stat line ---
     move.l  a4,-(sp)                                ; string buffer

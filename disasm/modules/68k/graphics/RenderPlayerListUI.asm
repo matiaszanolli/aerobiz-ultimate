@@ -87,7 +87,7 @@ l_3dfd8:
     movea.l  #$000658D2,a0
     movea.l (a0,d0.w), a2
     move.l  a2, -(a7)
-    pea     ($00046848).l
+    pea     (ROM_BASE+$00046848).l
     jsr PrintfWide
     pea     ($0050).w
     pea     ($000E).w

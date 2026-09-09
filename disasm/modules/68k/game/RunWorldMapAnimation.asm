@@ -66,17 +66,17 @@ RunWorldMapAnimation:
     ; Load the world map base palette/color data via DisplaySetup (a4)
     pea     ($0010).w                 ; param = $10
     pea     ($0020).w                 ; param = $20
-    pea     ($0006157C).l             ; ROM address of world map palette data set A
+    pea     (ROM_BASE+$0006157C).l    ; ROM address of world map palette data set A
     jsr     (a4)                      ; DisplaySetup: load palette/display set from $6157C
     lea     $28(a7), a7
     ; Load a second palette/color entry (single entry at $6157E)
     pea     ($0001).w                 ; count = 1
     clr.l   -(a7)                     ; offset = 0
-    pea     ($0006157E).l             ; ROM address of palette entry
+    pea     (ROM_BASE+$0006157E).l    ; ROM address of palette entry
     jsr     (a4)                      ; DisplaySetup: load palette entry from $6157E
     ; GameCmd #$1B: place compressed tile block for the map ocean/background layer
     ; $6159C = compressed tile data for ocean background
-    pea     ($0006159C).l             ; compressed tile data for ocean/sky background
+    pea     (ROM_BASE+$0006159C).l    ; compressed tile data for ocean/sky background
     pea     ($0013).w                 ; row = $13
     pea     ($0020).w                 ; width = $20
     clr.l   -(a7)                     ; col = 0
@@ -85,7 +85,7 @@ RunWorldMapAnimation:
     pea     ($001B).w                 ; GameCmd #$1B = place compressed tile block
     jsr     (a3)
     ; Decompress the first main world map tileset ($61A5C) into the staging buffer ($FF1804)
-    pea     ($00061A5C).l             ; ROM: compressed world map continent tiles
+    pea     (ROM_BASE+$00061A5C).l    ; ROM: compressed world map continent tiles
     move.l  a2, -(a7)                 ; dest = $FF1804 (save_buf_base)
     jsr LZ_Decompress                 ; decompress continent graphics to staging buffer
     lea     $30(a7), a7
@@ -99,11 +99,11 @@ RunWorldMapAnimation:
     ; Load city/route icon palette via DisplaySetup
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($00061BC2).l             ; ROM: city/route icon palette data
+    pea     (ROM_BASE+$00061BC2).l    ; ROM: city/route icon palette data
     jsr     (a4)                      ; DisplaySetup: load icon palette from $61BC2
     lea     $20(a7), a7
     ; GameCmd #$1B: place compressed city-label tile block (row $13, height $B)
-    pea     ($00061BE2).l             ; compressed city-label tiles at $61BE2
+    pea     (ROM_BASE+$00061BE2).l    ; compressed city-label tiles at $61BE2
     pea     ($000B).w                 ; height = $B (11 rows)
     pea     ($0020).w                 ; width = $20
     pea     ($0013).w                 ; row = $13
@@ -112,7 +112,7 @@ RunWorldMapAnimation:
     pea     ($001B).w                 ; GameCmd #$1B = place compressed tile block
     jsr     (a3)
     ; Decompress city icon set ($61EA2) into staging buffer, DMA to VRAM tile $0001, count $52
-    pea     ($00061EA2).l             ; ROM: compressed city icon tiles
+    pea     (ROM_BASE+$00061EA2).l    ; ROM: compressed city icon tiles
     move.l  a2, -(a7)                 ; dest = $FF1804
     jsr LZ_Decompress
     lea     $24(a7), a7
@@ -123,12 +123,12 @@ RunWorldMapAnimation:
     pea     ($0001).w                 ; VRAM tile destination = $0001
     jsr VRAMBulkLoad
     ; Decompress route/airline line graphics ($6088E) into staging buffer
-    pea     ($0006088E).l             ; ROM: compressed route/airline tile data
+    pea     (ROM_BASE+$0006088E).l    ; ROM: compressed route/airline tile data
     move.l  a2, -(a7)                 ; dest = $FF1804
     jsr LZ_Decompress
     lea     $1c(a7), a7
     ; GameCmd #$1B: place the world map background layer tile pattern (plane B)
-    pea     ($0006010E).l             ; compressed map background layer tiles
+    pea     (ROM_BASE+$0006010E).l    ; compressed map background layer tiles
     pea     ($001E).w                 ; height = $1E (30 rows)
     pea     ($0020).w                 ; width = $20
     pea     ($0020).w                 ; col = $20 (second page / plane B offset)
@@ -146,7 +146,7 @@ RunWorldMapAnimation:
     lea     $30(a7), a7
 ; --- Phase: Animated Route Tile Streams ---
 ; Load the flight-path / animated route tile strip header block
-    pea     ($000620CC).l             ; compressed animated route strip descriptor at $620CC
+    pea     (ROM_BASE+$000620CC).l    ; compressed animated route strip descriptor at $620CC
     pea     ($0002).w                 ; height = 2
     pea     ($0010).w                 ; width = $10
     pea     ($0013).w                 ; row = $13
@@ -155,12 +155,12 @@ RunWorldMapAnimation:
     pea     ($001B).w                 ; GameCmd #$1B = place tile block
     jsr     (a3)
     ; Decompress frame-A route animation tiles ($6210C) to base of staging buffer
-    pea     ($0006210C).l             ; ROM: animation frame A of route tiles
+    pea     (ROM_BASE+$0006210C).l    ; ROM: animation frame A of route tiles
     move.l  a2, -(a7)                 ; dest = $FF1804 (base of staging buffer)
     jsr LZ_Decompress
     ; Decompress frame-B route animation tiles ($621BC) to staging buffer at +$7D0 offset
     ; The buffer is split in half: frame A at $FF1804, frame B at $FF1804+$7D0
-    pea     ($000621BC).l             ; ROM: animation frame B of route tiles
+    pea     (ROM_BASE+$000621BC).l    ; ROM: animation frame B of route tiles
     move.l  a2, d0
     addi.l  #$7d0, d0                 ; d0 = $FF1804 + $7D0 = second animation frame dest
     move.l  d0, -(a7)
@@ -176,7 +176,7 @@ RunWorldMapAnimation:
 ; --- Phase: World Map Tile Grid Drawing ---
 ; Decompress the world map tile layout data ($62212) to a+$FA0 offset in staging buffer.
 ; The layout stream occupies a separate sub-window of the staging buffer.
-    pea     ($00062212).l             ; ROM: compressed world map tile layout data
+    pea     (ROM_BASE+$00062212).l    ; ROM: compressed world map tile layout data
     move.l  a2, d0
     addi.l  #$fa0, d0                 ; dest = $FF1804 + $FA0 (sub-buffer for map layout)
     move.l  d0, -(a7)
@@ -222,7 +222,7 @@ RunWorldMapAnimation:
     pea     ($0340).w                 ; VRAM tile row base = $0340 (map row 4)
     jsr DrawTileGrid                  ; draw world map tile band 4
     ; Decompress the map overlay / city-marker tile layout ($62426) into staging buffer at +$FA0
-    pea     ($00062426).l             ; ROM: compressed city-marker overlay layout
+    pea     (ROM_BASE+$00062426).l    ; ROM: compressed city-marker overlay layout
     move.l  a2, d0
     addi.l  #$fa0, d0                 ; dest = $FF1804 + $FA0
     move.l  d0, -(a7)
@@ -253,7 +253,7 @@ RunWorldMapAnimation:
     ; Load the airline logo/banner palette into display slot $30 using DisplaySetup
     pea     ($0010).w                 ; param = $10
     pea     ($0030).w                 ; display slot = $30
-    pea     ($00062762).l             ; ROM: airline logo palette data
+    pea     (ROM_BASE+$00062762).l    ; ROM: airline logo palette data
     jsr     (a4)                      ; DisplaySetup: load airline palette
     lea     $2c(a7), a7
     ; Load player-specific airline brand logo into display slot $31
@@ -460,7 +460,7 @@ l_3a3b4:
     ; This refreshes the underlying map after animated flight paths have scrolled over it
     cmpi.w  #$41, d2
     bne.b   l_3a412
-    pea     ($00062212).l             ; ROM: world map tile layout (same as initial load)
+    pea     (ROM_BASE+$00062212).l    ; ROM: world map tile layout (same as initial load)
     move.l  a2, d0
     addi.l  #$fa0, d0                 ; dest = staging buffer at +$FA0
     move.l  d0, -(a7)
@@ -492,7 +492,7 @@ l_3a412:
     bne.b   l_3a42c
     pea     ($0010).w                 ; param = $10
     pea     ($0010).w                 ; param = $10
-    pea     ($000600EE).l             ; ROM: final airline logo / brand graphic data
+    pea     (ROM_BASE+$000600EE).l    ; ROM: final airline logo / brand graphic data
     jsr     (a4)                      ; DisplaySetup: load brand graphic
 l_3a428:
     lea     $c(a7), a7
@@ -582,7 +582,7 @@ l_3a4c6:
     ; Load the default airline brand graphic back into display slot (normal map display set)
     pea     ($0010).w
     clr.l   -(a7)
-    pea     ($0007651E).l             ; ROM: default airline display set / title graphic
+    pea     (ROM_BASE+$0007651E).l    ; ROM: default airline display set / title graphic
     jsr     (a4)                      ; DisplaySetup: restore default airline display
     ; GameCmd $9000 — likely a VDP display mode restore (re-enable display after animation)
     move.l  #$9000, -(a7)

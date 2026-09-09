@@ -96,12 +96,12 @@ l_22dca:
     ; Select format string: category 5 uses a different format (two args vs one)
     cmpi.w  #$5, d2
     bne.b   l_22df8
-    pea     ($00041328).l      ; ROM format string for category-5 events (2 args)
+    pea     (ROM_BASE+$00041328).l ; ROM format string for category-5 events (2 args)
     bra.b   l_22dfe
 l_22df8:
-    pea     ($00041326).l      ; ROM format string for categories 1-4 (standard)
+    pea     (ROM_BASE+$00041326).l ; ROM format string for categories 1-4 (standard)
 l_22dfe:
-    pea     ($0004805A).l      ; ROM template string for labeled box header
+    pea     (ROM_BASE+$0004805A).l ; ROM template string for labeled box header
     move.l  a5, -(a7)          ; destination = local sprintf buffer
     jsr sprintf                ; $03B22C: format string to buffer
     move.l  a5, -(a7)          ; push formatted string for DrawLabeledBox
@@ -239,7 +239,7 @@ l_22f5e:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0     ; a0 = ROM char name pointer table
     move.l  (a0,d0.w), -(a7)  ; push char name string
-    pea     ($0004808E).l      ; ROM format string for trade result display
+    pea     (ROM_BASE+$0004808E).l ; ROM format string for trade result display
     move.l  a5, -(a7)          ; destination = local sprintf buffer
     jsr sprintf
     move.l  a5, -(a7)

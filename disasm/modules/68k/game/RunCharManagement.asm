@@ -325,7 +325,7 @@ RunCharManagement:                                                  ; $01861A
     lsl.w   #$2,d0                     ; char_code * 4 for char name ptr table
     movea.l #$0005e2a2,a0             ; char name ptrs (within NameStringPoolPtrs region)
     move.l  (a0,d0.w),-(sp)          ; push ptr to char name string
-    move.l  ($00047CA4).l,-(sp)      ; ptr to dialog format string at $47CA4
+    move.l  (ROM_BASE+$00047CA4).l,-(sp) ; ptr to dialog format string at $47CA4
     move.l  a5,-(sp)                   ; local display buffer
     jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, fmt, char, city, type)
     clr.l   -(sp)
@@ -353,7 +353,7 @@ RunCharManagement:                                                  ; $01861A
     lsl.w   #$2,d0
     movea.l #$0005e680,a0             ; CityNamePtrs
     move.l  (a0,d0.w),-(sp)          ; city name
-    move.l  ($00047CA8).l,-(sp)      ; ptr to dialog format string at $47CA8
+    move.l  (ROM_BASE+$00047CA8).l,-(sp) ; ptr to dialog format string at $47CA8
     move.l  a5,-(sp)
     jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, fmt, city, char)
     clr.l   -(sp)
@@ -385,7 +385,7 @@ RunCharManagement:                                                  ; $01861A
     cmp.l   $0006(a3),d0              ; cost*3 vs player cash
     ble.b   .l189de                    ; affordable -- skip performance event
     clr.l   -(sp)
-    move.l  ($00047CC0).l,-(sp)      ; ptr to performance event dialog format at $47CC0
+    move.l  (ROM_BASE+$00047CC0).l,-(sp) ; ptr to performance event dialog format at $47CC0
     pea     ($0004).w                  ; dialog type 4
     move.w  (a4),d0
     move.l  d0,-(sp)
@@ -518,7 +518,7 @@ RunCharManagement:                                                  ; $01861A
     lsl.w   #$2,d0
     movea.l #$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)          ; char name
-    pea     ($000410C0).l             ; dialog format string for enhanced departure
+    pea     (ROM_BASE+$000410C0).l    ; dialog format string for enhanced departure
     bra.b   .l18b22
 
 ; Negotiation not shown: use "standard departure" dialog format $4810B8
@@ -531,9 +531,9 @@ RunCharManagement:                                                  ; $01861A
     lsl.w   #$2,d0
     movea.l #$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)          ; char name
-    pea     ($000410B8).l             ; dialog format string for standard departure
+    pea     (ROM_BASE+$000410B8).l    ; dialog format string for standard departure
 .l18b22:                                                ; $018B22
-    move.l  ($00047CC4).l,-(sp)      ; ptr to dialog header format at $47CC4
+    move.l  (ROM_BASE+$00047CC4).l,-(sp) ; ptr to dialog header format at $47CC4
 .l18b28:                                                ; $018B28
     move.l  a5,-(sp)
     jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, header, city, char)
@@ -599,7 +599,7 @@ RunCharManagement:                                                  ; $01861A
     lsl.w   #$2,d0
     movea.l #$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
-    pea     ($000410B2).l             ; dialog format at $4810B2 (post-negotiation departure)
+    pea     (ROM_BASE+$000410B2).l    ; dialog format at $4810B2 (post-negotiation departure)
     bra.b   .l18bf0
 
 ; No prior contract dialog at $4810AA
@@ -612,9 +612,9 @@ RunCharManagement:                                                  ; $01861A
     lsl.w   #$2,d0
     movea.l #$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
-    pea     ($000410AA).l             ; dialog format at $4810AA (simple departure)
+    pea     (ROM_BASE+$000410AA).l    ; dialog format at $4810AA (simple departure)
 .l18bf0:                                                ; $018BF0
-    move.l  ($00047CC8).l,-(sp)      ; ptr to dialog header format at $47CC8
+    move.l  (ROM_BASE+$00047CC8).l,-(sp) ; ptr to dialog header format at $47CC8
     bra.w   .l18b28                    ; render and display dialog (shared tail)
 
 ; --- Category with score <= $28: low-score departure dialog ---
@@ -639,15 +639,15 @@ RunCharManagement:                                                  ; $01861A
     lsl.w   #$2,d0
     movea.l #$0005e2a2,a0             ; char name ptrs
     move.l  (a0,d0.w),-(sp)          ; char name
-    move.l  ($00047CA4).l,-(sp)      ; dialog format at $47CA4 (low-score departure)
+    move.l  (ROM_BASE+$00047CA4).l,-(sp) ; dialog format at $47CA4 (low-score departure)
     bra.w   .l18b28                    ; render and display (shared tail)
 
 ; ============================================================================
 ; --- Phase: No-cash path -- show generic event when player has no money ---
 ; ============================================================================
 .l18c3e:                                                ; $018C3E
-    move.l  ($00047B78).l,-(sp)      ; ptr to event format string at $47B78
-    move.l  ($00047CBC).l,-(sp)      ; ptr to data arg at $47CBC
+    move.l  (ROM_BASE+$00047B78).l,-(sp) ; ptr to event format string at $47B78
+    move.l  (ROM_BASE+$00047CBC).l,-(sp) ; ptr to data arg at $47CBC
     move.l  a5,-(sp)
     jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C -- RenderTextBlock(buf, fmt, arg)
     lea     $000c(sp),sp

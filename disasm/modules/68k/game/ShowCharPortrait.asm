@@ -105,7 +105,7 @@ ShowCharPortrait:                                                  ; $03A5A8
     pea     ($001A).w
     jsr     (a3)
     lea     $0028(sp),sp
-    pea     ($00070000).l
+    pea     (ROM_BASE+$00070000).l
     pea     ($0007).w
     pea     ($000C).w
     move.w  d4,d0
@@ -156,7 +156,7 @@ ShowCharPortrait:                                                  ; $03A5A8
     lsl.w   #$2,d0
     movea.l #$0005ecfc,a0
     move.l  (a0,d0.w),-(sp)
-    pea     ($00045030).l
+    pea     (ROM_BASE+$00045030).l
     jsr     (ROM_BASE+$03B270).l
 .l3a796:                                                ; $03A796
     movem.l -$0028(a6),d2-d6/a2-a5

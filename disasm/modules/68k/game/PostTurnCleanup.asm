@@ -96,7 +96,7 @@ PostTurnCleanup:
     movea.l  #$00047D7C,a0
     move.l  (a0,d0.w), -(a7)
     ; $47CD4 = indirected pointer to the generic event format string for type-0 events
-    move.l  ($00047CD4).l, -(a7)
+    move.l  (ROM_BASE+$00047CD4).l, -(a7)
     bra.b   .l31fc2
 ; --- sub-path: type == 1 -- single char-code match against $5FA11 table ---
 .l31f6c:
@@ -132,7 +132,7 @@ PostTurnCleanup:
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; $47CD8 = indirected pointer to the format string for type-1 single-match events
-    move.l  ($00047CD8).l, -(a7)
+    move.l  (ROM_BASE+$00047CD8).l, -(a7)
 ; --- common tail: format and display the matched event message ---
 .l31fc2:
     ; sprintf(a3, format, char_name): format event result text into local buffer a3
@@ -192,7 +192,7 @@ PostTurnCleanup:
     movea.l  #$00047D94,a0
     move.l  (a0,d0.w), -(a7)
     ; $47CDC = indirected pointer to format string for follow-up event
-    move.l  ($00047CDC).l, -(a7)
+    move.l  (ROM_BASE+$00047CDC).l, -(a7)
     move.l  a3, -(a7)
     ; sprintf: format the follow-up event message into local buffer a3
     jsr     (a5)

@@ -113,7 +113,7 @@ l_23546:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($0004821C).l
+    pea     (ROM_BASE+$0004821C).l
     pea     -$88(a6)
     jsr sprintf
     pea     -$88(a6)

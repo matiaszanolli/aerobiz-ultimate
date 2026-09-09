@@ -23,7 +23,7 @@ HandleCharListAction:
     lsl.w   #$2, d0
     movea.l  #$00047A88,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003F960).l
+    pea     (ROM_BASE+$0003F960).l
     pea     -$80(a6)
     jsr sprintf
     lea     $24(a7), a7

@@ -63,7 +63,7 @@ l_385f4:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($00048602).l, -(a7)
+    move.l  (ROM_BASE+$00048602).l, -(a7)
     ; $48602 = ROM pointer to dialog descriptor table for the pairing screen
     move.w  $a(a6), d0
     ext.l   d0
@@ -79,7 +79,7 @@ l_385f4:
     tst.w   d0
     beq.b   l_38634
     ; d0 nonzero = valid matches found; print slot availability message
-    move.l  ($00048612).l, -(a7)
+    move.l  (ROM_BASE+$00048612).l, -(a7)
     jsr PrintfNarrow
     addq.l  #$4, a7
 l_38634:
@@ -102,7 +102,7 @@ l_38634:
     movea.l  #$0005E7E4,a0
     ; $5E7E4 = ROM table of character name string pointers (4 bytes each)
     move.l  (a0,d0.w), -(a7)
-    pea     ($00044FDE).l
+    pea     (ROM_BASE+$00044FDE).l
     ; $44FDE = format string for player name line (wide font)
     jsr PrintfWide
     ; --- Place icon tiles for the pairing display panel ---
@@ -144,7 +144,7 @@ l_38634:
     andi.l  #$ffff, d0
     ; d0 = compatibility index (low word only; used as argument to format string)
     move.l  d0, -(a7)
-    pea     ($00044FDA).l
+    pea     (ROM_BASE+$00044FDA).l
     ; $44FDA = format string for compatibility category label (wide font)
     jsr PrintfWide
     lea     $2c(a7), a7
@@ -159,7 +159,7 @@ l_38634:
     lsl.w   #$2, d0
     movea.l  #$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00044FD6).l
+    pea     (ROM_BASE+$00044FD6).l
     ; $44FD6 = format string for partner name line (wide font)
     jsr PrintfWide
     ; --- Phase: Compute and Render Compatibility Bar ---
@@ -228,7 +228,7 @@ l_3877c:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FD2).l
+    pea     (ROM_BASE+$00044FD2).l
     ; $44FD2 = format string for "N of M" selection counter (narrow font)
     jsr PrintfNarrow
     ; d2 = current selected row (1-based after first increment)
@@ -259,10 +259,10 @@ l_387a2:
     ; DisplaySetup: set up display for $10×$10 tiles, using descriptor at $76A3E
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($00076A3E).l
+    pea     (ROM_BASE+$00076A3E).l
     jsr DisplaySetup
     ; LZ_Decompress: decompress partner panel background graphic to save_buf_base ($FF1804)
-    move.l  ($000A1B04).l, -(a7)
+    move.l  (ROM_BASE+$000A1B04).l, -(a7)
     ; $A1B04 = ROM pointer to compressed background graphic data
     pea     ($00FF1804).l
     ; $FF1804 = save_buf_base (used as scratch decompression target)
@@ -276,7 +276,7 @@ l_387a2:
     lea     $30(a7), a7
     ; --- Draw the "up" scroll arrow tile at the top of the list ---
     ; GameCommand #$1B: place tile $71A14 at col $0A, row d7, size $04 wide
-    pea     ($00071A14).l
+    pea     (ROM_BASE+$00071A14).l
     ; $71A14 = ROM tile data for the up-arrow/scroll indicator
     pea     ($0004).w
     pea     ($000A).w
@@ -316,7 +316,7 @@ l_387a2:
     addq.l  #$1, d0
     ; d0 = (total - current_row + 1) = index into partner name list to display
     move.l  d0, -(a7)
-    pea     ($00044FCE).l
+    pea     (ROM_BASE+$00044FCE).l
     ; $44FCE = format string for partner name (wide font)
     jsr PrintfWide
     lea     $2c(a7), a7
@@ -343,7 +343,7 @@ l_387a2:
     sub.l   d1, d0
     ; d0 = (total - d2), one below the first entry
     move.l  d0, -(a7)
-    pea     ($00044FCA).l
+    pea     (ROM_BASE+$00044FCA).l
     ; $44FCA = format string for the "below" partner name (wide font)
     jsr PrintfWide
     ; --- DiagonalWipe: animated reveal of the partner list area ---
@@ -365,7 +365,7 @@ l_387a2:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FC6).l
+    pea     (ROM_BASE+$00044FC6).l
     ; $44FC6 = format string for selection counter update (narrow font)
     jsr PrintfNarrow
     addq.l  #$8, a7
@@ -377,7 +377,7 @@ l_387a2:
     ; d0 = partner_count - 1; if <= 0, no more below = hide arrow
     bgt.b   l_388fa
     ; Only one partner total -- draw the "no-down-arrow" tile to hide it
-    pea     ($000719C4).l
+    pea     (ROM_BASE+$000719C4).l
     ; $719C4 = ROM tile for blank/down-arrow-hidden state
     pea     ($0004).w
     pea     ($000A).w
@@ -639,7 +639,7 @@ l_38b00:
     bne.b   l_38b54
     ; -$36(a6) nonzero = up-arrow already displayed, skip redrawing it
     ; Show up-arrow tile: $71A14 = scroll-up indicator, at (d5, d7), size $04, GameCmd #$1B
-    pea     ($00071A14).l
+    pea     (ROM_BASE+$00071A14).l
     pea     ($0004).w
     pea     ($000A).w
     move.w  d7, d0
@@ -667,7 +667,7 @@ l_38b54:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FC2).l
+    pea     (ROM_BASE+$00044FC2).l
     ; $44FC2 = format string for counter (narrow font, Up-scroll variant)
     jsr PrintfNarrow
     ; DiagonalWipe: animate scroll reveal upward (mode 0, target row d5+$0D)
@@ -713,7 +713,7 @@ l_38ba2:
     ext.l   d1
     sub.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($00044FBE).l
+    pea     (ROM_BASE+$00044FBE).l
     ; $44FBE = format string for partner name after Up scroll (wide font)
     jsr PrintfWide
     ; --- Recompute compatibility bar for newly selected partner ---
@@ -831,7 +831,7 @@ l_38c82:
     ext.l   d1
     sub.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($00044FBA).l
+    pea     (ROM_BASE+$00044FBA).l
     ; $44FBA = format string for partner name after Down scroll (wide font)
     jsr PrintfWide
     ; DiagonalWipe: animated scroll reveal downward (mode 1, row d7)
@@ -865,7 +865,7 @@ l_38ce8:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00044FB6).l
+    pea     (ROM_BASE+$00044FB6).l
     ; $44FB6 = format string for counter update after Down scroll (narrow font)
     jsr PrintfNarrow
     lea     $10(a7), a7
@@ -880,7 +880,7 @@ l_38ce8:
     cmpi.w  #$1, -$36(a6)
     bne.b   l_38d4e
     ; -$36(a6) == 1 = up-arrow is visible; hide it since we're at the bottom
-    pea     ($000719C4).l
+    pea     (ROM_BASE+$000719C4).l
     ; $719C4 = blank/down-arrow-off tile
     pea     ($0004).w
     pea     ($000A).w
@@ -1008,14 +1008,14 @@ l_38dd2:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($00048602).l, -(a7)
+    move.l  (ROM_BASE+$00048602).l, -(a7)
     ; $48602 = ROM dialog descriptor table pointer (same as initial ShowDialog call)
     move.w  $a(a6), d0
     ext.l   d0
     move.l  d0, -(a7)
     jsr ShowDialog
     ; Redraw match slot status message
-    move.l  ($00048612).l, -(a7)
+    move.l  (ROM_BASE+$00048612).l, -(a7)
     jsr PrintfNarrow
     ; Restore full-screen text window
     pea     ($0020).w

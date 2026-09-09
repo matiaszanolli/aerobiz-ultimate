@@ -41,11 +41,11 @@ RunPortfolioManagement:
 ; Load portfolio background tiles: $76A5E = ROM data, $30 tiles to VRAM at index $10
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($00076A5E).l       ; ROM tileset address for portfolio screen background
+    pea     (ROM_BASE+$00076A5E).l ; ROM tileset address for portfolio screen background
     jsr DisplaySetup             ; DMA tileset to VRAM
 ; Decompress and place the portfolio panel graphic
 ; $A1B0C = ROM longword pointer to LZ-compressed portfolio panel tiles
-    move.l  ($000A1B0C).l, -(a7) ; LZ-compressed source pointer (indirected via ROM table)
+    move.l  (ROM_BASE+$000A1B0C).l, -(a7) ; LZ-compressed source pointer (indirected via ROM table)
     pea     ($00FF1804).l       ; output buffer = save_buf_base ($FF1804)
     jsr LZ_Decompress            ; decompress portfolio panel tiles to $FF1804
     lea     $30(a7), a7
@@ -56,7 +56,7 @@ RunPortfolioManagement:
     jsr CmdPlaceTile             ; render portfolio panel graphic to screen
 ; GameCommand #$1B: stamp tile data block from ROM $71D24
 ; (col=$00, row=$02, w=$07, h=$12, plane=$0F) = draws option list frame
-    pea     ($00071D24).l       ; ROM tile block for portfolio menu frame
+    pea     (ROM_BASE+$00071D24).l ; ROM tile block for portfolio menu frame
     pea     ($000F).w           ; height = $0F = 15
     pea     ($0012).w           ; width  = $12 = 18
     pea     ($0002).w           ; top row = 2
@@ -70,7 +70,7 @@ RunPortfolioManagement:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($0003E578).l       ; ROM format string: "Select number of players" (or similar)
+    pea     (ROM_BASE+$0003E578).l ; ROM format string: "Select number of players" (or similar)
     clr.l   -(a7)
     jsr (DisplayMessageWithParams,PC)
     nop

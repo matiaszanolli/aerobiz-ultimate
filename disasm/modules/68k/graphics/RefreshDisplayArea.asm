@@ -141,7 +141,7 @@ RefreshDisplayArea:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($00047A26).l        ; ROM string: panel title text
+    pea     (ROM_BASE+$00047A26).l ; ROM string: panel title text
     pea     ($0020).w
     pea     ($0002).w
     pea     ($0039).w
@@ -206,7 +206,7 @@ RefreshDisplayArea:
     neg.l   d0                  ; abs(deviation)
     addi.l  #$32, d0            ; back to (50 - d2) for display = abs offset
     move.l  d0, -(a7)           ; arg: magnitude
-    pea     ($0003F8AE).l        ; ROM format string: negative-offset format "%d" with prefix
+    pea     (ROM_BASE+$0003F8AE).l ; ROM format string: negative-offset format "%d" with prefix
 .l1654e:
     jsr PrintfWide              ; print wide-font formatted value
     addq.l  #$8, a7
@@ -219,13 +219,13 @@ RefreshDisplayArea:
     ext.l   d0
     subi.l  #$32, d0            ; d0 = d2 - 50 (offset above center)
     move.l  d0, -(a7)
-    pea     ($0003F89C).l        ; ROM format string: positive-offset format
+    pea     (ROM_BASE+$0003F89C).l ; ROM format string: positive-offset format
     bra.b   .l1654e
 
 .l1656c:
     ; Zero deviation: print the "exactly at score" string (no number needed).
     ; Format string at $03F88C = centered/neutral display text.
-    pea     ($0003F88C).l        ; ROM string: neutral/even compatibility text
+    pea     (ROM_BASE+$0003F88C).l ; ROM string: neutral/even compatibility text
     jsr PrintfWide
     addq.l  #$4, a7
 
@@ -239,7 +239,7 @@ RefreshDisplayArea:
     move.w  d3, d0              ; d3 = display_value ($4(a2))
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F886).l        ; ROM format string: raw value "%d"
+    pea     (ROM_BASE+$0003F886).l ; ROM format string: raw value "%d"
     jsr PrintfNarrow
 
     ; Print the offset value (d2 - $32) at row $E, col $19 using narrow font.
@@ -252,7 +252,7 @@ RefreshDisplayArea:
     ext.l   d0
     subi.l  #$32, d0            ; d0 = d2 - 50 (signed offset)
     move.l  d0, -(a7)
-    pea     ($0003F880).l        ; ROM format string: signed offset "%d"
+    pea     (ROM_BASE+$0003F880).l ; ROM format string: signed offset "%d"
     jsr PrintfNarrow
 
     ; Compute ProcessCityChange args from d2:
@@ -418,7 +418,7 @@ RefreshDisplayArea:
     moveq   #$0,d0
     move.w  $4(a2), d0          ; original display_value
     move.l  d0, -(a7)
-    pea     ($0003F87A).l        ; ROM format string: raw value display
+    pea     (ROM_BASE+$0003F87A).l ; ROM format string: raw value display
     jsr PrintfNarrow
     ; Print offset at row $E, col $19.
     ; Format string at $03F874 = "%d" signed offset from center.
@@ -429,7 +429,7 @@ RefreshDisplayArea:
     ext.l   d0
     subi.l  #$32, d0            ; signed offset
     move.l  d0, -(a7)
-    pea     ($0003F874).l        ; ROM format string: signed offset display
+    pea     (ROM_BASE+$0003F874).l ; ROM format string: signed offset display
     jsr PrintfNarrow
     lea     $28(a7), a7
     bra.w   .l167d2             ; -> teardown/commit
@@ -526,7 +526,7 @@ RefreshDisplayArea:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($00047A26).l        ; ROM string: panel title
+    pea     (ROM_BASE+$00047A26).l ; ROM string: panel title
     pea     ($0020).w
     pea     ($0002).w
     pea     ($0039).w

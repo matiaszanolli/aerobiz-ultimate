@@ -225,7 +225,7 @@ ShowQuarterSummary:                                                  ; $012E92
     movea.l #$0005e296,a0
     move.l  (a0,d0.l),-(sp)
     ; $479C2 = indirected pointer to profit message format string
-    move.l  ($000479C2).l,-(sp)
+    move.l  (ROM_BASE+$000479C2).l,-(sp)
     move.l  a4,-(sp)
     ; sprintf: format "you earned X this quarter" style message into a4 buffer
     jsr     (ROM_BASE+$03B22C).l
@@ -266,7 +266,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ext.l   d0
     move.l  d0,-(sp)
     ; $479D6 = indirected pointer to "purchase complete" message format string
-    move.l  ($000479D6).l,-(sp)
+    move.l  (ROM_BASE+$000479D6).l,-(sp)
     move.w  d2,d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -304,7 +304,7 @@ ShowQuarterSummary:                                                  ; $012E92
     movea.l #$0005ec84,a0
     move.l  (a0,d0.w),-(sp)
     ; $479CE = indirected pointer to "no routes selected" summary format string
-    move.l  ($000479CE).l,-(sp)
+    move.l  (ROM_BASE+$000479CE).l,-(sp)
     bra.b   .l13176
 .l1310c:                                                ; $01310C
     ; no profitable routes for this player this quarter
@@ -324,7 +324,7 @@ ShowQuarterSummary:                                                  ; $012E92
     movea.l #$0005ec84,a0
     move.l  (a0,d0.w),-(sp)
     ; $479AE = indirected pointer to "no profitable routes this quarter" format string
-    move.l  ($000479AE).l,-(sp)
+    move.l  (ROM_BASE+$000479AE).l,-(sp)
     bra.b   .l13176
 .l13142:                                                ; $013142
     ; no routes available at all (screen variant check failed): show generic summary
@@ -344,7 +344,7 @@ ShowQuarterSummary:                                                  ; $012E92
     movea.l #$0005ec84,a0
     move.l  (a0,d0.w),-(sp)
     ; $479DA = indirected pointer to "no routes available" generic summary message
-    move.l  ($000479DA).l,-(sp)
+    move.l  (ROM_BASE+$000479DA).l,-(sp)
 .l13176:                                                ; $013176
     ; --- common tail for all three "no-action" paths ---
     ; sprintf($03B22C): format the chosen message string into a4 buffer

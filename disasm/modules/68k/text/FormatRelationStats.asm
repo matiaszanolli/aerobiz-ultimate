@@ -142,7 +142,7 @@ FormatRelationStats:                                                  ; $019660
     cmpi.w  #$1,d3
     bne.b   .l197c6
 ; LZ_Decompress: decompress portrait gfx from ROM $4DCE8 into save_buf_base ($FF1804)
-    pea     ($0004DCE8).l
+    pea     (ROM_BASE+$0004DCE8).l
     move.l  a5,-(sp)
     jsr     (ROM_BASE+$003FEC).l
 ; VRAMBulkLoad($1D568): DMA transfer $328 bytes from $FF1804 to VRAM page #$12(a6)
@@ -181,7 +181,7 @@ FormatRelationStats:                                                  ; $019660
     movea.l #$0005e7e4,a0
     move.l  (a0,d0.w),-(sp)
 ; Format string at $41110C: single-argument name print ("%s" or similar)
-    pea     ($0004110C).l
+    pea     (ROM_BASE+$0004110C).l
     jsr     (a3)
 ; --- Phase: Print Char B Name ---
 ; SetTextCursor(col=d4, row=d5+$C): position for char B, 12 rows below cell top
@@ -210,7 +210,7 @@ FormatRelationStats:                                                  ; $019660
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
 ; Format string at $41108 displays the compat score as a fraction or percentage
-    pea     ($00041108).l
+    pea     (ROM_BASE+$00041108).l
     jsr     (a3)
     lea     $0030(sp),sp
 ; --- Phase: Print Char Type / Score Label ---
@@ -258,7 +258,7 @@ FormatRelationStats:                                                  ; $019660
     movea.l #$0005e7e4,a0
     move.l  (a0,d0.w),-(sp)
 ; Format at $41104: shorter name format for the bottom section label
-    pea     ($00041104).l
+    pea     (ROM_BASE+$00041104).l
     jsr     (a3)
 ; --- Phase: Compute and Display Relation Type Icon ---
 ; SetTextCursor(col=d4+2, row=d5+5): position for the relation type indicator
@@ -290,7 +290,7 @@ FormatRelationStats:                                                  ; $019660
     movea.l #$0005ecfc,a0
     move.l  (a0,d0.w),-(sp)
 ; Format at $410FC: print the relation type name (e.g., "Business", "Rival", etc.)
-    pea     ($000410FC).l
+    pea     (ROM_BASE+$000410FC).l
     jsr     (a3)
 ; --- Phase: ShowRelationAction and ShowRelationResult ---
 ; ShowRelationAction($199FA): display the action button hints for this relation pair
@@ -398,7 +398,7 @@ FormatRelationStats:                                                  ; $019660
     jsr     (ROM_BASE+$000D64).l
 ; LZ_Decompress: decompress score-tier graphic from ROM $4E28A into $FF1804
 ; $4E28A contains the score meter tile graphics for all 3 tiers
-    pea     ($0004E28A).l
+    pea     (ROM_BASE+$0004E28A).l
     move.l  a5,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp

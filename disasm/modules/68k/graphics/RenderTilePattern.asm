@@ -352,7 +352,7 @@ RenderTilePattern:
     move.w  d2, d0               ; d0 = new stat value to print
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F838).l        ; format string pointer at $3F838 (numeric format?)
+    pea     (ROM_BASE+$0003F838).l ; format string pointer at $3F838 (numeric format?)
     jsr PrintfNarrow             ; print stat value in narrow font
     ; ShowRelationAction: display relation/action panel for the updated selection
     clr.l   -(a7)

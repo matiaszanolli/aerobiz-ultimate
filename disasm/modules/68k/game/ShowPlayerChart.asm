@@ -10,7 +10,7 @@ ShowPlayerChart:                                                  ; $0101CA
     lea     -$0010(a6),a2
     pea     ($0010).w
     move.l  a2,-(sp)
-    pea     ($00076ACE).l
+    pea     (ROM_BASE+$00076ACE).l
     jsr     (ROM_BASE+$0045B2).l
     clr.w   d2
 .l101ee:                                                ; $0101EE
@@ -38,9 +38,9 @@ ShowPlayerChart:                                                  ; $0101CA
     blt.b   .l101ee
     pea     ($0008).w
     pea     ($0030).w
-    pea     ($00076ABE).l
+    pea     (ROM_BASE+$00076ABE).l
     jsr     (ROM_BASE+$005092).l
-    pea     ($0004A63A).l
+    pea     (ROM_BASE+$0004A63A).l
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l
     lea     $0020(sp),sp
@@ -50,7 +50,7 @@ ShowPlayerChart:                                                  ; $0101CA
     pea     ($0025).w
     pea     ($0330).w
     jsr     (ROM_BASE+$01D568).l
-    pea     ($0004A5DA).l
+    pea     (ROM_BASE+$0004A5DA).l
     pea     ($0006).w
     pea     ($0008).w
     clr.l   -(sp)

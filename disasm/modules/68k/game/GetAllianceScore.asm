@@ -52,7 +52,7 @@ GetAllianceScore:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a3,a0.l), -(a7)
-    move.l  ($00047B2C).l, -(a7)
+    move.l  (ROM_BASE+$00047B2C).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     lea     $14(a7), a7
@@ -71,7 +71,7 @@ GetAllianceScore:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a3,a0.l), -(a7)
-    move.l  ($00047B30).l, -(a7)
+    move.l  (ROM_BASE+$00047B30).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     lea     $14(a7), a7
@@ -94,7 +94,7 @@ GetAllianceScore:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a3,a0.l), -(a7)
-    move.l  ($00047B34).l, -(a7)
+    move.l  (ROM_BASE+$00047B34).l, -(a7)
     move.l  a4, -(a7)
     jsr sprintf
     lea     $10(a7), a7

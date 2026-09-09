@@ -281,7 +281,7 @@ l_1cdec:
     lsl.w   #$2, d0              ; d0 = d2 * 4 (pointer table index for quarter string)
     movea.l  #$0005F096,a0       ; a0 = ROM quarter name pointer table ($5F096): 4 season/quarter strings
     move.l  (a0,d0.w), -(a7)     ; arg 2: quarter string ptr (e.g. "Q1", "Q2", etc.)
-    pea     ($0004116C).l        ; arg 1: ROM format string (e.g. "%s %d" for "Q2 1991")
+    pea     (ROM_BASE+$0004116C).l ; arg 1: ROM format string (e.g. "%s %d" for "Q2 1991")
     jsr PrintfNarrow             ; $03B246: format and display the year/quarter string
     movem.l -$64(a6), d2-d6/a2-a5
     unlk    a6

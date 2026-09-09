@@ -14,7 +14,7 @@ DrawQuarterResultsScreen:
     movea.l  #$00FF14B0,a5
     ; a5 = $FF14B0 (within tile_buf region): working pointer for LZ output / tile staging
     ; decompress quarterly-results background tileset from ROM into $FF1804 (save_buf_base)
-    pea     ($0004E382).l
+    pea     (ROM_BASE+$0004E382).l
     ; $4E382 = ROM address of LZ-compressed background tileset for results screen
     pea     ($00FF1804).l
     ; output to save_buf_base ($FF1804)
@@ -77,7 +77,7 @@ l_26d42:
     ; row $13 = 19: fixed row for all player score labels
     jsr SetTextCursor
     ; PrintfWide with format $41584: print the player's score in wide font
-    pea     ($00041584).l
+    pea     (ROM_BASE+$00041584).l
     ; $41584 = ROM format string for score label (e.g. "%d pts")
     jsr PrintfWide
     lea     $c(a7), a7
@@ -99,7 +99,7 @@ l_26d82:
     ; d4 += $40 (64): base Y offset -- panel row 0 starts at pixel 64
     ; d4 = panel Y pixel position for this player
     ; place panel anchor tile ($4E380) at computed tile coords (d4/8, d2/8)
-    pea     ($0004E380).l
+    pea     (ROM_BASE+$0004E380).l
     ; $4E380 = ROM pointer to panel anchor/header tile graphic
     pea     ($0001).w
     pea     ($0001).w
@@ -178,7 +178,7 @@ l_26dba:
 ; Places fill tiles ($4E37E) between route-flag icons; d3 counts tiles placed so far.
 l_26e26:
     ; place a fill/separator tile ($4E37E) at current (d4, d2) position
-    pea     ($0004E37E).l
+    pea     (ROM_BASE+$0004E37E).l
     ; $4E37E = ROM ptr to route-flag strip fill tile
     pea     ($0001).w
     pea     ($0001).w
@@ -237,7 +237,7 @@ l_26e6a:
     ; if (d5-1) mod 2 != 1, strip count is even -- no trailing half-tile needed
     bne.b   l_26ec0
     ; place a trailing half-width tile ($4E37C) to cap the strip when count is odd
-    pea     ($0004E37C).l
+    pea     (ROM_BASE+$0004E37C).l
     ; $4E37C = ROM ptr to route-flag strip trailing/cap tile (narrower variant)
     pea     ($0001).w
     pea     ($0001).w
@@ -475,7 +475,7 @@ l_27012:
 ; --- Route-type-B fill-tile loop (aligned path) ---
 ; Uses tile $4E376 (a different fill tile variant for international routes)
 l_2702c:
-    pea     ($0004E376).l
+    pea     (ROM_BASE+$0004E376).l
     ; $4E376 = ROM ptr to international-route fill tile (different color/shape from domestic)
     pea     ($0001).w
     pea     ($0001).w
@@ -553,7 +553,7 @@ l_27084:
 ; --- Route-type-B unaligned fill loop ---
 ; Same as l_2702c but entered from the unaligned (TilePlacement) path
 l_270d0:
-    pea     ($0004E376).l
+    pea     (ROM_BASE+$0004E376).l
     ; same international fill tile
     pea     ($0001).w
     pea     ($0001).w
@@ -607,7 +607,7 @@ l_27128:
     ; if even: no trailing cap -- advance to next player
     bne.b   l_2716c
     ; place international route trailing cap tile ($4E374) at current position
-    pea     ($0004E374).l
+    pea     (ROM_BASE+$0004E374).l
     ; $4E374 = ROM ptr to international-route strip end-cap tile
     pea     ($0001).w
     pea     ($0001).w

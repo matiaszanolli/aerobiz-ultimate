@@ -53,7 +53,7 @@ ShowRouteInfo:                                                  ; $00F104
     jsr     (ROM_BASE+$03AB2C).l
     lea     $0018(sp),sp
 ; PrintfWide: print "empty slot" label string at $3EA6C; shared tail jumps to epilogue
-    pea     ($0003EA6C).l
+    pea     (ROM_BASE+$0003EA6C).l
 ; shared tail: call PrintfWide then branch to function epilogue
 .lf168:                                                 ; $00F168
     jsr     (a5)
@@ -91,7 +91,7 @@ ShowRouteInfo:                                                  ; $00F104
     jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print char name string (pointer at a3) with format $3EA66
     move.l  a3,-(sp)
-    pea     ($0003EA66).l
+    pea     (ROM_BASE+$0003EA66).l
     jsr     (a5)
 ; SetTextCursor: position at (d2, row $B) for city A name
     move.w  d2,d0
@@ -107,7 +107,7 @@ ShowRouteInfo:                                                  ; $00F104
     movea.l #$0005f926,a0
     move.l  (a0,d0.w),-(sp)
 ; PrintfWide: print city A name using format at $3EA62
-    pea     ($0003EA62).l
+    pea     (ROM_BASE+$0003EA62).l
     jsr     (a5)
 ; SetTextCursor: position at (d2, row $F) for city B name
     move.w  d2,d0
@@ -123,7 +123,7 @@ ShowRouteInfo:                                                  ; $00F104
     movea.l #$0005e680,a0
     move.l  (a0,d0.w),-(sp)
 ; PrintfWide: print city B name using format at $3EA5C
-    pea     ($0003EA5C).l
+    pea     (ROM_BASE+$0003EA5C).l
     jsr     (a5)
     lea     $0030(sp),sp
 ; advance to next route slot entry
@@ -159,7 +159,7 @@ ShowRouteInfo:                                                  ; $00F104
     pea     ($001A).w
     jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print "FREQUENCY:" label from $3EA58
-    pea     ($0003EA58).l
+    pea     (ROM_BASE+$0003EA58).l
     jsr     (a5)
 ; SetTextCursor: position at (d2, col $1C) for frequency value
     move.w  d2,d0
@@ -176,7 +176,7 @@ ShowRouteInfo:                                                  ; $00F104
     addq.l  #$1,d0
     move.l  d0,-(sp)
 ; PrintfWide: print frequency value using format at $3EA54
-    pea     ($0003EA54).l
+    pea     (ROM_BASE+$0003EA54).l
     jsr     (a5)
 ; d2 += 2: next stats row (2-row spacing)
     addq.w  #$2,d2
@@ -187,7 +187,7 @@ ShowRouteInfo:                                                  ; $00F104
     pea     ($001A).w
     jsr     (ROM_BASE+$03AB2C).l
 ; PrintfWide: print "PRICE:" label from $3EA50
-    pea     ($0003EA50).l
+    pea     (ROM_BASE+$0003EA50).l
     jsr     (a5)
 ; SetTextCursor: position at (d2, col $1C) for price value
     move.w  d2,d0
@@ -204,7 +204,7 @@ ShowRouteInfo:                                                  ; $00F104
     addq.l  #$1,d0
     move.l  d0,-(sp)
 ; PrintfWide: print ticket price value using format at $3EA4C
-    pea     ($0003EA4C).l
+    pea     (ROM_BASE+$0003EA4C).l
     jsr     (a5)
 ; --- Phase: Left Panel -- Service Quality Score and Category Label ---
 ; a4+$08 = route slot +$08 word = gross_revenue; used here as raw service quality score
@@ -256,7 +256,7 @@ ShowRouteInfo:                                                  ; $00F104
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    pea     ($0003EA48).l
+    pea     (ROM_BASE+$0003EA48).l
     jsr     (a5)
 ; d2 += 2: advance to category label row
     addq.w  #$2,d2
@@ -274,7 +274,7 @@ ShowRouteInfo:                                                  ; $00F104
     movea.l #$0005f096,a0
     move.l  (a0,d0.w),-(sp)
 ; PrintfWide: print category name at $3EA44; branch to shared print-and-return tail
-    pea     ($0003EA44).l
+    pea     (ROM_BASE+$0003EA44).l
     bra.w   .lf516
 ; --- Phase: Right Panel -- Checksum Verify (mirrors left panel logic) ---
 .lf322:                                                 ; $00F322
@@ -306,7 +306,7 @@ ShowRouteInfo:                                                  ; $00F104
     lea     $0018(sp),sp
 ; PrintfWide: print right-panel "empty" label at $3EA36 (different string from left $3EA6C)
 ; then share tail at .lf168 (call a5 + branch to epilogue)
-    pea     ($0003EA36).l
+    pea     (ROM_BASE+$0003EA36).l
     bra.w   .lf168
 ; --- Phase: Right Panel -- Valid Slot: Set Up Pointers and Draw Route Rows ---
 ; Identical structure to left panel (.lf170 path) but uses different format string addresses
@@ -336,7 +336,7 @@ ShowRouteInfo:                                                  ; $00F104
     jsr     (ROM_BASE+$03AB2C).l
 ; right-panel char name format $3EA30 (vs left-panel $3EA66)
     move.l  a3,-(sp)
-    pea     ($0003EA30).l
+    pea     (ROM_BASE+$0003EA30).l
     jsr     (a5)
 ; print city A name: route slot +$00 = city_a index, lookup in $5F926 table
     move.w  d2,d0
@@ -350,7 +350,7 @@ ShowRouteInfo:                                                  ; $00F104
     movea.l #$0005f926,a0
     move.l  (a0,d0.w),-(sp)
 ; right-panel city A format $3EA2C
-    pea     ($0003EA2C).l
+    pea     (ROM_BASE+$0003EA2C).l
     jsr     (a5)
 ; print city B name: route slot +$01 = city_b index, lookup in $5E680 table
     move.w  d2,d0
@@ -364,7 +364,7 @@ ShowRouteInfo:                                                  ; $00F104
     movea.l #$0005e680,a0
     move.l  (a0,d0.w),-(sp)
 ; right-panel city B format $3EA26
-    pea     ($0003EA26).l
+    pea     (ROM_BASE+$0003EA26).l
     jsr     (a5)
     lea     $0030(sp),sp
 ; advance to next slot (same strides as left panel: a2 += $24, a3 += $10, d2 += 2)
@@ -393,7 +393,7 @@ ShowRouteInfo:                                                  ; $00F104
     move.l  d0,-(sp)
     pea     ($001A).w
     jsr     (ROM_BASE+$03AB2C).l
-    pea     ($0003EA22).l
+    pea     (ROM_BASE+$0003EA22).l
     jsr     (a5)
 ; SetTextCursor: position for frequency value (right-panel format $3EA1E)
     move.w  d2,d0
@@ -407,7 +407,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     addq.l  #$1,d0
     move.l  d0,-(sp)
-    pea     ($0003EA1E).l
+    pea     (ROM_BASE+$0003EA1E).l
     jsr     (a5)
     addq.w  #$2,d2
 ; SetTextCursor: position for "PRICE:" label (right-panel format $3EA1A)
@@ -416,7 +416,7 @@ ShowRouteInfo:                                                  ; $00F104
     move.l  d0,-(sp)
     pea     ($001A).w
     jsr     (ROM_BASE+$03AB2C).l
-    pea     ($0003EA1A).l
+    pea     (ROM_BASE+$0003EA1A).l
     jsr     (a5)
 ; SetTextCursor: position for price value (right-panel format $3EA16)
     move.w  d2,d0
@@ -431,7 +431,7 @@ ShowRouteInfo:                                                  ; $00F104
     ext.l   d0
     addq.l  #$1,d0
     move.l  d0,-(sp)
-    pea     ($0003EA16).l
+    pea     (ROM_BASE+$0003EA16).l
     jsr     (a5)
 ; --- Phase: Right Panel -- Service Quality Score and Category Label (mirrors left panel) ---
 ; a4+$08 = gross_revenue word used as raw quality score (same field as left panel)
@@ -471,7 +471,7 @@ ShowRouteInfo:                                                  ; $00F104
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    pea     ($0003EA12).l
+    pea     (ROM_BASE+$0003EA12).l
     jsr     (a5)
     addq.w  #$2,d2
 ; SetTextCursor: position for route category label (right-panel format $3EA0E)
@@ -487,7 +487,7 @@ ShowRouteInfo:                                                  ; $00F104
     movea.l #$0005f096,a0
     move.l  (a0,d0.w),-(sp)
 ; right-panel category format $3EA0E
-    pea     ($0003EA0E).l
+    pea     (ROM_BASE+$0003EA0E).l
 ; --- Phase: Shared Tail -- PrintfWide + Epilogue ---
 ; both panels converge here: call PrintfWide for the last string, then fall into epilogue
 .lf516:                                                 ; $00F516

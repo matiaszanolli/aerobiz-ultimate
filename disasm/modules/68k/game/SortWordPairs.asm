@@ -132,13 +132,13 @@ RunPlayerSelectUI:                                                  ; $010AB6
     move.w  d2,d5
     pea     ($0008).w
     move.l  a4,-(sp)
-    pea     ($00076AC0).l
+    pea     (ROM_BASE+$00076AC0).l
     jsr     (ROM_BASE+$0045B2).l
     pea     ($0008).w
     move.l  a4,d0
     addq.l  #$8,d0
     move.l  d0,-(sp)
-    pea     ($00076AC0).l
+    pea     (ROM_BASE+$00076AC0).l
     jsr     (ROM_BASE+$0045B2).l
     lea     $0018(sp),sp
     moveq   #$0,d0

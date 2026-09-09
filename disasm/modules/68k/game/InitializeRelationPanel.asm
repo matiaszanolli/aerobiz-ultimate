@@ -7,7 +7,7 @@ InitializeRelationPanel:
     move.l  $1c(a7), d2
     movea.l  #$0003B246,a4
     movea.l  #$0003AB2C,a5
-    move.l  ($000A1AFC).l, -(a7)
+    move.l  (ROM_BASE+$000A1AFC).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($0047).w
@@ -18,7 +18,7 @@ InitializeRelationPanel:
     pea     ($000E).w
     jsr GameCommand
     lea     $1c(a7), a7
-    pea     ($00071798).l
+    pea     (ROM_BASE+$00071798).l
     pea     ($0003).w
     pea     ($001E).w
     pea     ($000F).w
@@ -47,7 +47,7 @@ InitializeRelationPanel:
     move.b  $1(a3), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0004122A).l
+    pea     (ROM_BASE+$0004122A).l
     jsr     (a4)
     lea     $30(a7), a7
     moveq   #$F,d3
@@ -62,7 +62,7 @@ l_21252:
     move.b  $1(a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041226).l
+    pea     (ROM_BASE+$00041226).l
     jsr     (a4)
     pea     ($0011).w
     moveq   #$0,d0
@@ -73,7 +73,7 @@ l_21252:
     move.b  (a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00041222).l
+    pea     (ROM_BASE+$00041222).l
     jsr     (a4)
     lea     $20(a7), a7
     addq.w  #$4, d3

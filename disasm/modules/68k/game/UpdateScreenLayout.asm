@@ -351,7 +351,7 @@ UpdateScreenLayout:
     ext.l   d1
     add.l   d1, d0                     ; restore absolute: display_value + bar_min
     move.l  d0, -(a7)                  ; stat value to print
-    pea     ($0003F870).l              ; format string at ROM $03F870 (narrow printf fmt A)
+    pea     (ROM_BASE+$0003F870).l     ; format string at ROM $03F870 (narrow printf fmt A)
     jsr PrintfNarrow
 
     ; Print char_b stat value at cursor (col=8, row=$15)
@@ -364,7 +364,7 @@ UpdateScreenLayout:
     ext.l   d1
     add.l   d1, d0                     ; restore absolute value
     move.l  d0, -(a7)
-    pea     ($0003F86C).l              ; format string at ROM $03F86C (narrow printf fmt B)
+    pea     (ROM_BASE+$0003F86C).l     ; format string at ROM $03F86C (narrow printf fmt B)
     jsr PrintfNarrow
 
     ; Print bar position (d3) at cursor (col=$F, row=$1B) using wide font
@@ -374,7 +374,7 @@ UpdateScreenLayout:
     move.w  d3, d0                     ; d3 = current bar position
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F868).l              ; format string at ROM $03F868 (wide bar pos fmt)
+    pea     (ROM_BASE+$0003F868).l     ; format string at ROM $03F868 (wide bar pos fmt)
     jsr PrintfWide
     lea     $30(a7), a7                ; pop all printf args ($30 = 6 * 4 * 2 calls)
 
@@ -391,7 +391,7 @@ UpdateScreenLayout:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F864).l              ; format string at ROM $03F864 (wide bar label fmt)
+    pea     (ROM_BASE+$0003F864).l     ; format string at ROM $03F864 (wide bar label fmt)
     jsr PrintfWide
 
 ; --- Phase: Blit bar tile arrays via GameCommand $1B ---
@@ -601,7 +601,7 @@ UpdateScreenLayout:
     ext.l   d1
     add.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($0003F860).l              ; format string at ROM $03F860 (relation detail char_a)
+    pea     (ROM_BASE+$0003F860).l     ; format string at ROM $03F860 (relation detail char_a)
     jsr PrintfNarrow
 
     ; Print char_b value at (col=8, row=$15)
@@ -615,7 +615,7 @@ UpdateScreenLayout:
     ext.l   d1
     add.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($0003F85C).l              ; format string at ROM $03F85C (relation detail char_b)
+    pea     (ROM_BASE+$0003F85C).l     ; format string at ROM $03F85C (relation detail char_b)
     jsr PrintfNarrow
 
     ; Print bar position at (col=$F, row=$1B)
@@ -625,7 +625,7 @@ UpdateScreenLayout:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F858).l              ; format string at ROM $03F858 (relation bar pos)
+    pea     (ROM_BASE+$0003F858).l     ; format string at ROM $03F858 (relation bar pos)
     jsr PrintfWide
     lea     $18(a7), a7
     bra.w   .l1638c                    ; -> exit/finalize

@@ -37,7 +37,7 @@ ShowCharInfoPageS2:
     lsl.w   #$2, d0
     movea.l  #$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0004471A).l
+    pea     (ROM_BASE+$0004471A).l
     jsr PrintfWide
     lea     $20(a7), a7
     cmpi.w  #$1, $16(a6)

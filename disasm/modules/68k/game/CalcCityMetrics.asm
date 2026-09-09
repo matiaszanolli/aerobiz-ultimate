@@ -16,7 +16,7 @@ l_171d0:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($00047A5E).l
+    pea     (ROM_BASE+$00047A5E).l
     move.w  ($00FFA792).l, d0
     ext.l   d0
     move.l  d0, -(a7)

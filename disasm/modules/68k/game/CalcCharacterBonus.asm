@@ -19,9 +19,9 @@ CalcCharacterBonus:
     jsr GameCommand
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($00076A1E).l
+    pea     (ROM_BASE+$00076A1E).l
     jsr DisplaySetup
-    move.l  ($000A1B00).l, -(a7)
+    move.l  (ROM_BASE+$000A1B00).l, -(a7)
     pea     ($00FF899C).l
     jsr LZ_Decompress
     lea     $28(a7), a7
@@ -29,7 +29,7 @@ CalcCharacterBonus:
     pea     ($006A).w
     pea     ($00FF899C).l
     jsr CmdPlaceTile
-    pea     ($0007184C).l
+    pea     (ROM_BASE+$0007184C).l
     pea     ($0004).w
     pea     ($001E).w
     pea     ($0001).w
@@ -52,7 +52,7 @@ CalcCharacterBonus:
     lsl.w   #$2, d0
     movea.l  #$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003F7B0).l
+    pea     (ROM_BASE+$0003F7B0).l
     jsr     (a3)
     pea     ($0003).w
     pea     ($0011).w
@@ -60,7 +60,7 @@ CalcCharacterBonus:
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F7AC).l
+    pea     (ROM_BASE+$0003F7AC).l
     jsr     (a3)
     lea     $30(a7), a7
     pea     ($0003).w
@@ -69,7 +69,7 @@ CalcCharacterBonus:
     moveq   #$0,d0
     move.b  $3(a2), d0
     move.l  d0, -(a7)
-    pea     ($0003F7A8).l
+    pea     (ROM_BASE+$0003F7A8).l
     jsr     (a3)
     pea     ($0003).w
     pea     ($001A).w
@@ -77,7 +77,7 @@ CalcCharacterBonus:
     moveq   #$0,d0
     move.w  $4(a2), d0
     move.l  d0, -(a7)
-    pea     ($0003F7A4).l
+    pea     (ROM_BASE+$0003F7A4).l
     jsr     (a3)
     lea     $20(a7), a7
     movem.l (a7)+, d2-d3/a2-a4

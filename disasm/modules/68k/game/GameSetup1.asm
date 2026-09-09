@@ -25,7 +25,7 @@ GameSetup1:
 ; ResourceLoad: load tile buffer from ROM $472CE with palette index $40
     pea     ($0040).w
     clr.l   -(a7)
-    pea     ($000472CE).l
+    pea     (ROM_BASE+$000472CE).l
     jsr     (a4)
 ; ClearScreen: erase both scroll planes via GameCmd #$1A ×2
     jsr ClearScreen
@@ -41,7 +41,7 @@ GameSetup1:
     bsr.w ClearSoundBuffer
 ; load music/sound track ID from ROM word at $737F8 into d0
     moveq   #$0,d0
-    move.w  ($000737F8).l, d0
+    move.w  (ROM_BASE+$000737F8).l, d0
 ; GameCommand #$1A: clear scroll plane A region (width=$20, height=$20, x=0, y=0)
 ; with music track as first arg -- starts background music for intro
     move.l  d0, -(a7)
@@ -55,7 +55,7 @@ GameSetup1:
     lea     $1c(a7), a7
 ; GameCommand #$1B: set up layer/palette entry -- source=$734F8, count=7, y=$C, x=$A, attr=$B
 ; loads the company-name intro banner tile data
-    pea     ($000734F8).l
+    pea     (ROM_BASE+$000734F8).l
     pea     ($0007).w
     pea     ($000C).w
     pea     ($000A).w
@@ -70,7 +70,7 @@ GameSetup1:
     pea     ($0002).w
     pea     ($0010).w
     clr.l   -(a7)
-    move.l  ($00076CFE).l, -(a7)
+    move.l  (ROM_BASE+$00076CFE).l, -(a7)
     jsr DrawLayersForward
     lea     $30(a7), a7
 ; GameCommand #$E: wait $14 frames then advance -- brief display pause after banner appears
@@ -116,7 +116,7 @@ l_3b4ea:
     cmpi.w  #$6, d2
     bcs.b   l_3b4ea
 ; re-apply banner tile data (same $734F8 block, count=7) to prepare for fade sequence
-    pea     ($000734F8).l
+    pea     (ROM_BASE+$000734F8).l
     pea     ($0007).w
     pea     ($000C).w
     pea     ($000A).w
@@ -190,7 +190,7 @@ l_3b5b6:
     bne.b   l_3b5b6
 ; --- Phase: Intro -- Reload Banner and Pause Before Title ---
 ; re-emit banner layer setup ($734F8) then wait $A = 10 frames before next banner set
-    pea     ($000734F8).l
+    pea     (ROM_BASE+$000734F8).l
     pea     ($0007).w
     pea     ($000C).w
     pea     ($000A).w
@@ -231,7 +231,7 @@ l_3b60c:
     move.l  (a5), -(a7)
     jsr     (a4)
 ; GameCommand #$1B: set up title logo layer from ROM $7386A (count=2, y=$11, x=$9)
-    pea     ($0007386A).l
+    pea     (ROM_BASE+$0007386A).l
     pea     ($0002).w
     pea     ($000E).w
     pea     ($0011).w
@@ -260,7 +260,7 @@ l_3b60c:
     lea     $1c(a7), a7
 ; --- Phase: Intro -- "Koei" Copyright Screen ---
 ; GameCommand #$1B: load Koei/copyright graphic from $737FA (count=2, y=$F, x=$2)
-    pea     ($000737FA).l
+    pea     (ROM_BASE+$000737FA).l
     pea     ($0002).w
     pea     ($001C).w
     pea     ($000F).w
@@ -281,7 +281,7 @@ l_3b60c:
     jsr ClearScreen
 ; --- Phase: Intro -- Sega License Screen ---
 ; GameCommand #$1B: Sega license screen graphic from $738A2 (count=3, y=$B, x=$C)
-    pea     ($000738A2).l
+    pea     (ROM_BASE+$000738A2).l
     pea     ($0003).w
     pea     ($0008).w
     pea     ($000B).w
@@ -291,7 +291,7 @@ l_3b60c:
     jsr     (a2)
     lea     $1c(a7), a7
 ; second Sega graphic from $738D2 (count=3, y=$E, x=$7)
-    pea     ($000738D2).l
+    pea     (ROM_BASE+$000738D2).l
     pea     ($0003).w
     pea     ($0014).w
     pea     ($000E).w
@@ -343,7 +343,7 @@ l_3b76a:
 ; ResourceLoad: load tile buffer from $472CE with palette index $40
     pea     ($0040).w
     clr.l   -(a7)
-    pea     ($000472CE).l
+    pea     (ROM_BASE+$000472CE).l
     jsr     (a4)
 ; GameCommand #$10: display init with palette index $40
     pea     ($0040).w
@@ -378,7 +378,7 @@ l_3b76a:
     bsr.w ClearSoundBuffer
 ; load attract-loop music track ID from ROM word at $737F8
     moveq   #$0,d0
-    move.w  ($000737F8).l, d0
+    move.w  (ROM_BASE+$000737F8).l, d0
 ; GameCommand #$1A: start attract-loop BGM (track in d0 passed as first arg)
     move.l  d0, -(a7)
     pea     ($001C).w
@@ -390,7 +390,7 @@ l_3b76a:
     jsr     (a2)
     lea     $1c(a7), a7
 ; GameCommand #$1B: load company/title banner tiles from $734F8 (count=7, y=$C, x=$A)
-    pea     ($000734F8).l
+    pea     (ROM_BASE+$000734F8).l
     pea     ($0007).w
     pea     ($000C).w
     pea     ($000A).w
@@ -412,7 +412,7 @@ l_3b76a:
     pea     ($0014).w
     bsr.w DelayFrames
 ; GameCommand #$1B: re-emit banner tile data with same args (scrolling effect step)
-    pea     ($000734F8).l
+    pea     (ROM_BASE+$000734F8).l
     pea     ($0007).w
     pea     ($000C).w
     pea     ($000A).w
@@ -433,7 +433,7 @@ l_3b76a:
     pea     ($0034).w
     bsr.w DelayFrames
 ; GameCommand #$1B: load title-screen "Press Start" graphic from $7394A (count=3, y=$11, x=$5)
-    pea     ($0007394A).l
+    pea     (ROM_BASE+$0007394A).l
     pea     ($0003).w
     pea     ($0016).w
     pea     ($0011).w

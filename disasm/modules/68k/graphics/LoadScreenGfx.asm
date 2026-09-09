@@ -12,9 +12,9 @@ LoadScreenGfx:                                                  ; $0068CA
     move.w  #$7,($00FF9A1C).l
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0007677E).l
+    pea     (ROM_BASE+$0007677E).l
     jsr     (ROM_BASE+$005092).l
-    move.l  ($00095118).l,-(sp)
+    move.l  (ROM_BASE+$00095118).l,-(sp)
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     lea     $0014(sp),sp
@@ -30,7 +30,7 @@ LoadScreenGfx:                                                  ; $0068CA
     pea     ($0001).w
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$0045E6).l
-    pea     ($00070198).l
+    pea     (ROM_BASE+$00070198).l
     pea     ($0016).w
     pea     ($0020).w
     clr.l   -(sp)
@@ -79,9 +79,9 @@ LoadScreenGfx:                                                  ; $0068CA
     bne.b   .l6a24
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($0007679E).l
+    pea     (ROM_BASE+$0007679E).l
     jsr     (ROM_BASE+$005092).l
-    pea     ($00070758).l
+    pea     (ROM_BASE+$00070758).l
     pea     ($0016).w
     pea     ($0020).w
     clr.l   -(sp)
@@ -89,7 +89,7 @@ LoadScreenGfx:                                                  ; $0068CA
     clr.l   -(sp)
     pea     ($001B).w
     jsr     (a2)
-    move.l  ($00095138).l,-(sp)
+    move.l  (ROM_BASE+$00095138).l,-(sp)
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     lea     $0030(sp),sp

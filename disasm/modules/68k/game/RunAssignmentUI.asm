@@ -49,13 +49,13 @@ RunAssignmentUI:                                                  ; $016958
 ; DisplaySetup: load background tileset from ROM at $4C976 into VRAM
     pea     ($0010).w                  ; VRAM tile offset
     pea     ($0010).w                  ; tile count
-    pea     ($0004C976).l              ; ptr to compressed tile data at $4C976
+    pea     (ROM_BASE+$0004C976).l     ; ptr to compressed tile data at $4C976
     jsr     (ROM_BASE+$005092).l                        ; jsr $005092 -- DisplaySetup($4C976, $10, $10)
     lea     $0028(sp),sp
 
 ; GameCommand $1B: draw the char-type panel with sprite data from $4CD56
 ; Args: ptr=$4CD56, col=$D, cols=$20, row=$F, x=0, y=1
-    pea     ($0004CD56).l              ; ptr to panel sprite data at $4CD56
+    pea     (ROM_BASE+$0004CD56).l     ; ptr to panel sprite data at $4CD56
     pea     ($000D).w
     pea     ($0020).w
     pea     ($000F).w
@@ -100,11 +100,11 @@ RunAssignmentUI:                                                  ; $016958
 ; Load the assignment grid tilemap from ROM at $76A5E ($30 tiles, VRAM slot $10)
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($00076A5E).l              ; ptr to assignment grid tile data at $76A5E
+    pea     (ROM_BASE+$00076A5E).l     ; ptr to assignment grid tile data at $76A5E
     jsr     (ROM_BASE+$005092).l                        ; jsr $005092 -- DisplaySetup($76A5E, $30, $10)
 
 ; LZ_Decompress: decompress assignment grid graphics from $0A1B08 into save_buf_base
-    move.l  ($000A1B08).l,-(sp)       ; ptr to compressed assignment grid LZ data
+    move.l  (ROM_BASE+$000A1B08).l,-(sp) ; ptr to compressed assignment grid LZ data
     pea     ($00FF1804).l              ; dest: save_buf_base ($FF1804)
     jsr     (ROM_BASE+$003FEC).l                        ; jsr $003FEC -- LZ_Decompress
 
@@ -116,7 +116,7 @@ RunAssignmentUI:                                                  ; $016958
     lea     $0020(sp),sp
 
 ; GameCommand $1B: draw the char name label panel from $71A64
-    pea     ($00071A64).l              ; ptr to label tile data at $71A64
+    pea     (ROM_BASE+$00071A64).l     ; ptr to label tile data at $71A64
     pea     ($000B).w
     pea     ($0020).w
     pea     ($000E).w
@@ -327,7 +327,7 @@ RunAssignmentUI:                                                  ; $016958
     pea     ($0016).w                  ; display column $16
     jsr     (ROM_BASE+$03AB2C).l                        ; jsr $03AB2C -- SetDisplayCursor($16, $F)
     pea     -$001a(a6)                 ; ptr to typed_name_buf
-    pea     ($0003F948).l             ; format string for name display at $3F948
+    pea     (ROM_BASE+$0003F948).l    ; format string for name display at $3F948
     jsr     (ROM_BASE+$03B270).l                        ; jsr $03B270 -- PrintString(fmt, buf)
     lea     $0010(sp),sp
 
@@ -370,7 +370,7 @@ RunAssignmentUI:                                                  ; $016958
     jsr     (ROM_BASE+$03AB2C).l                        ; jsr $03AB2C -- SetDisplayCursor($16, $F)
     lea     $0024(sp),sp
     pea     -$001a(a6)
-    pea     ($0003F944).l             ; format string for delete/clear at $3F944
+    pea     (ROM_BASE+$0003F944).l    ; format string for delete/clear at $3F944
     jsr     (ROM_BASE+$03B270).l                        ; jsr $03B270 -- PrintString(fmt, buf)
     bra.w   .l16ba8                    ; loop back
 

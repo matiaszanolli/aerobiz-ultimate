@@ -11,7 +11,7 @@ ShowFacilityMenu:
     jsr GameCommand
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($000767DE).l
+    pea     (ROM_BASE+$000767DE).l
     jsr DisplaySetup
     move.w  #$30e, d3
     move.w  $a(a6), d0

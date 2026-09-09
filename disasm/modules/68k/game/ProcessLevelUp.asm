@@ -101,7 +101,7 @@ l_351b8:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($00044912).l
+    pea     (ROM_BASE+$00044912).l
     jsr PrintfWide
     pea     ($0007).w
     moveq   #$0,d0

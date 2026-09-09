@@ -44,14 +44,14 @@ DrawCharDetailPanel:                                                  ; $01AFF0
     pea     ($0001).w
     jsr     (ROM_BASE+$01D568).l
     lea     $0030(sp),sp
-    move.l  ($000A1AE8).l,-(sp)
+    move.l  (ROM_BASE+$000A1AE8).l,-(sp)
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l
     pea     ($0037).w
     pea     ($06B4).w
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$004668).l
-    pea     ($00070F78).l
+    pea     (ROM_BASE+$00070F78).l
     pea     ($0008).w
     pea     ($000E).w
     move.w  d3,d0

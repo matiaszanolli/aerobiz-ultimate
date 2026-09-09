@@ -10,7 +10,7 @@ InitDefaultScenario:
     andi.l  #$ffff, d0
     move.l  d0, -(a7)
     pea     ($00FF0000).l
-    pea     ($00046890).l
+    pea     (ROM_BASE+$00046890).l
     jsr MemMove
     move.w  #$22, ($00FF999C).l
     move.w  #$21, ($00FFBA68).l
@@ -29,7 +29,7 @@ InitDefaultScenario:
     move.w  #$1, ($00FF0010).l
     pea     ($0030).w
     pea     ($00FF1480).l
-    pea     ($00047600).l
+    pea     (ROM_BASE+$00047600).l
     jsr MemMove
     lea     $18(a7), a7
     movea.l (a7)+, a2

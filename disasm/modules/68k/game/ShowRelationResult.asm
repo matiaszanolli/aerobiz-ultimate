@@ -21,7 +21,7 @@ ShowRelationResult:                                                  ; $019DE6
     bne.b   .l19e58                   ; portrait flag != 1 — skip portrait load
     ; --- Load and display character portrait for this char pair ---
     ; Decompress the portrait graphic from the pointer in ROM table at $A1AE4
-    move.l  ($000A1AE4).l,-(sp)      ; ROM pointer: character portrait compressed data
+    move.l  (ROM_BASE+$000A1AE4).l,-(sp) ; ROM pointer: character portrait compressed data
     pea     ($00FF1804).l             ; dest = $FF1804 (save_buf_base staging buffer)
     jsr     (ROM_BASE+$003FEC).l      ; jsr LZ_Decompress ($003FEC): decompress portrait to $FF1804
     ; DMA portrait tiles to VRAM: tile $0694, count $20 tiles
@@ -30,7 +30,7 @@ ShowRelationResult:                                                  ; $019DE6
     pea     ($00FF1804).l             ; source = $FF1804 (decompressed portrait)
     jsr     (ROM_BASE+$004668).l      ; jsr $004668 (VRAMBulkLoad variant): DMA portrait to VRAM
     ; Place portrait sprite tile block on screen (GameCmd #$1B)
-    pea     ($00070F58).l             ; compressed tile metadata for portrait frame
+    pea     (ROM_BASE+$00070F58).l    ; compressed tile metadata for portrait frame
     pea     ($0004).w                 ; height = 4
     pea     ($0004).w                 ; width = 4
     move.w  (a5),d0                   ; d0 = column X (from $12(a6))
@@ -287,7 +287,7 @@ ShowRelationResult:                                                  ; $019DE6
     moveq   #$0,d0
     move.w  $0004(a2),d0              ; d0 = prior score from a2+$04 char stat record field
     move.l  d0,-(sp)
-    pea     ($00041128).l             ; format string for prior score label (e.g. "PREV: %d")
+    pea     (ROM_BASE+$00041128).l    ; format string for prior score label (e.g. "PREV: %d")
     jsr     (ROM_BASE+$03B246).l      ; jsr PrintfNarrow ($03B246): print prior score value
     ; Position cursor one column to the right for the trend/delta label
     move.w  (a5),d0
@@ -305,7 +305,7 @@ ShowRelationResult:                                                  ; $019DE6
     move.w  d3,d0
     ext.l   d0
     move.l  d0,-(sp)
-    pea     ($00041122).l             ; format string for trend delta (e.g. "+%d" or "-%d")
+    pea     (ROM_BASE+$00041122).l    ; format string for trend delta (e.g. "+%d" or "-%d")
     jsr     (ROM_BASE+$03B246).l      ; jsr PrintfNarrow ($03B246): print trend delta
     lea     $0020(sp),sp
 ; --- Phase: Icon Bar Rendering (Row 2 — Primary Stat Bar) ---
@@ -562,7 +562,7 @@ ShowRelationResult:                                                  ; $019DE6
     moveq   #$0,d0
     move.b  $0003(a2),d0              ; d0 = secondary stat from a2+$03 (cap/limit field)
     move.l  d0,-(sp)
-    pea     ($0004111C).l             ; format string for secondary stat label
+    pea     (ROM_BASE+$0004111C).l    ; format string for secondary stat label
     jsr     (ROM_BASE+$03B270).l      ; jsr PrintfWide ($03B270): print in wide (2-tile) font
     ; Position cursor for the final result value display: col = $12(a6)+2, row = $E(a6)+$D
     move.w  (a5),d0

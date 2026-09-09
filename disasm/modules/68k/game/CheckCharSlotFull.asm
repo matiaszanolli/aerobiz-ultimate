@@ -32,7 +32,7 @@ CheckCharSlotFull:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($0004849E).l, -(a7)
+    move.l  (ROM_BASE+$0004849E).l, -(a7)
     moveq   #$0,d0
     move.w  d3, d0
     move.l  d0, -(a7)
@@ -41,7 +41,7 @@ CheckCharSlotFull:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($000484AE).l, -(a7)
+    move.l  (ROM_BASE+$000484AE).l, -(a7)
     moveq   #$0,d0
     move.w  d3, d0
     move.l  d0, -(a7)

@@ -153,7 +153,7 @@ GetCharStatField:
     clr.l   -(a7)
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($0003F268).l        ; ROM pointer: dialog text for stat browser intro
+    pea     (ROM_BASE+$0003F268).l ; ROM pointer: dialog text for stat browser intro
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)            ; player_index

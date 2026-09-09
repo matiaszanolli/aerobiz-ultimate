@@ -118,7 +118,7 @@ RecruitCharacter:                                                  ; $036F12
     lsl.w   #$2,d0               ; d0 *= 4 (long pointer table index)
     movea.l #$0005e680,a0        ; a0 = ROM char name pointer table ($5E680)
     move.l  (a0,d0.w),-(sp)      ; push char name string ptr
-    move.l  ($000485F6).l,-(sp)  ; push ROM format string ptr ($485F6) for name dialog
+    move.l  (ROM_BASE+$000485F6).l,-(sp) ; push ROM format string ptr ($485F6) for name dialog
     pea     -$0080(a6)           ; destination = local sprintf buffer (-$80(a6), $80 bytes)
     jsr     (ROM_BASE+$03B22C).l ; jsr $03B22C = sprintf: format char name into buffer
     ; ShowDialog args: player_index, formatted_string, mode_2, 0, 0
@@ -211,7 +211,7 @@ RecruitCharacter:                                                  ; $036F12
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($0002).w
-    move.l  ($0004861E).l,-(sp)  ; ROM string: "no recruit slots available" message
+    move.l  (ROM_BASE+$0004861E).l,-(sp) ; ROM string: "no recruit slots available" message
     bra.b   .l37100              ; -> shared ShowDialog call
 .l370f0:                                                ; $0370F0
     ; --- Branch: player has >= $28 total slots occupied -- team full ---
@@ -219,7 +219,7 @@ RecruitCharacter:                                                  ; $036F12
     pea     ($0001).w
     clr.l   -(sp)
     pea     ($0002).w
-    pea     ($00044E94).l        ; ROM string: "team is full" / max capacity message
+    pea     (ROM_BASE+$00044E94).l ; ROM string: "team is full" / max capacity message
 .l37100:                                                ; $037100
     ; --- Shared: ShowDialog for error messages (full team / no slots) ---
     move.w  d2,d0

@@ -133,7 +133,7 @@ RunAircraftParamShuffle:
     bcs.b   .l0c4ca
     bra.b   .l0c522
 .l0c51c:
-    move.l  ($00047390).l, (a3)
+    move.l  (ROM_BASE+$00047390).l, (a3)
 .l0c522:
     addq.l  #$4, a3
     moveq   #$A,d0

@@ -238,7 +238,7 @@ l_2a2d0:
 ; Print revenue figure using narrow font with format string at ROM $42118
     move.l  -$6(a6), -(a7)
 ; Format string at $42118 likely produces a right-aligned integer (revenue in thousands)
-    pea     ($00042118).l
+    pea     (ROM_BASE+$00042118).l
     jsr PrintfNarrow
 ; Place cursor at (d7+1, col_start+4) = (row 11, col_start+4) for occupancy stat
     move.w  d7, d0
@@ -254,7 +254,7 @@ l_2a2d0:
     move.w  (a4), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($00042114).l
+    pea     (ROM_BASE+$00042114).l
     jsr PrintfWide
     lea     $20(a7), a7
 ; --- Phase: Occupancy Bar Rendering ---

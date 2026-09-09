@@ -92,7 +92,7 @@ ProcessCharacterAction:
     bra.b   .l147cc
 .l147aa:
     ori.b   #$2, $a(a2)
-    pea     ($0007193C).l
+    pea     (ROM_BASE+$0007193C).l
     pea     ($0002).w
     pea     ($0004).w
     pea     ($0001).w

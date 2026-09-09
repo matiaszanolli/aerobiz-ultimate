@@ -33,7 +33,7 @@ RenderTeamRoster:
     ; one-time pre-main-loop initialization (clears flags, sets up state)
     jsr PreLoopInit
     ; decompress background tile graphics for the roster screen into save_buf_base
-    pea     ($0004DCE8).l
+    pea     (ROM_BASE+$0004DCE8).l
     ; $0004DCE8 = ROM address of LZ-compressed background tileset
     move.l  a5, -(a7)
     ; output buffer = $FF1804 (save_buf_base)
@@ -137,12 +137,12 @@ l_37ae2:
     tst.w   d0
     beq.b   l_37b48
     ; characters are range-compatible: load the "matched" graphic variant
-    move.l  ($000A1B50).l, -(a7)
+    move.l  (ROM_BASE+$000A1B50).l, -(a7)
     ; $A1B50 = ROM pointer to matched-pair LZ tile data
     bra.b   l_37b4e
 l_37b48:
     ; characters differ in range: load the "unmatched" graphic variant
-    move.l  ($000A1B4C).l, -(a7)
+    move.l  (ROM_BASE+$000A1B4C).l, -(a7)
     ; $A1B4C = ROM pointer to unmatched-pair LZ tile data
 l_37b4e:
     ; decompress chosen compat graphic into save_buf_base ($FF1804)
@@ -157,11 +157,11 @@ l_37b4e:
     ; DisplaySetup: 16-wide × 16-tall tile window using resource table $7651E
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0007651E).l
+    pea     (ROM_BASE+$0007651E).l
     jsr DisplaySetup
     lea     $18(a7), a7
     ; GameCommand #$1B: blit panel frame strip from ROM $72AC0 at (col $001E, row $000D)
-    pea     ($00072AC0).l
+    pea     (ROM_BASE+$00072AC0).l
     ; $72AC0 = ROM address of panel-frame tile strip
     pea     ($000D).w
     pea     ($001E).w
@@ -174,10 +174,10 @@ l_37b4e:
     ; DisplaySetup: 16-wide × 48-tall window for portrait area
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($0007651E).l
+    pea     (ROM_BASE+$0007651E).l
     jsr DisplaySetup
     ; decompress portrait background graphic ($A1AE4) into save_buf_base
-    move.l  ($000A1AE4).l, -(a7)
+    move.l  (ROM_BASE+$000A1AE4).l, -(a7)
     ; $A1AE4 = ROM pointer to portrait background LZ data
     move.l  a5, -(a7)
     jsr LZ_Decompress
@@ -188,7 +188,7 @@ l_37b4e:
     move.l  a5, -(a7)
     jsr CmdPlaceTile
     ; GameCommand #$1B: blit top icon strip from $70F38 at (col $0005, row $0010)
-    pea     ($00070F38).l
+    pea     (ROM_BASE+$00070F38).l
     pea     ($0004).w
     pea     ($0004).w
     pea     ($0005).w
@@ -198,7 +198,7 @@ l_37b4e:
     jsr     (a4)
     lea     $28(a7), a7
     ; GameCommand #$1B: blit bottom icon strip from $70F58 at (col $0009, row $0010)
-    pea     ($00070F58).l
+    pea     (ROM_BASE+$00070F58).l
     pea     ($0004).w
     pea     ($0004).w
     pea     ($0009).w
@@ -269,7 +269,7 @@ l_37c50:
     andi.l  #$ff, d0
     move.l  d0, -(a7)
     ; PrintfNarrow with format $44FA0: print char_a city name using narrow 1-tile font
-    pea     ($00044FA0).l
+    pea     (ROM_BASE+$00044FA0).l
     ; $44FA0 = format string for char_a name display
     jsr PrintfNarrow
     ; reposition cursor to column 4, row $15 ($15=21) for char_b name
@@ -300,7 +300,7 @@ l_37c50:
     andi.l  #$ff, d0
     move.l  d0, -(a7)
     ; PrintfNarrow with format $44F96: print char_b city name using narrow font
-    pea     ($00044F96).l
+    pea     (ROM_BASE+$00044F96).l
     jsr PrintfNarrow
     lea     $c(a7), a7
     ; RenderPlayerInterface(player_index, match_data_ptr) -> d0 = next sub-state
@@ -363,7 +363,7 @@ l_37d5c:
     pea     ($0001).w
     ; 1 = single-choice confirm dialog
     clr.l   -(a7)
-    move.l  ($0004860E).l, -(a7)
+    move.l  (ROM_BASE+$0004860E).l, -(a7)
     ; $4860E = ROM pointer to swap confirmation dialog string table
     move.w  d3, d0
     ext.l   d0

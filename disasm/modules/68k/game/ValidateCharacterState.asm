@@ -7,7 +7,7 @@ ValidateCharacterState:
     movem.l d2-d3/a2, -(a7)
     movea.l $8(a6), a2
     moveq   #-$1,d3
-    pea     ($0004E28A).l
+    pea     (ROM_BASE+$0004E28A).l
     pea     ($00FF1804).l
     jsr LZ_Decompress
     clr.l   -(a7)

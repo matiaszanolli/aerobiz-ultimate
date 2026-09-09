@@ -51,7 +51,7 @@ l_2b8fa:
     clr.l   -(a7)
     pea     ($0002).w
     pea     ($0004).w
-    move.l  ($00047C40).l, -(a7)
+    move.l  (ROM_BASE+$00047C40).l, -(a7)
     bra.w   l_2b9fc
     pea     ($0001).w
     clr.l   -(a7)

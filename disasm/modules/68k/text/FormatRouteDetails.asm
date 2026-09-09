@@ -188,7 +188,7 @@ FormatRouteDetails:
     ; DisplaySetup with 16x16 window at ROM addr $7677E (status/info overlay)
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0007677E).l
+    pea     (ROM_BASE+$0007677E).l
     jsr DisplaySetup
     lea     $18(a7), a7
     ; d3 = count of "extra" (non-route) city tiles placed (used for summary text later)
@@ -257,7 +257,7 @@ FormatRouteDetails:
 .l129f6:
     ; GameCommand #$1B: write tile block from ROM ptr $70198 at position (col=$20, row=$17)
     ; This places the info panel frame or header graphic
-    pea     ($00070198).l
+    pea     (ROM_BASE+$00070198).l
     pea     ($0017).w
     pea     ($0020).w
     clr.l   -(a7)
@@ -271,7 +271,7 @@ FormatRouteDetails:
     cmpi.w  #$1, d3
     bne.b   .l12a34
     ; Singular: "1 city" -- ROM string at $3F258
-    pea     ($0003F258).l
+    pea     (ROM_BASE+$0003F258).l
     pea     -$a0(a6)
     jsr sprintf
     addq.l  #$8, a7
@@ -281,7 +281,7 @@ FormatRouteDetails:
     moveq   #$0,d0
     move.w  d3, d0
     move.l  d0, -(a7)
-    move.l  ($0004799A).l, -(a7)
+    move.l  (ROM_BASE+$0004799A).l, -(a7)
     pea     -$a0(a6)
     jsr sprintf
     lea     $c(a7), a7
@@ -291,7 +291,7 @@ FormatRouteDetails:
     cmpi.w  #$1, d6
     bne.b   .l12a68
     ; Singular: "1 route" -- ROM string at $3F250
-    pea     ($0003F250).l
+    pea     (ROM_BASE+$0003F250).l
     pea     -$f0(a6)
     jsr sprintf
     addq.l  #$8, a7
@@ -301,7 +301,7 @@ FormatRouteDetails:
     moveq   #$0,d0
     move.w  d6, d0
     move.l  d0, -(a7)
-    move.l  ($0004799E).l, -(a7)
+    move.l  (ROM_BASE+$0004799E).l, -(a7)
     pea     -$f0(a6)
     jsr sprintf
     lea     $c(a7), a7
@@ -312,7 +312,7 @@ FormatRouteDetails:
     bne.b   .l12aa0
     ; No routes: combine just the city-count string with a fixed ROM template ($3F24C)
     pea     -$a0(a6)
-    pea     ($0003F24C).l
+    pea     (ROM_BASE+$0003F24C).l
 .l12a90:
     pea     -$140(a6)
     jsr sprintf
@@ -323,13 +323,13 @@ FormatRouteDetails:
     tst.w   d3
     bne.b   .l12ab0
     pea     -$f0(a6)
-    pea     ($0003F248).l
+    pea     (ROM_BASE+$0003F248).l
     bra.b   .l12a90
 .l12ab0:
     ; Both routes and extra cities: combine both sub-strings via template at $479A2
     pea     -$f0(a6)
     pea     -$a0(a6)
-    move.l  ($000479A2).l, -(a7)
+    move.l  (ROM_BASE+$000479A2).l, -(a7)
     pea     -$140(a6)
     jsr sprintf
     lea     $10(a7), a7
@@ -337,7 +337,7 @@ FormatRouteDetails:
     ; Wrap the summary string into the final display buffer at -$50(a6)
     ; Template at $479A6 adds outer formatting (e.g., box/title frame)
     pea     -$140(a6)
-    move.l  ($000479A6).l, -(a7)
+    move.l  (ROM_BASE+$000479A6).l, -(a7)
     pea     -$50(a6)
     jsr sprintf
     ; Release the background resource now that tiles are placed
@@ -372,7 +372,7 @@ FormatRouteDetails:
     pea     ($0001).w
     clr.l   -(a7)
     ; Format string pointer from $479AA (final screen text)
-    move.l  ($000479AA).l, -(a7)
+    move.l  (ROM_BASE+$000479AA).l, -(a7)
     moveq   #$0,d0
     move.w  d7, d0
     move.l  d0, -(a7)

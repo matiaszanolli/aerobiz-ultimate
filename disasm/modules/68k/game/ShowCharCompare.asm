@@ -85,7 +85,7 @@ ShowCharCompare:                                                  ; $00E6B2
     lsl.w   #$2,d0
     movea.l #$0005e680,a0
     move.l  (a0,d0.w),-(sp)
-    pea     ($0003E93C).l
+    pea     (ROM_BASE+$0003E93C).l
     jsr     (ROM_BASE+$03B270).l
     pea     ($0006).w
     pea     ($0002).w
@@ -95,7 +95,7 @@ ShowCharCompare:                                                  ; $00E6B2
     lsl.w   #$2,d0
     movea.l #$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
-    pea     ($0003E938).l
+    pea     (ROM_BASE+$0003E938).l
     jsr     (ROM_BASE+$03B270).l
     pea     ($0640).w
     pea     ($000A).w
@@ -109,14 +109,14 @@ ShowCharCompare:                                                  ; $00E6B2
     pea     ($000B).w
     jsr     (a2)
     move.l  (a5),-(sp)
-    pea     ($0003E92A).l
+    pea     (ROM_BASE+$0003E92A).l
     jsr     (a3)
     pea     ($000A).w
     pea     ($000B).w
     jsr     (a2)
     lea     $0030(sp),sp
     move.l  (a4),-(sp)
-    pea     ($0003E91A).l
+    pea     (ROM_BASE+$0003E91A).l
     jsr     (a3)
     pea     ($000C).w
     pea     ($000B).w
@@ -125,13 +125,13 @@ ShowCharCompare:                                                  ; $00E6B2
     sub.w   $0002(a4),d0
     ext.l   d0
     move.l  d0,-(sp)
-    pea     ($0003E90E).l
+    pea     (ROM_BASE+$0003E90E).l
     jsr     (a3)
     pea     ($000E).w
     pea     ($000B).w
     jsr     (a2)
     move.l  d2,-(sp)
-    pea     ($0003E902).l
+    pea     (ROM_BASE+$0003E902).l
     jsr     (a3)
     pea     ($0010).w
     pea     ($000B).w
@@ -146,7 +146,7 @@ ShowCharCompare:                                                  ; $00E6B2
     add.l   d0,d0
     add.l   d1,d0
     move.l  d0,-(sp)
-    pea     ($0003E8F4).l
+    pea     (ROM_BASE+$0003E8F4).l
     jsr     (a3)
     move.l  (a5),d0
     cmp.l   (a4),d0

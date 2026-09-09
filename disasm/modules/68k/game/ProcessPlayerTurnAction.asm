@@ -136,7 +136,7 @@ l_0d85e:
     lsl.w   #$2, d0
     movea.l  #$0005E2A2,a0      ; ROM char name pointer table
     move.l  (a0,d0.w), -(a7)   ; char name string pointer
-    move.l  ($00047798).l, -(a7) ; "purchase confirm" format string pointer from ROM
+    move.l  (ROM_BASE+$00047798).l, -(a7) ; "purchase confirm" format string pointer from ROM
     pea     -$86(a6)            ; sprintf output buffer (134 bytes on frame)
     jsr sprintf
 ; ShowTextDialog: display formatted confirm dialog; returns 1 = Yes, 0 = No
@@ -213,7 +213,7 @@ l_0d85e:
     move.w  d5, d0              ; route_slot_index
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($0004779C).l, -(a7) ; "confirmed" message format pointer from ROM
+    move.l  (ROM_BASE+$0004779C).l, -(a7) ; "confirmed" message format pointer from ROM
     move.w  d4, d0              ; player_index
     ext.l   d0
     move.l  d0, -(a7)
@@ -229,7 +229,7 @@ l_0d9ae:
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($00047794).l, -(a7) ; "insufficient funds" message format pointer from ROM
+    move.l  (ROM_BASE+$00047794).l, -(a7) ; "insufficient funds" message format pointer from ROM
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)

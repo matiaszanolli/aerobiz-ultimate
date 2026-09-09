@@ -44,7 +44,7 @@ l_172b2:
     add.w   d1, d0
     movea.l  #$00047A36,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003F94C).l
+    pea     (ROM_BASE+$0003F94C).l
     jsr     (a2)
     addq.l  #$8, a7
     addq.w  #$1, d2

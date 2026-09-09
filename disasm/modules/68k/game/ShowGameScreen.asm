@@ -13,9 +13,9 @@ ShowGameScreen:                                                  ; $020A64
     jsr     (ROM_BASE+$01E398).l
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($000769FE).l
+    pea     (ROM_BASE+$000769FE).l
     jsr     (ROM_BASE+$005092).l
-    pea     ($00071098).l
+    pea     (ROM_BASE+$00071098).l
     pea     ($001C).w
     pea     ($0020).w
     clr.l   -(sp)
@@ -23,7 +23,7 @@ ShowGameScreen:                                                  ; $020A64
     pea     ($0001).w
     pea     ($001B).w
     jsr     (ROM_BASE+$000D64).l
-    move.l  ($000A1AF0).l,-(sp)
+    move.l  (ROM_BASE+$000A1AF0).l,-(sp)
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l
     lea     $0030(sp),sp

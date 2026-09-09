@@ -169,16 +169,16 @@ ManageCharStatsS2:
     move.w  d3, d0                  ; d0 = number of available upgrade points
     subq.l  #$1, d0                 ; d0 == 0 means d3 was exactly 1 → singular form
     beq.b   .l2dc04                 ; d3 == 1: use singular "upgrade" string
-    pea     ($000446AE).l           ; d3 > 1: ROM ptr to plural "upgrades available" format string
+    pea     (ROM_BASE+$000446AE).l  ; d3 > 1: ROM ptr to plural "upgrades available" format string
     bra.b   .l2dc0a
 .l2dc04:
-    pea     ($000446A8).l           ; d3 == 1: ROM ptr to singular "upgrade available" format string
+    pea     (ROM_BASE+$000446A8).l  ; d3 == 1: ROM ptr to singular "upgrade available" format string
 .l2dc0a:
     ; sprintf: format the upgrade-count message into local frame buffer at -$84(a6)
     moveq   #$0,d0
     move.w  d3, d0                  ; d0 = upgrade point count (numeric arg to format string)
     move.l  d0, -(a7)
-    move.l  ($0004848A).l, -(a7)   ; ROM: printf format string pointer (loaded from ROM pointer table)
+    move.l  (ROM_BASE+$0004848A).l, -(a7) ; ROM: printf format string pointer (loaded from ROM pointer table)
     pea     -$84(a6)                ; dest = local frame buffer at -$84 (132-byte string scratch area)
     jsr sprintf                     ; format "You can purchase N upgrade(s)" into local buffer
     ; ShowCharInfoPageS2: display the character info panel with the formatted upgrade count message
@@ -275,15 +275,15 @@ ManageCharStatsS2:
     move.w  -$2(a6), d0            ; d0 = selected upgrade count
     subq.l  #$1, d0                ; d0 == 0 → count was 1 → singular
     beq.b   .l2dcfc                 ; exactly 1: use singular confirmation string
-    pea     ($000446A0).l           ; ROM: "N upgrades for $M" (plural) format string
+    pea     (ROM_BASE+$000446A0).l  ; ROM: "N upgrades for $M" (plural) format string
     bra.b   .l2dd02
 .l2dcfc:
-    pea     ($0004469A).l           ; ROM: "1 upgrade for $M" (singular) format string
+    pea     (ROM_BASE+$0004469A).l  ; ROM: "1 upgrade for $M" (singular) format string
 .l2dd02:
     moveq   #$0,d0
     move.w  -$2(a6), d0            ; d0 = selected upgrade count (numeric arg)
     move.l  d0, -(a7)
-    move.l  ($0004848E).l, -(a7)   ; ROM: secondary format string ptr from pointer table at $4848E
+    move.l  (ROM_BASE+$0004848E).l, -(a7) ; ROM: secondary format string ptr from pointer table at $4848E
     pea     -$84(a6)                ; dest = local frame string buffer
     jsr sprintf                     ; format the cost confirmation message into local buffer
     lea     $30(a7), a7             ; clean up 12 longwords
@@ -319,7 +319,7 @@ ManageCharStatsS2:
     pea     ($0001).w               ; arg = 1 (success mode)
     clr.l   -(a7)
     clr.l   -(a7)
-    move.l  ($00048492).l, -(a7)   ; ROM: success/completion format string ptr from pointer table $48492
+    move.l  (ROM_BASE+$00048492).l, -(a7) ; ROM: success/completion format string ptr from pointer table $48492
     bra.w   .l2de0a                 ; jump to final ShowCharInfoPageS2 and exit sequence
 .l2dd7c:
     ; Result != 1: check if it's 0 (back to allocation screen) or something else
@@ -331,15 +331,15 @@ ManageCharStatsS2:
     move.w  d3, d0                  ; d0 = total available upgrades (d3 from triple-capped calculation)
     subq.l  #$1, d0                 ; test for singular
     beq.b   .l2dd94
-    pea     ($00044692).l           ; ROM: plural "N upgrades available" format (re-show initial prompt)
+    pea     (ROM_BASE+$00044692).l  ; ROM: plural "N upgrades available" format (re-show initial prompt)
     bra.b   .l2dd9a
 .l2dd94:
-    pea     ($0004468C).l           ; ROM: singular "1 upgrade available" format
+    pea     (ROM_BASE+$0004468C).l  ; ROM: singular "1 upgrade available" format
 .l2dd9a:
     moveq   #$0,d0
     move.w  d3, d0                  ; d0 = total available upgrade count
     move.l  d0, -(a7)
-    move.l  ($0004848A).l, -(a7)   ; ROM: initial-prompt format string ptr (same as startup)
+    move.l  (ROM_BASE+$0004848A).l, -(a7) ; ROM: initial-prompt format string ptr (same as startup)
     pea     -$84(a6)                ; local frame string buffer
     jsr sprintf                     ; re-format the initial upgrade-count message
     ; Re-show the character info page with the initial prompt (no-confirm args)
@@ -374,7 +374,7 @@ ManageCharStatsS2:
     pea     ($0001).w               ; page mode = 1
     clr.l   -(a7)                   ; arg = 0
     clr.l   -(a7)                   ; arg = 0 (no formatted string: use ROM default cancel message)
-    move.l  ($00048496).l, -(a7)   ; ROM: "Transaction cancelled" or equivalent string ptr from table $48496
+    move.l  (ROM_BASE+$00048496).l, -(a7) ; ROM: "Transaction cancelled" or equivalent string ptr from table $48496
     ; --- Phase: Final Display and Exit (shared by both purchase-success and cancel paths) ---
 .l2de0a:
     ; ShowCharInfoPageS2: display the outcome (success or cancel) and wait for acknowledgement

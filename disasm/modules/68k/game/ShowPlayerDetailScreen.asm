@@ -16,7 +16,7 @@ ShowPlayerDetailScreen:
     jsr PreLoopInit
     pea     ($0010).w
     clr.l   -(a7)
-    pea     ($0007651E).l
+    pea     (ROM_BASE+$0007651E).l
     jsr     (a4)
     pea     ($0001).w
     clr.l   -(a7)
@@ -28,9 +28,9 @@ ShowPlayerDetailScreen:
     lea     $28(a7), a7
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($00062782).l
+    pea     (ROM_BASE+$00062782).l
     jsr     (a4)
-    pea     ($000627A2).l
+    pea     (ROM_BASE+$000627A2).l
     pea     ($000C).w
     pea     ($0010).w
     pea     ($0006).w
@@ -38,7 +38,7 @@ ShowPlayerDetailScreen:
     pea     ($0001).w
     pea     ($001B).w
     jsr     (a3)
-    pea     ($00062922).l
+    pea     (ROM_BASE+$00062922).l
     move.l  a5, -(a7)
     jsr LZ_Decompress
     lea     $30(a7), a7
@@ -97,7 +97,7 @@ l_3da9c:
     asr.l   #$2, d0
     addi.l  #$7a3, d0
     move.l  d0, -(a7)
-    move.l  ($0006583E).l, -(a7)
+    move.l  (ROM_BASE+$0006583E).l, -(a7)
 l_3daac:
     move.l  a2, -(a7)
     jsr sprintf
@@ -111,7 +111,7 @@ l_3daba:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    move.l  ($0006584E).l, -(a7)
+    move.l  (ROM_BASE+$0006584E).l, -(a7)
     bra.b   l_3daac
 l_3dada:
     move.w  d3, d0
@@ -120,7 +120,7 @@ l_3dada:
     movea.l (a0,d0.w), a2
 l_3dae8:
     move.l  a2, -(a7)
-    pea     ($00046840).l
+    pea     (ROM_BASE+$00046840).l
     jsr PrintfWide
     pea     ($003C).w
     pea     ($000E).w
@@ -158,7 +158,7 @@ l_3db2c:
     jsr     (a3)
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($00063310).l
+    pea     (ROM_BASE+$00063310).l
     jsr     (a4)
     pea     ($0017).w
     jsr LoadDisplaySet
@@ -168,9 +168,9 @@ l_3db2c:
     jsr     (a3)
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($00076A7E).l
+    pea     (ROM_BASE+$00076A7E).l
     jsr     (a4)
-    move.l  ($000A1B64).l, -(a7)
+    move.l  (ROM_BASE+$000A1B64).l, -(a7)
     move.l  a5, -(a7)
     jsr LZ_Decompress
     pea     ($0025).w
@@ -178,7 +178,7 @@ l_3db2c:
     move.l  a5, -(a7)
     jsr CmdPlaceTile2
     lea     $28(a7), a7
-    pea     ($00073318).l
+    pea     (ROM_BASE+$00073318).l
     pea     ($0003).w
     pea     ($0010).w
     pea     ($0014).w

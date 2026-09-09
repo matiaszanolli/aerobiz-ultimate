@@ -41,7 +41,7 @@ InitializeRouteDisplay:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0004120C).l
+    pea     (ROM_BASE+$0004120C).l
     jsr PrintfNarrow
     pea     ($0002).w
     pea     ($0006).w
@@ -51,7 +51,7 @@ InitializeRouteDisplay:
     lsl.w   #$2, d0
     movea.l  #$0005EB2C,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00041208).l
+    pea     (ROM_BASE+$00041208).l
     jsr PrintfNarrow
     pea     ($0003).w
     pea     ($0006).w
@@ -69,7 +69,7 @@ InitializeRouteDisplay:
     moveq   #$A,d1
     jsr SignedDiv
     move.l  d0, -(a7)
-    pea     ($00041200).l
+    pea     (ROM_BASE+$00041200).l
     jsr PrintfWide
     pea     ($0004).w
     move.l  a2, -(a7)
@@ -90,7 +90,7 @@ InitializeRouteDisplay:
     move.b  $3(a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($000411FC).l
+    pea     (ROM_BASE+$000411FC).l
     jsr PrintfWide
     pea     ($0003).w
     pea     ($001B).w
@@ -99,7 +99,7 @@ InitializeRouteDisplay:
     move.b  $2(a2), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($000411F8).l
+    pea     (ROM_BASE+$000411F8).l
     jsr PrintfWide
     pea     ($0004).w
     move.l  a3, -(a7)
@@ -119,9 +119,9 @@ InitializeRouteDisplay:
     move.w  (a0,d0.w), d3
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($000767DE).l
+    pea     (ROM_BASE+$000767DE).l
     jsr DisplaySetup
-    pea     ($000733F0).l
+    pea     (ROM_BASE+$000733F0).l
     pea     ($0006).w
     pea     ($000C).w
     pea     ($0005).w
@@ -144,7 +144,7 @@ InitializeRouteDisplay:
     pea     ($0127).w
     move.l  a5, -(a7)
     jsr CmdPlaceTile2
-    pea     ($00073480).l
+    pea     (ROM_BASE+$00073480).l
     pea     ($0005).w
     pea     ($000C).w
     pea     ($0008).w

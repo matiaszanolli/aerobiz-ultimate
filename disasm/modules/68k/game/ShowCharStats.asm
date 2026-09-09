@@ -91,7 +91,7 @@ ShowCharStats:                                                  ; $01B0CE
     moveq   #$0,d0
     move.w  $0002(a2),d0
     move.l  d0,-(sp)
-    pea     ($0004114E).l
+    pea     (ROM_BASE+$0004114E).l
     jsr     (a5)
     move.w  d3,d0
     ext.l   d0
@@ -107,7 +107,7 @@ ShowCharStats:                                                  ; $01B0CE
     mulu.w  #$a,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    pea     ($0004114A).l
+    pea     (ROM_BASE+$0004114A).l
     jsr     (a5)
     move.w  d3,d0
     ext.l   d0
@@ -125,7 +125,7 @@ ShowCharStats:                                                  ; $01B0CE
     move.l  d1,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    pea     ($00041146).l
+    pea     (ROM_BASE+$00041146).l
     jsr     (a5)
     lea     $0030(sp),sp
     move.w  d3,d0
@@ -144,11 +144,11 @@ ShowCharStats:                                                  ; $01B0CE
     move.l  d1,d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    pea     ($00041142).l
+    pea     (ROM_BASE+$00041142).l
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$03B22C).l
     move.l  a4,-(sp)
-    pea     ($0004113E).l
+    pea     (ROM_BASE+$0004113E).l
     jsr     (a5)
     move.w  d3,d0
     ext.l   d0
@@ -166,12 +166,12 @@ ShowCharStats:                                                  ; $01B0CE
     move.b  $0001(a3),d1
     sub.l   d1,d0
     move.l  d0,-(sp)
-    pea     ($0004113A).l
+    pea     (ROM_BASE+$0004113A).l
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$03B22C).l
     lea     $0030(sp),sp
     move.l  a4,-(sp)
-    pea     ($00041136).l
+    pea     (ROM_BASE+$00041136).l
     jsr     (a5)
     move.w  d3,d0
     ext.l   d0
@@ -186,11 +186,11 @@ ShowCharStats:                                                  ; $01B0CE
     move.b  $0001(a3),d0
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
-    pea     ($00041132).l
+    pea     (ROM_BASE+$00041132).l
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$03B22C).l
     move.l  a4,-(sp)
-    pea     ($0004112E).l
+    pea     (ROM_BASE+$0004112E).l
     jsr     (a5)
     movem.l -$00a0(a6),d2-d5/a2-a5
     unlk    a6

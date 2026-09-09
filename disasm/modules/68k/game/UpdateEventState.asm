@@ -49,7 +49,7 @@ l_17dca:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00041038).l
+    pea     (ROM_BASE+$00041038).l
     jsr PrintfWide
     pea     ($0001).w
     pea     ($0003).w

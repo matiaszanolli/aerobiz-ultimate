@@ -12,7 +12,7 @@ InitInfoPanel:                                                  ; $0238F0
     move.w  d2,d0
     move.l  d0,-(sp)
     bsr.w ValidateMenuOption
-    pea     ($000700A8).l
+    pea     (ROM_BASE+$000700A8).l
     pea     ($000A).w
     pea     ($000C).w
     pea     ($0006).w

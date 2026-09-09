@@ -74,7 +74,7 @@ CharacterBrowser:                                                  ; $008A4A
     jsr     (ROM_BASE+$00538E).l
 ; GameCommand #$1B: place tile strip from $4DD9C (character list panel background)
 ; width=$09, height=$1E, col=$12, row=$01, layer 0
-    pea     ($0004DD9C).l
+    pea     (ROM_BASE+$0004DD9C).l
     pea     ($0009).w
     pea     ($001E).w
     pea     ($0012).w
@@ -84,7 +84,7 @@ CharacterBrowser:                                                  ; $008A4A
     jsr     (a3)
     lea     $002c(sp),sp
 ; LZ_Decompress: decompress character list panel graphics from ROM $4DFB8 to $FF1804
-    pea     ($0004DFB8).l
+    pea     (ROM_BASE+$0004DFB8).l
     move.l  a5,-(sp)
     jsr     (ROM_BASE+$003FEC).l
 ; VRAMBulkLoad: DMA transfer $02E1 tiles at index $000F from $FF1804 to VRAM
@@ -121,10 +121,10 @@ CharacterBrowser:                                                  ; $008A4A
 ; 16-tile wide x 32-tile high display region
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($000767BE).l
+    pea     (ROM_BASE+$000767BE).l
     jsr     (ROM_BASE+$005092).l
 ; LZ_Decompress: decompress character portrait from pointer at $9513C to $FF1804
-    move.l  ($0009513C).l,-(sp)
+    move.l  (ROM_BASE+$0009513C).l,-(sp)
     move.l  a5,-(sp)
     jsr     (ROM_BASE+$003FEC).l
 ; CmdPlaceTile2 ($0045E6): place portrait tile block (96 pixels wide, $0640 palette/flags)
@@ -136,7 +136,7 @@ CharacterBrowser:                                                  ; $008A4A
     lea     $0030(sp),sp
 ; GameCommand #$1B: place title bar tile strip from $70E58
 ; width=$0A, height=$08, col=$05, row=$0C (character name header area)
-    pea     ($00070E58).l
+    pea     (ROM_BASE+$00070E58).l
     pea     ($0008).w
     pea     ($000C).w
     pea     ($0005).w
@@ -147,7 +147,7 @@ CharacterBrowser:                                                  ; $008A4A
 ; d6 = currently highlighted character code (initially same as filter target d5)
     move.w  d5,d6
 ; PrintfNarrow ($03B246): display character name label using format string at $3E1AA
-    pea     ($0003E1AA).l
+    pea     (ROM_BASE+$0003E1AA).l
     jsr     (ROM_BASE+$03B246).l
 ; ReadInput ($01E1EC): check for any pending button presses (mode 0 = immediate)
     clr.l   -(sp)
@@ -208,7 +208,7 @@ CharacterBrowser:                                                  ; $008A4A
 ; DisplaySetup ($005092): reload character portrait panel (16x32 tile, from $767BE)
     pea     ($0010).w
     pea     ($0020).w
-    pea     ($000767BE).l
+    pea     (ROM_BASE+$000767BE).l
     jsr     (ROM_BASE+$005092).l
     lea     $000c(sp),sp
 ; Clear page_refresh_flag after refresh
@@ -223,7 +223,7 @@ CharacterBrowser:                                                  ; $008A4A
 ; $28 = 40: per-character slot in the detail panel table (panel for char d6)
     addi.l  #$28,d0
     move.l  d0,-(sp)
-    pea     ($000767DC).l
+    pea     (ROM_BASE+$000767DC).l
     jsr     (ROM_BASE+$005092).l
     lea     $000c(sp),sp
 ; Set d4=1 so next frame will reload the portrait panel (alternating display)

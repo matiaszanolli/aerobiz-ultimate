@@ -47,17 +47,17 @@ l_0e388:
     pea     ($0003).w
     pea     ($0001).w
     jsr     (a4)
-    pea     ($0003E8EE).l
+    pea     (ROM_BASE+$0003E8EE).l
     jsr     (a3)
     pea     ($0003).w
     pea     ($000C).w
     jsr     (a4)
-    pea     ($0003E8E4).l
+    pea     (ROM_BASE+$0003E8E4).l
     jsr     (a3)
     pea     ($0003).w
     pea     ($0018).w
     jsr     (a4)
-    pea     ($0003E8DE).l
+    pea     (ROM_BASE+$0003E8DE).l
     jsr     (a3)
     lea     $24(a7), a7
     clr.w   d3
@@ -83,7 +83,7 @@ l_0e402:
     lsl.w   #$2, d0
     movea.l  #$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003E8DA).l
+    pea     (ROM_BASE+$0003E8DA).l
     jsr     (a3)
     move.w  d2, d0
     ext.l   d0
@@ -95,7 +95,7 @@ l_0e402:
     lsl.w   #$2, d0
     movea.l  #$0005E2DE,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003E8D6).l
+    pea     (ROM_BASE+$0003E8D6).l
     jsr     (a3)
     move.w  d2, d0
     ext.l   d0
@@ -108,7 +108,7 @@ l_0e402:
     add.l   d0, d0
     add.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($0003E8D0).l
+    pea     (ROM_BASE+$0003E8D0).l
     jsr     (a3)
     lea     $18(a7), a7
     addq.w  #$1, d4

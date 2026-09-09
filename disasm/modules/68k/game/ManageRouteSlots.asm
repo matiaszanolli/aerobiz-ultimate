@@ -106,7 +106,7 @@ ManageRouteSlots:                                                  ; $0112EE
     bge.b   .l113e8                   ; yes: skip to ShowPlayerInfo path
 
     ; scenario_type 0-3: build intro dialog string from ROM prefix + per-scenario suffix
-    movea.l ($00047992).l,a0          ; $47992: ROM ptr to dialog prefix string
+    movea.l (ROM_BASE+$00047992).l,a0 ; $47992: ROM ptr to dialog prefix string
     lea     -$0094(a6),a1             ; a1 = string work buffer
 .l113ac:                                                ; $0113AC
     move.b  (a0)+,(a1)+               ; copy bytes until null terminator (strcpy idiom)
@@ -207,7 +207,7 @@ ManageRouteSlots:                                                  ; $0112EE
     move.w  d2,d0
     move.l  d0,-(sp)                  ; row = d2 (row cursor)
     jsr     (ROM_BASE+$005A04).l      ; jsr DrawBox ($005A04)
-    pea     ($0003F1B0).l             ; ROM: route detail text format string at $03F1B0
+    pea     (ROM_BASE+$0003F1B0).l    ; ROM: route detail text format string at $03F1B0
     jsr     (ROM_BASE+$03B246).l      ; jsr PrintfNarrow ($03B246): format route detail
     lea     $0030(sp),sp
     ; ShowRouteDetailsDialog: show full route info for slot d3, this player
@@ -427,7 +427,7 @@ ManageRouteSlots:                                                  ; $0112EE
     lsl.w   #$2,d0                    ; * 4 = longword index
     movea.l #$00047800,a0            ; $47800: ROM table of route format string ptrs (by slot type)
     move.l  (a0,d0.w),-(sp)          ; push route-type format string
-    move.l  ($00047996).l,-(sp)      ; $47996: ROM ptr to revenue/profit format string
+    move.l  (ROM_BASE+$00047996).l,-(sp) ; $47996: ROM ptr to revenue/profit format string
     pea     -$0094(a6)                ; string work buffer
     jsr     (ROM_BASE+$03B22C).l      ; jsr sprintf ($03B22C): format route info into buffer
     ; ShowTextDialog: display formatted route info as a text dialog

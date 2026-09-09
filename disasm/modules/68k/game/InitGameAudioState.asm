@@ -16,7 +16,7 @@ InitGameAudioState:
     clr.l   -(a7)
     pea     ($00FFBDAC).l
     jsr MemFillByte
-    pea     ($0000625C).l
+    pea     (ROM_BASE+$0000625C).l
     pea     ($0001).w
     pea     ($0022).w
     jsr GameCommand

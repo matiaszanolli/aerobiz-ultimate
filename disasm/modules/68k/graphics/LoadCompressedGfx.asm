@@ -16,12 +16,12 @@ LoadCompressedGfx:                                                  ; $005FF6
     bne.b   .l602c
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($0007675E).l
+    pea     (ROM_BASE+$0007675E).l
     bra.b   .l603a
 .l602c:                                                 ; $00602C
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($0007673E).l
+    pea     (ROM_BASE+$0007673E).l
 .l603a:                                                 ; $00603A
     jsr     (ROM_BASE+$005092).l
     moveq   #$0,d0
@@ -36,7 +36,7 @@ LoadCompressedGfx:                                                  ; $005FF6
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$0045E6).l
     lea     $0020(sp),sp
-    pea     ($000700A8).l
+    pea     (ROM_BASE+$000700A8).l
     pea     ($000A).w
     pea     ($000C).w
     moveq   #$0,d0

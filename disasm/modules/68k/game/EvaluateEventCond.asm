@@ -10,7 +10,7 @@ EvaluateEventCond:
     clr.l   -(a7)
     pea     ($0001).w
     clr.l   -(a7)
-    move.l  ($00047A94).l, -(a7)
+    move.l  (ROM_BASE+$00047A94).l, -(a7)
     move.w  (a3), d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -54,7 +54,7 @@ l_17bd4:
     clr.l   -(a7)
     pea     ($0001).w
     clr.l   -(a7)
-    move.l  ($00047A98).l, -(a7)
+    move.l  (ROM_BASE+$00047A98).l, -(a7)
     move.w  (a3), d0
     ext.l   d0
     move.l  d0, -(a7)

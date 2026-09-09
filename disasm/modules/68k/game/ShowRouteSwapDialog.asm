@@ -48,7 +48,7 @@ ShowRouteSwapDialog:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($00048324).l, -(a7)
+    move.l  (ROM_BASE+$00048324).l, -(a7)
     move.w  d2, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -62,13 +62,13 @@ ShowRouteSwapDialog:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($00048328).l, -(a7)
+    move.l  (ROM_BASE+$00048328).l, -(a7)
     move.l  a2, -(a7)
     jsr sprintf
     lea     $c(a7), a7
     bra.b   l_28530
 l_2852a:
-    movea.l ($0004832C).l, a2
+    movea.l (ROM_BASE+$0004832C).l, a2
 l_28530:
     clr.l   -(a7)
     pea     ($0001).w

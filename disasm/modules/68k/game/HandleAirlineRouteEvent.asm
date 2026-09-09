@@ -36,12 +36,12 @@ l_22acc:
     move.l  (a0,d0.w), -(a7)
     cmpi.b  #$3b, $2(a2)
     beq.b   l_22af2
-    pea     ($00047FB8).l
+    pea     (ROM_BASE+$00047FB8).l
     bra.b   l_22af8
 l_22af2:
-    pea     ($00047FC2).l
+    pea     (ROM_BASE+$00047FC2).l
 l_22af8:
-    pea     ($00047F70).l
+    pea     (ROM_BASE+$00047F70).l
     pea     -$80(a6)
     jsr sprintf
     pea     -$80(a6)

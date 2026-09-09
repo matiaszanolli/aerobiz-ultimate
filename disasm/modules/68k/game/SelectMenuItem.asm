@@ -36,7 +36,7 @@ LoadSlotGraphics:                                                  ; $009F88
     move.l  $0014(sp),d5
     cmpi.w  #$1,d2
     bne.b   .l9fcc
-    pea     ($00070F18).l
+    pea     (ROM_BASE+$00070F18).l
     pea     ($0002).w
     pea     ($0008).w
     move.w  d4,d0

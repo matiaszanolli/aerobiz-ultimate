@@ -183,7 +183,7 @@ l_137fa:
     ; row = d2 + 2 = 2
     jsr SetTextCursor
     ; print label for "full bonus" value at $3F662
-    pea     ($0003F662).l
+    pea     (ROM_BASE+$0003F662).l
     ; $3F662 = ROM format string for full-value label (e.g. "Full: %d")
     jsr     (a5)
     ; position cursor at (d3+3, d2+$14) for bonus value display
@@ -199,7 +199,7 @@ l_137fa:
     jsr SetTextCursor
     move.l  -$c(a6), -(a7)
     ; local[-$0c] = bonus * 10 = full display value
-    pea     ($0003F65C).l
+    pea     (ROM_BASE+$0003F65C).l
     ; $3F65C = ROM format string for full value number (e.g. "%d")
     jsr     (a5)
     ; PrintfWide: print the full bonus value
@@ -215,7 +215,7 @@ l_137fa:
     move.l  d0, -(a7)
     ; row = d2 + 2 = 2
     jsr SetTextCursor
-    pea     ($0003F64A).l
+    pea     (ROM_BASE+$0003F64A).l
     ; $3F64A = ROM format string for half-value label (e.g. "Half: %d")
     jsr     (a5)
     ; position cursor at (d3+$b, d2+2) for quarter-value label
@@ -231,7 +231,7 @@ l_137fa:
     ; row = d2 + 2 = 2
     jsr SetTextCursor
     lea     $30(a7), a7
-    pea     ($0003F636).l
+    pea     (ROM_BASE+$0003F636).l
     ; $3F636 = ROM format string for quarter/lowest-tier value label
     jsr     (a5)
     ; PrintfWide: print the lowest-tier bonus label
@@ -244,7 +244,7 @@ l_137fa:
     ; $12(a6) = route slot index
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($000479D2).l, -(a7)
+    move.l  (ROM_BASE+$000479D2).l, -(a7)
     ; $479D2 = ROM dialog table pointer for character description text
     move.w  d7, d0
     ext.l   d0
@@ -336,7 +336,7 @@ l_13982:
     addq.l  #$2, d0
     move.l  d0, -(a7)
     jsr SetTextCursor
-    pea     ($0003F624).l
+    pea     (ROM_BASE+$0003F624).l
     ; $3F624 = refreshed format string for full-value label (redraw variant)
     jsr     (a5)
     ; re-print full-value number at (d3+3, d2+$14)
@@ -351,7 +351,7 @@ l_13982:
     jsr SetTextCursor
     move.l  -$c(a6), -(a7)
     ; local[-$0c] = bonus * 10 = full display value
-    pea     ($0003F61E).l
+    pea     (ROM_BASE+$0003F61E).l
     ; $3F61E = refreshed format string for full-value number (redraw variant)
     jsr     (a5)
     ; re-print half-value label at (d3+7, d2+2)
@@ -365,7 +365,7 @@ l_13982:
     move.l  d0, -(a7)
     jsr SetTextCursor
     lea     $30(a7), a7
-    pea     ($0003F60C).l
+    pea     (ROM_BASE+$0003F60C).l
     ; $3F60C = refreshed half-value label format string
     jsr     (a5)
     ; re-print quarter-value label at (d3+$b, d2+2)
@@ -378,7 +378,7 @@ l_13982:
     addq.l  #$2, d0
     move.l  d0, -(a7)
     jsr SetTextCursor
-    pea     ($0003F5F8).l
+    pea     (ROM_BASE+$0003F5F8).l
     ; $3F5F8 = refreshed quarter-value label format string
     jsr     (a5)
     ; re-display character description dialog after panel redraw
@@ -388,7 +388,7 @@ l_13982:
     move.w  $12(a6), d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($000479D2).l, -(a7)
+    move.l  (ROM_BASE+$000479D2).l, -(a7)
     move.w  d7, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -429,7 +429,7 @@ l_13ac8:
     ; d4 * 4 = offset into local array: 0→-$14, 1→-$10, 2→-$0c, 3→-$08, 4→-$04
     move.l  -$14(a6, d0.w), -(a7)
     ; push: local[-$14 + d4*4] = bonus value for the selected tier
-    pea     ($0003F5F2).l
+    pea     (ROM_BASE+$0003F5F2).l
     ; $3F5F2 = format string for the selected-tier value display
     jsr     (a5)
     ; PrintfWide: print the tier value
@@ -605,7 +605,7 @@ l_13c12:
     move.w  $12(a6), d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($000479DE).l, -(a7)
+    move.l  (ROM_BASE+$000479DE).l, -(a7)
     ; $479DE = ROM dialog pointer for "insufficient funds" text
     move.w  d7, d0
     ext.l   d0

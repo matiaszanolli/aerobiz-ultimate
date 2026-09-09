@@ -32,7 +32,7 @@ l_26a5c:
     pea     ($0013).w
     jsr SetTextCursor
     move.l  d2, -(a7)
-    pea     ($00041572).l
+    pea     (ROM_BASE+$00041572).l
     jsr PrintfNarrow
     lea     $10(a7), a7
 l_26a94:

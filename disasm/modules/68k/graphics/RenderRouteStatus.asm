@@ -23,7 +23,7 @@ l_3cde0:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0005FD36).l
+    pea     (ROM_BASE+$0005FD36).l
     pea     ($0009).w
     clr.l   -(a7)
     pea     ($000F).w

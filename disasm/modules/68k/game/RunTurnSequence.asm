@@ -29,7 +29,7 @@ RunTurnSequence:                                                  ; $029ABC
 
 ; --- Phase: display initialization -- clear screen, run entry animation ---
     jsr     (ROM_BASE+$01E398).l        ; jsr $01E398  -- screen/display init
-    pea     ($0004C68E).l              ; ptr into GameStatusText (banner string A)
+    pea     (ROM_BASE+$0004C68E).l     ; ptr into GameStatusText (banner string A)
     pea     ($0002).w
     pea     ($0002).w
     pea     ($000B).w
@@ -37,7 +37,7 @@ RunTurnSequence:                                                  ; $029ABC
     clr.l   -(sp)
     pea     ($001B).w
     jsr     (a3)                        ; GameCommand $1B: render text panel (row=3, col=$B, ...)
-    pea     ($0004C696).l              ; ptr into GameStatusText (banner string B)
+    pea     (ROM_BASE+$0004C696).l     ; ptr into GameStatusText (banner string B)
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$003FEC).l        ; jsr $003FEC  -- load/decompress resource
     lea     $0024(sp),sp
@@ -46,7 +46,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($0004).w
     pea     ($00B2).w
     jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$B2, y=4)
-    pea     ($0004C610).l              ; ptr into GameStatusText (banner string C)
+    pea     (ROM_BASE+$0004C610).l     ; ptr into GameStatusText (banner string C)
     pea     ($0002).w
     pea     ($0002).w
     pea     ($000B).w
@@ -55,7 +55,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($001B).w
     jsr     (a3)                        ; GameCommand $1B: render text panel (row=$C, col=$B)
     lea     $002c(sp),sp
-    pea     ($0004C618).l              ; ptr into GameStatusText (banner string D)
+    pea     (ROM_BASE+$0004C618).l     ; ptr into GameStatusText (banner string D)
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     clr.l   -(sp)
@@ -64,7 +64,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($00AE).w
     jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$AE, y=4)
     lea     $0018(sp),sp
-    pea     ($0004C596).l              ; ptr into GameStatusText (header panel string)
+    pea     (ROM_BASE+$0004C596).l     ; ptr into GameStatusText (header panel string)
     pea     ($0002).w
     pea     ($0002).w
     pea     ($000B).w
@@ -72,7 +72,7 @@ RunTurnSequence:                                                  ; $029ABC
     clr.l   -(sp)
     pea     ($001B).w
     jsr     (a3)                        ; GameCommand $1B: render text panel (row=$15, col=$B)
-    pea     ($0004C59E).l              ; ptr into GameStatusText
+    pea     (ROM_BASE+$0004C59E).l     ; ptr into GameStatusText
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp
@@ -83,7 +83,7 @@ RunTurnSequence:                                                  ; $029ABC
     jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$AA, y=4)
 
 ; --- Phase: draw route map and city connection panels ---
-    pea     ($00072A6C).l              ; route map tile data A (first city column)
+    pea     (ROM_BASE+$00072A6C).l     ; route map tile data A (first city column)
     pea     ($0002).w
     pea     ($0007).w
     pea     ($0010).w
@@ -92,7 +92,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($001B).w
     jsr     (a3)                        ; GameCommand $1B: render route panel row 0 (col=4)
     lea     $002c(sp),sp
-    pea     ($00072A88).l              ; route map tile data B (second city column)
+    pea     (ROM_BASE+$00072A88).l     ; route map tile data B (second city column)
     pea     ($0002).w
     pea     ($0007).w
     pea     ($0010).w
@@ -101,7 +101,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($001B).w
     jsr     (a3)                        ; GameCommand $1B: render route panel row 1 (col=$D)
     lea     $001c(sp),sp
-    pea     ($00072AA4).l              ; route map tile data C (third city column)
+    pea     (ROM_BASE+$00072AA4).l     ; route map tile data C (third city column)
     pea     ($0002).w
     pea     ($0007).w
     pea     ($0010).w
@@ -113,9 +113,9 @@ RunTurnSequence:                                                  ; $029ABC
 ; Draw world-map background tile block ($76ADE data)
     pea     ($0010).w                   ; tile count
     pea     ($0030).w                   ; VRAM destination
-    pea     ($00076ADE).l              ; world map tile graphics
+    pea     (ROM_BASE+$00076ADE).l     ; world map tile graphics
     jsr     (a5)                        ; DisplaySetup: load/display tile block
-    move.l  ($000A1B30).l,-(sp)        ; ptr from ROM ptr table at $0A1B30 (player-portrait data)
+    move.l  (ROM_BASE+$000A1B30).l,-(sp) ; ptr from ROM ptr table at $0A1B30 (player-portrait data)
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$003FEC).l        ; jsr $003FEC  -- load/decompress player portrait
     lea     $0030(sp),sp
@@ -123,7 +123,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($005B).w
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$004668).l        ; jsr $004668  -- blit portrait tile (x=$5B, y=$48)
-    pea     ($0007267C).l              ; city/route connection line graphics
+    pea     (ROM_BASE+$0007267C).l     ; city/route connection line graphics
     pea     ($0012).w
     pea     ($001C).w
     pea     ($0001).w
@@ -134,9 +134,9 @@ RunTurnSequence:                                                  ; $029ABC
     lea     $0028(sp),sp
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($00076B1E).l              ; second world-map overlay graphics
+    pea     (ROM_BASE+$00076B1E).l     ; second world-map overlay graphics
     jsr     (a5)                        ; DisplaySetup
-    pea     ($0004BD5A).l              ; route label string A
+    pea     (ROM_BASE+$0004BD5A).l     ; route label string A
     pea     ($0005).w
     pea     ($0006).w
     pea     ($0005).w
@@ -147,11 +147,11 @@ RunTurnSequence:                                                  ; $029ABC
     lea     $0028(sp),sp
     clr.l   -(sp)
     clr.l   -(sp)
-    pea     ($0004BD96).l              ; route summary text (quarterly revenue/profit data)
+    pea     (ROM_BASE+$0004BD96).l     ; route summary text (quarterly revenue/profit data)
     pea     ($001E).w
     pea     ($003D).w
     jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$3D, y=$1E)
-    move.l  ($000A1B60).l,-(sp)        ; ptr from ROM ptr table (second player resource)
+    move.l  (ROM_BASE+$000A1B60).l,-(sp) ; ptr from ROM ptr table (second player resource)
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     pea     ($001E).w
@@ -159,7 +159,7 @@ RunTurnSequence:                                                  ; $029ABC
     move.l  a4,-(sp)
     jsr     (ROM_BASE+$004668).l        ; jsr $004668  -- blit tile (x=1, y=$1E)
     lea     $0028(sp),sp
-    pea     ($000732DC).l              ; route slot label B
+    pea     (ROM_BASE+$000732DC).l     ; route slot label B
     pea     ($0005).w
     pea     ($0006).w
     pea     ($0005).w
@@ -168,7 +168,7 @@ RunTurnSequence:                                                  ; $029ABC
     pea     ($001B).w
     jsr     (a3)                        ; GameCommand $1B: render route label (row=$D, col=5)
     lea     $001c(sp),sp
-    pea     ($0004C178).l              ; route slot label C
+    pea     (ROM_BASE+$0004C178).l     ; route slot label C
     pea     ($0005).w
     pea     ($0006).w
     pea     ($0005).w
@@ -178,19 +178,19 @@ RunTurnSequence:                                                  ; $029ABC
     jsr     (a3)                        ; GameCommand $1B: render route label (row=$16, col=5)
     clr.l   -(sp)
     clr.l   -(sp)
-    pea     ($0004C1B4).l              ; route slot summary text
+    pea     (ROM_BASE+$0004C1B4).l     ; route slot summary text
     pea     ($001E).w
     pea     ($001F).w
     jsr     (ROM_BASE+$01D568).l        ; jsr $01D568  -- display blit (x=$1F, y=$1E)
     lea     $0030(sp),sp
 
 ; Draw stat-panel graphics tiles ($4C734 and $4C854)
-    pea     ($0004C734).l              ; stat panel graphic A (VRAM tile block)
+    pea     (ROM_BASE+$0004C734).l     ; stat panel graphic A (VRAM tile block)
     pea     ($0003).w
     pea     ($0003).w
     pea     ($0640).w                  ; $0640 = VRAM destination word
     jsr     (ROM_BASE+$01D7BE).l        ; jsr $01D7BE  -- DMA/blit to VRAM at $0640
-    pea     ($0004C854).l              ; stat panel graphic B
+    pea     (ROM_BASE+$0004C854).l     ; stat panel graphic B
     pea     ($0003).w
     pea     ($0003).w
     pea     ($0649).w                  ; $0649 = VRAM destination word (9 tiles after $0640)
@@ -236,7 +236,7 @@ RunTurnSequence:                                                  ; $029ABC
     clr.l   -(sp)
     clr.l   -(sp)
     clr.l   -(sp)
-    pea     ($000420FE).l              ; event string ptr in ROM (event check message)
+    pea     (ROM_BASE+$000420FE).l     ; event string ptr in ROM (event check message)
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)                   ; arg: player index
@@ -248,11 +248,11 @@ RunTurnSequence:                                                  ; $029ABC
 ; Refresh both world-map tile blocks each iteration
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($00076ADE).l
+    pea     (ROM_BASE+$00076ADE).l
     jsr     (a5)                        ; refresh map tile block A
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0004C158).l
+    pea     (ROM_BASE+$0004C158).l
     jsr     (a5)                        ; refresh map tile block B
     lea     $0018(sp),sp
 

@@ -9,7 +9,7 @@ RenderStatusScreenS2:
     movea.l  #$0003AB2C,a5
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($0004A598).l
+    pea     (ROM_BASE+$0004A598).l
     jsr DisplaySetup
     pea     ($0013).w
     pea     ($0018).w
@@ -23,7 +23,7 @@ RenderStatusScreenS2:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($00042772).l
+    pea     (ROM_BASE+$00042772).l
     jsr     (a4)
     lea     $2c(a7), a7
     move.w  d3, d0
@@ -47,7 +47,7 @@ RenderStatusScreenS2:
     jsr     (a5)
     cmpi.w  #$2, d2
     bne.b   .l2b808
-    pea     ($00042762).l
+    pea     (ROM_BASE+$00042762).l
     bra.b   .l2b816
 .l2b808:
     move.w  d2, d0
@@ -55,7 +55,7 @@ RenderStatusScreenS2:
     movea.l  #$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
 .l2b816:
-    pea     ($0004276E).l
+    pea     (ROM_BASE+$0004276E).l
     jsr     (a4)
     moveq   #$0,d0
     move.w  d2, d0
@@ -70,12 +70,12 @@ RenderStatusScreenS2:
     moveq   #$0,d0
     move.b  (a3), d0
     move.l  d0, -(a7)
-    pea     ($0004275E).l
+    pea     (ROM_BASE+$0004275E).l
     jsr     (a4)
     addq.l  #$8, a7
     bra.b   .l2b852
 .l2b848:
-    pea     ($0004275A).l
+    pea     (ROM_BASE+$0004275A).l
     jsr     (a4)
     addq.l  #$4, a7
 .l2b852:

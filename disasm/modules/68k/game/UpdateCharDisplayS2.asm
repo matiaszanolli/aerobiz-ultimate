@@ -104,7 +104,7 @@ UpdateCharDisplayS2:
     moveq   #$0,d0
     move.w  d3, d0
     move.l  d0, -(a7)                               ; unit_cost value
-    move.l  ($000484CE).l, -(a7)                   ; format string pointer (score format)
+    move.l  (ROM_BASE+$000484CE).l, -(a7)          ; format string pointer (score format)
     move.l  a5, -(a7)                               ; output buffer
     jsr sprintf
     ; --- Show score panel (ShowCharInfoPageS2): display formatted score, 3 blank lines ---
@@ -149,7 +149,7 @@ UpdateCharDisplayS2:
     moveq   #$0,d0
     move.w  (a4), d0                                ; count again
     move.l  d0, -(a7)
-    move.l  ($000484D2).l, -(a7)                   ; format string (cost confirmation fmt)
+    move.l  (ROM_BASE+$000484D2).l, -(a7)          ; format string (cost confirmation fmt)
     move.l  a5, -(a7)
     jsr sprintf                                     ; format "Count x Cost = Total"
     ; --- Show confirmation panel with total cost ---
@@ -226,10 +226,10 @@ UpdateCharDisplayS2:
     move.w  (a4), d0                                ; count
     subq.l  #$1, d0                                 ; count - 1
     beq.b   .l2eb14                                 ; count == 1 -> singular string
-    pea     ($000446D2).l                           ; plural format string
+    pea     (ROM_BASE+$000446D2).l                  ; plural format string
     bra.b   .l2eb1a
 .l2eb14:
-    pea     ($000446D0).l                           ; singular format string
+    pea     (ROM_BASE+$000446D0).l                  ; singular format string
 .l2eb1a:
     ; --- Look up a category string based on char slot index ---
     movea.l  #$00FF1278,a0                          ; character type lookup table ($FF1278)
@@ -241,7 +241,7 @@ UpdateCharDisplayS2:
     moveq   #$0,d0
     move.w  (a4), d0                                ; count
     move.l  d0, -(a7)
-    move.l  ($000484D6).l, -(a7)                   ; format string (result panel fmt)
+    move.l  (ROM_BASE+$000484D6).l, -(a7)          ; format string (result panel fmt)
     move.l  a5, -(a7)
     jsr sprintf                                     ; format result message
     ; --- Show final result panel ---

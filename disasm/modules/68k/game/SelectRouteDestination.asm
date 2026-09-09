@@ -14,7 +14,7 @@ l_0da9c:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($00047784).l, -(a7)
+    move.l  (ROM_BASE+$00047784).l, -(a7)
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -59,7 +59,7 @@ l_0da9c:
     move.w  d4, d0
     ext.l   d0
     move.l  d0, -(a7)
-    move.l  ($000477AC).l, -(a7)
+    move.l  (ROM_BASE+$000477AC).l, -(a7)
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)

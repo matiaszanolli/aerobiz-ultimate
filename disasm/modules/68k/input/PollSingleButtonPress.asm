@@ -7,7 +7,7 @@ PollSingleButtonPress:
     clr.l   -(a7)
     pea     ($0001).w
     clr.l   -(a7)
-    pea     ($0003E5F6).l
+    pea     (ROM_BASE+$0003E5F6).l
     clr.l   -(a7)
     jsr (DisplayMessageWithParams,PC)
     nop

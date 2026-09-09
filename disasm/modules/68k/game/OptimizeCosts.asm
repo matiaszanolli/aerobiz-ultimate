@@ -32,7 +32,7 @@ l_298da:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($000420E6).l
+    pea     (ROM_BASE+$000420E6).l
     move.l  a5, -(a7)
     jsr sprintf
     pea     ($0064).w
@@ -83,7 +83,7 @@ l_299b2:
     pea     ($0001).w
     jsr DrawBox
     move.l  a5, -(a7)
-    pea     ($000420D2).l
+    pea     (ROM_BASE+$000420D2).l
     jsr PrintfWide
     pea     ($0001).w
     pea     ($0003).w
@@ -129,7 +129,7 @@ l_29a50:
     pea     ($0001).w
     jsr DrawBox
     move.l  a5, -(a7)
-    pea     ($000420C6).l
+    pea     (ROM_BASE+$000420C6).l
     jsr PrintfWide
     pea     ($0001).w
     pea     ($0003).w

@@ -24,12 +24,12 @@ SelectCharRelation:
     pea     ($0002).w
     pea     ($0001).w
     jsr     (a4)
-    pea     ($0003F5EC).l
+    pea     (ROM_BASE+$0003F5EC).l
     jsr     (a3)
     pea     ($0002).w
     pea     ($0011).w
     jsr     (a4)
-    pea     ($0003F5DC).l
+    pea     (ROM_BASE+$0003F5DC).l
     jsr     (a3)
     lea     $30(a7), a7
     movea.l  #$00FF9A10,a2
@@ -79,20 +79,20 @@ l_13568:
     mulu.w  #$a, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F5D6).l
+    pea     (ROM_BASE+$0003F5D6).l
     jsr     (a3)
     lea     $c(a7), a7
     bra.b   l_13600
 l_135e0:
     cmpi.w  #$4, d3
     bne.b   l_135ee
-    pea     ($0003F5CA).l
+    pea     (ROM_BASE+$0003F5CA).l
     bra.b   l_135fc
 l_135ee:
-    pea     ($0003F5C2).l
+    pea     (ROM_BASE+$0003F5C2).l
     bra.b   l_135fc
 l_135f6:
-    pea     ($0003F5B4).l
+    pea     (ROM_BASE+$0003F5B4).l
 l_135fc:
     jsr     (a3)
     addq.l  #$4, a7

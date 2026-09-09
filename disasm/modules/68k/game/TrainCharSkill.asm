@@ -134,7 +134,7 @@ l_356c4:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($00044938).l
+    pea     (ROM_BASE+$00044938).l
     jsr PrintfWide
     pea     ($001E).w
     jsr PollInputChange

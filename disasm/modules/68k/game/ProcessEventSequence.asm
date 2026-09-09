@@ -23,7 +23,7 @@ l_17b2a:
     lsl.w   #$2, d0
     movea.l  #$00047A88,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($0003F9B0).l
+    pea     (ROM_BASE+$0003F9B0).l
     jsr PrintfWide
     lea     $10(a7), a7
     addq.w  #$1, d2

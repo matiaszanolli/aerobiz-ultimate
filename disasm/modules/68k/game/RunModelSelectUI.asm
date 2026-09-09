@@ -53,7 +53,7 @@ RunModelSelectUI:
     ext.l   d0
     addq.l  #$1, d0             ; display player number 1-based (player_index + 1)
     move.l  d0, -(a7)
-    pea     ($0003E5D2).l       ; ROM format string: player label template
+    pea     (ROM_BASE+$0003E5D2).l ; ROM format string: player label template
     move.l  (a2), -(a7)         ; first name string pointer from table at $475E8
     move.l  a4, -(a7)           ; output buffer
     jsr sprintf                  ; build formatted string into a4
@@ -104,7 +104,7 @@ RunModelSelectUI:
     ext.l   d0
     addq.l  #$1, d0
     move.l  d0, -(a7)
-    pea     ($0003E5CC).l       ; ROM format string: destination/city label template
+    pea     (ROM_BASE+$0003E5CC).l ; ROM format string: destination/city label template
     move.l  (a2), -(a7)
     move.l  a4, -(a7)
     jsr sprintf
@@ -161,7 +161,7 @@ RunModelSelectUI:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0      ; ROM table: city name string pointers (word-indexed)
     move.l  (a0,d0.w), -(a7)   ; push city name string pointer
-    move.l  ($000475F0).l, -(a7) ; push secondary format arg from ROM pointer table
+    move.l  (ROM_BASE+$000475F0).l, -(a7) ; push secondary format arg from ROM pointer table
     move.l  a4, -(a7)           ; output buffer
     jsr sprintf                  ; format: "Do you want to go to <city>?"
     clr.l   -(a7)
@@ -208,7 +208,7 @@ RunModelSelectUI:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0      ; city name pointer table
     move.l  (a0,d0.w), -(a7)
-    move.l  ($000475FC).l, -(a7) ; "already owned" format string pointer
+    move.l  (ROM_BASE+$000475FC).l, -(a7) ; "already owned" format string pointer
     move.l  a4, -(a7)
     jsr sprintf
     pea     ($0001).w
@@ -245,7 +245,7 @@ RunModelSelectUI:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    move.l  ($000475EC).l, -(a7) ; "alliance city" format string pointer
+    move.l  (ROM_BASE+$000475EC).l, -(a7) ; "alliance city" format string pointer
     move.l  a4, -(a7)
     jsr sprintf
     pea     ($0001).w

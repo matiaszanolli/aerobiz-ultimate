@@ -100,7 +100,7 @@ l_1f02c:
     lsl.w   #$4, d0
     movea.l  #$00FF00A8,a0
     pea     (a0, d0.w)
-    pea     ($000411EE).l
+    pea     (ROM_BASE+$000411EE).l
     jsr     (a2)
     lea     $30(a7), a7
     addq.w  #$1, d2
@@ -119,12 +119,12 @@ l_1f0a2:
     lsl.w   #$2, d0
     movea.l  #$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($000411D6).l
+    pea     (ROM_BASE+$000411D6).l
     jsr     (a2)
     addq.l  #$8, a7
     bra.b   l_1f0e6
 l_1f0dc:
-    pea     ($000411AA).l
+    pea     (ROM_BASE+$000411AA).l
     jsr     (a2)
     addq.l  #$4, a7
 l_1f0e6:

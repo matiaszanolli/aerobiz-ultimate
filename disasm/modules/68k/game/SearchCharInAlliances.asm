@@ -293,7 +293,7 @@ SearchCharInAlliances:
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; ROM format string at $44768: "CharName negotiates for CityName" template
-    pea     ($00044768).l
+    pea     (ROM_BASE+$00044768).l
     pea     -$15c(a6)
     jsr sprintf
     ; Format secondary text line using dialog index d3 (which negotiation line 0 or 1)
@@ -349,7 +349,7 @@ SearchCharInAlliances:
     ; Alliance failed: show a rejection/no-deal dialog text
     ; $47B90 = pointer to failure dialog text
     clr.l   -(a7)
-    move.l  ($00047B90).l, -(a7)
+    move.l  (ROM_BASE+$00047B90).l, -(a7)
     ; Random variant 0..3 of the failure message
     pea     ($0003).w
     clr.l   -(a7)

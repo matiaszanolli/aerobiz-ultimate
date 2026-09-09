@@ -46,7 +46,7 @@ LoadScenarioState:
     jsr     (a3)
     pea     ($0010).w
     clr.l   -(a7)
-    pea     ($0007651E).l
+    pea     (ROM_BASE+$0007651E).l
     jsr     (a5)
     lea     $30(a7), a7
     jsr ResourceUnload

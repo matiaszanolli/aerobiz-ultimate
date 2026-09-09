@@ -21,7 +21,7 @@ UpdateSpritePos:
     lea     $2c(a7), a7
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($000767DE).l
+    pea     (ROM_BASE+$000767DE).l
     jsr DisplaySetup
     lea     $c(a7), a7
     move.w  #$640, d4
@@ -90,7 +90,7 @@ l_13dd4:
     move.w  (a3), d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F674).l
+    pea     (ROM_BASE+$0003F674).l
     jsr PrintfNarrow
     lea     $10(a7), a7
     add.w   (a3), d6

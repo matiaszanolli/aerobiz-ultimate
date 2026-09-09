@@ -50,11 +50,11 @@ ShowGameStatus:                                                  ; $0271C6
     ; Block 4: height=$10 (16), width=$30 (48), data = ROM layout at $76A9E
     pea     ($0010).w               ; height = $10 = 16
     pea     ($0030).w               ; width  = $30 = 48
-    pea     ($00076A9E).l           ; ROM: display tile-layout descriptor for game status BG
+    pea     (ROM_BASE+$00076A9E).l  ; ROM: display tile-layout descriptor for game status BG
     jsr     (ROM_BASE+$005092).l    ; jsr DisplaySetup ($005092)
     lea     $0030(sp),sp            ; clean up 12 longwords
     ; LZ decompress top banner graphic and place into VRAM
-    move.l  ($000A1B68).l,-(sp)     ; ROM compressed data ptr from pointer table at $A1B68
+    move.l  (ROM_BASE+$000A1B68).l,-(sp) ; ROM compressed data ptr from pointer table at $A1B68
     pea     ($00FF1804).l           ; dest = save_buf_base ($FF1804): staging buffer
     jsr     (ROM_BASE+$003FEC).l    ; jsr LZ_Decompress ($003FEC): decompress banner graphic
     ; CmdPlaceTile: place the banner tiles at row $15, attribute word $030F
@@ -63,7 +63,7 @@ ShowGameStatus:                                                  ; $0271C6
     pea     ($00FF1804).l           ; src = decompressed tile data in staging buffer
     jsr     (ROM_BASE+$004668).l    ; jsr CmdPlaceTile ($004668): DMA tile data to VRAM
     ; GameCommand #$1B: draw the status-screen border box
-    pea     ($00073378).l           ; ROM: border tile pattern for status screen frame
+    pea     (ROM_BASE+$00073378).l  ; ROM: border tile pattern for status screen frame
     pea     ($0002).w               ; box height = 2
     pea     ($001E).w               ; box width  = $1E = 30
     pea     ($0001).w               ; arg
@@ -90,7 +90,7 @@ ShowGameStatus:                                                  ; $0271C6
     moveq   #$0,d0
     move.w  d2,d0                   ; d0 = tile base index
     move.l  d0,-(sp)               ; numeric arg for title format
-    pea     ($00041598).l           ; ROM: "Game Status" screen title format string
+    pea     (ROM_BASE+$00041598).l  ; ROM: "Game Status" screen title format string
     jsr     (ROM_BASE+$03B270).l    ; jsr PrintfWide ($03B270)
     lea     $0010(sp),sp            ; clean up 4 longwords
     ; --- Phase: City Column Header Loop (7 city columns across the top) ---
@@ -245,7 +245,7 @@ ShowGameStatus:                                                  ; $0271C6
     jsr     (ROM_BASE+$03AB2C).l    ; jsr SetTextCursor ($03AB2C)
     ; PrintfNarrow: render the rank value (city count) from this player's slot record
     move.l  (a4),-(sp)             ; city-slot value (rank or city count) from $FF0130 record
-    pea     ($00041592).l           ; ROM: narrow-font format string for rank number
+    pea     (ROM_BASE+$00041592).l  ; ROM: narrow-font format string for rank number
     jsr     (ROM_BASE+$03B246).l    ; jsr PrintfNarrow ($03B246): render rank in narrow font
     lea     $0030(sp),sp            ; clean up 12 longwords
     ; PlaceIconPair ($00595E): place a small 1×1 icon 7 rows below the token (sub-indicator)

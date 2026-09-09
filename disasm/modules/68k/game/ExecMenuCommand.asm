@@ -146,7 +146,7 @@ l_1bc44:
 
     ; GameCommand($1B, 0, $12, $1E, 9, 1, $4DD9C): load character-list resource
     ; ROM data at $04DD9C (char list graphics/data block)
-    pea     ($0004DD9C).l        ; ROM data block for character list display
+    pea     (ROM_BASE+$0004DD9C).l ; ROM data block for character list display
     pea     ($0009).w
     pea     ($001E).w
     pea     ($0012).w
@@ -157,7 +157,7 @@ l_1bc44:
 
     ; LZ_Decompress($4DFB8 -> $FF1804): decompress world-map tile graphics
     ; $04DFB8 = LZ-compressed world-map tileset; $FF1804 = save_buf_base (temp buffer)
-    pea     ($0004DFB8).l        ; LZ-compressed world-map tileset in ROM
+    pea     (ROM_BASE+$0004DFB8).l ; LZ-compressed world-map tileset in ROM
     pea     ($00FF1804).l        ; decompress into save_buf_base ($FF1804)
     jsr LZ_Decompress
     lea     $24(a7), a7

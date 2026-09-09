@@ -79,7 +79,7 @@ ProcessRouteAction:                                                  ; $00F5AA
     lsl.w   #$2,d0
     movea.l #$0005e680,a0
     move.l  (a0,d0.w),-(sp)
-    pea     ($0003EA7A).l
+    pea     (ROM_BASE+$0003EA7A).l
     pea     -$0054(a6)
     jsr     (ROM_BASE+$03B22C).l
     pea     ($0001).w

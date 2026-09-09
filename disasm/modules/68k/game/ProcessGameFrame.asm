@@ -52,7 +52,7 @@ ProcessGameFrame:
 l_2fde2:
     ; --- Phase: Win path ($63) -- show victory message with player name ---
     pea     ($0002).w               ; ShowText mode 2 (center display)
-    move.l  ($00047C40).l, -(a7)    ; push ROM string pointer for win title
+    move.l  (ROM_BASE+$00047C40).l, -(a7) ; push ROM string pointer for win title
     pea     ($0004).w               ; ShowText mode 4 (player name lookup)
     move.w  d5, d0
     move.l  d0, -(a7)               ; push player_index for name lookup
@@ -112,7 +112,7 @@ l_2fe3c:
 l_2fe86:
     ; --- Phase: Default/fallback path -- show generic end-of-turn message ---
     pea     ($0002).w
-    move.l  ($00047C40).l, -(a7)    ; push default format string (same as a5+$00)
+    move.l  (ROM_BASE+$00047C40).l, -(a7) ; push default format string (same as a5+$00)
 l_2fe90:
     ; --- Phase: Common tail -- display primary text + route summary ---
     pea     ($0004).w               ; ShowText mode 4 (player name)
@@ -197,10 +197,10 @@ l_2ff2a:
     ; Choose singular ("1 route") or plural ("N routes") format string
     cmpi.w  #$1, d2
     bne.b   l_2ff64
-    pea     ($00044762).l           ; singular: "1 profitable route"
+    pea     (ROM_BASE+$00044762).l  ; singular: "1 profitable route"
     bra.b   l_2ff6a
 l_2ff64:
-    pea     ($0004475A).l           ; plural: "%d profitable routes"
+    pea     (ROM_BASE+$0004475A).l  ; plural: "%d profitable routes"
 l_2ff6a:
     move.w  d2, d0
     ext.l   d0

@@ -12,7 +12,7 @@ HandleMenuSelection:
     add.l   d0, d0
     add.l   d1, d0
     lsl.l   #$6, d0
-    add.l   ($000A1B58).l, d0
+    add.l   (ROM_BASE+$000A1B58).l, d0
     move.l  d0, -(a7)
     jsr CmdPlaceTile
     move.w  $12(a6), d0
@@ -25,7 +25,7 @@ HandleMenuSelection:
     lsl.l   #$3, d0
     subq.l  #$8, d0
     move.l  d0, -(a7)
-    pea     ($00047CE4).l
+    pea     (ROM_BASE+$00047CE4).l
     pea     ($0001).w
     pea     ($0039).w
     pea     ($000F).w

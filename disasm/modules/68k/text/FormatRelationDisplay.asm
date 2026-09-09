@@ -63,11 +63,11 @@ FormatRelationDisplay:                                                  ; $01924
     tst.w   d0
 ; If same range: use portrait pointer from $000A1B50 (matched pair graphic)
     beq.b   .l192c4
-    move.l  ($000A1B50).l,-(sp)
+    move.l  (ROM_BASE+$000A1B50).l,-(sp)
     bra.b   .l192ca
 .l192c4:                                                ; $0192C4
 ; If different range: use portrait pointer from $000A1B4C (unmatched pair graphic)
-    move.l  ($000A1B4C).l,-(sp)
+    move.l  (ROM_BASE+$000A1B4C).l,-(sp)
 .l192ca:                                                ; $0192CA
 ; LZ_Decompress ($003FEC): decompress selected portrait graphic data into save_buf_base ($FF1804)
     move.l  a3,-(sp)
@@ -78,7 +78,7 @@ FormatRelationDisplay:                                                  ; $01924
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$004668).l
 ; LZ_Decompress secondary portrait overlay data from $4DCE8 into the buffer
-    pea     ($0004DCE8).l
+    pea     (ROM_BASE+$0004DCE8).l
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp
@@ -97,7 +97,7 @@ FormatRelationDisplay:                                                  ; $01924
     jsr     (ROM_BASE+$01D568).l
 ; GameCommand #$1B: place the portrait sprite tiles on screen
 ; Source $72AC0 = portrait tile index table; $0D wide, $1E tall at column d4, row d5+1
-    pea     ($00072AC0).l
+    pea     (ROM_BASE+$00072AC0).l
     pea     ($000D).w
     pea     ($001E).w
     move.w  d4,d0
@@ -140,7 +140,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Name string pointer for char_a
     move.l  (a0,d0.w),-(sp)
 ; Format string at $410F8 -- prints first character's name with wide font
-    pea     ($000410F8).l
+    pea     (ROM_BASE+$000410F8).l
 ; PrintfWide ($03B270): format + display string using 2-tile wide font
     jsr     (ROM_BASE+$03B270).l
 ; SetTextCursor: position at (d4+1, d5+$C) -- 12 rows below the first name (for char_b name)
@@ -211,7 +211,7 @@ FormatRelationDisplay:                                                  ; $01924
     andi.l  #$ffff,d0
     move.l  d0,-(sp)
 ; Format string at $410F4: prints the compatibility score value with wide font
-    pea     ($000410F4).l
+    pea     (ROM_BASE+$000410F4).l
 ; PrintfWide: display the numeric compatibility score
     jsr     (ROM_BASE+$03B270).l
     lea     $0030(sp),sp
@@ -236,7 +236,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; Name string pointer for char_b
     move.l  (a0,d0.w),-(sp)
 ; Format string at $410F0 -- prints second character's name
-    pea     ($000410F0).l
+    pea     (ROM_BASE+$000410F0).l
 ; PrintfWide: display char_b's name
     jsr     (ROM_BASE+$03B270).l
 ; --- Phase: City Data Fields Display (char_a) ---
@@ -282,7 +282,7 @@ FormatRelationDisplay:                                                  ; $01924
     andi.l  #$ff,d0
     move.l  d0,-(sp)
 ; Format string at $410E6: prints two stat values for char_a (current / max) with narrow font
-    pea     ($000410E6).l
+    pea     (ROM_BASE+$000410E6).l
 ; PrintfNarrow ($03B246): format + display with 1-tile narrow font
     jsr     (ROM_BASE+$03B246).l
 ; --- Phase: City Data Fields Display (char_a, second line) ---
@@ -332,7 +332,7 @@ FormatRelationDisplay:                                                  ; $01924
     andi.l  #$ff,d0
     move.l  d0,-(sp)
 ; Format string at $410DC: prints two stat values for char_a's second city entry (narrow font)
-    pea     ($000410DC).l
+    pea     (ROM_BASE+$000410DC).l
 ; PrintfNarrow: display the second stat pair for char_a's side of the panel
     jsr     (ROM_BASE+$03B246).l
 ; --- Phase: City Data Fields Display (char_b) ---
@@ -352,7 +352,7 @@ FormatRelationDisplay:                                                  ; $01924
     addq.l  #$4,sp
     move.l  d0,-(sp)
 ; Format string at $410D8: print char_b's city stat result with narrow font
-    pea     ($000410D8).l
+    pea     (ROM_BASE+$000410D8).l
     jsr     (ROM_BASE+$03B246).l
     lea     $001c(sp),sp
 ; --- Phase: Relation Action Buttons (char_a side) ---
@@ -498,7 +498,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; GameCommand #$1B = place tile block from table (local array) onto screen
     jsr     (ROM_BASE+$000D64).l
 ; LZ_Decompress: decompress relation icon graphics from $4E28A into the save buffer at a3
-    pea     ($0004E28A).l
+    pea     (ROM_BASE+$0004E28A).l
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$003FEC).l
     lea     $0024(sp),sp

@@ -33,10 +33,10 @@ RenderEndingCredits:
     ; --- Phase: Set up display for credits screen ---
     pea     ($0010).w                               ; DisplaySetup arg
     pea     ($0020).w                               ; DisplaySetup arg
-    pea     ($00076FB6).l                           ; credits screen palette/resource table
+    pea     (ROM_BASE+$00076FB6).l                  ; credits screen palette/resource table
     jsr DisplaySetup
     ; --- Phase: Decompress main staff-roll graphic and place tiles ---
-    move.l  ($000B754C).l, -(a7)                   ; compressed graphic data pointer (from $B754C)
+    move.l  (ROM_BASE+$000B754C).l, -(a7)          ; compressed graphic data pointer (from $B754C)
     pea     ($00FF1804).l                           ; decompress into save_buf_base ($FF1804)
     jsr LZ_Decompress
     pea     ($01A0).w                               ; tile width = $1A0 = 416 tiles
@@ -58,7 +58,7 @@ RenderEndingCredits:
     ; MemMove args: (count, dest, src) -- copies 'count' bytes from src to dest
     pea     ($0020).w                               ; count = $20 = 32 bytes
     move.l  a2, -(a7)                               ; dest = local buffer base (a2+$00)
-    pea     ($00076F16).l                           ; src = credit block 1 data
+    pea     (ROM_BASE+$00076F16).l                  ; src = credit block 1 data
     jsr     (a3)                                    ; MemMove
     lea     $28(a7), a7
     pea     ($0020).w                               ; 32 bytes
@@ -66,27 +66,27 @@ RenderEndingCredits:
     moveq   #$20,d1
     add.l   d1, d0
     move.l  d0, -(a7)                               ; dest = buffer+$20
-    pea     ($00076F36).l                           ; src = credit block 2 data
+    pea     (ROM_BASE+$00076F36).l                  ; src = credit block 2 data
     jsr     (a3)
     pea     ($0020).w
     move.l  a2, d0
     moveq   #$40,d1
     add.l   d1, d0
     move.l  d0, -(a7)                               ; dest = buffer+$40
-    pea     ($00076FB6).l                           ; src = credit block 3 data
+    pea     (ROM_BASE+$00076FB6).l                  ; src = credit block 3 data
     jsr     (a3)
     pea     ($0040).w                               ; 64 bytes
     move.l  a2, d0
     moveq   #$60,d1
     add.l   d1, d0
     move.l  d0, -(a7)                               ; dest = buffer+$60
-    pea     ($00048D30).l                           ; src = credit block 4 data (64 bytes)
+    pea     (ROM_BASE+$00048D30).l                  ; src = credit block 4 data (64 bytes)
     jsr     (a3)
     pea     ($0020).w
     move.l  a2, d0
     addi.l  #$a0, d0
     move.l  d0, -(a7)                               ; dest = buffer+$A0
-    pea     ($00076FD6).l                           ; src = credit block 5 data
+    pea     (ROM_BASE+$00076FD6).l                  ; src = credit block 5 data
     jsr     (a3)
     lea     $30(a7), a7
     ; --- Phase: Render first color tileset from buffer ---
@@ -129,7 +129,7 @@ RenderEndingCredits:
     bsr.w UpdateScrollRegisters                    ; write scroll values to VDP
     lea     $30(a7), a7
     ; --- Phase: Place first credit text block via GameCommand #$1B ---
-    pea     ($000760A6).l                           ; text data for first credits panel
+    pea     (ROM_BASE+$000760A6).l                  ; text data for first credits panel
     pea     ($0008).w                               ; width = 8
     pea     ($001A).w                               ; height = $1A = 26
     pea     ($0003).w                               ; y = 3
@@ -141,7 +141,7 @@ RenderEndingCredits:
     jsr     (a5)                                    ; call animation step (wait 1 frame)
     lea     $20(a7), a7
     ; --- Place second credit text block ---
-    pea     ($00076246).l
+    pea     (ROM_BASE+$00076246).l
     pea     ($0006).w
     pea     ($001A).w
     pea     ($0009).w                               ; y = 9
@@ -153,7 +153,7 @@ RenderEndingCredits:
     jsr     (a5)
     lea     $20(a7), a7
     ; --- Place third credit text block ---
-    pea     ($00075F8E).l
+    pea     (ROM_BASE+$00075F8E).l
     pea     ($0004).w
     pea     ($001B).w                               ; height = $1B
     pea     ($000F).w                               ; y = $F = 15
@@ -164,7 +164,7 @@ RenderEndingCredits:
     ; --- Phase: Load second wave of 3 credit blocks into buffer ---
     pea     ($0020).w
     move.l  a2, -(a7)                               ; dest = buffer+$00
-    pea     ($0007651E).l                           ; src = credit block wave-2, entry 1
+    pea     (ROM_BASE+$0007651E).l                  ; src = credit block wave-2, entry 1
     jsr     (a3)                                    ; MemMove
     lea     $28(a7), a7
     pea     ($0020).w
@@ -172,14 +172,14 @@ RenderEndingCredits:
     moveq   #$20,d1
     add.l   d1, d0
     move.l  d0, -(a7)                               ; dest = buffer+$20
-    pea     ($0007651E).l                           ; same source (duplicate copy -- NOTE: both use same src)
+    pea     (ROM_BASE+$0007651E).l                  ; same source (duplicate copy -- NOTE: both use same src)
     jsr     (a3)
     pea     ($0020).w
     move.l  a2, d0
     moveq   #$40,d1
     add.l   d1, d0
     move.l  d0, -(a7)                               ; dest = buffer+$40
-    pea     ($00076FF6).l                           ; src = credit block wave-2, entry 3
+    pea     (ROM_BASE+$00076FF6).l                  ; src = credit block wave-2, entry 3
     jsr     (a3)
     ; --- Phase: Render second color tileset ---
     pea     ($0003).w
@@ -248,7 +248,7 @@ l_3c8ea:
     pea     ($0080).w                               ; wait $80 = 128 frames
     jsr     (a5)
     ; --- Phase: Place final credits text panel via GameCommand #$1B ---
-    pea     ($00076066).l                           ; final credits text data
+    pea     (ROM_BASE+$00076066).l                  ; final credits text data
     pea     ($0002).w
     pea     ($0010).w
     pea     ($0014).w                               ; y = $14 = 20

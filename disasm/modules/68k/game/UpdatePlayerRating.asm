@@ -418,7 +418,7 @@ RemoveCharRelation:                                                  ; $034CC4
     movea.l #$00ff00a8,a0
     pea     (a0,d0.w)
 ; Format string at $448E4: removal confirmation text with two char names
-    pea     ($000448E4).l
+    pea     (ROM_BASE+$000448E4).l
     jsr     (ROM_BASE+$03B270).l
 ; LoadScreenGfx($68CA): load portrait for char B (player_index=d2, with resource flag=1)
     pea     ($0001).w

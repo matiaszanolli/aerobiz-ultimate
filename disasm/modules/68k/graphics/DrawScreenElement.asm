@@ -124,10 +124,10 @@ DrawScreenElement:
     ; DisplaySetup: configure display for $10×$10 tiles with descriptor at $76A3E
     pea     ($0010).w
     pea     ($0010).w
-    pea     ($00076A3E).l
+    pea     (ROM_BASE+$00076A3E).l
     jsr DisplaySetup
     ; LZ_Decompress: decompress stat-bar background graphic to $FF1804 (save_buf_base)
-    move.l  ($000A1B04).l, -(a7)
+    move.l  (ROM_BASE+$000A1B04).l, -(a7)
     ; $A1B04 = ROM pointer to compressed panel background graphic
     pea     ($00FF1804).l
     jsr LZ_Decompress
@@ -148,7 +148,7 @@ DrawScreenElement:
     ; d0 = partner_count - d3; if <= 0 only one option, no up-scroll
     ble.b   .l1565a
     ; Draw up-scroll arrow tile ($71A14) at (d7, col $0A)
-    pea     ($00071A14).l
+    pea     (ROM_BASE+$00071A14).l
     ; $71A14 = scroll-up arrow tile
     pea     ($0004).w
     pea     ($000A).w
@@ -165,7 +165,7 @@ DrawScreenElement:
     bra.b   .l15684
 .l1565a:
     ; Draw blank arrow tile ($719C4) -- hide the up-arrow
-    pea     ($000719C4).l
+    pea     (ROM_BASE+$000719C4).l
     ; $719C4 = blank/no-arrow tile
     pea     ($0004).w
     pea     ($000A).w
@@ -198,7 +198,7 @@ DrawScreenElement:
     sub.l   d1, d0
     ; d0 = (total - d3) = stat value for the selected row
     move.l  d0, -(a7)
-    pea     ($0003F854).l
+    pea     (ROM_BASE+$0003F854).l
     ; $3F854 = format string for stat value display (wide font)
     jsr PrintfWide
     ; --- Read input to determine auto-repeat state ---
@@ -238,7 +238,7 @@ DrawScreenElement:
     move.w  d3, d0
     ext.l   d0
     move.l  d0, -(a7)
-    pea     ($0003F850).l
+    pea     (ROM_BASE+$0003F850).l
     ; $3F850 = format string for selection index counter (narrow font)
     jsr PrintfNarrow
     lea     $10(a7), a7
@@ -440,7 +440,7 @@ DrawScreenElement:
     add.l   d1, d0
     ; d0 = delta + cap = absolute stat value to display
     move.l  d0, -(a7)
-    pea     ($0003F84C).l
+    pea     (ROM_BASE+$0003F84C).l
     ; $3F84C = format string for char A stat line (narrow font)
     jsr PrintfNarrow
     ; SetTextCursor at col 8, row $15 -- position for char B stat display
@@ -457,7 +457,7 @@ DrawScreenElement:
     ext.l   d1
     add.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($0003F848).l
+    pea     (ROM_BASE+$0003F848).l
     ; $3F848 = format string for char B stat line (narrow font)
 .l158e8:
     jsr PrintfNarrow
@@ -480,7 +480,7 @@ DrawScreenElement:
     addq.l  #$4, a7
     ; d0 = original low-nibble value (reverted selection)
     move.l  d0, -(a7)
-    pea     ($0003F844).l
+    pea     (ROM_BASE+$0003F844).l
     ; $3F844 = format string for reverted selection display (narrow font)
     bra.b   .l158e8
     ; shared tail: print and jump to exit
@@ -506,7 +506,7 @@ DrawScreenElement:
     bne.b   .l15972
     ; -$30(a6) already 1 = up-arrow visible, skip redraw
     ; Show up-arrow tile ($71A14) at (d7, col $0A)
-    pea     ($00071A14).l
+    pea     (ROM_BASE+$00071A14).l
     pea     ($0004).w
     pea     ($000A).w
     move.w  d7, d0
@@ -559,7 +559,7 @@ DrawScreenElement:
     ext.l   d1
     sub.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($0003F840).l
+    pea     (ROM_BASE+$0003F840).l
     ; $3F840 = format string for Up-scroll stat value (wide font)
     jsr PrintfWide
     ; --- Recompute compatibility bar after Up scroll ---
@@ -684,7 +684,7 @@ DrawScreenElement:
     ext.l   d1
     sub.l   d1, d0
     move.l  d0, -(a7)
-    pea     ($0003F83C).l
+    pea     (ROM_BASE+$0003F83C).l
     ; $3F83C = format string for Down-scroll stat value (wide font)
     jsr PrintfWide
     lea     $10(a7), a7
@@ -699,7 +699,7 @@ DrawScreenElement:
     cmpi.w  #$1, -$30(a6)
     bne.b   .l15b24
     ; -$30(a6) = 1: arrow is shown; hide it now
-    pea     ($000719C4).l
+    pea     (ROM_BASE+$000719C4).l
     pea     ($0004).w
     pea     ($000A).w
     move.w  d7, d0

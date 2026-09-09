@@ -253,7 +253,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     lsl.w   #$4,d0                      ; rival * $10 (16 bytes per entry in $FF00A8)
     movea.l #$00ff00a8,a0             ; $FF00A8 = unknown 64-byte block (4 × $10 bytes)
     pea     (a0,d0.w)                   ; arg: rival's record at $FF00A8[rival]
-    move.l  ($0004843C).l,-(sp)        ; ROM indirect ptr at $4843C (competitor msg template)
+    move.l  (ROM_BASE+$0004843C).l,-(sp) ; ROM indirect ptr at $4843C (competitor msg template)
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$03B22C).l        ; jsr $03B22C  -- format report
     pea     ($0001).w
@@ -293,7 +293,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     cmpi.w  #$3,($00FF0004).l          ; quarter < 3 (not final quarter)?
     bge.b   .l2c0ac                     ; final quarter -> use competitor route msg
 ; Early quarters: show "opening soon" style msg ($42ECE = generic expansion string)
-    pea     ($00042ECE).l              ; ROM string: generic expansion text
+    pea     (ROM_BASE+$00042ECE).l     ; ROM string: generic expansion text
     move.l  $0008(a5),-(sp)            ; a5+$8 = ROM dialog ptr [2] (milestone msg A)
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$03B22C).l

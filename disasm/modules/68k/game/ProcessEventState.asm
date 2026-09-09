@@ -42,7 +42,7 @@ l_22146:
     lsl.w   #$2, d0
     movea.l  #$00047D7C,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00047DC0).l
+    pea     (ROM_BASE+$00047DC0).l
     move.l  a5, -(a7)
     jsr sprintf
     move.l  a5, -(a7)
@@ -159,7 +159,7 @@ l_222b8:
     lsl.w   #$2, d0
     movea.l  #$0005E680,a0
     move.l  (a0,d0.w), -(a7)
-    pea     ($00047DF0).l
+    pea     (ROM_BASE+$00047DF0).l
     move.l  a5, -(a7)
     jsr sprintf
     move.l  a5, -(a7)

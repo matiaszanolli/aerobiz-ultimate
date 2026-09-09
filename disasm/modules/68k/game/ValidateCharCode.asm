@@ -5,9 +5,9 @@
 ValidateCharCode:
     pea     ($0010).w
     pea     ($0030).w
-    pea     ($00076A7E).l
+    pea     (ROM_BASE+$00076A7E).l
     jsr DisplaySetup
-    move.l  ($000A1B10).l, -(a7)
+    move.l  (ROM_BASE+$000A1B10).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress
     pea     ($002C).w
@@ -15,7 +15,7 @@ ValidateCharCode:
     pea     ($00FF1804).l
     jsr CmdPlaceTile
     lea     $20(a7), a7
-    pea     ($00071F40).l
+    pea     (ROM_BASE+$00071F40).l
     pea     ($0002).w
     pea     ($0016).w
     pea     ($0017).w

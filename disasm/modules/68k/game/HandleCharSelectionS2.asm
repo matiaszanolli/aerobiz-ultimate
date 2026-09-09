@@ -47,7 +47,7 @@ HandleCharSelectionS2:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a4,a0.l), -(a7)
-    pea     ($00042604).l
+    pea     (ROM_BASE+$00042604).l
     move.l  a3, -(a7)
     jsr     (a5)
     pea     ($0001).w
@@ -63,7 +63,7 @@ HandleCharSelectionS2:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a4,a0.l), -(a7)
-    pea     ($000425C8).l
+    pea     (ROM_BASE+$000425C8).l
     move.l  a3, -(a7)
     jsr     (a5)
     lea     $2c(a7), a7
@@ -78,7 +78,7 @@ HandleCharSelectionS2:
     pea     ($0001).w
     clr.l   -(a7)
     clr.l   -(a7)
-    pea     ($00042580).l
+    pea     (ROM_BASE+$00042580).l
     moveq   #$0,d0
     move.w  d2, d0
     move.l  d0, -(a7)
@@ -89,7 +89,7 @@ HandleCharSelectionS2:
     lsl.l   #$2, d0
     movea.l d0, a0
     move.l  (a4,a0.l), -(a7)
-    pea     ($0004254A).l
+    pea     (ROM_BASE+$0004254A).l
     move.l  a3, -(a7)
     jsr     (a5)
     pea     ($0001).w

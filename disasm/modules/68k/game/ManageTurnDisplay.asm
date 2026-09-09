@@ -181,7 +181,7 @@ ManageTurnDisplay:
     pea     ($000A).w                               ; box height = $A = 10
     jsr DrawBox                                     ; draw bordered dialog box
     ; --- Print facility label string ---
-    pea     ($000424C9).l                           ; facility label string
+    pea     (ROM_BASE+$000424C9).l                  ; facility label string
     jsr PrintfNarrow
     ; --- Phase: Show facility summary dialog (ShowFacilityMenu) ---
     moveq   #$0,d0
@@ -206,12 +206,12 @@ ManageTurnDisplay:
     cmpi.w  #$7, d2                                 ; d2 == 7?
     bne.b   .l2af90
 .l2af88:
-    pea     ($000424AE).l                           ; singular "turn" string
+    pea     (ROM_BASE+$000424AE).l                  ; singular "turn" string
     bra.b   .l2af96
 .l2af90:
-    pea     ($000424AC).l                           ; plural "turns" string
+    pea     (ROM_BASE+$000424AC).l                  ; plural "turns" string
 .l2af96:
-    pea     ($000424B2).l                           ; turn count format string
+    pea     (ROM_BASE+$000424B2).l                  ; turn count format string
     pea     -$80(a6)                                ; local 128-byte string buffer
     jsr sprintf                                     ; format the full dialog string
     ; --- Phase: Show the formatted turn dialog via ShowTextDialog ---

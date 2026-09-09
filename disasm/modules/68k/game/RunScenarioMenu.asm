@@ -129,8 +129,8 @@ RunScenarioMenu:                                                  ; $02C2FA
 ; select portrait graphic: if field_offset==0 use default, else use char-type specific
     tst.w   d2                                         ; d2 = field_offset (0 = no stat, else stat type)
     bne.b   .l2c40e                                    ; non-zero field: select typed portrait
-    move.l  ($0005EB2C).l,-(sp)                        ; CountryRoutePtrs[0] = default route type string ptr
-    pea     ($00042F34).l                              ; ptr to default portrait/dialog string in GameStatusText
+    move.l  (ROM_BASE+$0005EB2C).l,-(sp)               ; CountryRoutePtrs[0] = default route type string ptr
+    pea     (ROM_BASE+$00042F34).l                     ; ptr to default portrait/dialog string in GameStatusText
     bra.b   .l2c422
 .l2c40e:                                               ; $02C40E
 ; field_offset > 0: look up char-type specific portrait string
@@ -138,7 +138,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     lsl.w   #$2,d0                                     ; field_offset * 4 (longword ptr table index)
     movea.l #$0005eb2c,a0                              ; CountryRoutePtrs ($05EB2C): char/route type string ptrs
     move.l  (a0,d0.w),-(sp)                            ; push ptr to route type name string for this char
-    move.l  ($0004842C).l,-(sp)                        ; ptr to secondary portrait descriptor string
+    move.l  (ROM_BASE+$0004842C).l,-(sp)               ; ptr to secondary portrait descriptor string
 .l2c422:                                               ; $02C422
     move.l  a4,-(sp)                                   ; arg: local display buffer (portrait area)
     jsr     (ROM_BASE+$03B22C).l                        ; jsr $03B22C  ; RenderCharPortrait(a4, str1, str2)

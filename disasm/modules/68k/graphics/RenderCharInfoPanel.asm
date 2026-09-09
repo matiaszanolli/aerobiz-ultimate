@@ -239,7 +239,7 @@ l_379ea:
     ; --- Select format string: region 2 uses a special hardcoded string ---
     cmpi.w  #$2, d5                                 ; region == 2?
     bne.b   l_37a0e
-    pea     ($00044F86).l                           ; hardcoded format string for region 2
+    pea     (ROM_BASE+$00044F86).l                  ; hardcoded format string for region 2
     bra.b   l_37a1c
 l_37a0e:
     move.w  d5, d0

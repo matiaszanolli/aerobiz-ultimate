@@ -28,7 +28,7 @@ l_26c3a:
     pea     ($0014).w
     jsr SetTextCursor
     move.l  $8(a3), -(a7)
-    pea     ($0004157E).l
+    pea     (ROM_BASE+$0004157E).l
     jsr PrintfNarrow
     move.w  (a2), d0
     mulu.w  #$6, d0

@@ -20,7 +20,7 @@ ShowTextDialog:                                              ; $01183A
     mulu.w  #$0024,d0                                        ; index * 36 (record size)
     movea.l #$00FF001E,a0                                    ; record table base
     move.l  (a0,d0.w),-(sp)                                  ; push record field
-    pea     ($0003F1B2).l                                    ; format string
+    pea     (ROM_BASE+$0003F1B2).l                           ; format string
     jsr PrintfWide
     lea     $20(sp),sp                                       ; clean 32 bytes
     move.l  $000C(a6),-(sp)                                  ; push data arg
