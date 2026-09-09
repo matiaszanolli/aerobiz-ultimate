@@ -2349,7 +2349,8 @@ CharSpriteTiles:                                        ; $048970
     dc.w    $0777,$7700,$0007,$0000,$0077,$7700,$0000,$0000; $048CF0
     dc.w    $0000,$0000,$0007,$0000,$0070,$7000,$0777,$7700; $048D00
 ; --- GraphicSequencePtrs: Code function pointers for graphic sequences (5 entries × 4 bytes, $048D18-$048D2B) ---
-    dc.w    $0770,$7700,$0770,$7700,$0777,$7700,$0007,$35A0; $048D10
+    dc.w    $0770,$7700,$0770,$7700,$0777,$7700          ; $048D10
+    dc.l    ROM_BASE+$0735A0                            ; $048D18 GraphicSequencePtrs[0]
     dc.l    ROM_BASE+$073618,ROM_BASE+$073690,ROM_BASE+$073708,ROM_BASE+$073780 ; $048D20
 ; ============================================================================
 ; CharPortraitTileSeqs -- Character portrait tile sequence graphics (fill tiles, palette 0x0E)
