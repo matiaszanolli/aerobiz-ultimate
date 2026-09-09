@@ -141,76 +141,64 @@ shifted -- which is the property the whole rebasing scheme depends on. Roughly
 3,000 of those are the literal rebases; the rest are symbolic references that
 `org ROM_BASE` moved on their own.
 
-### U-013 -- Reach the title screen [OPEN, blocked on U-020]
+### U-013 -- Reach the title screen [OPEN, cause still unknown]
 
-The game boots and runs on 32X. Running the cartridge and the Genesis build in
-the same emulator and diffing work RAM from `$FFF010`, they agree to within 17
-of 4,080 bytes after 900 frames, and the survivors are per-frame counters and
-dispatch flags around `$FFF011-$FFF03C` -- where two runs that are not
-cycle-locked would differ anyway, since the 32X spends its first frames in
-adapter bring-up.
+The screen is not uniformly black, which the earlier sampling missed. Counting
+non-black pixels per frame over 1,500 frames:
 
-Getting there needed one fix beyond rebasing: the jump table's slots are
-vector-indexed, not packed, so every interrupt was jumping into padding. Work
-RAM divergence went from 41 bytes to 2 when that was corrected.
+| Build | frames with content |
+|---|---|
+| Genesis | 20-320, 390-660, 667-829, 843-1106, 1320-1499 |
+| 32X | 24-324, 1398-1499 |
 
-We can now see the screen (U-091), and it is **black**. Every pixel, at every
-frame sampled. The Genesis reference at the same frames shows the KOEI intro
-and then the title attract sequence.
+The 32X renders the boot screen **identically** -- same non-zero pixel count as
+the Genesis build, four frames later for adapter bring-up -- then loses
+everything from the first game screen onward. At frame 1450 the Genesis shows
+the blue trademark text screen and the 32X shows a white block on black, which
+is the signature of tiles fetched from somewhere that reads as `$FF`.
 
-That is the expected shape of the remaining failure, not a new one: the game
-logic runs, and nothing reaches VRAM or CRAM because the graphics loaders DMA
-from ROM and the `RV` window is not implemented. A failed palette DMA alone
-gives an all-black screen whatever is in VRAM. **Blocked on U-020**, which is
-the M3 gate, so this is M3 work rather than M2 work.
+Ruled out, each by measurement rather than argument:
+
+- **Not the DMA window.** U-020 is implemented and exercised; the display is
+  unchanged with and without it.
+- **Not H32.** Forcing every `$8c00`/`$8c08` write to H40 in the cartridge
+  changes the content runs not at all.
+- **Not the 32X layer covering the Genesis one.** `$A15180` reads `$8000`
+  throughout: mode bits `00`, blanked.
+- **Not the review literals (U-011).** Of the 896, only 560 are long-sized and
+  only 19 of those are `>= $10000`; every one is a money value (`$186a0` =
+  100,000) or the `$30000` DMA mask. None is a ROM address.
+- **Not game state.** All 64 KB of work RAM compared against the Genesis build
+  at frame 500 differ in 308 bytes across 128 runs, none longer than 16 bytes.
+
+So the fault is on the VDP side -- VRAM or CRAM contents -- with correct work
+RAM feeding it. The next instrument is the one we do not have yet: a VRAM/CRAM
+comparison between the two builds. PicoDrive's debugger exposes the 68000 bus
+and SH2 registers but not VDP memory, so this needs a core-side addition.
 
 ---
 
 ## M3 -- Full game on 32X, layer blank
 
-### U-020 -- Implement the 32X DMA stub: `RV` window and source translation [OPEN, high risk]
+### U-020 -- Implement the 32X DMA stub: `RV` window and source translation [DONE]
 
-**Design settled from the manuals and the sources; see
-[PORT_ARCHITECTURE.md §2.1](PORT_ARCHITECTURE.md). This is implementation plus
-one experiment.** It absorbs what was filed separately as U-022.
+`disasm/32x/dma_stub.asm`, reached by swapping the six bytes of
+ConfigVDPDMA's `jsr $FFF000` for a `jsr` to a fixed address in the boot half.
+Translates a bank-window source to the same bytes' cartridge offset, reprograms
+VDP registers 21-23, and runs the windowed sequence from below the stack
+pointer. A work-RAM source takes neither and hands off to the game's own
+trigger stub.
 
-The source register was never the constraint -- VDP register 23 carries seven
-source bits, which the game's own `andi.w #$7f` confirms. The barrier is that
-the adapter does not serve `$880000-$9FFFFF` to a VDP-mastered cycle, and the
-`RV` bit at `$A15106`, named "ROM to VRAM DMA", exists to solve exactly that.
+`make 32x-rvprobe` answers §5.3: under PicoDrive both cartridge windows survive
+`RV = 1` while the cartridge is also visible at its own offsets. Emulator
+behaviour, not the manual, so the sequence stays RAM-resident.
 
-One routine does the whole job, in free work RAM, reached by repointing the six
-bytes of `dc.w $4EB9,$00FF,$F000` in `ConfigVDPDMA` under `ifne ROM_BASE`. That
-patch is size-neutral, which it must be.
+Exercised: 616 thunk entries over 3,000 frames, 31 of them on the cartridge
+path. **None in the first 900 frames** -- an earlier sample over that range
+concluded the game never DMAs from ROM, which was wrong.
 
-1. **Experiment first.** Is `$880000-$9FFFFF` still readable by the 68000 while
-   `RV = 1`? The manual is silent. Write the answer into §5.3. The design does
-   not depend on it -- the stub is RAM-resident either way -- but it decides how
-   much else has to move.
-2. **Place the stub.** `$FFFC80-$FFFFFF` measures free (~896 bytes): the A5 work
-   area tops out at `$FFFC80` and nothing in the shared sources references above
-   `$FFFC74`. Confirm dynamically before relying on it. Install from the boot
-   half, after the initial program's 64 KB work-RAM clear.
-3. **Translate the source.** `if (src & $F00000) == $900000: src -= $800000`,
-   then reprogram VDP registers 21-23. Work-RAM sources fail the test, pass
-   through untouched, and need no `RV` window -- the same test decides both.
-4. **Window, trigger, wait, close.** Raise `RV`, write the staged command word
-   from `$42(a5)`/`$44(a5)`, poll DMA-busy, lower `RV`. The poll currently runs
-   from ROM at `l_0121c` and must move inside.
-5. **Clear `RV` in the reset path.** `VRES` with `RV = 1` prevents restart after
-   power-off (docs/32x-technical-info.md:63).
-6. **Measure the stall.** The SH2 blocks on cartridge reads for the window.
-   Our image runs from SDRAM, so this should be near zero -- confirm it, and
-   confirm no SH2 path touches `$22000000` during a window.
-
-Already satisfied, do not re-solve: interrupts are masked across the whole of
-`ConfigVDPDMA` (`ori.w #$700, sr`), meeting the "no 68000 interrupts while
-`RV = 1`" requirement (docs/32x-technical-info.md:103); and the trigger already
-runs from RAM.
-
-Carry this caveat: `$001070`, `$002070` and `$003070` (4 bytes each) are
-unreadable while `RV = 1` (docs/32x-technical-info.md:140). They sit in the boot
-half, clear of the game image at `$100000`.
+**This did not fix the display.** U-020 was necessary but is not what is
+blanking the screen; see U-013.
 
 ### U-022 -- Teach `scan_rom_refs.py` the `DMA_BASE` class [CLOSED, superseded]
 

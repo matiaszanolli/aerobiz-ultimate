@@ -9,6 +9,79 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-09
+
+### U-020 is done, and it was not what was blanking the screen
+
+The thunk is implemented and exercised -- 616 entries over 3,000 frames, 31 of
+them on the cartridge path -- and the display is unchanged with and without it.
+Necessary work, wrong suspect.
+
+`make 32x-rvprobe` answers §5.3 at emulator level: under PicoDrive both
+cartridge windows read identically with `RV = 0` and `RV = 1`, while the
+cartridge is simultaneously visible at its own offsets. The manual says neither
+thing, so the thunk keeps its windowed sequence in RAM anyway.
+
+Two earlier claims in this file were wrong and are corrected:
+
+- **"896 bytes free at the top of work RAM" is false.** Painting
+  `$FFFC80-$FFFFFF` and running the game overwrote all 896 bytes; painting
+  `$FFE000-$FFEFFF` overwrote all 4096. The figure came from scanning literal
+  displacements and missed runtime-indexed writes. It was flagged as
+  unconfirmed when recorded; this is the confirmation, and it is negative. The
+  thunk runs from below the stack pointer instead, which needs no free region.
+- **"The game never DMAs from ROM" is false**, though it was never written down
+  as such. A 900-frame sample showed every DMA sourced from work RAM and nearly
+  led to abandoning U-020. Over 3,000 frames, 31 transfers use the cartridge
+  path. The first ROM-sourced DMA simply happens late.
+
+### `make verify` had been vacuous
+
+Neither ROM depended on the sources it includes: `$(GENESIS_ROM)` listed only
+`aerobiz.asm`, `$(GAME_HALF)` only `ultimate_game.asm`, while all 818 shared
+modules and sections arrive through includes. Editing a module rebuilt nothing,
+so `make verify` re-checked the previous binary and reported MATCH for the
+wrong reason.
+
+Every per-batch verification during the U-010 rebasing was in that state and
+proved nothing. The end state is sound -- the run after the jump-table fix was
+a `make clean` rebuild, and so are the ones since -- but the confidence claimed
+at the time was not earned. Worth remembering how the failure presented: not as
+a wrong answer, but as a right answer arriving too easily.
+
+It cost real debugging time the same day. A DMA change appeared to do nothing;
+the built image still contained the previous build's `jsr`.
+
+### The screen is not black, and the cause is still open
+
+Counting non-black pixels per frame rather than sampling two frames changes the
+picture. Over 1,500 frames:
+
+| Build | frames with content |
+|---|---|
+| Genesis | 20-320, 390-660, 667-829, 843-1106, 1320-1499 |
+| 32X | 24-324, 1398-1499 |
+
+The 32X renders the boot screen **identically** -- same non-zero pixel count,
+four frames later for adapter bring-up -- then loses everything from the first
+game screen on. At frame 1450 the Genesis shows the blue trademark screen and
+the 32X shows a white block on black: the signature of tiles fetched from
+something that reads as `$FF`.
+
+Ruled out by measurement, not argument: the DMA window (implemented, exercised,
+no change); H32 (forcing every mode write to H40 changes the content runs not at
+all); the 32X layer covering the Genesis one (`$A15180` reads `$8000` --
+blanked -- throughout); the review literals (of 896, only 19 are long-sized and
+`>= $10000`, and every one is a money value or the `$30000` DMA mask); and game
+state (all 64 KB of work RAM differs from the Genesis build in 308 bytes at
+frame 500, no run longer than 16).
+
+So work RAM is right and what reaches the VDP is wrong. The instrument we lack
+is a VRAM/CRAM comparison: PicoDrive's debugger exposes the 68000 bus and SH2
+registers, not VDP memory. That is the next thing to build.
+
+---
+
 ## 2026-09-08
 
 ### We can see the screen now, and it is black

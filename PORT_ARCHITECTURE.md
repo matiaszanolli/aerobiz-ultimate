@@ -185,11 +185,13 @@ leaves three places to put 32X behaviour:
 
 1. **The boot half** at `$880000`, which is not part of the rebased image and
    may be any size.
-2. **Work RAM**, reachable from either half. `$FFFC80-$FFFFFF` is free -- the
-   A5 work area tops out at offset `$C70` (`$FFFC80`), no absolute reference in
-   the shared sources reaches above `$FFFC74`, and the stack grows down from
-   `$FFF000`. Roughly 896 bytes. Measured by reference scan, not yet confirmed
-   dynamically.
+2. **Work RAM** -- but only below the stack pointer. There is no permanently
+   free region. `$FFFC80-$FFFFFF` looked free by reference scan; painting it and
+   running the game overwrote all 896 bytes, and `$FFE000-$FFEFFF` all 4096. The
+   scan saw only literal displacements and missed runtime-indexed writes, so it
+   was measuring the wrong thing. What is reliably available is the space below
+   the stack pointer, which is where the DMA thunk copies its windowed
+   sequence.
 3. **Size-neutral in-place patches** to shared code, under `ifne ROM_BASE`.
 
 The DMA work needs all three, and the hook already exists: `ConfigVDPDMA`
@@ -369,15 +371,19 @@ rate instead of Genesis CRAM tricks.
    would map the cart at `$000000-$3FFFFF` like a plain Genesis and require zero
    68K changes, but it blocks all SH2 cartridge access. Worth one experiment;
    not the baseline plan.
-3. **Genesis VDP DMA source under 32X.** *Largely resolved from the manuals --
-   see §2.1. The conclusion (use `RV = 1` windows) stands, but the stated reason
-   was wrong: the source register is not the constraint.* What remains genuinely
-   unknown is narrow: **is `$880000-$9FFFFF` still readable by the 68000 while
-   `RV = 1`?** The manual states what appears at `$000100-$3FFFFF` when `RV = 1`
+3. ~~**Genesis VDP DMA source under 32X.**~~ **Resolved; see §2.1 and U-020.**
+   The conclusion (use `RV = 1` windows) stood, but the reason given for it was
+   wrong -- the source register was never the constraint.
+
+   The narrow part that remained -- **is `$880000-$9FFFFF` still readable while
+   `RV = 1`?** -- is answered by `make 32x-rvprobe`: under PicoDrive both
+   windows read identically with `RV` set and clear, while the cartridge is also
+   visible at its own offsets. That is emulator behaviour, not the manual, which
+   says only what appears at `$000100-$3FFFFF` when `RV = 1`
    (32x-hardware-manual.md:237) and what `$880000-$9FFFFF` holds when `RV = 0`
-   (:238), but never says whether the high windows survive an `RV = 1` window.
-   We design as if they do not -- the whole window runs from work RAM -- so the
-   answer only decides whether that is necessary, not whether the plan works.
+   (:238). The thunk therefore keeps its windowed sequence in RAM regardless;
+   the answer buys a simplification later, not correctness now. **Re-run the
+   probe on hardware before relying on it.**
 4. ~~**SH2 C toolchain.**~~ **Resolved.** marsdev is installed at
    `/mnt/data/src/marsdev` and carries `sh-elf-gcc` 15.1.0 at
    `mars/sh-elf/bin/sh-elf-gcc`. Nothing needs building; the SH2 side can move
