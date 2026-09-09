@@ -44,11 +44,18 @@ SH2_ELF        = $(BUILD_DIR)/sh2/sh2.elf
 ASMFLAGS    = -Fbin -m68000 -no-opt -spaces -quiet
 SH2_ASFLAGS = --big -isa=sh2
 
+# Everything the two 68000 images include. Without these, editing a module or a
+# section does not rebuild either ROM -- and `make verify` then checks a stale
+# binary and passes for the wrong reason.
+SHARED_SRCS  = $(wildcard $(DISASM_DIR)/sections/*.asm) \
+               $(wildcard $(DISASM_DIR)/modules/68k/*/*.asm) \
+               $(wildcard $(DISASM_DIR)/modules/shared/*.asm)
+
 GENESIS_SRC  = $(DISASM_DIR)/aerobiz.asm
 BOOT_SRC     = $(DISASM_DIR)/ultimate_boot.asm
 # ultimate_boot.asm pulls these in; without listing them a change to the header
 # or to MdMain would not trigger a rebuild.
-BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm
+BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
 SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS))
@@ -64,7 +71,7 @@ all: genesis 32x
 
 genesis: $(GENESIS_ROM)
 
-$(GENESIS_ROM): $(GENESIS_SRC) | $(BUILD_DIR)
+$(GENESIS_ROM): $(GENESIS_SRC) $(SHARED_SRCS) | $(BUILD_DIR)
 	@echo "==> Assembling Genesis ROM..."
 	$(ASM) $(ASMFLAGS) -o $@ $<
 	@ls -lh $@
@@ -128,7 +135,7 @@ $(BOOT_HALF_M1): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2
 	@echo "==> Assembling 32X boot half, milestone 1 (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -DMILESTONE1=1 -o $@ $<
 
-$(GAME_HALF): $(GAME_SRC) | $(BUILD_DIR)
+$(GAME_HALF): $(GAME_SRC) $(SHARED_SRCS) | $(BUILD_DIR)
 	@echo "==> Assembling 32X game half (\$$900000)..."
 	$(ASM) $(ASMFLAGS) -o $@ $<
 
