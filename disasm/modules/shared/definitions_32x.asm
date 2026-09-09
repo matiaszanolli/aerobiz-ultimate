@@ -160,3 +160,21 @@ MARS_SCREEN_H       equ 224
 ; pixel data for line N.  A line is only displayed once its entry is written.
 MARS_FB_LINETAB     equ 512         ; bytes: 256 words of line table at page head
 MARS_FB_PAGE_SIZE   equ $20000      ; 1 Mbit = 128 KB per page
+
+; ---------------------------------------------------------------------------
+; 32X DMA stub -- PORT_ARCHITECTURE.md section 2.1
+;
+; The Genesis VDP cannot fetch a DMA source from $880000-$9FFFFF, which is why
+; the adapter carries an "RV: ROM to VRAM DMA" bit at all.  With RV = 1 the
+; cartridge is visible at its own offsets, so a source in the bank window is
+; translated to the same data's cartridge offset for the duration.
+; ---------------------------------------------------------------------------
+MARS_GAME_WINDOW    equ $00900000   ; bank 1: where the game image is addressed
+MARS_CART_OFFSET    equ $00100000   ; the same data at its own cartridge offset
+MARS_DMA_BIAS       equ MARS_GAME_WINDOW-MARS_CART_OFFSET
+
+; The DMA thunk lives in the boot half at a FIXED cartridge offset, because the
+; game half is a separate assembly and cannot see the boot half's symbols.  Keep
+; this in step with the pad in disasm/32x/md_main.asm.
+MARS_DMA_THUNK      equ $00880900   ; cartridge $000900 via the fixed window
+MARS_STOCK_TRIGGER  equ $00FFF000   ; the game's own 10-byte RAM trigger stub

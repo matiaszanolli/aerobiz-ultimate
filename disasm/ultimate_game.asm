@@ -14,6 +14,7 @@
 ROM_BASE        equ $00900000
 
     include "modules/shared/definitions.asm"
+    include "modules/shared/definitions_32x.asm"
 
     org ROM_BASE
 

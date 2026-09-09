@@ -46,7 +46,11 @@ l_011a8:
     andi.w  #$7f, d0
     or.w    d1, d0
     move.w  d0, (a4)
+    ifne ROM_BASE
+    jsr     (MARS_DMA_THUNK).l                          ; 32X: translate + RV window + trigger
+    else
     dc.w    $4EB9,$00FF,$F000                           ; jsr $FFF000
+    endif
 l_0121c:
     move.w  (a4), d1
     btst    #$1, d1

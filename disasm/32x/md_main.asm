@@ -73,6 +73,14 @@
 ; address.  It performs the TMSS write, loads the Z80 driver and runs the
 ; stock VDP init table, exactly as it does on a plain Genesis.
 ; ---------------------------------------------------------------------------
+    ifd RVPROBE
+; U-020 experiment. Runs before anything else touches the cartridge, then
+; parks; read the results out of $FFFD00.
+        bsr.w   RvProbeRun
+.rv_idle:
+        bra.s   .rv_idle
+    endif
+
     ifd MILESTONE1
 ; Milestone-1 cartridge: there is no game half to jump to (the image is
 ; $FF-filled from $100000 on), so idle here instead.  Everything the M1
@@ -80,8 +88,12 @@
 ; already happened by this point and stays observable while we spin.
 .m1_idle:
         bra.s   .m1_idle
-    else
+    endif
+
+    ifnd MILESTONE1
+    ifnd RVPROBE
         jmp     (GameEntryPoint).l
+    endif
     endif
 
 ; ---------------------------------------------------------------------------
@@ -94,6 +106,19 @@ MarsSecurityFailed:
         move    #$2700,sr
 .halt:
         bra.s   .halt
+
+; ---------------------------------------------------------------------------
+; The DMA thunk sits at a FIXED cartridge offset ($000900, i.e. $880900) so the
+; separately-assembled game half can call it by address.  MARS_DMA_THUNK in
+; definitions_32x.asm must match this pad.  A negative fill here means MdMain
+; has outgrown the gap.
+; ---------------------------------------------------------------------------
+        dcb.b   (CART_BASE+$000900)-*,$FF
+        include "32x/dma_stub.asm"
+
+    ifd RVPROBE
+        include "32x/rv_probe.asm"
+    endif
 
 ; ===========================================================================
 ; Exception and interrupt trampolines

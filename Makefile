@@ -32,6 +32,7 @@ MARS_DONOR     = reference/Virtua Racing Deluxe (USA).32x
 ULTIMATE_ROM   = $(BUILD_DIR)/aerobiz-ultimate.32x
 BOOT_HALF      = $(BUILD_DIR)/32x_boot.bin
 BOOT_HALF_M1   = $(BUILD_DIR)/32x_boot_m1.bin
+BOOT_HALF_PROBE= $(BUILD_DIR)/32x_boot_rvprobe.bin
 GAME_HALF      = $(BUILD_DIR)/32x_game.bin
 MARS_INIT_BIN  = $(BUILD_DIR)/mars_init.bin
 MARS_INIT_INC  = $(BUILD_DIR)/mars_init.inc
@@ -56,6 +57,8 @@ BOOT_SRC     = $(DISASM_DIR)/ultimate_boot.asm
 # ultimate_boot.asm pulls these in; without listing them a change to the header
 # or to MdMain would not trigger a rebuild.
 BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
+               $(DISASM_DIR)/32x/dma_stub.asm \
+               $(DISASM_DIR)/32x/rv_probe.asm
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
 SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS))
@@ -128,6 +131,19 @@ $(ULTIMATE_ROM): $(BOOT_HALF) $(GAME_HALF)
 $(BOOT_HALF): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -o $@ $<
+
+# U-020 experiment cartridge: MdMain runs the RV probe from work RAM and parks.
+# Carries the real game half so the bank window has recognisable content.
+32x-rvprobe: $(BUILD_DIR)/aerobiz-ultimate-rvprobe.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-rvprobe.32x: $(BOOT_HALF_PROBE) $(GAME_HALF)
+	@echo "==> Assembling RV probe cartridge..."
+	@cat $(BOOT_HALF_PROBE) $(GAME_HALF) > $@
+	@echo "==> Build complete: $@"
+
+$(BOOT_HALF_PROBE): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, RV probe (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DRVPROBE=1 -o $@ $<
 
 # Milestone-1 boot half: identical to the real one except that MdMain idles
 # instead of jumping to the game image, which the M1 cartridge does not carry.
