@@ -19,7 +19,7 @@ l_01002:
     move.b  d0, (a0,d2.w)
     addq.l  #$1, d0
     addq.l  #$8, d2
-    dbra    d1, $1002
+    dbra    d1, ROM_BASE+$1002
     moveq   #$0,d0
     subq.l  #$8, d2
     move.b  d0, (a0,d2.w)

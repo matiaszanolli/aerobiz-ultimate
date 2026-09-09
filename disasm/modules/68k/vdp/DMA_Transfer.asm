@@ -10,5 +10,5 @@ DMA_Transfer:
     move.l  #$c0040000, (a4)
 l_01658:
     move.w  (a0)+, (a3)
-    dbra    d0, $1658
+    dbra    d0, ROM_BASE+$1658
     rts

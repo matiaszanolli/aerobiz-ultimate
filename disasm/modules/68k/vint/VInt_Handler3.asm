@@ -31,14 +31,14 @@ l_01448:
 l_01450:
     move.w  (a3), d4
     move.w  d4, (a2)+
-    dbra    d2, $1450
+    dbra    d2, ROM_BASE+$1450
     add.l   d5, d0
     move.l  d0, $4e(a5)
     moveq   #$0,d2
     move.b  $4c(a5), d2
     subq.w  #$1, d3
     beq.b   l_01478
-    dbra    d7, $1448
+    dbra    d7, ROM_BASE+$1448
     move.l  a2, d1
     move.l  d1, $54(a5)
     move.b  d3, $4d(a5)

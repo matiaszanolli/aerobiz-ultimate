@@ -12,5 +12,5 @@ l_00f2c:
     bset    #$0, d0
 l_00f36:
     adda.l  #$a, a2
-    dbra    d5, $F2C
+    dbra    d5, ROM_BASE+$F2C
     rts

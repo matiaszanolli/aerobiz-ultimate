@@ -15,7 +15,7 @@ l_01770:
     or.w    d0, d2
 l_0177c:
     adda.l  #$a, a0
-    dbra    d5, $1770
+    dbra    d5, ROM_BASE+$1770
     move.w  d2, d0
     andi.w  #$f00, d0
     bne.b   l_01794

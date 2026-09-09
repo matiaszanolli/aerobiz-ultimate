@@ -18,6 +18,6 @@ l_019f0:
     andi.w  #$3f, d1
     or.b    d1, d0
     not.b   d0
-    bsr.b   $1A14
+    bsr.b   ROM_BASE+$1A14
     lea     $6(a1), a1
     rts

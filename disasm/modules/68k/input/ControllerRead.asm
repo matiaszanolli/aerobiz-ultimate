@@ -54,7 +54,7 @@ l_00b8a:
 l_00bda:
     addq.w  #$2, d3
     addi.l  #$80, d4
-    dbra    d0, $B8A
+    dbra    d0, ROM_BASE+$B8A
 l_00be6:
     move.w  $300(a5), d0
 l_00bea:

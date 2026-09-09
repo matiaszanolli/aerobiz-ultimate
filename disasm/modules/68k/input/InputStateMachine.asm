@@ -29,13 +29,13 @@ l_01b70:
     bcs.w   l_01be6
     move.b  d0, (a2)+
     andi.l  #$f0f0f0f, -(a2)
-    bsr.b   $1BEC
+    bsr.b   ROM_BASE+$1BEC
     bcs.w   l_01be6
-    bsr.b   $1BEC
+    bsr.b   ROM_BASE+$1BEC
     bcs.w   l_01be6
-    bsr.b   $1BEC
+    bsr.b   ROM_BASE+$1BEC
     bcs.w   l_01be6
-    bsr.b   $1BEC
+    bsr.b   ROM_BASE+$1BEC
     bcs.w   l_01be6
 l_01be6:
     move.b  #$60, (a0)

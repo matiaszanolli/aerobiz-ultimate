@@ -46,5 +46,5 @@ l_0173e:
     or.w    d2, $c60(a5)
 l_01750:
     adda.l  #$a, a0
-    dbra    d5, $16F0
+    dbra    d5, ROM_BASE+$16F0
     rts

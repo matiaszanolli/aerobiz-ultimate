@@ -12,7 +12,7 @@ InitAnimTable:
     moveq   #$A,d0
 l_01cc0:
     move.w  (a0)+, (a1)+
-    dbra    d0, $1CC0
+    dbra    d0, ROM_BASE+$1CC0
 l_01cc6:
     bsr.w UpdateAnimTimer
     move.b  #$1, $36(a5)
@@ -37,7 +37,7 @@ l_01d00:
     bne.b   l_01d18
 l_01d08:
     adda.l  #$a, a0
-    dbra    d1, $1CEE
+    dbra    d1, ROM_BASE+$1CEE
     subq.w  #$1, $48(a5)
     bne.b   l_01cc6
 l_01d18:

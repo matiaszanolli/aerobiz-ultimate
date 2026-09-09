@@ -44,14 +44,14 @@ l_0069e:
     add.w   d7, d5
     move.w  d5, (a5,d0.w)
     addq.w  #$2, d0
-    dbra    d1, $69E
+    dbra    d1, ROM_BASE+$69E
     moveq   #$1,d0
     move.b  d0, $b2a(a5)
     move.b  d0, $b2d(a5)
     bra.b   l_006ee
 l_006e2:
     move.b  #$0, $b2a(a5)
-    jmp     $7a4(pc)
+    jmp     ROM_BASE+$7a4(pc)
     nop
 l_006ee:
     rts

@@ -14,7 +14,7 @@ CmdSendZ80Param:
 l_024d2:
     move.b  d0, -(a1)
     ror.l   #$8, d0
-    dbra    d1, $24D2
+    dbra    d1, ROM_BASE+$24D2
     bra.w   l_025c2
 ; -- GameCommand 19/21: send single byte to Z80 --
 CmdSendZ80Byte:                                                 ; $0024DE
@@ -55,10 +55,10 @@ l_0252a:
 l_02540:
     move.b  (a0)+, d3
     move.b  d3, (a1)+
-    dbra    d0, $2540
+    dbra    d0, ROM_BASE+$2540
 l_02548:
     adda.l  #$4, a6
-    dbra    d1, $252A
+    dbra    d1, ROM_BASE+$252A
     movea.l  #$00A00008,a1
     move.b  d2, (a1)
     movea.l (a7)+, a6
@@ -101,7 +101,7 @@ l_025b4:
 l_025b6:
     adda.l  #$10, a1
     suba.l  d1, a1
-    dbra    d2, $2580
+    dbra    d2, ROM_BASE+$2580
 l_025c2:
     movea.l  #$00A00007,a1
     move.l  $a(a6), d1

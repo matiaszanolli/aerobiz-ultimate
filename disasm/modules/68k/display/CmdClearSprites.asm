@@ -13,7 +13,7 @@ l_007b8:
     move.w  d2, (a4,d0.w)
     addq.w  #$8, d0
 l_007be:
-    dbra    d1, $7B8
+    dbra    d1, ROM_BASE+$7B8
     jsr (InitSpriteLinks,PC)
     nop
     move.w  sr, -(a7)

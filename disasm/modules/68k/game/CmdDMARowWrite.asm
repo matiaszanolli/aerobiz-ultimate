@@ -52,6 +52,6 @@ l_009bc:
     move.l  $20(a5), d0
     add.l   d1, d0
     move.l  d0, $20(a5)
-    dbra    d2, $9BC
+    dbra    d2, ROM_BASE+$9BC
     move.w  (a7)+, sr
     rts

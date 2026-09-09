@@ -24,7 +24,7 @@ l_01a28:
     nop
     swap    d1
     move.b  (a0), d1
-    dbra    d3, $1A28
+    dbra    d3, ROM_BASE+$1A28
     bra.b   l_019ee
 l_01a56:
     move.b  #$40, (a0)
@@ -49,7 +49,7 @@ l_01a56:
     andi.w  #$3f, d1
     or.b    d1, d0
     not.b   d0
-    bsr.b   $1A14
+    bsr.b   ROM_BASE+$1A14
     swap    d2
     move.w  d2, d0
     not.b   d0

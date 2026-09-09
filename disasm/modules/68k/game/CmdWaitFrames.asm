@@ -15,6 +15,6 @@ l_0073c:
     btst    #$0, $36(a5)
     bne.b   l_0073c
 l_00744:
-    dbra    d0, $738
+    dbra    d0, ROM_BASE+$738
 l_00748:
     rts

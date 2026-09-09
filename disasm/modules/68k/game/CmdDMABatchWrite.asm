@@ -17,7 +17,7 @@ CmdDMABatchWrite:
     subq.l  #$1, d1
 l_00898:
     move.w  d2, (a0)+
-    dbra    d1, $898
+    dbra    d1, ROM_BASE+$898
     move.l  $1a(a6), d1
     move.l  $1e(a6), d2
     move.b  #$2, $1d(a5)
@@ -60,7 +60,7 @@ l_00908:
     move.l  $42(a5), d0
     add.l   d5, d0
     move.l  d0, $42(a5)
-    dbra    d2, $908
+    dbra    d2, ROM_BASE+$908
     move.l  a7, d3
     move.l  $1a(a6), d2
     lsl.l   #$1, d2

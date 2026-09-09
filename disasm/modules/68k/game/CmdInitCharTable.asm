@@ -29,7 +29,7 @@ l_00a92:
 l_00ab2:
     move.b  (a1)+, (a0,d1.w)
     addq.w  #$1, d1
-    dbra    d2, $AB2
+    dbra    d2, ROM_BASE+$AB2
     lsl.l   #$1, d3
     move.l  $12(a6), d0
     lsl.l   #$5, d0

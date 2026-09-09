@@ -8,12 +8,12 @@ CmdClearCharTable:
     moveq   #$0,d1
 l_00af6:
     move.l  d1, (a0)+
-    dbra    d0, $AF6
+    dbra    d0, ROM_BASE+$AF6
     moveq   #$7,d0
     movea.l  #$00FFF316,a0
 l_00b04:
     move.l  d1, (a0)+
-    dbra    d0, $B04
+    dbra    d0, ROM_BASE+$B04
     move.b  d1, $2fb(a5)
     move.w  d1, $2fc(a5)
     move.w  d1, $304(a5)

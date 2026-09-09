@@ -15,7 +15,7 @@ UpdateAnimTimer:
     moveq   #$A,d0
 l_01d80:
     move.w  (a0)+, (a1)+
-    dbra    d0, $1D80
+    dbra    d0, ROM_BASE+$1D80
 l_01d86:
     rts
 

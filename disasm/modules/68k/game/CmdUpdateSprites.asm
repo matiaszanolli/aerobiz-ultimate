@@ -24,7 +24,7 @@ l_00776:
     move.l  d4, (a1,d0.w)
     addq.w  #$4, d0
 l_0078a:
-    dbra    d1, $776
+    dbra    d1, ROM_BASE+$776
     jsr (InitSpriteLinks,PC)
     nop
     move.w  sr, -(a7)

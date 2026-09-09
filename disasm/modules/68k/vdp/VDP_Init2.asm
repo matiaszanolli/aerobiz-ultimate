@@ -10,6 +10,6 @@ VDP_Init2:
 l_01028:
     move.l  d0, (a6)+
     move.l  d0, (a6)+
-    dbra    d1, $1028
+    dbra    d1, ROM_BASE+$1028
     jsr (InitSpriteLinks,PC)
     rts

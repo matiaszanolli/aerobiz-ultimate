@@ -29,18 +29,18 @@ GameCommand:                                                 ; $000D64
     bra.s   .error                                           ; Infinite loop (invalid cmd)
 ; -- Jump table: 47 command handlers (indexed 0-46) --
 GameCommandTable:                                            ; $000D98
-    dc.l    $000003A2,$000003BC,$0000045A,$0000046A          ; 0=SetVDPReg, 1=SetScrollMode, 2=GetVDPReg, 3=GetVDPStatus
-    dc.l    $00000474,$0000047C,$000004F0,$00000520          ; 4=RunSubroutine, 5=SetupDMA, 6=TransferPlane, 7=LoadTiles
-    dc.l    $00000550,$000005F8,$0000060C,$00000658          ; 8=SetupSprite, 9=CopyMemory, 10=ReadInput, 11=SetupObject
-    dc.l    $000006F0,$0000070A,$00000724,$0000074A          ; 12=EnableDisplay, 13=HardwareInit, 14=WaitFrames, 15=UpdateSprites
-    dc.l    $000007A4,$000007D8,$000024B8,$000024DE          ; 16=ClearSprites, 17=TestVRAM, 18=SendZ80Param, 19=SendZ80Byte
-    dc.l    $000024FA,$000024DE,$0000250A,$00002568          ; 20=TriggerZ80, 21=SendZ80Byte, 22=LoadZ80Tables, 23=LoadZ80Encoded
-    dc.l    $000024FA,$000024FA,$00000876,$00000944          ; 24=TriggerZ80, 25=TriggerZ80, 26=DMABatchWrite, 27=DMARowWrite
-    dc.l    $000009F6,$00000A50,$00000A62,$00000A6C          ; 28=WaitDMA, 29=SetWorkFlags, 30=SystemReset, 31=InitCharTable
-    dc.l    $00000AE8,$00000B28,$00000CEC,$00000BF0          ; 32=ClearCharTable, 33=SetCharState, 34=SetAnimState, 35=InitAnimation
-    dc.l    $00000D04,$00000D3C,$00000E54,$00000E92          ; 36=SetTimer, 37=InitGameVars, 38=ClampCoords, 39=GetCoords
-    dc.l    $00000EAA,$00000EBA,$00000F18,$00000F22          ; 40=ReadCombinedWord, 41=SetBoundsAndClamp, 42=SetScrollParam, 43=ScanStatusArray
-    dc.l    $00000F42,$00000F7A,$00000D24                    ; 44=SaveBuffer, 45=StoreWorkByte, 46=ConditionalWrite
+    dc.l    ROM_BASE+$000003A2,ROM_BASE+$000003BC,ROM_BASE+$0000045A,ROM_BASE+$0000046A ; 0=SetVDPReg, 1=SetScrollMode, 2=GetVDPReg, 3=GetVDPStatus
+    dc.l    ROM_BASE+$00000474,ROM_BASE+$0000047C,ROM_BASE+$000004F0,ROM_BASE+$00000520 ; 4=RunSubroutine, 5=SetupDMA, 6=TransferPlane, 7=LoadTiles
+    dc.l    ROM_BASE+$00000550,ROM_BASE+$000005F8,ROM_BASE+$0000060C,ROM_BASE+$00000658 ; 8=SetupSprite, 9=CopyMemory, 10=ReadInput, 11=SetupObject
+    dc.l    ROM_BASE+$000006F0,ROM_BASE+$0000070A,ROM_BASE+$00000724,ROM_BASE+$0000074A ; 12=EnableDisplay, 13=HardwareInit, 14=WaitFrames, 15=UpdateSprites
+    dc.l    ROM_BASE+$000007A4,ROM_BASE+$000007D8,ROM_BASE+$000024B8,ROM_BASE+$000024DE ; 16=ClearSprites, 17=TestVRAM, 18=SendZ80Param, 19=SendZ80Byte
+    dc.l    ROM_BASE+$000024FA,ROM_BASE+$000024DE,ROM_BASE+$0000250A,ROM_BASE+$00002568 ; 20=TriggerZ80, 21=SendZ80Byte, 22=LoadZ80Tables, 23=LoadZ80Encoded
+    dc.l    ROM_BASE+$000024FA,ROM_BASE+$000024FA,ROM_BASE+$00000876,ROM_BASE+$00000944 ; 24=TriggerZ80, 25=TriggerZ80, 26=DMABatchWrite, 27=DMARowWrite
+    dc.l    ROM_BASE+$000009F6,ROM_BASE+$00000A50,ROM_BASE+$00000A62,ROM_BASE+$00000A6C ; 28=WaitDMA, 29=SetWorkFlags, 30=SystemReset, 31=InitCharTable
+    dc.l    ROM_BASE+$00000AE8,ROM_BASE+$00000B28,ROM_BASE+$00000CEC,ROM_BASE+$00000BF0 ; 32=ClearCharTable, 33=SetCharState, 34=SetAnimState, 35=InitAnimation
+    dc.l    ROM_BASE+$00000D04,ROM_BASE+$00000D3C,ROM_BASE+$00000E54,ROM_BASE+$00000E92 ; 36=SetTimer, 37=InitGameVars, 38=ClampCoords, 39=GetCoords
+    dc.l    ROM_BASE+$00000EAA,ROM_BASE+$00000EBA,ROM_BASE+$00000F18,ROM_BASE+$00000F22 ; 40=ReadCombinedWord, 41=SetBoundsAndClamp, 42=SetScrollParam, 43=ScanStatusArray
+    dc.l    ROM_BASE+$00000F42,ROM_BASE+$00000F7A,ROM_BASE+$00000D24 ; 44=SaveBuffer, 45=StoreWorkByte, 46=ConditionalWrite
 ; ---
 ; === Translated block $000E54-$000F82 ===
 ; 7 functions, 302 bytes

@@ -14,10 +14,10 @@ l_01ad4:
     asl.b   #$4, d0
     or.b    d0, d2
     swap    d2
-    bsr.b   $1B02
+    bsr.b   ROM_BASE+$1B02
     bcs.w   l_01c9a
     asl.w   #$4, d2
-    bsr.b   $1B02
+    bsr.b   ROM_BASE+$1B02
     bcs.w   l_01c9a
     bra.b   l_01b22
     bsr.w PollInputStatus

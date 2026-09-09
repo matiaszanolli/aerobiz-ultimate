@@ -9,5 +9,5 @@ Init5:
     move.l  #$40000000, ($00C00004).l
 l_010f6:
     move.w  (a6)+, (a5)
-    dbra    d1, $10F6
+    dbra    d1, ROM_BASE+$10F6
     rts

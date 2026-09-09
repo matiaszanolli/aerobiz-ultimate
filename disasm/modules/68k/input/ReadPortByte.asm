@@ -11,7 +11,7 @@ ReadPortByte:
     lea     $2(a1, d0.w), a2
     mulu.w  #$a, d0
     lea     $a(a1, d0.w), a1
-    bsr.b   $19AE
+    bsr.b   ROM_BASE+$19AE
     move.w  d0, -(a7)
     andi.w  #$e, d0
     add.w   d0, d0

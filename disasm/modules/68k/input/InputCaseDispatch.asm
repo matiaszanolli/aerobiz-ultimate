@@ -14,10 +14,10 @@ InputCaseDispatch:
     movem.l d2-d3, -(a7)
     moveq   #$0,d0
     move.b  #$70, (a0)
-    bsr.b   $19CA
+    bsr.b   ROM_BASE+$19CA
     swap    d1
     move.b  #$30, (a0)
     add.w   d0, d0
-    bsr.b   $19CA
+    bsr.b   ROM_BASE+$19CA
     movem.l (a7)+, d2-d3
     rts

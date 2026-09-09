@@ -24,13 +24,13 @@ l_01692:
     move.w  (a0,d0.w), (a1,d1.w)
     addq.w  #$2, d0
     addq.w  #$8, d1
-    dbra    d2, $1692
+    dbra    d2, ROM_BASE+$1692
     move.b  #$0, $b2d(a5)
     bra.b   l_016ba
 l_016a8:
     move.w  #$0, (a1,d1.w)
     addq.w  #$8, d1
-    dbra    d2, $16A8
+    dbra    d2, ROM_BASE+$16A8
     move.b  #$1, $b2d(a5)
 l_016ba:
     jsr (InitSpriteLinks,PC)

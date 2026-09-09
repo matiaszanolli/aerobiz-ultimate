@@ -28,7 +28,7 @@ l_03c0c:
     cmp.b   (a0), d0              ; does this byte match the region character?
     dc.w    $6700,$0360           ; beq $003F70 -- match found: jump to game start
     addq.l  #$1, a0               ; advance to next byte
-    dbra    d1, $3C0C             ; loop for all 16 bytes of security string
+    dbra    d1, ROM_BASE+$3C0C    ; loop for all 16 bytes of security string
 ; --- Phase: VDP Minimal Init for TMSS Screen ---
 ; The VDP is initialized just enough to write tile graphics and name-table cells
 ; for the TMSS license text. A4 = VDP data port, A5 = VDP control port.
@@ -76,10 +76,10 @@ l_03c62:
     bcc.b   l_03c6a               ; if bit was 0: skip OR (pixel stays transparent, color 0)
     or.l    d2, d4                ; bit was 1: OR the current color nibble position into output accumulator
 l_03c6a:
-    dbra    d5, $3C62             ; loop for all 8 bits of source byte
+    dbra    d5, ROM_BASE+$3C62    ; loop for all 8 bits of source byte
     move.l  d4, (a4)              ; write 8 expanded pixels (one tile row) to VDP data port (auto-increment +2 advances by word, but we write long)
-    dbra    d6, $3C5A             ; loop for all 8 rows of tile
-    dbra    d0, $3C56             ; loop for all 59 tiles
+    dbra    d6, ROM_BASE+$3C5A    ; loop for all 8 rows of tile
+    dbra    d0, ROM_BASE+$3C56    ; loop for all 59 tiles
 ; --- Phase: Render "DEVELOPED FOR USE ONLY WITH" Header Row ---
 ; WriteVDPTileRow takes d1 = tile row (Y position in name table), d0 = tile column (X),
 ; and (a0) = null-terminated string of ASCII chars to write as BAT name-table entries.

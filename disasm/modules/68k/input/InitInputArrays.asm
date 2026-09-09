@@ -13,7 +13,7 @@ ControllerPoll:                                             ; $00192E
 l_01938:
     move.w  #$ffff, (a2)
     lea     $a(a2), a2
-    dbra    d0, $1938
+    dbra    d0, ROM_BASE+$1938
     moveq   #$0,d0
     bsr.w ReadPortByte
     move.b  d0, (a1)
