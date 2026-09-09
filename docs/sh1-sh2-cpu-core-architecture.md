@@ -1,0 +1,1 @@
+../../32x-playground/docs/sh1-sh2-cpu-core-architecture.md

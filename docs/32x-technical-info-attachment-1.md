@@ -1,0 +1,1 @@
+../../32x-playground/docs/32x-technical-info-attachment-1.md

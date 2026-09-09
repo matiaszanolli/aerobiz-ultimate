@@ -1,0 +1,1 @@
+../../32x-playground/docs/sh7604-hardware-manual.md

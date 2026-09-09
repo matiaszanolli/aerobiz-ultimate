@@ -1,0 +1,32 @@
+# Build output
+build/
+
+# Original ROM files (do not commit copyrighted ROMs)
+*.bin
+*.gen
+*.smd
+
+# Agent runtime state (regenerated per session)
+analysis/agent-scratch/navigator/session_id.txt
+analysis/agent-scratch/engineer/findings.md
+analysis/agent-scratch/disasm/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+
+# 32X build inputs that are not distributable
+*.32x
+32X_BIOS
+reference/
