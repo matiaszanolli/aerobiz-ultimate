@@ -34,9 +34,14 @@ make clean
 `make verify` after every change to anything under `disasm/sections/` or
 `disasm/modules/68k/`. No exceptions.
 
-Two non-distributable inputs you must supply: the Genesis ROM as
-`Aerobiz Supersonic (USA).gen`, and any retail `.32x` image for the Sega initial
-program (`make 32x MARS_DONOR="path/to/game.32x"`).
+One non-distributable input you must supply: the Genesis ROM as
+`Aerobiz Supersonic (USA).gen`.
+
+The Sega initial program at `$3F0` is also not in git, but it does **not**
+require a retail cartridge: `tools/extract_mars_init.py` reads it either from a
+`.32x` image or from an assembly source carrying it as `dc.w` data, such as
+marsdev's `examples/32x-skeleton/md_src/md_start.s`. Both produce the same 1040
+bytes. Override with `make 32x MARS_DONOR="<path>"`.
 
 ## Ground Rules -- STRICTLY ENFORCED
 
@@ -113,8 +118,8 @@ $000000  68K vectors            -> trampolines at $880206+
 $000100  MD / 32X header ("SEGA 32X")
 $000200  68K jump table
 $0003C0  MARS user header (SH2 load parameters)
-$0003F0  Sega initial program + security -- verbatim, never patched, not in git
-$0006BC  MdMain: 68K 32X bring-up          (address comes from the donor block)
+$0003F0  Sega initial program + security -- 1040 bytes, verbatim, not in git
+$000800  MdMain: 68K 32X bring-up          (fixed: the block falls through here)
 $010000  SH2 program image                 (copied to SDRAM by the boot ROM)
 $100000  Aerobiz game image, linked $900000 (bank 1)
 ```
