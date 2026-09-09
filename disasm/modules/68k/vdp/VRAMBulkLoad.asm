@@ -8,7 +8,7 @@ VRAMBulkLoad:                                                ; $01D568
     movem.l d2-d3/a2-a3,-(sp)
     move.l  $000C(a6),d2                                     ; d2 = transfer count
     movea.l $0010(a6),a2                                     ; a2 = source pointer
-    movea.l #$00000D64,a3                                    ; a3 = GameCommand
+    movea.l #ROM_BASE+$000D64,a3                             ; a3 = GameCommand
     move.w  $000A(a6),d3                                     ; d3 = tile base
     lsl.w   #5,d3                                            ; tile# -> VRAM offset (*32)
     cmpi.w  #$0200,d2                                        ; count >= $200?

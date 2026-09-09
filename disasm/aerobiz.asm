@@ -7,6 +7,13 @@
 ; Verify: make verify (md5sum check against original ROM)
 ; ===========================================================================
 
+; --- Rebasing constant -----------------------------------------------------
+; The shared game sources express ROM addresses as ROM_BASE+$xxxxxx so the same
+; sources can assemble at $900000 for the 32X (disasm/ultimate_game.asm).  Here
+; it is zero, so every such expression collapses to the original literal and the
+; byte-identical build is preserved.  See PORT_ARCHITECTURE.md section 3.
+ROM_BASE        equ $00000000
+
 ; --- Hardware Definitions ---
     include "modules/shared/definitions.asm"
 
