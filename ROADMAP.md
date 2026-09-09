@@ -71,13 +71,24 @@ the layer is visibly alive. Exercises the line table format (256 words at the
 page head -- manual 3.3), the palette, the `FM` handover and the frame buffer
 swap. Watch for the byte-write-zero trap in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
-### U-003 -- Confirm Aerobiz's Genesis display mode [OPEN]
+### U-003 -- Confirm Aerobiz's Genesis display mode [DONE, and it is a problem]
 
-Manual 3.3 requires the Genesis VDP to be at a 320-pixel-wide mode whenever the
-32X layer is not blanked. Audit `SetDisplayMode` and the VDP register init table
-at `$0002A0` to establish whether Aerobiz runs H40 or H32, and in which screens.
-If any screen is H32, the world map plan in §4.1 needs rework. **Do this before
-U-002 grows into real rendering work.**
+**Aerobiz runs H32.** Measured, not read out of the register table: the
+emulator's own frame geometry over 3,000 frames of the Genesis build.
+
+| Frames | Mode |
+|---|---|
+| 0-320 | H40, 320x224 -- TMSS and boot screens |
+| 321 onward | **H32, 256x224** -- the KOEI intro, title and everything after |
+
+Manual 3.3 requires the Genesis VDP to be in a 320-wide mode whenever the 32X
+layer is not blanked. The game spends essentially all of its time at 256.
+
+So §4.1 as written does not work: the world map cannot go on the 32X layer with
+the Genesis planes in front while the game is in H32. Either the game moves to
+H40 -- which is 40 tiles per line against the 32 every screen is laid out for,
+so not a flag flip -- or the 32X layer is used only on screens converted to H40.
+Resolve this before U-030 starts; it is a design decision, not a bug.
 
 ---
 
@@ -130,7 +141,7 @@ shifted -- which is the property the whole rebasing scheme depends on. Roughly
 3,000 of those are the literal rebases; the rest are symbolic references that
 `org ROM_BASE` moved on their own.
 
-### U-013 -- Reach the title screen [OPEN, close]
+### U-013 -- Reach the title screen [OPEN, blocked on U-020]
 
 The game boots and runs on 32X. Running the cartridge and the Genesis build in
 the same emulator and diffing work RAM from `$FFF010`, they agree to within 17
@@ -143,11 +154,15 @@ Getting there needed one fix beyond rebasing: the jump table's slots are
 vector-indexed, not packed, so every interrupt was jumping into padding. Work
 RAM divergence went from 41 bytes to 2 when that was corrected.
 
-What is left is to actually **look at the screen**, which this harness cannot
-do: the prebuilt `profiling_frontend` predates the `VRD_VIDEO_DUMP_DIR` code in
-its own source, so it accepts the variables and writes nothing. Rebuilding it
-is U-091. Until then "reaches the title screen" is inference from work RAM, not
-observation, and this item stays open.
+We can now see the screen (U-091), and it is **black**. Every pixel, at every
+frame sampled. The Genesis reference at the same frames shows the KOEI intro
+and then the title attract sequence.
+
+That is the expected shape of the remaining failure, not a new one: the game
+logic runs, and nothing reaches VRAM or CRAM because the graphics loaders DMA
+from ROM and the `RV` window is not implemented. A failed palette DMA alone
+gives an all-black screen whatever is in VRAM. **Blocked on U-020**, which is
+the M3 gate, so this is M3 work rather than M2 work.
 
 ---
 
@@ -270,14 +285,19 @@ that assembly-only would be a poor trade. marsdev or crosstool-ng `sh-elf`.
 
 Not urgent -- M1 and M2 need no SH2 C -- but it blocks M4 and M5.
 
-### U-091 -- Emulator harness for automated boot tests [OPEN, raised]
+### U-091 -- Emulator harness for automated boot tests [DONE]
 
-Now blocking U-013. `../32x-playground/tools/libretro-profiling` already does
-most of it -- `--debug-script` with `run`, `read`, `regs` drove U-001 and U-013
--- but the checked-in `profiling_frontend` binary is older than its source and
-has no video capture, so there is no way to see a frame. Rebuild the frontend
-and the instrumented core, then add a screenshot comparison against the Genesis
-build to the boot test.
+`../32x-playground/tools/libretro-profiling` had everything needed except a
+usable binary: the checked-in `profiling_frontend` is older than its own source
+and has no video capture, so it accepted `VRD_VIDEO_DUMP_DIR` and silently
+wrote nothing. Rebuilding from the same source
+(`cc -O2 -o frontend profiling_frontend.c -ldl`) gives working RGB565 frame
+dumps. Nothing in that repository was modified; the build goes to a scratch
+directory.
+
+One patch is worth upstreaming there: the capture path hard-codes 320x224 and
+rejects anything else, which silently drops every Genesis-mode frame. Relaxing
+it to accept the reported geometry is what produced the H32 answer in U-003.
 
 U-001 is manual. A headless run that asserts on comm-port state would make every
 subsequent milestone cheaper to verify.

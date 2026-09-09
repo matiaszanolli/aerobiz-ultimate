@@ -11,6 +11,48 @@ manual section or the tool output that backs it.
 
 ## 2026-09-08
 
+### We can see the screen now, and it is black
+
+U-091 done, U-003 answered, U-013 diagnosed and handed to M3.
+
+The harness needed no new code, only a rebuild: the checked-in
+`profiling_frontend` in `../32x-playground` is older than its own source and has
+no video capture, so it accepted `VRD_VIDEO_DUMP_DIR` and silently wrote
+nothing. Rebuilt from the same source into a scratch directory -- that
+repository is untouched -- it dumps RGB565 frames.
+
+**The 32X output is black. Every pixel, every frame sampled.** The Genesis
+reference at the same frames shows the KOEI intro text and then the title
+attract sequence with clouds and an aircraft.
+
+This is the failure we predicted rather than a new one. The game logic runs --
+work RAM tracks the Genesis build to 17 bytes in 4 KB over 900 frames -- and
+nothing reaches VRAM or CRAM, because the graphics loaders DMA from ROM and the
+`RV` window is not implemented. A failed palette DMA on its own produces an
+all-black screen whatever VRAM holds. U-013 is therefore blocked on U-020 and
+belongs to M3.
+
+### Aerobiz runs H32, and §4.1 has a problem
+
+Measured rather than read out of the register table, by logging the emulator's
+frame geometry across 3,000 frames of the Genesis build:
+
+| Frames | Mode |
+|---|---|
+| 0-320 | H40, 320x224 -- TMSS and boot |
+| 321 onward | **H32, 256x224** -- KOEI intro, title, and on |
+
+Manual 3.3 requires a 320-wide Genesis mode whenever the 32X layer is not
+blanked, and the game is at 256 essentially always. So the world map cannot sit
+on the 32X layer with the Genesis planes in front as §4.1 describes. Moving the
+game to H40 means 40 tiles per line where every screen is laid out for 32 --
+not a flag flip. This is a design decision to take before U-030, and it is
+exactly what U-003 existed to surface.
+
+Found by accident, which is worth noting: the harness's capture path hard-codes
+320x224 and rejects anything else, so the Genesis frames were being dropped
+with no message. Chasing the missing frames answered the open question.
+
 ### M2: the rebased game assembles, boots and runs on the 32X
 
 U-010 and U-012 done, U-013 all but confirmed. 3,001 literals rebased in five
