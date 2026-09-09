@@ -8,13 +8,13 @@ HitTestMapTile:                                                  ; $007B1E
     movea.l $0018(sp),a1
     move.w  $001e(sp),d0
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0
+    movea.l #ROM_BASE+$0005ecbc,a0
     lea     (a0,d0.w),a0
     movea.l a0,a3
     moveq   #$0,d0
     move.b  (a3),d0
     add.w   d0,d0
-    movea.l #$0005e9fa,a0
+    movea.l #ROM_BASE+$0005e9fa,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     clr.w   d2
@@ -68,7 +68,7 @@ HitTestMapTile:                                                  ; $007B1E
     moveq   #$0,d0
     move.b  $0002(a3),d0
     add.w   d0,d0
-    movea.l #$0005e9fa,a0
+    movea.l #ROM_BASE+$0005e9fa,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     clr.w   d2

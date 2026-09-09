@@ -7,7 +7,7 @@ UnpackEventRecord:
     movem.l d2-d4/a2-a5, -(a7)
     move.w  $a(a6), d0
     lsl.w   #$3, d0
-    movea.l  #$0005FAB6,a0
+    movea.l  #ROM_BASE+$0005FAB6,a0
     lea     (a0,d0.w), a0
     movea.l a0, a5
     cmpi.b  #$1, $6(a5)

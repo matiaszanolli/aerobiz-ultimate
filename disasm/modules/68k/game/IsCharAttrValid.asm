@@ -7,7 +7,7 @@ IsCharAttrValid:
     moveq   #$1,d1
     move.w  $16(a7), d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a1
     movea.l a0, a2

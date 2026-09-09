@@ -17,9 +17,9 @@ DiagonalWipe:                                                  ; $01ACBA
     move.l  $0024(sp),d5
     move.l  $002c(sp),d7
 ; a2 = GameCommand ($0D64) -- central VDP/display dispatcher
-    movea.l #$0d64,a2
+    movea.l #ROM_BASE+$0d64,a2
 ; a3 = TilePlacement ($01E044) -- builds tile params and issues GameCmd #15
-    movea.l #$0001e044,a3
+    movea.l #ROM_BASE+$0001e044,a3
 ; d6 = tile index $0750: the wipe strip tile used throughout
     move.w  #$0750,d6
     clr.w   d2
@@ -265,7 +265,7 @@ ShowPlayerCompare:                                                  ; $01AEB8
     move.l  $001c(a6),d5
     move.l  $0010(a6),d6
     move.l  $0008(a6),d7
-    movea.l #$0d64,a2
+    movea.l #ROM_BASE+$0d64,a2
     cmp.w   d6,d7
     bne.b   .l1aee2
     move.w  #$0770,d4

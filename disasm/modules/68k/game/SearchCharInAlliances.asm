@@ -37,7 +37,7 @@ SearchCharInAlliances:
     move.l  (a0,d0.w), d0
     move.w  d4, d1
     lsl.w   #$2, d1
-    movea.l  #$0005ECDC,a0
+    movea.l  #ROM_BASE+$0005ECDC,a0
     and.l   (a0,d1.w), d0
     ; If no active cities in this category: skip to next category
     beq.b   .l30092
@@ -45,7 +45,7 @@ SearchCharInAlliances:
     ; $5ECBC is a ROM descriptor table: entry d4*4 has range info
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     ; a2 = category range descriptor
     movea.l a0, a2
@@ -286,11 +286,11 @@ SearchCharInAlliances:
     ; Format char name + city name into negotiation text buffers
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d6, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; ROM format string at $44768: "CharName negotiates for CityName" template
     pea     (ROM_BASE+$00044768).l
@@ -301,7 +301,7 @@ SearchCharInAlliances:
     move.w  d3, d0
     lsl.w   #$2, d0
     ; $47B80 = pointer table for negotiation dialog text variants by round
-    movea.l  #$00047B80,a0
+    movea.l  #ROM_BASE+$00047B80,a0
     move.l  (a0,d0.w), -(a7)
     pea     -$bc(a6)
     jsr sprintf

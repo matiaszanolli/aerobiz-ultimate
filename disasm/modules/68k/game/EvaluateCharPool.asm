@@ -15,7 +15,7 @@ EvaluateCharPool:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d6          ; d6 = player_index (0-3)
     lea     -$c(a6), a4         ; a4 = score_array base (6 × word, one per preference pair)
-    movea.l  #$00006EEA,a5      ; a5 = BitFieldSearch entry point
+    movea.l  #ROM_BASE+$00006EEA,a5 ; a5 = BitFieldSearch entry point
 ; --- Phase: Initialise score array and player context ---
     pea     ($000C).w           ; 12 bytes = 6 words
     clr.l   -(a7)               ; fill value = 0

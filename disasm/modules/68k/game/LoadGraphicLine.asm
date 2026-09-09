@@ -7,7 +7,7 @@ LoadGraphicLine:
     movem.l d2-d5/a2-a3, -(a7)
     move.w  $a(a6), d0
     lsl.w   #$3, d0
-    movea.l  #$00048868,a0
+    movea.l  #ROM_BASE+$00048868,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     move.w  (a0), d3

@@ -262,12 +262,12 @@ CalcRouteProfit:
     move.w  d0, d5                      ; d5 = city_b region
     move.w  d3, d0
     lsl.w   #$2, d0                     ; city_a region * 4 bytes per CharTypeRangeTable entry
-    movea.l  #$0005ECBC,a0             ; CharTypeRangeTable: 7 entries × 4 bytes, one per region
+    movea.l  #ROM_BASE+$0005ECBC,a0    ; CharTypeRangeTable: 7 entries × 4 bytes, one per region
     lea     (a0,d0.w), a0
     movea.l a0, a4                      ; a4 = CharTypeRangeTable[city_a_region]
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a5                      ; a5 = CharTypeRangeTable[city_b_region]
     cmp.w   d5, d3                      ; same region?

@@ -6,7 +6,7 @@ RoundValue:
     movem.l d2-d3/a2-a5, -(a7)
     move.l  $1c(a7), d2
     movea.l $20(a7), a3
-    movea.l  #$00048E00,a5
+    movea.l  #ROM_BASE+$00048E00,a5
     tst.w   d2
     ble.b   l_1dfa8
     cmpi.w  #$63, d2

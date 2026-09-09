@@ -35,8 +35,8 @@
 DisplayPlayerStatsScreen:
     movem.l d2-d4/a2-a5, -(a7)
     move.l  $20(a7), d2                             ; d2 = player index (0-3)
-    movea.l  #$0003B246,a4                          ; a4 = PrintfNarrow function pointer
-    movea.l  #$0003AB2C,a5                          ; a5 = SetTextCursor function pointer
+    movea.l  #ROM_BASE+$0003B246,a4                 ; a4 = PrintfNarrow function pointer
+    movea.l  #ROM_BASE+$0003AB2C,a5                 ; a5 = SetTextCursor function pointer
     ; --- Phase: Load player record and determine region ---
     move.w  d2, d0
     mulu.w  #$24, d0                                ; player * $24 (player record stride)
@@ -101,7 +101,7 @@ DisplayPlayerStatsScreen:
     ; Look up region name string and print it
     move.w  d3, d0
     lsl.w   #$2, d0                                 ; region * 4
-    movea.l  #$0005EC84,a0                          ; region name pointer table
+    movea.l  #ROM_BASE+$0005EC84,a0                 ; region name pointer table
     move.l  (a0,d0.w), -(a7)                        ; push region name string
     pea     (ROM_BASE+$00041498).l                  ; format string for region display
     jsr     (a4)                                    ; PrintfNarrow: "Region: <name>"
@@ -197,7 +197,7 @@ DisplayPlayerStatsScreen:
 .l26016:
     move.w  d2, d0
     lsl.w   #$2, d0                                 ; row * 4
-    movea.l  #$0005EC84,a0                          ; region name/category string table
+    movea.l  #ROM_BASE+$0005EC84,a0                 ; region name/category string table
     move.l  (a0,d0.w), -(a7)                        ; category string for this row
 .l26024:
     pea     (ROM_BASE+$0004142C).l                  ; row label format string
@@ -245,7 +245,7 @@ DisplayPlayerStatsScreen:
     move.w  ($00FF0004).l, d0                       ; d0 = current year
     ext.l   d0
     lsl.l   #$2, d0                                 ; year * 4 = longword index
-    movea.l  #$0005F6DE,a0                          ; year-label string pointer table
+    movea.l  #ROM_BASE+$0005F6DE,a0                 ; year-label string pointer table
     move.l  (a0,d0.l), -(a7)                        ; push year label string pointer
     jsr     (a4)                                    ; PrintfNarrow: print year label
     ; --- Phase: Print computed year offset value at (x=$16, y=$10) ---

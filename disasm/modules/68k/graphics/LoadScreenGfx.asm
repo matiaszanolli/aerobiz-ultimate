@@ -7,7 +7,7 @@ LoadScreenGfx:                                                  ; $0068CA
     link    a6,#$0
     movem.l d2/a2-a3,-(sp)
     move.l  $0008(a6),d2
-    movea.l #$0d64,a2
+    movea.l #ROM_BASE+$0d64,a2
     movea.l #$00ff1804,a3
     move.w  #$7,($00FF9A1C).l
     pea     ($0010).w

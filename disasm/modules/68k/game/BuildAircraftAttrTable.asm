@@ -65,8 +65,8 @@ BuildAircraftAttrTable:
     pea     (ROM_BASE+$0005F624).l
     bra.b   .l0c73a
 .l0c786:
-    movea.l  #$0005F26A,a4
-    movea.l  #$0005F3CE,a3
+    movea.l  #ROM_BASE+$0005F26A,a4
+    movea.l  #ROM_BASE+$0005F3CE,a3
     movea.l  #$00FF1298,a2
     move.l  #$5f572, -$4(a6)
     move.l  #$5f624, -$8(a6)

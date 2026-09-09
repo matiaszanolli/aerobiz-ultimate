@@ -4,7 +4,7 @@
 ; ============================================================================
 ProcessRouteOptionD:
     movem.l d2/a2-a3, -(a7)
-    movea.l  #$0001D6A4,a3
+    movea.l  #ROM_BASE+$0001D6A4,a3
     movea.l  #$00FF09C6,a2
     cmpi.b  #$ff, (a2)
     beq.b   l_2198a
@@ -41,7 +41,7 @@ l_21998:
     bne.b   l_21998
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     move.b  (a0,d0.w), d1
     move.l  d1, -(a7)
     jsr (CheckRouteEventMatch,PC)

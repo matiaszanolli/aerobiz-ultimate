@@ -9,8 +9,8 @@ ShowCharCompare:                                                  ; $00E6B2
     move.l  $0008(a6),d2
     move.l  $000c(a6),d3
     move.l  $0014(a6),d4
-    movea.l #$0003ab2c,a2
-    movea.l #$0003b246,a3
+    movea.l #ROM_BASE+$0003ab2c,a2
+    movea.l #ROM_BASE+$0003b246,a3
     lea     -$0008(a6),a4
     lea     -$0004(a6),a5
     clr.w   d5
@@ -83,7 +83,7 @@ ShowCharCompare:                                                  ; $00E6B2
     jsr     (a2)
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
     pea     (ROM_BASE+$0003E93C).l
     jsr     (ROM_BASE+$03B270).l
@@ -93,7 +93,7 @@ ShowCharCompare:                                                  ; $00E6B2
     lea     $0030(sp),sp
     move.w  d4,d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0
+    movea.l #ROM_BASE+$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
     pea     (ROM_BASE+$0003E938).l
     jsr     (ROM_BASE+$03B270).l

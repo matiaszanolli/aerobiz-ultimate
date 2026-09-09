@@ -10,7 +10,7 @@ ShowRouteInfo:                                                  ; $00F104
 ; d4 = panel_id: stack arg +$8, 0 = left panel (player 1), nonzero = right panel (player 2+)
     move.l  $0008(a6),d4
 ; a5 = PrintfWide ($03B270): format + display string in wide font
-    movea.l #$0003b270,a5
+    movea.l #ROM_BASE+$0003b270,a5
 ; d3 = 1: initial row counter increment / loop base index
     moveq   #$1,d3
 ; d2 = d4 * $B + 2: starting Y row for this panel (left panel: 2; right panel: $D+2=$F)
@@ -104,7 +104,7 @@ ShowRouteInfo:                                                  ; $00F104
     moveq   #$0,d0
     move.b  (a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005f926,a0
+    movea.l #ROM_BASE+$0005f926,a0
     move.l  (a0,d0.w),-(sp)
 ; PrintfWide: print city A name using format at $3EA62
     pea     (ROM_BASE+$0003EA62).l
@@ -120,7 +120,7 @@ ShowRouteInfo:                                                  ; $00F104
     moveq   #$0,d0
     move.b  $0001(a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
 ; PrintfWide: print city B name using format at $3EA5C
     pea     (ROM_BASE+$0003EA5C).l
@@ -271,7 +271,7 @@ ShowRouteInfo:                                                  ; $00F104
 ; $5F096 = route category name pointer table (domestic, international, etc.)
     move.w  d4,d0
     lsl.w   #$2,d0
-    movea.l #$0005f096,a0
+    movea.l #ROM_BASE+$0005f096,a0
     move.l  (a0,d0.w),-(sp)
 ; PrintfWide: print category name at $3EA44; branch to shared print-and-return tail
     pea     (ROM_BASE+$0003EA44).l
@@ -347,7 +347,7 @@ ShowRouteInfo:                                                  ; $00F104
     moveq   #$0,d0
     move.b  (a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005f926,a0
+    movea.l #ROM_BASE+$0005f926,a0
     move.l  (a0,d0.w),-(sp)
 ; right-panel city A format $3EA2C
     pea     (ROM_BASE+$0003EA2C).l
@@ -361,7 +361,7 @@ ShowRouteInfo:                                                  ; $00F104
     moveq   #$0,d0
     move.b  $0001(a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
 ; right-panel city B format $3EA26
     pea     (ROM_BASE+$0003EA26).l
@@ -484,7 +484,7 @@ ShowRouteInfo:                                                  ; $00F104
 ; look up route category string pointer: d4 * 4 into $5F096 category name table
     move.w  d4,d0
     lsl.w   #$2,d0
-    movea.l #$0005f096,a0
+    movea.l #ROM_BASE+$0005f096,a0
     move.l  (a0,d0.w),-(sp)
 ; right-panel category format $3EA0E
     pea     (ROM_BASE+$0003EA0E).l

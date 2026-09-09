@@ -5,7 +5,7 @@
 ; ============================================================================
 RunTransitionSteps:                                                  ; $023D80
     move.l  a2,-(sp)
-    movea.l #$00023dc6,a2
+    movea.l #ROM_BASE+$00023dc6,a2
     tst.w   ($00FF000A).l
     beq.b   .l23db2
     jsr     (a2)

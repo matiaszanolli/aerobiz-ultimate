@@ -23,12 +23,12 @@ PlacePlayerNameLabels:
     moveq   #$0,d0
     move.b  $1(a2), d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     move.b  (a0,d0.w), d1
     clr.l   -(a7)
     pea     ($0001).w
@@ -64,7 +64,7 @@ PlacePlayerNameLabels:
     moveq   #$0,d0
     move.b  $1(a2), d0
     add.w   d0, d0
-    movea.l  #$0005E948,a0
+    movea.l  #ROM_BASE+$0005E948,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3
     clr.l   -(a7)

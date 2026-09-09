@@ -6,7 +6,7 @@
 ShowPlayerScreen:                                                  ; $03CB36
     movem.l d2/a2-a3,-(sp)
     move.l  $0010(sp),d2
-    movea.l #$0001d3ac,a3
+    movea.l #ROM_BASE+$0001d3ac,a3
     jsr     (ROM_BASE+$01D71C).l
     jsr     (ROM_BASE+$01E398).l
     move.w  #$1,($00FF000C).l

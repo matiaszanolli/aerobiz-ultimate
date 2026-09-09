@@ -10,7 +10,7 @@ ShowCharStats:                                                  ; $01B0CE
     move.l  $000c(a6),d4
     move.l  $0008(a6),d5
     lea     -$0080(a6),a4
-    movea.l #$0003b270,a5
+    movea.l #ROM_BASE+$0003b270,a5
     moveq   #$1,d2
     clr.l   -(sp)
     pea     ($0008).w

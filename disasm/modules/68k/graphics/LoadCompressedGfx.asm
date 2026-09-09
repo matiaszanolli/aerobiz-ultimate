@@ -27,7 +27,7 @@ LoadCompressedGfx:                                                  ; $005FF6
     moveq   #$0,d0
     move.w  d2,d0
     lsl.l   #$2,d0
-    movea.l #$00088c90,a0
+    movea.l #ROM_BASE+$00088c90,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF1804).l
     jsr     (ROM_BASE+$003FEC).l

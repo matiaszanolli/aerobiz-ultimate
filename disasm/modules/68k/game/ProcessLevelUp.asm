@@ -95,7 +95,7 @@ l_351b8:
     jsr DrawBox
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d5, d0
     lsl.w   #$4, d0

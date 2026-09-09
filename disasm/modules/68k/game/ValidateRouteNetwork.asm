@@ -7,11 +7,11 @@ ValidateRouteNetwork:
     move.l  d2, -(a7)
     move.w  $e(a6), d0
     lsl.w   #$2, d0
-    movea.l  #$000483B8,a0
+    movea.l  #ROM_BASE+$000483B8,a0
     move.l  (a0,d0.w), -(a7)
     move.w  $12(a6), d0
     lsl.w   #$2, d0
-    movea.l  #$000483A4,a0
+    movea.l  #ROM_BASE+$000483A4,a0
     move.l  (a0,d0.w), -(a7)
     pea     -$80(a6)
     jsr sprintf

@@ -41,7 +41,7 @@ InitAllianceRecords:
     clr.w   d3
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
 ; a3 = current alliance type descriptor pointer (4 bytes per type: range_start, range_count)
     movea.l a0, a3
@@ -85,7 +85,7 @@ InitAllianceRecords:
     move.l  (a0,d0.w), d0
     move.w  d3, d1
     lsl.w   #$2, d1
-    movea.l  #$0005ECDC,a0
+    movea.l  #ROM_BASE+$0005ECDC,a0
 ; AND with the type's mask from ROM table $5ECDC (4 bytes per type)
     and.l   (a0,d1.w), d0
 ; If no bits match: this type is not relevant for this player, skip scoring
@@ -353,12 +353,12 @@ InitAllianceRecords:
 ; Look up d5's name string pointer from ROM table $5E680 (char name table, 4 bytes per entry)
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
 ; Look up d6's name string pointer from the same table
     move.w  d6, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
 ; sprintf: format the primary proposal line using format string at $4477A
 ; Output into local buffer -$18a(a6) -- inserts both character names
@@ -370,7 +370,7 @@ InitAllianceRecords:
     pea     -$18a(a6)
     move.w  $e(a6), d0
     lsl.w   #$2, d0
-    movea.l  #$00047B80,a0
+    movea.l  #ROM_BASE+$00047B80,a0
     move.l  (a0,d0.w), -(a7)
 ; sprintf: format the secondary proposal text using the primary line as argument
 ; Output into main text buffer -$ea(a6) (the longer char buffer)
@@ -489,7 +489,7 @@ InitAllianceRecords:
 ; Look up d5's name string from ROM name table $5E680 (4 bytes per entry = pointer)
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
 ; d5 name pointer -- pushed as sprintf argument
     move.l  (a0,d0.w), -(a7)
 ; Also look up d5's range bucket for the secondary format string selector
@@ -502,13 +502,13 @@ InitAllianceRecords:
 ; Use the range index to pick a direct-match variant format string from ROM table $5EC84
 ; $5EC84 has one format-string pointer per range bucket (8 buckets)
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
 ; Format string for this direct-match alliance type (range-specific wording)
     move.l  (a0,d0.w), -(a7)
 ; Look up d6's name string from $5E680
     move.w  d6, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
 ; d6 name pointer -- pushed as second name argument to sprintf
     move.l  (a0,d0.w), -(a7)
 ; Fixed secondary format string pointer at $47B8C (direct-match dialog variant, as opposed to $47B80 above)

@@ -8,9 +8,9 @@ SelectPreviewPage:                                                  ; $007784
     movem.l d2-d7/a2-a4,-(sp)
     move.l  $000c(a6),d6
     move.l  $0008(a6),d7
-    movea.l #$0004745c,a2
-    movea.l #$0001d568,a3
-    movea.l #$0d64,a4
+    movea.l #ROM_BASE+$0004745c,a2
+    movea.l #ROM_BASE+$0001d568,a3
+    movea.l #ROM_BASE+$0d64,a4
     moveq   #$1,d3
     move.w  #$0754,d5
     clr.w   d2

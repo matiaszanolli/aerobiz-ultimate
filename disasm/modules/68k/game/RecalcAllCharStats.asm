@@ -180,7 +180,7 @@ l_36b1c:
     moveq   #$0,d0
     move.b  (a3), d0             ; (a3) = stat_id byte for this entry
     lsl.w   #$2, d0              ; d0 *= 4 (4-byte entry stride in ROM descriptor table)
-    movea.l  #$0005E31A,a0       ; a0 = ROM stat_type descriptor table ($5E31A)
+    movea.l  #ROM_BASE+$0005E31A,a0 ; a0 = ROM stat_type descriptor table ($5E31A)
     lea     (a0,d0.w), a0        ; a0 = &stat_type_descriptor[stat_id]
     movea.l a0, a5               ; a5 = stat_type descriptor ptr (+$03 = accumulator index)
     ; Dispatch on descriptor +$03 (accumulator selector): 0 = primary, 2 = secondary, 3 = tertiary

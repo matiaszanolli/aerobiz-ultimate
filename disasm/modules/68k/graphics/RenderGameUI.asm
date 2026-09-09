@@ -6,8 +6,8 @@ RenderGameUI:
     ; --- Phase: Setup ---
     link    a6,#-$80           ; $80 bytes local: a5 = -$80(a6) = sprintf format buffer
     movem.l d2/a2-a5, -(a7)
-    movea.l  #$000238F0,a3     ; a3 = InitInfoPanel ($0238F0): info panel init routine
-    movea.l  #$00023958,a4     ; a4 = AnimateInfoPanel ($023958): info panel animation routine
+    movea.l  #ROM_BASE+$000238F0,a3 ; a3 = InitInfoPanel ($0238F0): info panel init routine
+    movea.l  #ROM_BASE+$00023958,a4 ; a4 = AnimateInfoPanel ($023958): info panel animation routine
     lea     -$80(a6), a5       ; a5 = local sprintf buffer ($80 bytes on stack)
     movea.l  #$00FF09CA,a2     ; a2 = route_field_b ($FF09CA): pending route event record
     ; --- Phase: Dispatch on event state byte 0 ---
@@ -86,12 +86,12 @@ l_22dca:
     moveq   #$0,d0
     move.b  $1(a2), d0         ; event subtype
     lsl.w   #$2, d0            ; d0 *= 4 (long pointer table index)
-    movea.l  #$0005E680,a0     ; a0 = ROM char name pointer table
+    movea.l  #ROM_BASE+$0005E680,a0 ; a0 = ROM char name pointer table
     move.l  (a0,d0.w), -(a7)  ; push char name string ptr as sprintf arg
     ; Fetch event-type label: $47D94 is a ROM pointer table indexed by event category
     move.w  d2, d0             ; d2 = event category (from ClassifyEvent)
     lsl.w   #$2, d0            ; d0 *= 4
-    movea.l  #$00047D94,a0     ; a0 = ROM event-category label pointer table
+    movea.l  #ROM_BASE+$00047D94,a0 ; a0 = ROM event-category label pointer table
     move.l  (a0,d0.w), -(a7)  ; push event label string ptr as sprintf arg
     ; Select format string: category 5 uses a different format (two args vs one)
     cmpi.w  #$5, d2
@@ -231,13 +231,13 @@ l_22f5e:
     ; Fetch trade result label from ROM table at $47DAC (indexed by result code)
     move.w  d2, d0             ; d2 = trade result code
     lsl.w   #$2, d0
-    movea.l  #$00047DAC,a0     ; a0 = ROM trade-result label pointer table
+    movea.l  #ROM_BASE+$00047DAC,a0 ; a0 = ROM trade-result label pointer table
     move.l  (a0,d0.w), -(a7)  ; push trade result label string
     ; Fetch char name from $5E680 table (indexed by event subtype)
     moveq   #$0,d0
     move.b  $1(a2), d0         ; event subtype = char index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0     ; a0 = ROM char name pointer table
+    movea.l  #ROM_BASE+$0005E680,a0 ; a0 = ROM char name pointer table
     move.l  (a0,d0.w), -(a7)  ; push char name string
     pea     (ROM_BASE+$0004808E).l ; ROM format string for trade result display
     move.l  a5, -(a7)          ; destination = local sprintf buffer

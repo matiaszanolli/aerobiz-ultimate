@@ -4,9 +4,9 @@
 ; ============================================================================
 HandleEventCallback:
     movem.l d2/a2-a5, -(a7)
-    movea.l  #$0000C860,a5
-    movea.l  #$0005F26A,a4
-    movea.l  #$0005F3CE,a3
+    movea.l  #ROM_BASE+$0000C860,a5
+    movea.l  #ROM_BASE+$0005F26A,a4
+    movea.l  #ROM_BASE+$0005F3CE,a3
     movea.l  #$00FF1298,a2
     tst.w   ($00FF0002).l
     bne.b   l_17eb8

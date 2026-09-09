@@ -8,7 +8,7 @@ UpdateCharacterStats:
     clr.w   d3
     move.w  $26(a7), d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a1
     moveq   #$0,d2

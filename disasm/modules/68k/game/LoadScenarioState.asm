@@ -4,10 +4,10 @@
 ; ============================================================================
 LoadScenarioState:
     movem.l d2-d3/a2-a5, -(a7)
-    movea.l  #$0004C974,a2
-    movea.l  #$00000D64,a3
+    movea.l  #ROM_BASE+$0004C974,a2
+    movea.l  #ROM_BASE+$00000D64,a3
     movea.l  #$00FF1804,a4
-    movea.l  #$00005092,a5
+    movea.l  #ROM_BASE+$00005092,a5
     clr.w   d2
     pea     ($0001).w
     jsr CmdSetBackground

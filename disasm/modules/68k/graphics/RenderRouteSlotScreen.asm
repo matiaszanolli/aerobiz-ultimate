@@ -12,7 +12,7 @@ RenderRouteSlotScreen:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d6          ; d6 = player_index (0-3): selects which player's route slots
     move.l  $c(a6), d7          ; d7 = display_mode (0-2 = portrait shown; 3+ = portrait hidden)
-    movea.l  #$00000D64,a4      ; a4 = GameCommand jump target
+    movea.l  #ROM_BASE+$00000D64,a4 ; a4 = GameCommand jump target
     movea.l  #$00FF1804,a5      ; a5 = save_buf_base: scratch buffer for LZ decompression output
 ; --- Phase: Screen clear and background setup ---
 ; Zero the 7-word local horizontal-offset array at -$e(a6)
@@ -67,11 +67,11 @@ RenderRouteSlotScreen:
 ; $4797C = ROM table of 3 word-indices into $A1B14 longword pointer table
     move.w  d7, d0
     add.w   d0, d0              ; d0 = d7 * 2 (word index)
-    movea.l  #$0004797C,a0      ; ROM word-index table for portrait resource offsets
+    movea.l  #ROM_BASE+$0004797C,a0 ; ROM word-index table for portrait resource offsets
     move.w  (a0,d0.w), d0       ; fetch word index for this mode
     andi.l  #$ffff, d0
     lsl.l   #$2, d0             ; d0 = index * 4 (longword table offset)
-    movea.l  #$000A1B14,a0      ; ROM longword pointer table: LZ-compressed portrait tile sets
+    movea.l  #ROM_BASE+$000A1B14,a0 ; ROM longword pointer table: LZ-compressed portrait tile sets
     move.l  (a0,d0.l), -(a7)   ; push compressed portrait data pointer
     move.l  a5, -(a7)           ; output to save_buf_base
     jsr LZ_Decompress            ; decompress character portrait tiles for this mode
@@ -187,7 +187,7 @@ l_10ebc:
 l_10ecc:
     move.w  d2, d0
     add.w   d0, d0              ; d0 = class_index * 2 (stride in descriptor table)
-    movea.l  #$0005F088,a0      ; ROM class descriptor table (2 bytes per class)
+    movea.l  #ROM_BASE+$0005F088,a0 ; ROM class descriptor table (2 bytes per class)
     lea     (a0,d0.w), a0
     movea.l a0, a3              ; a3 -> class portrait descriptor
 ; Place the character portrait tile:

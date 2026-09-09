@@ -43,9 +43,9 @@ DrawQuarterResultsScreen:
     ; d6 = $3F = 63: available special-tile index counter (counts down as tiles are placed)
     clr.w   d7
     ; d7 = 0: player loop counter (0..3)
-    movea.l  #$0004E378,a4
+    movea.l  #ROM_BASE+$0004E378,a4
     ; a4 = $4E378: ROM pointer to even-count tile graphic (used as separator tile)
-    movea.l  #$0004E37A,a3
+    movea.l  #ROM_BASE+$0004E37A,a3
     ; a3 = $4E37A: ROM pointer to odd-count tile graphic (used as fill tile in strips)
 ; --- Phase: Per-Player Panel Loop (d7 = player index, 0..3) ---
 l_26d42:

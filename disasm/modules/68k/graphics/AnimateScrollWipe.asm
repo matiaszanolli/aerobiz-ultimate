@@ -5,8 +5,8 @@
 ; ============================================================================
 AnimateScrollWipe:                                                  ; $023C9A
     movem.l d2/a2-a3,-(sp)
-    movea.l #$0001d98c,a2
-    movea.l #$0d64,a3
+    movea.l #ROM_BASE+$0001d98c,a2
+    movea.l #ROM_BASE+$0d64,a3
     tst.w   ($00FF000A).l
     beq.w   .l23d7a
     pea     ($0010).w

@@ -19,9 +19,9 @@
 RunQuarterScreen:                                                  ; $023EA8
     link    a6,#-$4
     movem.l d2-d7/a2-a5,-(sp)
-    movea.l #$0d64,a3                   ; a3 = GameCommand ($0D64) dispatcher
+    movea.l #ROM_BASE+$0d64,a3          ; a3 = GameCommand ($0D64) dispatcher
     movea.l #$00ff13fc,a4               ; a4 = input_mode_flag ($FF13FC)
-    movea.l #$0001e044,a5               ; a5 = display sub-function ($01E044)
+    movea.l #ROM_BASE+$0001e044,a5      ; a5 = display sub-function ($01E044)
     clr.w   d4                          ; d4 = state flag (0 = normal)
     moveq   #$0,d2
     move.b  ($00FF0016).l,d2            ; d2 = current_player (0-3)

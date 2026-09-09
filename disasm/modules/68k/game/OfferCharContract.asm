@@ -34,7 +34,7 @@ OfferCharContract:
 l_35b66:
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4
     moveq   #$0,d0

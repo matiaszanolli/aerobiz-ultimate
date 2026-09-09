@@ -12,7 +12,7 @@ DrawBox:                                                     ; $005A04
     move.l  $0010(a6),d3                    ; D3 = width
     move.l  $000C(a6),d4                    ; D4 = y (row)
     move.l  $0014(a6),d5                    ; D5 = height
-    movea.l #$00000D64,a2                   ; A2 = GameCommand
+    movea.l #ROM_BASE+$00000D64,a2          ; A2 = GameCommand
     lea     -$2(a6),a3                      ; A3 = &local_tile word (A6-2)
     lea     -$2(a6),a4                      ; A4 = same (tile ptr arg to GameCommand)
     movea.l #$00FFBD48,a5                   ; A5 = &win_bottom

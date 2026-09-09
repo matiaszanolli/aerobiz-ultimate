@@ -6,7 +6,7 @@ ExecuteEventAction:
     link    a6,#-$80
     movem.l d2-d5/a2-a5, -(a7)
     lea     -$80(a6), a4
-    movea.l  #$0005ECFC,a5
+    movea.l  #ROM_BASE+$0005ECFC,a5
     pea     ($001B).w
     pea     ($0020).w
     clr.l   -(a7)
@@ -42,7 +42,7 @@ l_2919c:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005F04C,a0
+    movea.l  #ROM_BASE+$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$00048370).l, -(a7)
     move.l  a4, -(a7)
@@ -61,7 +61,7 @@ l_291fe:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005F04C,a0
+    movea.l  #ROM_BASE+$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$00048378).l, -(a7)
     move.l  a4, -(a7)
@@ -85,7 +85,7 @@ l_29238:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005F04C,a0
+    movea.l  #ROM_BASE+$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$0004837C).l, -(a7)
     move.l  a4, -(a7)
@@ -104,7 +104,7 @@ l_2927c:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005F04C,a0
+    movea.l  #ROM_BASE+$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$00048380).l, -(a7)
     move.l  a4, -(a7)

@@ -10,9 +10,9 @@ ClearControllerS2:
     movem.l d2-d5/a2-a4, -(a7)
     ; Stack args: $8(a6)=player_index(d4), $e(a6)=initial_slot_index(d2)
     move.l  $8(a6), d4         ; d4 = player index (0-3)
-    movea.l  #$00000D64,a2     ; a2 = GameCommand ($000D64): central command dispatcher
-    movea.l  #$00007912,a3     ; a3 = ShowDialog ($007912): display dialog with table lookup
-    movea.l  #$00048476,a4     ; a4 = ROM data pointer (table base for slot display data)
+    movea.l  #ROM_BASE+$00000D64,a2 ; a2 = GameCommand ($000D64): central command dispatcher
+    movea.l  #ROM_BASE+$00007912,a3 ; a3 = ShowDialog ($007912): display dialog with table lookup
+    movea.l  #ROM_BASE+$00048476,a4 ; a4 = ROM data pointer (table base for slot display data)
     move.w  $e(a6), d2         ; d2 = current slot index (0-$B=normal slots, $A/$B=special)
     ; --- Phase: Initial screen setup ---
     jsr ClearBothPlanes        ; $00814A: clear both scroll planes (blank screen)
@@ -130,7 +130,7 @@ ClearControllerS2:
     ; Build character name string via sprintf and show confirm dialog
     move.w  d2, d0
     lsl.w   #$2, d0            ; d0 = d2 * 4 (long pointer index)
-    movea.l  #$0005F04C,a0     ; a0 = ROM slot-name pointer table
+    movea.l  #ROM_BASE+$0005F04C,a0 ; a0 = ROM slot-name pointer table
     move.l  (a0,d0.w), -(a7)  ; push slot name string ptr as sprintf arg
     move.l  (ROM_BASE+$00048482).l, -(a7) ; push format template string from ROM data ptr
     pea     -$80(a6)           ; destination = local sprintf buffer

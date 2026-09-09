@@ -5,7 +5,7 @@
 HandleCharListAction:
     link    a6,#-$80
     movem.l d2-d4/a2-a4, -(a7)
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     movea.l  #$00FF13FC,a3
     movea.l  #$00FF0008,a4
     clr.l   -(a7)
@@ -21,7 +21,7 @@ HandleCharListAction:
     nop
     move.w  (a4), d0
     lsl.w   #$2, d0
-    movea.l  #$00047A88,a0
+    movea.l  #ROM_BASE+$00047A88,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003F960).l
     pea     -$80(a6)

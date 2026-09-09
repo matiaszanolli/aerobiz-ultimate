@@ -9,7 +9,7 @@ DrawStatDisplay:                                                  ; $0088EA
     move.l  $0014(a6),d2
     move.l  $0010(a6),d3
     move.l  $0008(a6),d4
-    movea.l #$0d64,a2
+    movea.l #ROM_BASE+$0d64,a2
     pea     ($0020).w
     pea     ($0020).w
     clr.l   -(sp)
@@ -116,7 +116,7 @@ DrawStatDisplay:                                                  ; $0088EA
     bsr.w PlaceCharSprite
     move.w  d4,d0
     lsl.w   #$2,d0
-    movea.l #$0005e7e4,a0
+    movea.l #ROM_BASE+$0005e7e4,a0
     move.l  (a0,d0.w),-(sp)
     pea     (ROM_BASE+$0003E1A6).l
     jsr     (ROM_BASE+$03B270).l

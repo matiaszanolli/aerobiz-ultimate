@@ -20,7 +20,7 @@ ShowCharInfoPageS2:
     pea     ($079E).w
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$000485BE,a0
+    movea.l  #ROM_BASE+$000485BE,a0
     move.w  (a0,d0.w), d1
     move.l  d1, -(a7)
     jsr DrawCharInfoPanel
@@ -35,7 +35,7 @@ ShowCharInfoPageS2:
     jsr SetTextCursor
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005F04C,a0
+    movea.l  #ROM_BASE+$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0004471A).l
     jsr PrintfWide

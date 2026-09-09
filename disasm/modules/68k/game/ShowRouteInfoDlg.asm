@@ -17,7 +17,7 @@ ShowRouteInfoDlg:
 ;              -$190(a6) = combined format buffer (both counts together)
     link    a6,#-$190
     movem.l d2-d7/a2-a5, -(a7)
-    movea.l  #$0003B22C,a5       ; a5 = sprintf ($3B22C)
+    movea.l  #ROM_BASE+$0003B22C,a5 ; a5 = sprintf ($3B22C)
 ; MemFillByte: zero the 80-byte result buffer at -$a0(a6) before use
     pea     ($0050).w            ; count = $50 (80) bytes
     clr.l   -(a7)                ; fill value = 0
@@ -65,7 +65,7 @@ ShowRouteInfoDlg:
     moveq   #$0,d0
     move.b  (a3), d0             ; d0 = city_a index (route_slot+$0)
     add.w   d0, d0               ; d0 = city_a * 2 (stride into name table)
-    movea.l  #$0005E948,a0       ; a0 = city name byte-pair table base
+    movea.l  #ROM_BASE+$0005E948,a0 ; a0 = city name byte-pair table base
     lea     (a0,d0.w), a0
     movea.l a0, a2               ; a2 = pointer to city_a name entry
 
@@ -73,7 +73,7 @@ ShowRouteInfoDlg:
     moveq   #$0,d0
     move.b  $1(a3), d0           ; d0 = city_b index (route_slot+$1)
     add.w   d0, d0               ; d0 = city_b * 2
-    movea.l  #$0005E948,a0
+    movea.l  #ROM_BASE+$0005E948,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4               ; a4 = pointer to city_b name entry
 
@@ -134,7 +134,7 @@ ShowRouteInfoDlg:
 ; place a marker tile ($761) at the corresponding city position in the tile map.
 ; d2 = city bit index (0..31), d3 = established city count
 ; a2 = walking pointer into $5E948 city name table (2 bytes per entry)
-    movea.l  #$0005E948,a2       ; a2 = city name table base (walk entry by entry)
+    movea.l  #ROM_BASE+$0005E948,a2 ; a2 = city name table base (walk entry by entry)
     clr.w   d2                   ; d2 = city bit index
     clr.w   d3                   ; d3 = established city count
     bra.b   .l12670              ; jump to condition check first

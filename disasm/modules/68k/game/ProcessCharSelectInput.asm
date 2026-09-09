@@ -4,7 +4,7 @@
 ; ============================================================================
 ProcessCharSelectInput:
     movem.l d2/a2, -(a7)
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     clr.l   -(a7)
     jsr CmdSetBackground
     jsr (DrawDualPanels,PC)

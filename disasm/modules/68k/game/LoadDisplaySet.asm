@@ -6,7 +6,7 @@
 LoadDisplaySet:                                                  ; $01D444
     movem.l d2-d3/a2-a5,-(sp)
     move.l  $001c(sp),d3
-    movea.l #$0d64,a5
+    movea.l #ROM_BASE+$0d64,a5
     move.w  ($00FF1274).l,d0
     andi.l  #$0100,d0
     cmpi.l  #$0100,d0
@@ -17,7 +17,7 @@ LoadDisplaySet:                                                  ; $01D444
     bgt.w   .l1d518
     move.w  d3,d0
     mulu.w  #$6,d0
-    movea.l #$00047cec,a0
+    movea.l #ROM_BASE+$00047cec,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     move.w  (a0),d0
@@ -31,7 +31,7 @@ LoadDisplaySet:                                                  ; $01D444
     move.w  d2,d0
     ext.l   d0
     lsl.l   #$2,d0
-    movea.l #$000fc0ca,a0
+    movea.l #ROM_BASE+$000fc0ca,a0
     movea.l (a0,d0.l),a4
 .l1d4a8:                                                ; $01D4A8
     move.w  $0002(a2),d0
@@ -45,7 +45,7 @@ LoadDisplaySet:                                                  ; $01D444
     move.w  d2,d0
     ext.l   d0
     lsl.l   #$2,d0
-    movea.l #$000fc0ca,a0
+    movea.l #ROM_BASE+$000fc0ca,a0
     movea.l (a0,d0.l),a3
 .l1d4ca:                                                ; $01D4CA
     move.w  $0004(a2),d0
@@ -59,7 +59,7 @@ LoadDisplaySet:                                                  ; $01D444
     move.w  d2,d0
     ext.l   d0
     lsl.l   #$2,d0
-    movea.l #$000fc052,a0
+    movea.l #ROM_BASE+$000fc052,a0
     movea.l (a0,d0.l),a2
 .l1d4ec:                                                ; $01D4EC
     pea     ($0018).w
@@ -72,7 +72,7 @@ LoadDisplaySet:                                                  ; $01D444
     move.w  d3,d0
     ext.l   d0
     lsl.l   #$2,d0
-    movea.l #$000fc13e,a0
+    movea.l #ROM_BASE+$000fc13e,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($0017).w
     jsr     (a5)

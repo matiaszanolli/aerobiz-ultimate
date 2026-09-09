@@ -6,8 +6,8 @@
 DrawCharDetailPanel:                                                  ; $01AFF0
     movem.l d2-d3/a2-a3,-(sp)
     move.l  $001c(sp),d3
-    movea.l #$0004978c,a2
-    movea.l #$0d64,a3
+    movea.l #ROM_BASE+$0004978c,a2
+    movea.l #ROM_BASE+$0d64,a3
     moveq   #$1,d2
     pea     ($0040).w
     clr.l   -(sp)

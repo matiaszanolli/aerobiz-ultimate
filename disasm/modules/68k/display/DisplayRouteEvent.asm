@@ -5,9 +5,9 @@
 DisplayRouteEvent:
     movem.l d2/a2-a3, -(a7)
     move.l  $10(a7), d2
-    movea.l  #$00000D64,a2
-    movea.l  #$0001E044,a3
-    movea.l  #$0005F9BE,a0
+    movea.l  #ROM_BASE+$00000D64,a2
+    movea.l  #ROM_BASE+$0001E044,a3
+    movea.l  #ROM_BASE+$0005F9BE,a0
     move.b  (a0,d2.w), d0
     andi.l  #$ff, d0
     move.w  d0, d2
@@ -16,7 +16,7 @@ DisplayRouteEvent:
     moveq   #$0,d0
     move.w  d2, d0
     lsl.l   #$2, d0
-    movea.l  #$0009C808,a0
+    movea.l  #ROM_BASE+$0009C808,a0
     move.l  (a0,d0.l), -(a7)
     pea     ($00FF899C).l
     jsr LZ_Decompress

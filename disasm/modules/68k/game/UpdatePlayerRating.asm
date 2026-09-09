@@ -192,7 +192,7 @@ RemoveCharRelation:                                                  ; $034CC4
     move.b  (a2),d0
     lsl.w   #$2,d0
 ; ROM table at $5E680: char name string pointer table (4 bytes per char code)
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
 ; sprintf into -$1E(a6) (30-byte local buffer): char A's name
     pea     -$001e(a6)
@@ -201,7 +201,7 @@ RemoveCharRelation:                                                  ; $034CC4
     moveq   #$0,d0
     move.b  $0001(a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
 ; sprintf into -$3C(a6) (second 30-byte local buffer): char B's name
     pea     -$003c(a6)
@@ -272,7 +272,7 @@ RemoveCharRelation:                                                  ; $034CC4
 ; ROM $5ECBE: region base-code table, indexed by d4 (region category * 4, word reads)
     move.w  d4,d1
     lsl.w   #$2,d1
-    movea.l #$0005ecbe,a0
+    movea.l #ROM_BASE+$0005ecbe,a0
     move.b  (a0,d1.w),d1
     andi.l  #$ff,d1
 ; Subtract base to get relative bit position within this region's bitmask

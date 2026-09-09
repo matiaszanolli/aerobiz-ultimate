@@ -14,8 +14,8 @@ OrchestrateGraphicsPipeline:
     link    a6,#$0
     movem.l d2-d7/a2-a5, -(a7)
     movea.l $14(a6), a3          ; a3 = char_index_array (word per row entry)
-    movea.l  #$0003B270,a4       ; a4 = PrintfWide: format+display in wide (2-tile) font
-    movea.l  #$0003AB2C,a5       ; a5 = SetTextCursor: set text output X/Y position
+    movea.l  #ROM_BASE+$0003B270,a4 ; a4 = PrintfWide: format+display in wide (2-tile) font
+    movea.l  #ROM_BASE+$0003AB2C,a5 ; a5 = SetTextCursor: set text output X/Y position
     moveq   #$2,d4               ; d4 = base column X = 2
     moveq   #$3,d5               ; d5 = row stride = 3 (rows are spaced 3 apart vertically... actually used as d5+d2*2)
     jsr PreLoopInit              ; one-time display/timing initialization
@@ -196,7 +196,7 @@ OrchestrateGraphicsPipeline:
     move.b  (a0,d6.w), d0        ; byte for char d6 = display name index
     andi.l  #$ff, d0
     lsl.w   #$2, d0              ; name_index * 4 (long pointer table stride)
-    movea.l  #$0005ECFC,a0       ; ROM: city/char name string pointer table
+    movea.l  #ROM_BASE+$0005ECFC,a0 ; ROM: city/char name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push name string pointer
     pea     (ROM_BASE+$000413B6).l ; ROM format string: "%s" (character name)
     jsr     (a4)                 ; PrintfWide: display character name

@@ -10,7 +10,7 @@ RenderTilePattern:
     move.l  $8(a6), d5           ; d5 = slot type index (used to select roster for this slot)
     movea.l $c(a6), a2           ; a2 = pointer to char/slot record (char stat or player record)
     lea     -$20(a6), a4         ; a4 = local compat-index table (16 words on stack)
-    movea.l  #$00000D64,a5       ; a5 = GameCommand dispatch address (used throughout)
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand dispatch address (used throughout)
     ; GetLowNibble: extract low nibble from the record -- stores current selection byte
     move.l  a2, -(a7)
     jsr GetLowNibble             ; d0 = low nibble of record byte = current selection sub-field

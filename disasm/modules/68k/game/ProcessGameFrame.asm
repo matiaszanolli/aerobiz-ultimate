@@ -22,8 +22,8 @@ ProcessGameFrame:
     ; --- Phase: Setup ---
     move.l  $8(a6), d5              ; d5 = player_index (arg)
     lea     -$a0(a6), a3            ; a3 = local text buffer (160 bytes in frame)
-    movea.l  #$0002FBD6,a4          ; a4 = ShowText: display formatted text string
-    movea.l  #$00047C40,a5          ; a5 = format string pointer table base
+    movea.l  #ROM_BASE+$0002FBD6,a4 ; a4 = ShowText: display formatted text string
+    movea.l  #ROM_BASE+$00047C40,a5 ; a5 = format string pointer table base
     ; Compute player record offset: player_index * $24 (36 bytes/record)
     ; d0 = player_index * (8+1) * 4 = player_index * 36
     move.w  d5, d0

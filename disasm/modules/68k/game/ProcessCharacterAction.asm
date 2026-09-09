@@ -6,7 +6,7 @@ ProcessCharacterAction:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $2c(a7), d3
     movea.l $30(a7), a2
-    movea.l  #$0001489E,a3
+    movea.l  #ROM_BASE+$0001489E,a3
     movea.l  #$00FFBA80,a4
     movea.l  #$00FFBD4E,a5
     moveq   #$0,d0

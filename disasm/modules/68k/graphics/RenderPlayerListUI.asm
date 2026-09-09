@@ -5,9 +5,9 @@
 RenderPlayerListUI:
     link    a6,#-$4
     movem.l d2-d5/a2-a5, -(a7)
-    movea.l  #$00000D64,a3
-    movea.l  #$00064DEE,a4
-    movea.l  #$0003D0C0,a5
+    movea.l  #ROM_BASE+$00000D64,a3
+    movea.l  #ROM_BASE+$00064DEE,a4
+    movea.l  #ROM_BASE+$0003D0C0,a5
     clr.w   -$2(a6)
     clr.l   -(a7)
     clr.l   -(a7)
@@ -84,7 +84,7 @@ l_3dfd8:
     jsr SetTextCursor
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$000658D2,a0
+    movea.l  #ROM_BASE+$000658D2,a0
     movea.l (a0,d0.w), a2
     move.l  a2, -(a7)
     pea     (ROM_BASE+$00046848).l

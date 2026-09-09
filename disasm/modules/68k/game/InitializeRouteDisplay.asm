@@ -6,7 +6,7 @@ InitializeRouteDisplay:
     link    a6,#-$4
     movem.l d2-d4/a2-a5, -(a7)
     move.l  $8(a6), d2
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003AB2C,a4
     movea.l  #$00FF899C,a5
     move.w  d2, d0
     lsl.w   #$2, d0
@@ -39,7 +39,7 @@ InitializeRouteDisplay:
     jsr     (a4)
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0004120C).l
     jsr PrintfNarrow
@@ -49,7 +49,7 @@ InitializeRouteDisplay:
     moveq   #$0,d0
     move.b  (a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005EB2C,a0
+    movea.l  #ROM_BASE+$0005EB2C,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00041208).l
     jsr PrintfNarrow
@@ -115,7 +115,7 @@ InitializeRouteDisplay:
     add.l   d1, d0
     add.l   d0, d0
     move.l  d0, d4
-    movea.l  #$0005F6F4,a0
+    movea.l  #ROM_BASE+$0005F6F4,a0
     move.w  (a0,d0.w), d3
     pea     ($0010).w
     pea     ($0030).w
@@ -136,7 +136,7 @@ InitializeRouteDisplay:
     move.w  d3, d0
     ext.l   d0
     lsl.l   #$2, d0
-    movea.l  #$0009C7C4,a0
+    movea.l  #ROM_BASE+$0009C7C4,a0
     move.l  (a0,d0.l), -(a7)
     move.l  a5, -(a7)
     jsr LZ_Decompress
@@ -156,11 +156,11 @@ InitializeRouteDisplay:
     pea     ($0001).w
     pea     ($000E).w
     jsr GameCommand
-    movea.l  #$0005F6F2,a0
+    movea.l  #ROM_BASE+$0005F6F2,a0
     move.w  (a0,d4.w), d0
     andi.l  #$ffff, d0
     lsl.l   #$2, d0
-    movea.l  #$0009C7E0,a0
+    movea.l  #ROM_BASE+$0009C7E0,a0
     move.l  (a0,d0.l), -(a7)
     move.l  a5, -(a7)
     jsr LZ_Decompress

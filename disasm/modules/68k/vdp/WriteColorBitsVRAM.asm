@@ -16,7 +16,7 @@ WriteColorBitsVRAM:
     sub.w   (a3), d2
     move.w  (a3), d0
     add.w   d0, d0
-    movea.l  #$0004686E,a2
+    movea.l  #ROM_BASE+$0004686E,a2
     move.w  (a2,d0.w), d3
     and.w   (a5), d3
     andi.l  #$ffff, d3
@@ -43,7 +43,7 @@ l_04298:
     move.l  d1, d0
     move.w  d2, d1
     add.w   d1, d1
-    movea.l  #$0004686E,a2
+    movea.l  #ROM_BASE+$0004686E,a2
     and.w   (a2,d1.w), d0
     or.w    d0, (a4)
     movem.l (a7)+, d2-d3/a2-a5

@@ -18,7 +18,7 @@ ProcessCharJoin:
 ; $5ECBC: range descriptor table -- each 4-byte entry: [start, count_a, start_b, count_b]
     move.w  d6, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
 ; a3 = pointer to the city slot descriptor for this slot type
     movea.l a0, a3

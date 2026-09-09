@@ -15,7 +15,7 @@ BrowseRelations:                                                  ; $018F8E
     move.l  $0008(a6),d2        ; d2 = char_index (which character we are showing relations for)
     move.l  $000c(a6),d4        ; d4 = player_index (0-3: current player context)
     move.l  $0010(a6),d6        ; d6 = partner_type filter (which partner types to search)
-    movea.l #$0d64,a2           ; a2 = GameCommand entry point
+    movea.l #ROM_BASE+$0d64,a2  ; a2 = GameCommand entry point
     movea.l #$00ff13fc,a3       ; a3 = input_mode_flag ($FF13FC): nonzero = countdown input active
     lea     -$0012(a6),a4       ; a4 = animation frame counter (word on frame)
     lea     -$0010(a6),a5       ; a5 = partner_ptrs[0] (4 longwords: pointers to relation records)

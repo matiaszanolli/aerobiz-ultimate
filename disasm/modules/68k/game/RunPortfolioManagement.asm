@@ -13,7 +13,7 @@
 RunPortfolioManagement:
     link    a6,#-$20
     movem.l d2-d5/a2-a5, -(a7)
-    movea.l  #$00000D64,a3      ; a3 = GameCommand entry point
+    movea.l  #ROM_BASE+$00000D64,a3 ; a3 = GameCommand entry point
     lea     -$20(a6), a4        ; a4 = local state buffer (32 bytes)
     movea.l  #$00FF13FC,a5      ; a5 = input_mode_flag ($FF13FC): nonzero = UI input mode active
 ; --- Phase: Reset all 4 player records to inactive state ---

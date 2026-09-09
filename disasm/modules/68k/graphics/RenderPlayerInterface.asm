@@ -8,9 +8,9 @@ RenderPlayerInterface:
     movem.l d2-d7/a2-a5, -(a7)
     movea.l $c(a6), a2
     ; a2 = pointer to char stat record (per-player stat record, $FF05C4-based)
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
     ; a4 = GameCommand dispatcher (cached for frequent calls throughout function)
-    movea.l  #$0003AB2C,a5
+    movea.l  #ROM_BASE+$0003AB2C,a5
     ; a5 = SetTextCursor (cached for frequent text-position calls)
     ; --- GameCommand #$1A: clear screen region at col $14, row $0B, width $07, height $02 ---
     ; tile $077E = blank/background tile; clears the compatibility bar area
@@ -99,7 +99,7 @@ l_38634:
     ; d0 = a2[+$00] = character base field (identifier/type byte)
     lsl.w   #$2, d0
     ; d0 *= 4 to index into longword pointer table at $5E7E4 (character name strings)
-    movea.l  #$0005E7E4,a0
+    movea.l  #ROM_BASE+$0005E7E4,a0
     ; $5E7E4 = ROM table of character name string pointers (4 bytes each)
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00044FDE).l
@@ -157,7 +157,7 @@ l_38634:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E7E4,a0
+    movea.l  #ROM_BASE+$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00044FD6).l
     ; $44FD6 = format string for partner name line (wide font)

@@ -10,7 +10,7 @@ HandleRouteEventType1:
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005FA0E,a0
+    movea.l  #ROM_BASE+$0005FA0E,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     jsr RunTransitionSteps
@@ -29,7 +29,7 @@ HandleRouteEventType1:
     moveq   #$0,d0
     move.b  $3(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00047ECE).l
     move.l  a4, -(a7)
@@ -73,7 +73,7 @@ l_22a16:
     moveq   #$0,d0
     move.b  $3(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00047EEC).l
     move.l  a4, -(a7)

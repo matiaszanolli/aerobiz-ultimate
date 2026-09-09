@@ -51,7 +51,7 @@ CalcCharOutput:                                                  ; $00969A
     ; a4 = ROM action descriptor entry at $5E31A + type_index*4 (4 bytes each)
     move.w  d5,d0
     lsl.w   #$2,d0                  ; d0 = type_index * 4
-    movea.l #$0005e31a,a0           ; ROM table: 4-byte action descriptors by type
+    movea.l #ROM_BASE+$0005e31a,a0  ; ROM table: 4-byte action descriptors by type
     lea     (a0,d0.w),a0
     movea.l a0,a4                   ; a4 = action descriptor entry
     ; a3 = char_stat_tab descriptor for stat_type at $FF1298

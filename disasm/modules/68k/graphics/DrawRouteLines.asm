@@ -18,13 +18,13 @@ DrawRouteLines:                                                  ; $0098D2
     moveq   #$0,d0
     move.b  (a2),d0
     add.w   d0,d0
-    movea.l #$0005e948,a0
+    movea.l #ROM_BASE+$0005e948,a0
     lea     (a0,d0.w),a0
     movea.l a0,a4
     moveq   #$0,d0
     move.b  $0001(a2),d0
     add.w   d0,d0
-    movea.l #$0005e948,a0
+    movea.l #ROM_BASE+$0005e948,a0
     lea     (a0,d0.w),a0
     movea.l a0,a3
     move.b  (a4),d0

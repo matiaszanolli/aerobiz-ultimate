@@ -17,7 +17,7 @@ ManageCharSkills:
     jsr RangeLookup
     addq.l  #$4, a7
     move.w  d0, d7
-    movea.l  #$0005ECBC,a2
+    movea.l  #ROM_BASE+$0005ECBC,a2
     clr.w   d4
 l_353f6:
     cmp.w   d7, d4

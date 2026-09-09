@@ -22,9 +22,9 @@ HandleScenarioTurns:
     link    a6,#-$80                ; frame: $80 bytes local (for sprintf output at -$80(a6))
     movem.l d2-d5/a2-a5, -(a7)
     movea.l  #$00FF0002,a2          ; a2 -> month_counter ($FF0002) = current selection index
-    movea.l  #$0003B246,a3          ; a3 -> PrintfNarrow ($03B246)
-    movea.l  #$00000D64,a4          ; a4 -> GameCommand dispatcher ($0D64)
-    movea.l  #$00047630,a5          ; a5 -> ScenarioDescPtrs ($047630): 4 longword ptrs
+    movea.l  #ROM_BASE+$0003B246,a3 ; a3 -> PrintfNarrow ($03B246)
+    movea.l  #ROM_BASE+$00000D64,a4 ; a4 -> GameCommand dispatcher ($0D64)
+    movea.l  #ROM_BASE+$00047630,a5 ; a5 -> ScenarioDescPtrs ($047630): 4 longword ptrs
 
 ; ============================================================================
 ; --- Phase: Render scenario list panel ---
@@ -292,7 +292,7 @@ HandleScenarioTurns:
 ; Indexed by (a2) * 4 (longword stride), same as ScenarioDescPtrs.
     move.w  (a2), d0
     lsl.w   #$2, d0                 ; index * 4
-    movea.l  #$00047650,a0          ; a0 -> hub city string ptr table ($047650)
+    movea.l  #ROM_BASE+$00047650,a0 ; a0 -> hub city string ptr table ($047650)
     move.l  (a0,d0.w), -(a7)       ; arg: hub city string ptr
     pea     (ROM_BASE+$0003E556).l  ; format string at $03E556 (e.g. "HUB: %s")
     jsr     (a3)
@@ -303,7 +303,7 @@ HandleScenarioTurns:
     jsr SetTextCursor
     move.w  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$00047660,a0          ; a0 -> region/secondary info ptr table ($047660)
+    movea.l  #ROM_BASE+$00047660,a0 ; a0 -> region/secondary info ptr table ($047660)
     move.l  (a0,d0.w), -(a7)       ; arg: region info string ptr
     pea     (ROM_BASE+$0003E538).l  ; format string at $03E538
     jsr     (a3)

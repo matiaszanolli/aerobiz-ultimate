@@ -5,8 +5,8 @@
 GameUpdate1:
     link    a6,#$0
     movem.l d2-d4/a2-a3, -(a7)
-    movea.l  #$00000D64,a2               ; a2 = GameCommand dispatcher
-    movea.l  #$0003B270,a3               ; a3 = printf-style display function
+    movea.l  #ROM_BASE+$00000D64,a2      ; a2 = GameCommand dispatcher
+    movea.l  #ROM_BASE+$0003B270,a3      ; a3 = printf-style display function
 
 ; --- Phase: Load and display setup ---
     jsr ResourceLoad
@@ -68,7 +68,7 @@ l_2f628:
     ; Look up season name pointer from table at $5F096 using d3 as word index
     move.w  d3, d0
     lsl.w   #$2, d0                      ; d3 * 4 = longword index into season name pointer table
-    movea.l  #$0005F096,a0              ; season name pointer table (4 entries x 4 bytes)
+    movea.l  #ROM_BASE+$0005F096,a0     ; season name pointer table (4 entries x 4 bytes)
     move.l  (a0,d0.w), -(a7)            ; push ptr to season name string (e.g. "SPRING")
     pea     (ROM_BASE+$0004472A).l      ; ptr to format string for season label display
     jsr     (a3)                         ; print season label string
@@ -103,7 +103,7 @@ l_2f68e:
     lea     $2c(a7), a7
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005F096,a0              ; season name pointer table
+    movea.l  #ROM_BASE+$0005F096,a0     ; season name pointer table
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00044722).l      ; format string for season label (animation variant)
     jsr     (a3)
@@ -130,8 +130,8 @@ ShowQuarterReport:                                                  ; $02F712
     link    a6,#-$a0
     movem.l d2-d6/a2-a5,-(sp)
     lea     -$00a0(a6),a3
-    movea.l #$0001183a,a4
-    movea.l #$0003b22c,a5
+    movea.l #ROM_BASE+$0001183a,a4
+    movea.l #ROM_BASE+$0003b22c,a5
     moveq   #$0,d2
     move.b  ($00FF0016).l,d2
     move.w  d2,d0
@@ -285,11 +285,11 @@ ShowQuarterReport:                                                  ; $02F712
     clr.w   d3
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$00047b6c,a0
+    movea.l #ROM_BASE+$00047b6c,a0
     move.l  (a0,d0.w),-(sp)
     move.w  d5,d0
     lsl.w   #$2,d0
-    movea.l #$00047b60,a0
+    movea.l #ROM_BASE+$00047b60,a0
     move.l  (a0,d0.w),-(sp)
     move.l  (ROM_BASE+$00047B40).l,-(sp)
     move.l  a3,-(sp)

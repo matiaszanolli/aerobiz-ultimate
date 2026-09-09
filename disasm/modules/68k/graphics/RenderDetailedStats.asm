@@ -13,8 +13,8 @@
 RenderDetailedStats:
     link    a6,#-$4               ; allocate 4 bytes of frame local space (-$2(a6) = VRAM addr word)
     movem.l d2-d7/a2-a5, -(a7)
-    movea.l  #$00000D64,a4        ; a4 = GameCommand dispatcher
-    movea.l  #$00005092,a5        ; a5 = DisplaySetup ($005092)
+    movea.l  #ROM_BASE+$00000D64,a4 ; a4 = GameCommand dispatcher
+    movea.l  #ROM_BASE+$00005092,a5 ; a5 = DisplaySetup ($005092)
 ; Draw the player status UI header (name, cash, approval bar, etc.)
     bsr.w RenderPlayerStatusUI    ; render the top-of-screen player status bar
 ; Load the initial stat icon graphics tileset via DisplaySetup
@@ -84,12 +84,12 @@ l_3d4f2:
     moveq   #$12,d5               ; d5 = $12 = 18 (starting stat row index)
     move.w  d5, d0
     add.w   d0, d0               ; d0 = d5 * 2 (word offset)
-    movea.l  #$0005FDD8,a0       ; a0 -> ROM stat value table ($5FDD8)
+    movea.l  #ROM_BASE+$0005FDD8,a0 ; a0 -> ROM stat value table ($5FDD8)
     lea     (a0,d0.w), a0        ; a0 -> entry for stat d5 in value table
     movea.l a0, a3               ; a3 = stat value pointer (moves back by 2 per iteration)
     move.w  d5, d0
     add.w   d0, d0               ; d0 = d5 * 2
-    movea.l  #$0005FDFC,a0       ; a0 -> ROM stat icon/type table ($5FDFC)
+    movea.l  #ROM_BASE+$0005FDFC,a0 ; a0 -> ROM stat icon/type table ($5FDFC)
     lea     (a0,d0.w), a0        ; a0 -> entry for stat d5 in type table
     movea.l a0, a2               ; a2 = stat type pointer (moves back by 2 per iteration)
 ; --- First Stat-Bar Row Loop ---
@@ -99,7 +99,7 @@ l_3d51a:
 ; $5FDD6 is offset by -2 from $5FDD8, so (a0 + d5*2) at $5FDD6 gives the row's VRAM base.
     move.w  d5, d0
     add.w   d0, d0               ; d0 = d5 * 2
-    movea.l  #$0005FDD6,a0       ; a0 -> stat VRAM base table ($5FDD6, parallel to $5FDD8)
+    movea.l  #ROM_BASE+$0005FDD6,a0 ; a0 -> stat VRAM base table ($5FDD6, parallel to $5FDD8)
     move.w  (a0,d0.w), d2        ; d2 = VRAM base word for this stat row
 ; Queue VRAM read-back address for this stat row
     move.w  d4, d0
@@ -117,7 +117,7 @@ l_3d51a:
     pea     ($0030).w             ; icon pitch = $30 (wide style, 48px)
     move.w  (a2), d0             ; (a2) = stat type code for current row
     add.w   d0, d0               ; * 2 (word offset into aircraft icon table)
-    movea.l  #$000569D4,a0       ; a0 -> aircraft/stat icon graphics pointer table ($569D4)
+    movea.l  #ROM_BASE+$000569D4,a0 ; a0 -> aircraft/stat icon graphics pointer table ($569D4)
     pea     (a0, d0.w)           ; push pointer to this stat's aircraft icon data
     jsr     (a5)                  ; DisplaySetup: load aircraft icon tiles
 ; Call GameCommand #$0F to place the stat bar for this row
@@ -151,7 +151,7 @@ l_3d596:
     pea     ($0020).w             ; icon pitch = $20 (narrow style, 32px)
     move.w  (a2), d0             ; stat type code
     add.w   d0, d0               ; * 2
-    movea.l  #$000569D4,a0       ; a0 -> aircraft icon table
+    movea.l  #ROM_BASE+$000569D4,a0 ; a0 -> aircraft icon table
     pea     (a0, d0.w)           ; push icon data pointer
     jsr     (a5)                  ; load aircraft icon tiles (narrow)
 ; Place stat bar row (same logic as even but different GameCommand arg order)
@@ -371,12 +371,12 @@ l_3d776:
 ; d5 still holds its value from end of first pass (was decremented to $0A); reinit a2/a3
     move.w  d5, d0
     add.w   d0, d0               ; d0 = d5 * 2
-    movea.l  #$0005FDD8,a0       ; stat value table
+    movea.l  #ROM_BASE+$0005FDD8,a0 ; stat value table
     lea     (a0,d0.w), a0
     movea.l a0, a3               ; a3 -> current stat value entry for second pass
     move.w  d5, d0
     add.w   d0, d0
-    movea.l  #$0005FDFC,a0       ; stat type table
+    movea.l  #ROM_BASE+$0005FDFC,a0 ; stat type table
     lea     (a0,d0.w), a0
     movea.l a0, a2               ; a2 -> current stat type entry for second pass
     bra.w   l_3d8de              ; jump to second-pass loop test (d5 >= 0)
@@ -386,7 +386,7 @@ l_3d776:
 l_3d7f0:
     move.w  d5, d0
     add.w   d0, d0               ; d0 = d5 * 2
-    movea.l  #$0005FDD6,a0       ; stat VRAM base table
+    movea.l  #ROM_BASE+$0005FDD6,a0 ; stat VRAM base table
     move.w  (a0,d0.w), d2        ; d2 = VRAM base for this stat row (second pass)
     move.w  d4, d0
     move.l  d0, -(a7)
@@ -401,7 +401,7 @@ l_3d7f0:
     pea     ($0030).w
     move.w  (a2), d0
     add.w   d0, d0
-    movea.l  #$000569D4,a0
+    movea.l  #ROM_BASE+$000569D4,a0
     pea     (a0, d0.w)
     jsr     (a5)
     move.w  -$2(a6), d0
@@ -432,7 +432,7 @@ l_3d86c:
     pea     ($0020).w
     move.w  (a2), d0
     add.w   d0, d0
-    movea.l  #$000569D4,a0
+    movea.l  #ROM_BASE+$000569D4,a0
     pea     (a0, d0.w)
     jsr     (a5)
     move.w  -$2(a6), d0

@@ -6,7 +6,7 @@ ScanCitySlots:
     movem.l d2-d5/a2-a3, -(a7)
     move.l  $1c(a7), d2
     move.l  $20(a7), d5
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     movea.l  #$00FF13FC,a3
     pea     ($0020).w
     pea     ($0020).w

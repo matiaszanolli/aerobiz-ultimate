@@ -53,7 +53,7 @@ LoadSlotGraphics:                                                  ; $009F88
     move.w  d3,d0
     ext.l   d0
     lsl.l   #$2,d0
-    movea.l #$000a1ac8,a0
+    movea.l #ROM_BASE+$000a1ac8,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF899C).l
     jsr     (ROM_BASE+$003FEC).l

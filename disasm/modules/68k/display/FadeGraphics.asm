@@ -17,7 +17,7 @@ FadeGraphics:
     ; d0 = range bucket * 4 -> index into city-range table at $5ECBC
     lsl.w   #$2, d0
     ; $5ECBC: city-range descriptor table; each entry has count byte[0] and base byte[1]
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     ; save pointer to this city-range descriptor for outer-loop termination test
     move.l  a0, -$4(a6)

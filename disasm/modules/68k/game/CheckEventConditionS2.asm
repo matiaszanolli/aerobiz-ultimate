@@ -6,8 +6,8 @@ CheckEventConditionS2:
     link    a6,#-$84
     movem.l d2-d3/a2-a4, -(a7)
     lea     -$80(a6), a3
-    movea.l  #$0002377C,a4
-    movea.l  #$0005F9DE,a2
+    movea.l  #ROM_BASE+$0002377C,a4
+    movea.l  #ROM_BASE+$0005F9DE,a2
     clr.w   d3
 l_2900a:
     move.w  ($00FF0006).l, d0
@@ -49,7 +49,7 @@ l_29052:
     jsr AnimateInfoPanel
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0004838C,a0
+    movea.l  #ROM_BASE+$0004838C,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$000483A0).l, -(a7)
     move.l  a3, -(a7)
@@ -71,7 +71,7 @@ l_290aa:
     addq.w  #$1, d3
     cmpi.w  #$6, d3
     bcs.w   l_2900a
-    movea.l  #$0005FA2A,a2
+    movea.l  #ROM_BASE+$0005FA2A,a2
     clr.w   d3
 l_290be:
     move.w  ($00FF0006).l, d0
@@ -98,7 +98,7 @@ l_290be:
 l_29102:
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$00048384).l, -(a7)
     move.l  a3, -(a7)

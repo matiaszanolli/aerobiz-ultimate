@@ -12,7 +12,7 @@ RenderTileStrip:                                                  ; $005CFE
     move.l  $0014(a6),d6
     move.l  $0018(a6),d7
     lea     -$0002(a6),a3
-    movea.l #$0d64,a4
+    movea.l #ROM_BASE+$0d64,a4
     move.w  d2,d3
     ext.l   d3
     asr.l   #$3,d3
@@ -112,7 +112,7 @@ RenderTileStrip:                                                  ; $005CFE
     clr.l   -(sp)
     move.w  (a3),d0
     lsl.w   #$5,d0
-    movea.l #$00048a7c,a0
+    movea.l #ROM_BASE+$00048a7c,a0
     pea     (a0,d0.w)
     clr.l   -(sp)
     jsr     (ROM_BASE+$01D538).l
@@ -124,7 +124,7 @@ RenderTileStrip:                                                  ; $005CFE
     move.w  d2,d1
     add.w   d1,d1
     add.w   d1,d0
-    movea.l #$00048a7c,a0
+    movea.l #ROM_BASE+$00048a7c,a0
     move.w  (a0,d0.w),d0
     move.w  #$6666,d1
     eor.w   d1,d0

@@ -6,8 +6,8 @@ IsAllianceSlotValid:
     link    a6,#-$4
     movem.l d2-d7/a2-a5, -(a7)
     lea     $a(a6), a3
-    movea.l  #$00047B94,a4
-    movea.l  #$0001D6A4,a5
+    movea.l  #ROM_BASE+$00047B94,a4
+    movea.l  #ROM_BASE+$0001D6A4,a5
     move.w  (a3), d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0

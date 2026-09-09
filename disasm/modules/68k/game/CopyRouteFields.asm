@@ -6,7 +6,7 @@
 CopyRouteFields:                                                  ; $00F086
     movem.l a2-a3,-(sp)
     movea.l $000c(sp),a2
-    movea.l #$0001d538,a3
+    movea.l #ROM_BASE+$0001d538,a3
     pea     ($0008).w
     pea     ($00FF09C2).l
     clr.l   -(sp)

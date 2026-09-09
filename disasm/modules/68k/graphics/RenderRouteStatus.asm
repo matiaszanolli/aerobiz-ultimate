@@ -6,8 +6,8 @@ RenderRouteStatus:
     link    a6,#-$4
     movem.l d2-d3/a2-a3, -(a7)
     move.l  $8(a6), d3
-    movea.l  #$00000D64,a2
-    movea.l  #$0003CED0,a3
+    movea.l  #ROM_BASE+$00000D64,a2
+    movea.l  #ROM_BASE+$0003CED0,a3
     jsr ResourceUnload
     pea     ($0028).w
     pea     ($000E).w

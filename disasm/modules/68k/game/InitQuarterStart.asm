@@ -5,7 +5,7 @@
 InitQuarterStart:
     movem.l d2-d4/a2-a4, -(a7)
     move.l  $1c(a7), d3
-    movea.l  #$0001D520,a4
+    movea.l  #ROM_BASE+$0001D520,a4
     move.w  d3, d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0

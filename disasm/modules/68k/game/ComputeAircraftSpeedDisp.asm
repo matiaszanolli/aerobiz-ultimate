@@ -43,7 +43,7 @@ ComputeAircraftSpeedDisp:
     move.w  d2, d1
     mulu.w  #$6, d1
     add.w   d1, d0
-    movea.l  #$0005F96E,a0
+    movea.l  #ROM_BASE+$0005F96E,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4
     moveq   #$0,d0

@@ -5,7 +5,7 @@
 InitGameGraphicsMode:
     link    a6,#-$60
     movem.l d2/a2, -(a7)
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     clr.w   ($00FFA790).l
     move.l  #$8c81, -(a7)
     clr.l   -(a7)
@@ -28,7 +28,7 @@ InitGameGraphicsMode:
 .l0d470:
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$0004771C,a0
+    movea.l  #ROM_BASE+$0004771C,a0
     move.w  (a0,d0.w), d0
     addi.w  #$200, d0
     move.w  d2, d1

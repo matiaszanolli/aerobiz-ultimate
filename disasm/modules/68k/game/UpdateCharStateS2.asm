@@ -72,7 +72,7 @@ UpdateCharStateS2:
     move.b  (a0,d2.w), d0
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECFC,a0
+    movea.l  #ROM_BASE+$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0004227A).l
     pea     -$80(a6)

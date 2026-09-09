@@ -7,8 +7,8 @@ ManagePlayerInvoice:
     movem.l d2-d4/a2-a5, -(a7)
     move.l  $8(a6), d2
     lea     -$c0(a6), a3
-    movea.l  #$00027ACA,a4
-    movea.l  #$00007912,a5
+    movea.l  #ROM_BASE+$00027ACA,a4
+    movea.l  #ROM_BASE+$00007912,a5
     move.w  d2, d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0

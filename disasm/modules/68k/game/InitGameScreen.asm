@@ -29,7 +29,7 @@ InitGameScreen:
 l_3bca2:
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$00048DB0,a0
+    movea.l  #ROM_BASE+$00048DB0,a0
     move.l  (a0,d0.w), -(a7)
     jsr RenderTextBlock
     addq.l  #$4, a7

@@ -16,10 +16,10 @@
 BrowseMapPages:                                                  ; $017566
     movem.l d2-d6/a2-a5,-(sp)
     move.l  $0028(sp),d6            ; d6 = browse_flags arg
-    movea.l #$0d64,a2               ; a2 = GameCommand ($0D64)
+    movea.l #ROM_BASE+$0d64,a2      ; a2 = GameCommand ($0D64)
     movea.l #$00ff13fc,a3           ; a3 = input_mode_flag ($FF13FC)
-    movea.l #$0001e044,a4           ; a4 = TilePlacement ($01E044)
-    movea.l #$0004c974,a5           ; a5 = ROM graphics table base
+    movea.l #ROM_BASE+$0001e044,a4  ; a4 = TilePlacement ($01E044)
+    movea.l #ROM_BASE+$0004c974,a5  ; a5 = ROM graphics table base
     ; --- Phase: Draw background and main panel ---
     pea     ($0010).w               ; height = $10
     pea     ($0010).w               ; width = $10

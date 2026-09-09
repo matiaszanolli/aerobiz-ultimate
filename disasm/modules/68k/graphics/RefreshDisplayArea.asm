@@ -38,9 +38,9 @@ RefreshDisplayArea:
 
 ; --- Phase: Prologue -- set up register aliases and score the char pair ---
     movea.l $c(a6), a2          ; a2 = record ptr (char pair + display state)
-    movea.l  #$00000D64,a3      ; a3 = GameCommand dispatcher ($000D64)
+    movea.l  #ROM_BASE+$00000D64,a3 ; a3 = GameCommand dispatcher ($000D64)
     movea.l  #$00FF13FC,a4      ; a4 = input_mode_flag ($FF13FC)
-    movea.l  #$0003AB2C,a5      ; a5 = text-position/draw caller
+    movea.l  #ROM_BASE+$0003AB2C,a5 ; a5 = text-position/draw caller
 
     ; CharCodeScore(char_code_A, char_code_B): compute raw compatibility score.
     ; The two character codes are stored at a2[+$00] and a2[+$01].

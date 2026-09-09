@@ -11,7 +11,7 @@ LoadRouteDataS2:
     clr.w   d4
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3
 .l2a7f0:

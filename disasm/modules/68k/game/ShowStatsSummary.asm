@@ -439,11 +439,11 @@ ShowStatsSummary:                                                  ; $018214
     move.b  (a0,d0.w),d0        ; d0 = char name index (byte lookup)
     andi.l  #$ff,d0
     lsl.w   #$2,d0               ; d0 *= 4 (pointer table = 4 bytes per entry)
-    movea.l #$0005ecfc,a0        ; a0 = $5ECFC (char name string pointer table in ROM)
+    movea.l #ROM_BASE+$0005ecfc,a0 ; a0 = $5ECFC (char name string pointer table in ROM)
     move.l  (a0,d0.w),-(sp)      ; arg: char name string pointer (for "%s" in format)
     move.w  d3,d0                ; d0 = display format index
     lsl.w   #$2,d0               ; d0 *= 4
-    movea.l #$00047c0c,a0        ; a0 = $47C0C (display format string pointer table)
+    movea.l #ROM_BASE+$00047c0c,a0 ; a0 = $47C0C (display format string pointer table)
     move.l  (a0,d0.w),-(sp)      ; arg: format string pointer (header text for this result)
     move.l  a5,-(sp)             ; arg: output buffer a5
     jsr     (ROM_BASE+$03B22C).l                        ; jsr sprintf ($03B22C) -- format result
@@ -487,7 +487,7 @@ ShowStatsSummary:                                                  ; $018214
 .l185ea:                                                ; $0185EA
     ; $47C0C[d0*4] = format string pointer table for final summary header
     lsl.w   #$2,d0               ; d0 *= 4
-    movea.l #$00047c0c,a0        ; a0 = $47C0C (summary format string pointer table)
+    movea.l #ROM_BASE+$00047c0c,a0 ; a0 = $47C0C (summary format string pointer table)
     move.l  (a0,d0.w),-(sp)      ; arg: chosen summary format string
 .l185f6:                                                ; $0185F6
     ; RandRange(0, 3) + $02FBD6: generate random variant and render final summary

@@ -95,7 +95,7 @@ ShowGameStatus:                                                  ; $0271C6
     lea     $0010(sp),sp            ; clean up 4 longwords
     ; --- Phase: City Column Header Loop (7 city columns across the top) ---
     ; $5FAA6 = ROM table of city column descriptor bytes: byte[0]=col tile X, byte[1]=col tile width
-    movea.l #$0005faa6,a2           ; a2 = ROM city-column descriptor table (2 bytes per city column)
+    movea.l #ROM_BASE+$0005faa6,a2  ; a2 = ROM city-column descriptor table (2 bytes per city column)
     clr.w   d3                      ; d3 = city column loop counter (0..6, 7 columns total)
     ; Compute initial position in local tile data buffer for column 0
     move.w  d3,d0
@@ -147,7 +147,7 @@ ShowGameStatus:                                                  ; $0271C6
     moveq   #$0,d0
     move.w  d3,d0
     lsl.l   #$2,d0                  ; d0 = d3 * 4 (longword stride into pointer table)
-    movea.l #$000a1ac8,a0           ; a0 = ROM city-column graphics pointer table at $A1AC8
+    movea.l #ROM_BASE+$000a1ac8,a0  ; a0 = ROM city-column graphics pointer table at $A1AC8
     move.l  (a0,d0.l),-(sp)        ; push compressed graphics ptr for this city column
     pea     ($00FF899C).l           ; dest = screen_buf ($FF899C: $3A4-byte tile staging buffer)
     jsr     (ROM_BASE+$003FEC).l    ; jsr LZ_Decompress ($003FEC): decompress column icon graphic
@@ -182,7 +182,7 @@ ShowGameStatus:                                                  ; $0271C6
     addq.l  #$4,sp
     move.w  d0,d4                   ; d4 = hub_city range category (used to identify player's "home column")
     ; Set up city-column descriptor pointer and two RAM table pointers for this player
-    movea.l #$0005faa6,a2           ; a2 = ROM city-column descriptor table (2 bytes per column)
+    movea.l #ROM_BASE+$0005faa6,a2  ; a2 = ROM city-column descriptor table (2 bytes per column)
     ; $FF0270: 32-byte block, purpose TBD; indexed player*8 (stride 8): per-player city-slot occupancy byte
     move.w  d2,d0
     lsl.w   #$3,d0                  ; d0 = player_index * 8 (stride 8 into $FF0270 block)
@@ -340,7 +340,7 @@ ShowGameStatus:                                                  ; $0271C6
     ; --- Phase: Player Route-Count Row (4 players across bottom of status screen) ---
     ; Draws each player's route count / name token in the bottom row of the status grid
     ; $5FAB4 = alternate ROM city-column descriptor table variant (same 2-byte stride, different offsets)
-    movea.l #$0005fab4,a2           ; a2 = ROM city-column descriptor table variant B
+    movea.l #ROM_BASE+$0005fab4,a2  ; a2 = ROM city-column descriptor table variant B
     clr.w   d2                      ; d2 = player index (0..3)
     ; $FF0277 = byte within $FF0270 block at offset +$07: route-count column positioning bytes
     move.w  d2,d0

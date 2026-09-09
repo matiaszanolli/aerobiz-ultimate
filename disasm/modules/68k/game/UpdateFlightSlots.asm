@@ -12,7 +12,7 @@ UpdateFlightSlots:                                                  ; $01A672
     bne.w   .l1a75a
     move.w  d5,d0
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0
+    movea.l #ROM_BASE+$0005ecbc,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     clr.w   d4
@@ -25,7 +25,7 @@ UpdateFlightSlots:                                                  ; $01A672
     move.l  (a0,d0.w),d2
     move.w  d5,d0
     lsl.w   #$2,d0
-    movea.l #$0005ecdc,a0
+    movea.l #ROM_BASE+$0005ecdc,a0
     and.l   (a0,d0.w),d2
     moveq   #$0,d0
     move.b  (a2),d0

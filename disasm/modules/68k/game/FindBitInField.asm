@@ -8,7 +8,7 @@ FindBitInField:                                                  ; $009DC4
     move.l  $000c(sp),d1
     move.w  $0012(sp),d0
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0
+    movea.l #ROM_BASE+$0005ecbc,a0
     lea     (a0,d0.w),a0
     movea.l a0,a1
     moveq   #$0,d0

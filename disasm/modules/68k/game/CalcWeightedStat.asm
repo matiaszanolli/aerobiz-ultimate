@@ -15,7 +15,7 @@ CalcWeightedStat:                                                  ; $008016
     movea.l a0,a2
     moveq   #$0,d0
     move.b  (a2),d0
-    movea.l #$0005f07c,a0
+    movea.l #ROM_BASE+$0005f07c,a0
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     ext.l   d0

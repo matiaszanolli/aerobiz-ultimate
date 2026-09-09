@@ -8,7 +8,7 @@ ManageCharStatsS2:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d4             ; d4 = 1st arg: player_index (0-3), identifies which player is managing stats
     move.l  $c(a6), d7             ; d7 = 2nd arg: character slot index (which character to upgrade)
-    movea.l  #$00000D64,a5         ; a5 = GameCommand: central command dispatcher ($000D64)
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand: central command dispatcher ($000D64)
     ; Locate this player's player_record in $FF0018 array
     move.w  d4, d0
     mulu.w  #$24, d0               ; d0 = player_index * $24 (36-byte stride)

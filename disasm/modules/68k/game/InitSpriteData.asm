@@ -9,14 +9,14 @@ InitSpriteData:
     move.l  $8(a6), d5
     move.w  $e(a6), d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     move.l  a0, -$4(a6)
     move.b  (a0), d3
     andi.l  #$ff, d3
     move.w  d4, d0
     add.w   d0, d0
-    movea.l  #$0005F908,a0
+    movea.l  #ROM_BASE+$0005F908,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4
     clr.w   d6
@@ -24,7 +24,7 @@ InitSpriteData:
     move.w  #$7, -$6(a6)
     move.w  d3, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a5
     movea.l -$4(a6), a0
@@ -99,7 +99,7 @@ l_13fee:
     andi.l  #$ff, d3
     move.w  d3, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a5
     movea.l -$4(a6), a0

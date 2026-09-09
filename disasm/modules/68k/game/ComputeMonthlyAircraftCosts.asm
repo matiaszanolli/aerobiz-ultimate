@@ -194,7 +194,7 @@ ComputeMonthlyAircraftCosts:
     addq.l  #$4, a7
     move.w  d0, d3              ; d3 = region_category
     lsl.w   #$2, d0             ; category * 4 (4 bytes per CharTypeRangeTable entry)
-    movea.l  #$0005ECBC,a0      ; CharTypeRangeTable ($05ECBC) -- 7 entries * 4 bytes
+    movea.l  #ROM_BASE+$0005ECBC,a0 ; CharTypeRangeTable ($05ECBC) -- 7 entries * 4 bytes
     lea     (a0,d0.w), a0
     movea.l a0, a4              ; a4 = CharTypeRangeTable[region_category]
     clr.w   d6                  ; d6 = aircraft_category_pass (0-4, inner loop counter)

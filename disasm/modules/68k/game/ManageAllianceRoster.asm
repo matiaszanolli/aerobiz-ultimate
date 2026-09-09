@@ -23,7 +23,7 @@ ManageAllianceRoster:
     link    a6,#-$320
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d7                 ; d7 = player_index argument
-    movea.l  #$00000D64,a3            ; a3 = GameCommand dispatcher ($0D64)
+    movea.l  #ROM_BASE+$00000D64,a3   ; a3 = GameCommand dispatcher ($0D64)
     lea     -$17a(a6), a4              ; a4 = category_count_tab (7 word slots, one per category)
     movea.l  #$00FF13FC,a5            ; a5 = input_mode_flag ($FF13FC)
     clr.w   -$16c(a6)                 ; exit_flag = 0
@@ -298,7 +298,7 @@ ManageAllianceRoster:
 ; PrintfWide: print the category name (looked up from $05ECA0 by category index)
     move.w  d2, d0
     lsl.w   #$2, d0                    ; category * 4 (longword ptr table)
-    movea.l  #$0005ECA0,a0            ; alliance category name pointer table ($05ECA0)
+    movea.l  #ROM_BASE+$0005ECA0,a0   ; alliance category name pointer table ($05ECA0)
     move.l  (a0,d0.w), -(a7)         ; ptr to category name string
     pea     (ROM_BASE+$000447CA).l    ; wide printf format string at $47CA
     jsr PrintfWide
@@ -370,7 +370,7 @@ ManageAllianceRoster:
 ; PrintfWide: print city_a name (or swapped primary city)
     move.w  d3, d0
     lsl.w   #$2, d0                    ; city_index * 4
-    movea.l  #$0005E680,a0            ; CityNamePtrs ($05E680)
+    movea.l  #ROM_BASE+$0005E680,a0   ; CityNamePtrs ($05E680)
     move.l  (a0,d0.w), -(a7)         ; ptr to city name string
     pea     (ROM_BASE+$000447C6).l    ; wide printf format string at $447C6
     jsr PrintfWide
@@ -394,7 +394,7 @@ ManageAllianceRoster:
 ; PrintfWide: print city_b type name (airline company name)
     move.w  d4, d0
     lsl.w   #$2, d0                    ; city_b_index * 4
-    movea.l  #$0005E7E4,a0            ; CharTypePtrs ($05E7E4): airline company name ptrs
+    movea.l  #ROM_BASE+$0005E7E4,a0   ; CharTypePtrs ($05E7E4): airline company name ptrs
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$000447C2).l    ; wide printf format string at $447C2
     jsr PrintfWide

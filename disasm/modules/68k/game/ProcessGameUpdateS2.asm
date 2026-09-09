@@ -5,7 +5,7 @@
 ProcessGameUpdateS2:
     movem.l d2/a2, -(a7)
     move.l  $c(a7), d2
-    movea.l  #$00010CAC,a2
+    movea.l  #ROM_BASE+$00010CAC,a2
     jsr PreLoopInit
     pea     ($0010).w
     pea     ($0010).w

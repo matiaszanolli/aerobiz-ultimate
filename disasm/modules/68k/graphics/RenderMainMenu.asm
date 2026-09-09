@@ -4,8 +4,8 @@
 ; ============================================================================
 RenderMainMenu:
     movem.l a2-a3, -(a7)
-    movea.l  #$00000D64,a2
-    movea.l  #$0003B994,a3
+    movea.l  #ROM_BASE+$00000D64,a2
+    movea.l  #ROM_BASE+$0003B994,a3
     pea     ($0010).w
     clr.l   -(a7)
     pea     (ROM_BASE+$0007651E).l

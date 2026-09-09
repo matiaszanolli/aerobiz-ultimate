@@ -11,10 +11,10 @@ InitAllGameTables:
 ; a4 = $FF9A20 (route_slots base: 4 players × 40 slots × $14 bytes = $C80 bytes)
 ; a5 = MemCopy ($1D538): copy a region (used to replicate player 0 slots to players 1-3)
     movem.l d2/a2-a5, -(a7)
-    movea.l  #$0001D520,a2       ; a2 = MemFillByte routine pointer
+    movea.l  #ROM_BASE+$0001D520,a2 ; a2 = MemFillByte routine pointer
     movea.l  #$00FF88DC,a3       ; a3 = $FF88DC (auxiliary char/group table)
     movea.l  #$00FF9A20,a4       ; a4 = route_slots base ($FF9A20)
-    movea.l  #$0001D538,a5       ; a5 = MemCopy routine pointer
+    movea.l  #ROM_BASE+$0001D538,a5 ; a5 = MemCopy routine pointer
 
 ; --- Phase: Zero Player Records ($FF0018, $90 bytes) ---
 ; player_records: 4 × $24 (36) bytes per player = $90 total. All fields zeroed.

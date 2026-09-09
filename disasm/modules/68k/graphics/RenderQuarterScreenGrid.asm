@@ -53,7 +53,7 @@ l_21084:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.l   #$2, d0
-    movea.l  #$0009C840,a0
+    movea.l  #ROM_BASE+$0009C840,a0
     move.l  (a0,d0.l), -(a7)
     move.l  a5, -(a7)
     jsr LZ_Decompress

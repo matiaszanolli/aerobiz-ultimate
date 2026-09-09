@@ -30,13 +30,13 @@ RunAircraftParamShuffle:
     pea     -$e(a6)
     move.w  d5, d0
     mulu.w  #$e, d0
-    movea.l  #$00047692,a0
+    movea.l  #ROM_BASE+$00047692,a0
     pea     (a0, d0.w)
     jsr MemMove
     lea     $10(a7), a7
     move.w  d5, d0
     add.w   d0, d0
-    movea.l  #$00047684,a0
+    movea.l  #ROM_BASE+$00047684,a0
     move.w  (a0,d0.w), d2
     clr.w   d3
     move.w  d2, d0
@@ -88,7 +88,7 @@ RunAircraftParamShuffle:
     moveq   #$0,d0
     move.w  d3, d0
     lsl.l   #$2, d0
-    movea.l  #$000473A0,a0
+    movea.l  #ROM_BASE+$000473A0,a0
     move.l  (a0,d0.l), (a3)
     clr.w   d4
     clr.w   d2

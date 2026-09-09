@@ -8,11 +8,11 @@ RunIntroLoop:
     link    a6,#-$80
     movem.l d2-d4/a2-a5, -(a7)
 ; a3 = GameCommand ($000D64) cached for all indirect calls
-    movea.l  #$00000D64,a3
+    movea.l  #ROM_BASE+$00000D64,a3
 ; a4 = -$80(a6): local work buffer for scroll/color data (128 bytes)
     lea     -$80(a6), a4
 ; a5 = $3BD1E: ROM callback used at l_3bea6 -- the "exit to title" routine
-    movea.l  #$0003BD1E,a5
+    movea.l  #ROM_BASE+$0003BD1E,a5
 ; --- Phase: Initial Display Setup (Intro Backgrounds) ---
 ; DisplaySetup: load and configure the 4 background display layers for the intro screen
 ; Layer 0: source pointer from ROM table at $77016 (first scenario preview background)
@@ -126,7 +126,7 @@ l_3beae:
     move.w  d2, d0
     lsl.w   #$4, d0
 ; ROM $747CE: table of scenario preview tile blocks, stride $10 bytes per scenario
-    movea.l  #$000747CE,a0
+    movea.l  #ROM_BASE+$000747CE,a0
     pea     (a0, d0.w)
     pea     ($0002).w
     clr.l   -(a7)
@@ -145,7 +145,7 @@ l_3bed6:
 ; d3 mod 2 -> alternates between the two backgrounds in ROM table at $77046
     jsr SignedMod
     lsl.l   #$2, d0
-    movea.l  #$00077046,a0
+    movea.l  #ROM_BASE+$00077046,a0
     move.l  (a0,d0.l), -(a7)
     jsr DisplaySetup
 ; WaitForStartButton($20 = 32 frames): show this preview for 32 frames or until Start
@@ -186,7 +186,7 @@ l_3bf3e:
     moveq   #$2,d1
     jsr SignedMod
     lsl.l   #$2, d0
-    movea.l  #$00077046,a0
+    movea.l  #ROM_BASE+$00077046,a0
     move.l  (a0,d0.l), -(a7)
     jsr DisplaySetup
     lea     $c(a7), a7
@@ -236,7 +236,7 @@ l_3bfb0:
     moveq   #$0,d0
     move.w  d2, d0
     lsl.l   #$2, d0
-    movea.l  #$00077016,a0
+    movea.l  #ROM_BASE+$00077016,a0
     move.l  (a0,d0.l), -(a7)
     jsr MemMove
 ; MemMove($20 bytes): copy 32 bytes from $7702E[d2*4] into a4+$20 (second palette block)
@@ -248,7 +248,7 @@ l_3bfb0:
     moveq   #$0,d0
     move.w  d2, d0
     lsl.l   #$2, d0
-    movea.l  #$0007702E,a0
+    movea.l  #ROM_BASE+$0007702E,a0
     move.l  (a0,d0.l), -(a7)
     jsr MemMove
 ; MemMove($20 bytes): copy 32 bytes from $7701A[d2*4] into a2 (second buffer plane A)
@@ -257,7 +257,7 @@ l_3bfb0:
     moveq   #$0,d0
     move.w  d2, d0
     lsl.l   #$2, d0
-    movea.l  #$0007701A,a0
+    movea.l  #ROM_BASE+$0007701A,a0
     move.l  (a0,d0.l), -(a7)
     jsr MemMove
 ; MemMove($20 bytes): copy 32 bytes from $77032[d2*4] into a4+$60 (second buffer plane B)
@@ -269,7 +269,7 @@ l_3bfb0:
     moveq   #$0,d0
     move.w  d2, d0
     lsl.l   #$2, d0
-    movea.l  #$00077032,a0
+    movea.l  #ROM_BASE+$00077032,a0
     move.l  (a0,d0.l), -(a7)
     jsr MemMove
     lea     $30(a7), a7

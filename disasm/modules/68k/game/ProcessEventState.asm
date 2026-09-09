@@ -6,7 +6,7 @@ ProcessEventState:
     link    a6,#-$80
     movem.l d2-d5/a2-a5, -(a7)
     move.l  $8(a6), d5
-    movea.l  #$000181C6,a4
+    movea.l  #ROM_BASE+$000181C6,a4
     lea     -$80(a6), a5
     movea.l  #$00FF09C2,a3
     clr.w   d2
@@ -25,7 +25,7 @@ l_22146:
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$3, d0
-    movea.l  #$0005F9DE,a0
+    movea.l  #ROM_BASE+$0005F9DE,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     addq.l  #$3, a2
@@ -35,12 +35,12 @@ l_22146:
     jsr RangeLookup
     addq.l  #$4, a7
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$2, d0
-    movea.l  #$00047D7C,a0
+    movea.l  #ROM_BASE+$00047D7C,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00047DC0).l
     move.l  a5, -(a7)
@@ -91,7 +91,7 @@ l_2220e:
     moveq   #$0,d0
     move.b  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     move.b  (a2), d3
@@ -114,7 +114,7 @@ l_22260:
     moveq   #$0,d0
     move.b  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     move.b  $2(a2), d3
@@ -152,12 +152,12 @@ l_222b8:
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005FA11,a0
+    movea.l  #ROM_BASE+$0005FA11,a0
     move.b  (a0,d0.w), d3
     moveq   #$0,d0
     move.b  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00047DF0).l
     move.l  a5, -(a7)

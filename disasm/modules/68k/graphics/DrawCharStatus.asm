@@ -19,7 +19,7 @@ DrawCharStatus:
     clr.l   -(a7)
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$000484EA,a0
+    movea.l  #ROM_BASE+$000484EA,a0
     move.l  (a0,d0.w), -(a7)
     moveq   #$0,d0
     move.w  d2, d0

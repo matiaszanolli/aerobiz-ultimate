@@ -266,7 +266,7 @@ l_1b62a:
     ; d0 = player_record.hub_city (city index for range lookup)
     add.w   d0, d0
     ; d0 = hub_city * 2 (word stride into event tile coordinate table)
-    movea.l  #$0005E948,a0
+    movea.l  #ROM_BASE+$0005E948,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     ; a2 = ROM table entry at $5E948[hub_city*2] — event tile position record

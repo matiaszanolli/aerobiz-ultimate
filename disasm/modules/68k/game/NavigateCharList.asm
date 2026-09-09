@@ -18,7 +18,7 @@ NavigateCharList:
     jsr SetTextWindow
     move.w  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$00047A78,a0
+    movea.l  #ROM_BASE+$00047A78,a0
     move.l  (a0,d0.w), -(a7)
     jsr PrintfWide
     move.w  (a2), d0
@@ -41,7 +41,7 @@ l_178c4:
     jsr SetTextWindow
     move.w  (a3), d0
     lsl.w   #$2, d0
-    movea.l  #$00047A78,a0
+    movea.l  #ROM_BASE+$00047A78,a0
     move.l  (a0,d0.w), -(a7)
     jsr PrintfWide
     move.w  (a3), d0

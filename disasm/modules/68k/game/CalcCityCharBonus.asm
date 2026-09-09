@@ -59,7 +59,7 @@ CalcCityCharBonus:                                                  ; $01801C
     moveq   #$0,d0
     move.b  (a3),d0
     lsl.w   #$2,d0
-    movea.l #$0005e31a,a0
+    movea.l #ROM_BASE+$0005e31a,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     tst.b   $0003(a2)

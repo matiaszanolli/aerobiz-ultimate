@@ -7,9 +7,9 @@ ShowCompatibilityScore:
     move.l  $2c(a7), d2
     move.l  $28(a7), d3
     move.l  $24(a7), d5
-    movea.l  #$00000D64,a2
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$00000D64,a2
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
     cmp.w   d2, d3
     beq.w   l_1d2c6
     move.w  d2, d0

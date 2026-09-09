@@ -14,7 +14,7 @@ HandleScenarioMenuSelect:
     pea     ($0030).w
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0004825C,a0
+    movea.l  #ROM_BASE+$0004825C,a0
     move.l  (a0,d0.w), -(a7)
     jsr DisplaySetup
     move.l  -$4(a6), d2

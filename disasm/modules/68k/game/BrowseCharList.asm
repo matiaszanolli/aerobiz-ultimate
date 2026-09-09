@@ -18,7 +18,7 @@ BrowseCharList:                                                  ; $008E0C
     link    a6,#$0
     movem.l d2-d6/a2-a5,-(sp)
     movea.l $000c(a6),a3        ; a3 = list_config_ptr (word: current selection state)
-    movea.l #$0d64,a4           ; a4 = GameCommand entry
+    movea.l #ROM_BASE+$0d64,a4  ; a4 = GameCommand entry
     movea.l #$00ff13fc,a5       ; a5 = input_mode_flag ($FF13FC)
     move.w  #$ff,d4             ; d4 = prev_hit_index = $FF (no prior hover)
 ; $FFBD64 = charlist_ptr: two-word scroll state block:

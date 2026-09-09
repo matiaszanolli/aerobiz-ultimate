@@ -7,7 +7,7 @@ HandleCharEventTrigger:
     movem.l d2-d5/a2-a5, -(a7)
     move.l  $8(a6), d3
     lea     -$80(a6), a4
-    movea.l  #$0000D648,a5
+    movea.l  #ROM_BASE+$0000D648,a5
     move.w  d3, d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0
@@ -63,7 +63,7 @@ HandleCharEventTrigger:
     jsr MenuSelectEntry
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00042304).l
     move.l  a4, -(a7)
@@ -86,7 +86,7 @@ HandleCharEventTrigger:
     jsr     (a5)
     addq.l  #$4, a7
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$000422C8).l
     move.l  a4, -(a7)

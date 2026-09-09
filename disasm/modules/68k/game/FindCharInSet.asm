@@ -29,7 +29,7 @@ l_3acc6:
     ; advance table index to next byte
 
 l_3acc8:
-    movea.l  #$00048978,a0
+    movea.l  #ROM_BASE+$00048978,a0
     move.b  (a0,d2.w), d3
     ; d3 = table[d2]: load next byte from the set table
     ; The table is a null-terminated list of byte values (delimiter characters).

@@ -366,7 +366,7 @@ RunAIMainLoop:
     move.b  (a0,d5.w), d0              ; char type byte for candidate d5
     andi.l  #$ff, d0
     lsl.w   #$2, d0                     ; * 4 = longword index into AircraftModelPtrs
-    movea.l  #$0005ECFC,a0              ; AircraftModelPtrs table ($5ECFC)
+    movea.l  #ROM_BASE+$0005ECFC,a0     ; AircraftModelPtrs table ($5ECFC)
     move.l  (a0,d0.w), -(a7)           ; push pointer to aircraft model name string
     pea     (ROM_BASE+$000448A8).l      ; ptr to named-recommendation format string
     move.l  (ROM_BASE+$00047BB4).l, -(a7) ; additional format arg
@@ -442,7 +442,7 @@ RunAIMainLoop:
     move.b  (a0,d5.w), d0
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECFC,a0
+    movea.l  #ROM_BASE+$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$00047BC0).l, -(a7)
     move.l  a5, -(a7)
@@ -485,12 +485,12 @@ RunAIMainLoop:
     moveq   #$0,d0
     move.b  $1(a4), d0                  ; route_slot.city_b index
     lsl.w   #$2, d0                     ; * 4 = longword index into CityNamePtrs
-    movea.l  #$0005E680,a0              ; CityNamePtrs table
+    movea.l  #ROM_BASE+$0005E680,a0     ; CityNamePtrs table
     move.l  (a0,d0.w), -(a7)           ; push city_b name string ptr
     moveq   #$0,d0
     move.b  (a4), d0                    ; route_slot.city_a index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; push city_a name string ptr
     move.l  (ROM_BASE+$00047BF4).l, -(a7) ; ptr to long-haul loss format string
     bra.b   .l31852
@@ -499,12 +499,12 @@ RunAIMainLoop:
     moveq   #$0,d0
     move.b  $1(a4), d0                  ; route_slot.city_b
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_b name ptr
     moveq   #$0,d0
     move.b  (a4), d0                    ; route_slot.city_a
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name ptr
     move.l  (ROM_BASE+$00047C04).l, -(a7) ; ptr to short-haul loss format string
 .l31852:
@@ -657,7 +657,7 @@ RunAIMainLoop:
     move.b  (a0,d5.w), d0
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECFC,a0
+    movea.l  #ROM_BASE+$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
     bra.b   .l31a24
 .l31a1e:
@@ -707,7 +707,7 @@ RunAIMainLoop:
     move.b  (a0,d5.w), d0
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECFC,a0
+    movea.l  #ROM_BASE+$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0004481C).l
     move.l  (ROM_BASE+$00047BB4).l, -(a7)
@@ -730,7 +730,7 @@ RunAIMainLoop:
     move.b  (a0,d5.w), d0
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECFC,a0
+    movea.l  #ROM_BASE+$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$00047BC0).l, -(a7)
     move.l  a5, -(a7)
@@ -1015,12 +1015,12 @@ RunAIMainLoop:
     moveq   #$0,d0
     move.b  $1(a4), d0                  ; city_b index
     lsl.w   #$2, d0                     ; * 4 = longword index into CityNamePtrs
-    movea.l  #$0005E680,a0              ; CityNamePtrs ($5E680)
+    movea.l  #ROM_BASE+$0005E680,a0     ; CityNamePtrs ($5E680)
     move.l  (a0,d0.w), -(a7)           ; city_b name string ptr
     moveq   #$0,d0
     move.b  (a4), d0                    ; city_a index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name string ptr
     move.l  (ROM_BASE+$00047BAC).l, -(a7) ; ptr to "suspended route" format string
     move.l  a5, -(a7)
@@ -1038,12 +1038,12 @@ RunAIMainLoop:
     moveq   #$0,d0
     move.b  $1(a4), d0                  ; city_b index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0              ; CityNamePtrs
+    movea.l  #ROM_BASE+$0005E680,a0     ; CityNamePtrs
     move.l  (a0,d0.w), -(a7)           ; city_b name ptr
     moveq   #$0,d0
     move.b  (a4), d0                    ; city_a index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name ptr
     move.l  (ROM_BASE+$00047BDC).l, -(a7) ; ptr to "established route (restart?)" format string
     move.l  a5, -(a7)
@@ -1063,12 +1063,12 @@ RunAIMainLoop:
     moveq   #$0,d0
     move.b  $1(a4), d0                  ; city_b index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0              ; CityNamePtrs
+    movea.l  #ROM_BASE+$0005E680,a0     ; CityNamePtrs
     move.l  (a0,d0.w), -(a7)           ; city_b name ptr
     moveq   #$0,d0
     move.b  (a4), d0                    ; city_a index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)           ; city_a name ptr
     move.l  (ROM_BASE+$00047BF8).l, -(a7) ; ptr to "empty slot" format string
     move.l  a5, -(a7)

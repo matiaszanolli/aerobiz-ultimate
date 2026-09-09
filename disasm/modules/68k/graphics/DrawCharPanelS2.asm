@@ -14,9 +14,9 @@ DrawCharPanelS2:
     move.l  $1c(a6), d7
     movea.l $14(a6), a2
 ; a4 = GameCommand ($0D64) -- central command dispatcher
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
 ; a5 = TilePlacement ($01E044) -- builds tile params and calls GameCmd #15
-    movea.l  #$0001E044,a5
+    movea.l  #ROM_BASE+$0001E044,a5
 ; --- Phase: Locate group/slot record at $FF02E8 ---
 ; $FF02E8 is the base of FindCharSlotInGroup records (4-byte stride per slot in group)
 ; index = char_group * $14 + slot_index * 4

@@ -13,7 +13,7 @@ HandleDestArrival:
     move.w  $a(a6), d0
     ext.l   d0
     lsl.l   #$2, d0
-    movea.l  #$0009C840,a0
+    movea.l  #ROM_BASE+$0009C840,a0
     move.l  (a0,d0.l), -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress

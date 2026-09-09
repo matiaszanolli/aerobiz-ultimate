@@ -10,7 +10,7 @@ HandleRouteEventType2:
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     moveq   #$0,d0
@@ -28,7 +28,7 @@ l_22ba2:
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
 l_22bb4:
     pea     (ROM_BASE+$00047FCE).l

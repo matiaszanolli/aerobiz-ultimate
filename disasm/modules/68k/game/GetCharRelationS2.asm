@@ -7,7 +7,7 @@ GetCharRelationS2:
     movem.l d2-d6/a2-a3, -(a7)
     move.l  $8(a6), d4
     move.l  $c(a6), d5
-    movea.l  #$0001D6A4,a3
+    movea.l  #ROM_BASE+$0001D6A4,a3
     clr.w   d3
     clr.w   d2
     move.w  d2, d0

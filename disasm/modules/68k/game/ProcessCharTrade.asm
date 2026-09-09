@@ -17,7 +17,7 @@ ProcessCharTrade:
     move.l  $10(a6), d7             ; d7 = caller param: initial trade partner slot index
     movea.l $c(a6), a2              ; a2 = ptr to current player index (word)
     movea.l  #$00FF13FC,a3          ; a3 -> input_mode_flag ($FF13FC)
-    movea.l  #$00000D64,a4          ; a4 -> GameCommand dispatcher ($0D64)
+    movea.l  #ROM_BASE+$00000D64,a4 ; a4 -> GameCommand dispatcher ($0D64)
     movea.l  #$00FFA7D8,a5          ; a5 -> input_init_flag ($FFA7D8)
 
 ; --- Phase: Compute initial cursor position from slot index ---

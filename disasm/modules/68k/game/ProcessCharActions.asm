@@ -87,7 +87,7 @@ ProcessCharActions:                                                  ; $014202
 ; locate the CharTypeRangeTable entry for this scenario type
     move.w  ($00FF9A1C).l,d0                           ; screen_id (scenario/category index)
     lsl.w   #$2,d0                                     ; * 4 bytes per CharTypeRangeTable entry
-    movea.l #$0005ecbc,a0                              ; CharTypeRangeTable ($05ECBC): 7 × 4-byte range descriptors
+    movea.l #ROM_BASE+$0005ecbc,a0                     ; CharTypeRangeTable ($05ECBC): 7 × 4-byte range descriptors
     lea     (a0,d0.w),a0                               ; a0 -> range descriptor for this category
     movea.l a0,a3
     clr.w   d4                                         ; d4 = bit index within range, init 0

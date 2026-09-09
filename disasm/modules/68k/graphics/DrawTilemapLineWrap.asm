@@ -160,7 +160,7 @@ DrawTilemapLineWrap:                                              ; $01DC26
     move.w  d2,d0
     andi.w  #$3,d0             ; d0 = d2 & 3: sub-tile slot index (0-3)
     add.w   d0,d0              ; d0 *= 2 (word index into mask table)
-    movea.l #$0005f9b6,a0      ; a0 = ROM mask table: 4 words, one per sub-tile slot
+    movea.l #ROM_BASE+$0005f9b6,a0 ; a0 = ROM mask table: 4 words, one per sub-tile slot
     move.w  (a0,d0.w),d0       ; d0 = AND mask that clears this sub-tile's bits
     and.w   d0,(a2)            ; apply clear mask to tilemap word
     ; OR in the new tile attribute at the correct sub-tile bit position
@@ -246,7 +246,7 @@ DrawTilemapLineWrap:                                              ; $01DC26
     move.w  d2,d0
     andi.w  #$3,d0             ; sub-tile slot index
     add.w   d0,d0
-    movea.l #$0005f9b6,a0      ; ROM mask table
+    movea.l #ROM_BASE+$0005f9b6,a0 ; ROM mask table
     move.w  (a0,d0.w),d0       ; AND clear mask
     and.w   d0,(a2)
     ; OR in new tile attribute

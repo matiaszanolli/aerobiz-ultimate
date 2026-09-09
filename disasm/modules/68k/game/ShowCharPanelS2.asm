@@ -6,9 +6,9 @@ ShowCharPanelS2:
     link    a6,#$0
     movem.l d2/a2-a5, -(a7)
     move.l  $8(a6), d2
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
-    movea.l  #$00000D64,a5
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
+    movea.l  #ROM_BASE+$00000D64,a5
     move.w  d2, d0
     lsl.w   #$2, d0
     movea.l  #$00FF1480,a0
@@ -19,7 +19,7 @@ ShowCharPanelS2:
     move.w  d2, d0
     mulu.w  #$90, d0
     add.w   d0, d0
-    movea.l  #$0004F3A6,a0
+    movea.l  #ROM_BASE+$0004F3A6,a0
     pea     (a0, d0.w)
     bra.b   .l2d15a
 .l2d154:
@@ -72,7 +72,7 @@ ShowCharPanelS2:
     beq.b   .l2d208
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005F04C,a0
+    movea.l  #ROM_BASE+$0005F04C,a0
     move.l  (a0,d0.w), -(a7)
     bra.b   .l2d20e
 .l2d208:

@@ -6,7 +6,7 @@ MenuSelectEntry:                                             ; $01D3AC
     link    a6,#$0000
     movem.l d2/a2/a3,-(sp)
     move.l  $0008(a6),d2                                 ; D2 = selection index
-    movea.l #$00000D64,a2                                ; A2 = GameCommand
+    movea.l #ROM_BASE+$00000D64,a2                       ; A2 = GameCommand
     movea.l #$00FFBD52,a3                                ; A3 = stored selection ptr
     move.w  ($00FF1274).l,d0                             ; D0 = display state
     andi.l  #$00000001,d0                                ; isolate active bit
@@ -32,7 +32,7 @@ MenuSelectEntry:                                             ; $01D3AC
     move.w  d2,d0
     ext.l   d0
     lsl.l   #2,d0                                        ; D0 = index * 4
-    movea.l #$000F0000,a0                                ; A0 = table base
+    movea.l #ROM_BASE+$000F0000,a0                       ; A0 = table base
     move.l  (a0,d0.l),-(sp)                              ; push table[index]
     pea     ($0012).w
     jsr     (a2)                                         ; GameCommand($12,entry)

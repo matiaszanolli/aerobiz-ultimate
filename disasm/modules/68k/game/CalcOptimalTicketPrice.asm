@@ -15,7 +15,7 @@ CalcOptimalTicketPrice:
     move.l  $c(a6), d6
     lea     -$40(a6), a4
 ; a5 = PrintfWide ($03B270) -- format + display string using 2-tile wide font
-    movea.l  #$0003B270,a5
+    movea.l  #ROM_BASE+$0003B270,a5
 ; -$82(a6) = purchase_occurred: cleared at entry, set to 1 if player confirms purchase
     clr.w   -$82(a6)
 ; --- Phase: Locate player record ---
@@ -151,7 +151,7 @@ l_0f82a:
 ; $5E680 = character name pointer table (indexed by stat_type * 4)
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
 ; PrintfWide: display character name from pointer table
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003EBB0).l
@@ -205,7 +205,7 @@ l_0f82a:
 ; and character name from $5E680 pointer table
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$000477C0).l, -(a7)
     pea     -$80(a6)
@@ -261,7 +261,7 @@ l_0f82a:
 ; Build confirmation message using sprintf with format at $477C8 and character name
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$000477C8).l, -(a7)
     move.l  a4, -(a7)

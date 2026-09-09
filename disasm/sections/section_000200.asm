@@ -57,7 +57,7 @@ EntryPoint:
 ; --- Copy 10-byte subroutine from ROM to Work RAM ---
 .copy_ram_sub:                                              ; $00034E
     movea.l #$00FFF000,a0                                   ; A0 = RAM target ($FFF000)
-    movea.l #$00000362,a1                                   ; A1 = ROM source (inline below)
+    movea.l #ROM_BASE+$00000362,a1                          ; A1 = ROM source (inline below)
     move.l  (a1)+,(a0)+                                     ; copy bytes 0-3
     move.l  (a1)+,(a0)+                                     ; copy bytes 4-7
     move.w  (a1),(a0)                                       ; copy bytes 8-9
@@ -83,7 +83,7 @@ EntryPoint:
     nop
 ; --- Enable interrupts and enter main game ---
     move    #$2000,sr                                       ; enable interrupts (supervisor mode)
-    movea.l #$0000D5B6,a0                                   ; A0 = GameEntry address
+    movea.l #ROM_BASE+$0000D5B6,a0                          ; A0 = GameEntry address
     jmp     (a0)                                            ; ENTER MAIN GAME
 
 ; ---------------------------------------------------------------------------
@@ -537,7 +537,7 @@ EntryPoint:
 RangeLookup:                                                ; $00D648
     movem.l d2-d3,-(sp)               ; save D2-D3
     move.l  $000C(sp),d3              ; D3 = argument (past saved regs + return addr)
-    movea.l #$0005ECBC,a0             ; A0 = range table in ROM
+    movea.l #ROM_BASE+$0005ECBC,a0    ; A0 = range table in ROM
     cmpi.w  #$0020,d3                 ; value < 32?
     bge.s   .range2                    ; no, try second range
 ; --- Range 1: value 0-31, search using table bytes [0]+[1] ---

@@ -4,7 +4,7 @@
 ; ============================================================================
 InitScrollModes:
     movem.l a2-a3, -(a7)
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     movea.l  #$00FFA6B4,a3
     move.l  #$8b00, -(a7)
     clr.l   -(a7)

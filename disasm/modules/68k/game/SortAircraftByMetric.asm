@@ -10,7 +10,7 @@ SortAircraftByMetric:
     pea     -$20(a6)
     jsr MemFillByte
     move.w  ($00FF0002).l, d0
-    movea.l  #$0005ECF8,a0
+    movea.l  #ROM_BASE+$0005ECF8,a0
     move.b  (a0,d0.w), d5
     andi.l  #$ff, d5
     pea     ($00C0).w
@@ -24,7 +24,7 @@ SortAircraftByMetric:
 .l0c594:
     move.w  d5, d0
     mulu.w  #$c, d0
-    movea.l  #$0005EDD0,a0
+    movea.l  #ROM_BASE+$0005EDD0,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     lea     -$20(a6), a5

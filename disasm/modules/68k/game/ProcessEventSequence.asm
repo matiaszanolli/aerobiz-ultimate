@@ -21,7 +21,7 @@ l_17b2a:
     jsr SetTextCursor
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$00047A88,a0
+    movea.l  #ROM_BASE+$00047A88,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003F9B0).l
     jsr PrintfWide

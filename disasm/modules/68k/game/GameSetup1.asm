@@ -7,11 +7,11 @@ GameSetup1:
     link    a6,#$0
     movem.l d2/a2-a5, -(a7)
 ; a2 = GameCommand ($0D64) -- central command dispatcher used throughout
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
 ; a3 = pointer to layer/palette table base at $76CFE (8 palette/layer pointers)
-    movea.l  #$00076CFE,a3
+    movea.l  #ROM_BASE+$00076CFE,a3
 ; a4 = DrawLayersForward/Reverse dispatch stub at $4B6C
-    movea.l  #$00004B6C,a4
+    movea.l  #ROM_BASE+$00004B6C,a4
 ; a5 = a3 + $34 = entry [13] in layer table (used as active palette pointer)
     movea.l a3, a5
     moveq   #$34,d0
@@ -96,7 +96,7 @@ l_3b4ea:
 ; load banner tile source address from ROM jump table at $48D18, indexed by d2
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$00048D18,a0
+    movea.l  #ROM_BASE+$00048D18,a0
     move.l  (a0,d0.w), -(a7)
 ; GameCommand #$1B: configure this layer's display parameters (count=5, y=$C, x=$A, attr=$B)
     pea     ($0005).w

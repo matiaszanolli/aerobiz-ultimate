@@ -56,7 +56,7 @@ FillTileRect:                                                  ; $006760
     lea     $001c(sp),sp
     move.w  d6,d0
     add.w   d0,d0
-    movea.l #$0005f92e,a0
+    movea.l #ROM_BASE+$0005f92e,a0
     move.w  (a0,d0.w),d3
     andi.l  #$ffff,d3
     asr.l   #$5,d3

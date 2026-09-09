@@ -14,7 +14,7 @@ PlaceCharSprite:                                                  ; $00883A
     movea.l a0,a2
     moveq   #$0,d0
     move.b  (a2),d0
-    movea.l #$0005ec4a,a0
+    movea.l #ROM_BASE+$0005ec4a,a0
     move.b  (a0,d0.w),d2
     andi.l  #$ff,d2
     cmpi.w  #$ff,d2
@@ -22,7 +22,7 @@ PlaceCharSprite:                                                  ; $00883A
     move.w  d2,d0
     ext.l   d0
     lsl.l   #$2,d0
-    movea.l #$00095a22,a0
+    movea.l #ROM_BASE+$00095a22,a0
     move.l  (a0,d0.l),-(sp)
     pea     -$00c0(a6)
     jsr     (ROM_BASE+$003FEC).l

@@ -6,8 +6,8 @@ ShowCharDetailS2:
     link    a6,#-$50
     movem.l d2/a2-a5, -(a7)
     move.l  $8(a6), d2
-    movea.l  #$0001183A,a3
-    movea.l  #$00047C40,a4
+    movea.l  #ROM_BASE+$0001183A,a3
+    movea.l  #ROM_BASE+$00047C40,a4
     lea     -$50(a6), a5
     move.w  d2, d0
     mulu.w  #$24, d0

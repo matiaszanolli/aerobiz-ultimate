@@ -10,20 +10,20 @@ CollectPlayerChars:                                                  ; $00E152
     move.l  $0008(a6),d7
     move.w  $000e(a6),d0
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0
+    movea.l #ROM_BASE+$0005ecbc,a0
     lea     (a0,d0.w),a0
     movea.l a0,a5
     cmpi.w  #$5,d3
     bge.b   .le1ac
     move.w  d3,d0
     add.w   d0,d0
-    movea.l #$0005f908,a0
+    movea.l #ROM_BASE+$0005f908,a0
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     move.w  d0,-$000c(a6)
     move.w  d3,d0
     add.w   d0,d0
-    movea.l #$0005f909,a0
+    movea.l #ROM_BASE+$0005f909,a0
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     move.w  d0,-$000e(a6)

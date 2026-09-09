@@ -61,7 +61,7 @@ l_1e768:
     moveq   #$0,d0
     move.b  (a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E31A,a0
+    movea.l  #ROM_BASE+$0005E31A,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4
     moveq   #$0,d0

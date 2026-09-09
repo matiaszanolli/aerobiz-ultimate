@@ -15,7 +15,7 @@ RenderDisplayBuffer:
     movem.l d2-d6/a2-a5, -(a7)
     move.l  $8(a6), d5           ; d5 = player_index
     move.l  $c(a6), d6           ; d6 = display_mode / active city filter
-    movea.l  #$0004A5B8,a4       ; a4 = ROM display layout base ($4A5B8): world-map display descriptor block
+    movea.l  #ROM_BASE+$0004A5B8,a4 ; a4 = ROM display layout base ($4A5B8): world-map display descriptor block
     lea     -$1e(a6), a5         ; a5 = local player position array ($1E bytes below frame = 14 words for 7 players)
     ; --- Phase: Copy layout data from ROM block to local stack frame ---
     ; Copy $10 (16) bytes starting at a4+$12 into -$10(a6) (layout param copy)
@@ -44,7 +44,7 @@ l_1cbb8:
     ; AND with ROM bitmask for player d2 to test if player d2 is visible in player d5's view
     move.w  d2, d1
     lsl.w   #$2, d1              ; d1 = d2 * 4 (ROM bitmask table stride)
-    movea.l  #$0005ECDC,a0       ; a0 = ROM player visibility bitmask table ($5ECDC, 4 bytes per player)
+    movea.l  #ROM_BASE+$0005ECDC,a0 ; a0 = ROM player visibility bitmask table ($5ECDC, 4 bytes per player)
     and.l   (a0,d1.w), d0        ; d0 &= bitmask for player d2 (nonzero = player d2 visible)
     beq.b   l_1cbec              ; zero: player d2 not visible in this view, skip
     ; Player d2 is visible: fetch their position from player_word_tab and store in local array
@@ -197,7 +197,7 @@ l_1cd46:
     ; $5F088 entry: +$00 = X base offset byte, +$01 = Y row offset byte
     move.w  d2, d0
     add.w   d0, d0               ; d0 = d2 * 2 (word index into $5F088)
-    movea.l  #$0005F088,a0       ; a0 = ROM city icon descriptor table ($5F088)
+    movea.l  #ROM_BASE+$0005F088,a0 ; a0 = ROM city icon descriptor table ($5F088)
     lea     (a0,d0.w), a0        ; a0 = &icon_descriptor[d2]
     movea.l a0, a3               ; a3 = icon descriptor ptr
     ; TilePlacement: place airline/route icon at computed position
@@ -279,7 +279,7 @@ l_1cdec:
     move.l  d0, -(a7)            ; arg 3: year number (e.g. 1955 + frame/4)
     move.w  d2, d0
     lsl.w   #$2, d0              ; d0 = d2 * 4 (pointer table index for quarter string)
-    movea.l  #$0005F096,a0       ; a0 = ROM quarter name pointer table ($5F096): 4 season/quarter strings
+    movea.l  #ROM_BASE+$0005F096,a0 ; a0 = ROM quarter name pointer table ($5F096): 4 season/quarter strings
     move.l  (a0,d0.w), -(a7)     ; arg 2: quarter string ptr (e.g. "Q1", "Q2", etc.)
     pea     (ROM_BASE+$0004116C).l ; arg 1: ROM format string (e.g. "%s %d" for "Q2 1991")
     jsr PrintfNarrow             ; $03B246: format and display the year/quarter string

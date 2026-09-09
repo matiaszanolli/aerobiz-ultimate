@@ -7,10 +7,10 @@ RenderCharStats:
     move.l  $28(a7), d2
     move.l  $24(a7), d3
     move.l  $20(a7), d4
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     movea.l  #$00FF1804,a3
-    movea.l  #$00052162,a4
-    movea.l  #$00003FEC,a5
+    movea.l  #ROM_BASE+$00052162,a4
+    movea.l  #ROM_BASE+$00003FEC,a5
     pea     ($0010).w
     pea     ($0030).w
     pea     (ROM_BASE+$00052142).l
@@ -133,7 +133,7 @@ l_3d066:
     pea     ($76A0).w
     move.w  d2, d0
     mulu.w  #$480, d0
-    movea.l  #$00052282,a0
+    movea.l  #ROM_BASE+$00052282,a0
     pea     (a0, d0.w)
     pea     ($0240).w
     pea     ($0002).w

@@ -7,7 +7,7 @@ CheckEventMatch:                                                  ; $021FD4
     movem.l d2-d5/a2-a4,-(sp)
     move.l  $0024(sp),d2
     move.l  $0020(sp),d4
-    movea.l #$d648,a4
+    movea.l #ROM_BASE+$d648,a4
     movea.l #$00ff09c2,a2
     clr.w   d5
     cmpi.b  #$ff,(a2)
@@ -27,7 +27,7 @@ CheckEventMatch:                                                  ; $021FD4
     moveq   #$0,d0
     move.b  $0001(a2),d0
     lsl.w   #$3,d0
-    movea.l #$0005f9e1,a0
+    movea.l #ROM_BASE+$0005f9e1,a0
     lea     (a0,d0.w),a0
     movea.l a0,a3
     clr.w   d3
@@ -64,7 +64,7 @@ CheckEventMatch:                                                  ; $021FD4
     moveq   #$0,d0
     move.b  $0001(a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005fa11,a0
+    movea.l #ROM_BASE+$0005fa11,a0
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     andi.l  #$ffff,d0

@@ -8,7 +8,7 @@ CalcEventValue:                                                  ; $022554
     move.l  $0014(sp),d4
     move.w  d4,d0
     lsl.w   #$2,d0
-    movea.l #$0005fa2a,a0
+    movea.l #ROM_BASE+$0005fa2a,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     cmpi.b  #$ff,$0002(a2)

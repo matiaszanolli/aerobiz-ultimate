@@ -175,7 +175,7 @@ ShowQuarterSummary:                                                  ; $012E92
     move.l  d0,-(sp)
     move.w  d5,d0
     lsl.w   #$2,d0
-    movea.l #$000479f6,a0
+    movea.l #ROM_BASE+$000479f6,a0
     move.l  (a0,d0.w),-(sp)
     move.w  d2,d0
     ext.l   d0
@@ -222,7 +222,7 @@ ShowQuarterSummary:                                                  ; $012E92
     move.w  d5,d0
     ext.l   d0
     lsl.l   #$2,d0
-    movea.l #$0005e296,a0
+    movea.l #ROM_BASE+$0005e296,a0
     move.l  (a0,d0.l),-(sp)
     ; $479C2 = indirected pointer to profit message format string
     move.l  (ROM_BASE+$000479C2).l,-(sp)
@@ -301,7 +301,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ; $5EC84 = ROM screen-type string pointer table (screen_id * 4)
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005ec84,a0
+    movea.l #ROM_BASE+$0005ec84,a0
     move.l  (a0,d0.w),-(sp)
     ; $479CE = indirected pointer to "no routes selected" summary format string
     move.l  (ROM_BASE+$000479CE).l,-(sp)
@@ -321,7 +321,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ; screen-variant string for "no profitable routes" message
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005ec84,a0
+    movea.l #ROM_BASE+$0005ec84,a0
     move.l  (a0,d0.w),-(sp)
     ; $479AE = indirected pointer to "no profitable routes this quarter" format string
     move.l  (ROM_BASE+$000479AE).l,-(sp)
@@ -341,7 +341,7 @@ ShowQuarterSummary:                                                  ; $012E92
     ; screen-variant string: same $5EC84 table lookup
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005ec84,a0
+    movea.l #ROM_BASE+$0005ec84,a0
     move.l  (a0,d0.w),-(sp)
     ; $479DA = indirected pointer to "no routes available" generic summary message
     move.l  (ROM_BASE+$000479DA).l,-(sp)

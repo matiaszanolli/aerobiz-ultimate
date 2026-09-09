@@ -12,7 +12,7 @@ ToggleDisplayMode:
     jsr SetTextWindow
     move.w  ($00FF000A).l, d0
     lsl.w   #$2, d0
-    movea.l  #$00047A78,a0
+    movea.l  #ROM_BASE+$00047A78,a0
     move.l  (a0,d0.w), -(a7)
     jsr PrintfWide
     lea     $14(a7), a7

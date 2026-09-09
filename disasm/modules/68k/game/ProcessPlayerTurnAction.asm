@@ -134,7 +134,7 @@ l_0d85e:
 ; Format "Purchase <char_name> for <cost>?" string
     move.w  d6, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E2A2,a0      ; ROM char name pointer table
+    movea.l  #ROM_BASE+$0005E2A2,a0 ; ROM char name pointer table
     move.l  (a0,d0.w), -(a7)   ; char name string pointer
     move.l  (ROM_BASE+$00047798).l, -(a7) ; "purchase confirm" format string pointer from ROM
     pea     -$86(a6)            ; sprintf output buffer (134 bytes on frame)

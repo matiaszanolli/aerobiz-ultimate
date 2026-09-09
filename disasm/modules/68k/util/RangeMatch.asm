@@ -8,7 +8,7 @@ RangeMatch:                                              ; $007158
     movem.l d2-d4/a2,-(sp)
     move.l  $0014(sp),d2                                 ; D2 = code1
     move.l  $0018(sp),d3                                 ; D3 = code2
-    movea.l #$0000D648,a2                                ; A2 = RangeLookup
+    movea.l #ROM_BASE+$0000D648,a2                       ; A2 = RangeLookup
     cmp.w   d3,d2                                        ; D2 <= D3?
     ble.s   .sorted
     move.w  d2,d4                                        ; swap D2, D3 to ensure D2 <= D3

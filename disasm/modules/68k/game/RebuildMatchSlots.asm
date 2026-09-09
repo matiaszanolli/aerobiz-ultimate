@@ -6,7 +6,7 @@ RebuildMatchSlots:
     link    a6,#-$30
     movem.l d2-d3/a2-a5, -(a7)
     movea.l  #$00FF88DC,a4
-    movea.l  #$0001D538,a5
+    movea.l  #ROM_BASE+$0001D538,a5
     pea     ($0030).w
     pea     -$30(a6)
     clr.l   -(a7)

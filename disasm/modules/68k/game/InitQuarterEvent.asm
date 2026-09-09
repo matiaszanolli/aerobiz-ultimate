@@ -12,11 +12,11 @@ InitQuarterEvent:                                                  ; $02949A
 .l294a8:                                                ; $0294A8
     asr.l   #$2,d0
     move.w  d0,d2
-    movea.l #$0005fcb0,a0
+    movea.l #ROM_BASE+$0005fcb0,a0
     move.b  (a0,d2.w),d0
     andi.l  #$ff,d0
     move.w  d0,($00FFBD4C).l
-    movea.l #$0005fc6e,a0
+    movea.l #ROM_BASE+$0005fc6e,a0
     move.b  (a0,d2.w),d0
     andi.l  #$ff,d0
     move.w  d0,($00FF1294).l

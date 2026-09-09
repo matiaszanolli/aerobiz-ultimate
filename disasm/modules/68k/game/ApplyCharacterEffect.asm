@@ -11,8 +11,8 @@ ApplyCharacterEffect:
     move.l  $8(a6), d4         ; d4 = slot/effect type (passed to CheckMatchSlots, BrowsePartners)
     movea.l $10(a6), a2        ; a2 = char stat record ptr (+$00=base id, +$01=primary stat)
     movea.l  #$00FF13FC,a3     ; a3 = &input_mode_flag ($FF13FC): nonzero = UI-input countdown active
-    movea.l  #$00005092,a4     ; a4 = DisplaySetup ($005092)
-    movea.l  #$00000D64,a5     ; a5 = GameCommand ($000D64): central command dispatcher
+    movea.l  #ROM_BASE+$00005092,a4 ; a4 = DisplaySetup ($005092)
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand ($000D64): central command dispatcher
     ; --- Phase: Initial match-slot check ---
     move.w  d4, d0
     ext.l   d0

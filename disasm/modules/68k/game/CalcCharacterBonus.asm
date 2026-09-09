@@ -5,8 +5,8 @@
 CalcCharacterBonus:
     movem.l d2-d3/a2-a4, -(a7)
     movea.l $18(a7), a2
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
     move.l  a2, -(a7)
     jsr GetByteField4
     move.w  d0, d3
@@ -50,7 +50,7 @@ CalcCharacterBonus:
     move.b  (a0,d3.w), d0
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECFC,a0
+    movea.l  #ROM_BASE+$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003F7B0).l
     jsr     (a3)

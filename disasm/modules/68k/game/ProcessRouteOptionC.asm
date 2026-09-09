@@ -4,7 +4,7 @@
 ; ============================================================================
 ProcessRouteOptionC:
     movem.l d2-d4/a2-a5, -(a7)
-    movea.l  #$0001D6A4,a5
+    movea.l  #ROM_BASE+$0001D6A4,a5
     movea.l  #$00FF09C6,a2
     cmpi.b  #$ff, (a2)
     beq.b   l_21840
@@ -34,7 +34,7 @@ l_21840:
     bne.b   l_21840
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     move.b  $1(a2), d4

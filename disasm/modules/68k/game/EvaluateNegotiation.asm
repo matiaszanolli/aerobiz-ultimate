@@ -6,7 +6,7 @@ EvaluateNegotiation:
     movem.l d2-d5/a2-a4, -(a7)
     move.l  $24(a7), d2
     move.l  $20(a7), d3
-    movea.l  #$00032CA0,a4
+    movea.l  #ROM_BASE+$00032CA0,a4
     move.w  d3, d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0

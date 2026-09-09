@@ -8,7 +8,7 @@ ProcessCityChange:
     move.l  $8(a6), d3
     move.l  $c(a6), d4
     lea     -$16(a6), a2
-    movea.l  #$00000D64,a3
+    movea.l  #ROM_BASE+$00000D64,a3
     cmpi.w  #$a, d3
     bge.b   .l1688e
     move.w  d3, d0

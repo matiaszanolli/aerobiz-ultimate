@@ -4,7 +4,7 @@
 ; ============================================================================
 UpdateEventSchedule:
     movem.l d2-d3/a2, -(a7)
-    movea.l  #$0005FAB6,a2
+    movea.l  #ROM_BASE+$0005FAB6,a2
     clr.w   d2
 .l0d21a:
     move.w  (a2), d3

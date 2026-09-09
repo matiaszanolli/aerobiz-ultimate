@@ -6,7 +6,7 @@
 BrowsePartners:                                                  ; $01A2CE
     movem.l d2-d5/a2-a4,-(sp)
     move.l  $0020(sp),d3
-    movea.l #$0d64,a3
+    movea.l #ROM_BASE+$0d64,a3
     movea.l #$00ff8804,a4
     clr.w   d2
 .l1a2e4:                                                ; $01A2E4

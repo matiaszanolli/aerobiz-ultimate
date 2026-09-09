@@ -5,8 +5,8 @@
 RenderStatusScreenS2:
     movem.l d2-d3/a2-a5, -(a7)
     move.l  $1c(a7), d3
-    movea.l  #$0003B270,a4
-    movea.l  #$0003AB2C,a5
+    movea.l  #ROM_BASE+$0003B270,a4
+    movea.l  #ROM_BASE+$0003AB2C,a5
     pea     ($0010).w
     pea     ($0010).w
     pea     (ROM_BASE+$0004A598).l
@@ -52,7 +52,7 @@ RenderStatusScreenS2:
 .l2b808:
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
 .l2b816:
     pea     (ROM_BASE+$0004276E).l

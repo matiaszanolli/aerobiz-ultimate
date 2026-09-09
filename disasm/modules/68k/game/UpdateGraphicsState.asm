@@ -14,7 +14,7 @@ UpdateGraphicsState:
     movem.l d2-d6/a2, -(a7)
     move.l  $20(a7), d3                        ; d3 = initial char selection index (stack arg +$20 after push)
     move.l  $1c(a7), d6                        ; d6 = initial player index (stack arg +$1C); saved for exit comparison
-    movea.l  #$00000D64,a2                     ; a2 = GameCommand ($000D64), cached for in-loop calls
+    movea.l  #ROM_BASE+$00000D64,a2            ; a2 = GameCommand ($000D64), cached for in-loop calls
     move.w  d6, d2                             ; d2 = current display player (starts equal to initial)
     move.w  #$80, d4                           ; d4 = seed input bits with bit 7 set to force first loop body entry
 

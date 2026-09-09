@@ -51,7 +51,7 @@ GetCharRelation:                                                  ; $018EBA
 .l18f3a:                                                ; $018F3A
     move.w  d4,d0
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0
+    movea.l #ROM_BASE+$0005ecbc,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     moveq   #$0,d0

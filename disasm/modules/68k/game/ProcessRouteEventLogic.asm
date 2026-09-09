@@ -70,11 +70,11 @@ l_0e96a:
 l_0e96c:
     move.w  $4(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E2A2,a0
+    movea.l  #ROM_BASE+$0005E2A2,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$000477B0,a0
+    movea.l  #ROM_BASE+$000477B0,a0
     move.l  (a0,d0.w), -(a7)
     pea     -$6e(a6)
     jsr sprintf

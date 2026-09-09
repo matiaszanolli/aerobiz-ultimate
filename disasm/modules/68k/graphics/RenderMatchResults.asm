@@ -11,7 +11,7 @@ RenderMatchResults:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d5            ; d5 = player index (first argument)
     movea.l $c(a6), a3            ; a3 -> char pair record: byte[0]=charA code, byte[1]=charB code
-    movea.l  #$00000D64,a4        ; a4 = GameCommand entry point (central dispatcher)
+    movea.l  #ROM_BASE+$00000D64,a4 ; a4 = GameCommand entry point (central dispatcher)
     movea.l  #$00FF13FC,a5        ; a5 = $FF13FC = input_mode_flag (nonzero = UI/countdown active)
     move.w  #$2, -$2(a6)         ; -$2(a6) = 2 (initial panel slot / column index)
 ; Clear the top banner area (5-tile-high block at row $0D, col $20, 32 wide) via GameCommand #$1A
@@ -149,7 +149,7 @@ l_38120:
     moveq   #$0,d0
     move.b  (a3), d0             ; d0 = charA code (byte[0] of pair record)
     lsl.w   #$2, d0              ; * 4 (each entry in name-pointer table is a long)
-    movea.l  #$0005E7E4,a0       ; a0 -> char name string pointer table
+    movea.l  #ROM_BASE+$0005E7E4,a0 ; a0 -> char name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push charA name string pointer
     pea     (ROM_BASE+$00044FB2).l ; push format string "%s" for name display
     jsr PrintfWide                ; print charA's name in wide font
@@ -195,7 +195,7 @@ l_38120:
     moveq   #$0,d0
     move.b  $1(a3), d0           ; d0 = charB code (byte[1] of pair record)
     lsl.w   #$2, d0              ; * 4 (long pointer offset)
-    movea.l  #$0005E7E4,a0       ; a0 -> char name string pointer table
+    movea.l  #ROM_BASE+$0005E7E4,a0 ; a0 -> char name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push charB name string pointer
     pea     (ROM_BASE+$00044FAA).l ; push format string "%s" for name display
     jsr PrintfWide                ; print charB's name in wide font

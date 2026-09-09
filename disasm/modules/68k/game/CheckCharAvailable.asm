@@ -31,7 +31,7 @@ l_34470:
     move.l  (a0,d0.w), d0
     move.w  d4, d1
     lsl.w   #$2, d1
-    movea.l  #$0005ECDC,a0
+    movea.l  #ROM_BASE+$0005ECDC,a0
     and.l   (a0,d1.w), d0
     bne.b   l_3446c
     move.w  d3, d0

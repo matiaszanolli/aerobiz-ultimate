@@ -5,10 +5,10 @@
 DisplayEventChoice:
     link    a6,#-$80
     movem.l d2-d3/a2, -(a7)
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     move.w  $a(a6), d0
     lsl.w   #$2, d0
-    movea.l  #$000476F4,a0
+    movea.l  #ROM_BASE+$000476F4,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003E628).l
     pea     -$80(a6)

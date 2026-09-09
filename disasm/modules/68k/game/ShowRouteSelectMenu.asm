@@ -40,7 +40,7 @@ l_2a4d2:
     move.w  d2, d0
     ext.l   d0
     lsl.l   #$2, d0
-    movea.l  #$000A1B34,a0
+    movea.l  #ROM_BASE+$000A1B34,a0
     move.l  (a0,d0.l), -(a7)
     pea     ($00FF899C).l
     jsr LZ_Decompress

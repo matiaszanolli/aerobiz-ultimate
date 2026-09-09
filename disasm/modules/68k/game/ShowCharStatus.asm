@@ -6,7 +6,7 @@ ShowCharStatus:
     link    a6,#-$C8
     movem.l d2-d3/a2-a3, -(a7)
     move.l  $8(a6), d2
-    movea.l  #$00007912,a3
+    movea.l  #ROM_BASE+$00007912,a3
     move.w  d2, d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0

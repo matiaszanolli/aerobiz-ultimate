@@ -6,12 +6,12 @@ DisplayMenuOption:
     link    a6,#$0
     movem.l d2/a2-a4, -(a7)
     move.l  $10(a6), d2
-    movea.l  #$00000D64,a3
-    movea.l  #$0001E044,a4
+    movea.l  #ROM_BASE+$00000D64,a3
+    movea.l  #ROM_BASE+$0001E044,a4
     cmpi.w  #$20, d2
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     move.w  d2, d0

@@ -12,11 +12,11 @@ ReadCharInput:
 ; a2 = pointer to current quantity (stack arg +$10): points to the word holding current count
     movea.l $10(a6), a2
 ; a3 = PrintfWide ($03B270): format + display string with 2-tile wide font
-    movea.l  #$0003B270,a3
+    movea.l  #ROM_BASE+$0003B270,a3
 ; a4 = SetTextCursor ($03AB2C): set text cursor X/Y position
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003AB2C,a4
 ; a5 = GameCommand ($0D64): central command dispatcher
-    movea.l  #$00000D64,a5
+    movea.l  #ROM_BASE+$00000D64,a5
 ; d6 = 1 = left column X position for the first tile column
     moveq   #$1,d6
 ; d5 = $14 = 20 = Y row for the salary column header tile

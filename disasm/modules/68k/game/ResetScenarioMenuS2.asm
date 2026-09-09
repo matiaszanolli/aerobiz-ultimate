@@ -34,7 +34,7 @@ l_2c922:
     movea.l  #$00FF1298,a0
     move.b  (a0,d0.w), d5
     andi.l  #$ff, d5
-    movea.l  #$0005FCF2,a2
+    movea.l  #ROM_BASE+$0005FCF2,a2
     clr.w   d3
 l_2c93e:
     clr.w   d2

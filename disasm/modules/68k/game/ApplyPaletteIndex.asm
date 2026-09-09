@@ -14,12 +14,12 @@ l_0495c:
     clr.w   d3
     move.w  d3, d0
     add.w   d0, d0
-    movea.l  #$0004736E,a0
+    movea.l  #ROM_BASE+$0004736E,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3
     move.w  d3, d0
     add.w   d0, d0
-    movea.l  #$00047366,a0
+    movea.l  #ROM_BASE+$00047366,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
 l_04980:

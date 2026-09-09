@@ -9,9 +9,9 @@ RunWorldMapAnimation:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d2                ; d2 = animation mode / scenario index (arg)
     movea.l  #$00FF1804,a2            ; a2 = $FF1804 = save_buf_base (decompression staging buffer)
-    movea.l  #$00000D64,a3            ; a3 = GameCommand dispatcher (used as indirect call target)
-    movea.l  #$00005092,a4            ; a4 = DisplaySetup function (display/graphics setup)
-    movea.l  #$0001D8AA,a5            ; a5 = DrawTileGrid function (used for placing tile grids)
+    movea.l  #ROM_BASE+$00000D64,a3   ; a3 = GameCommand dispatcher (used as indirect call target)
+    movea.l  #ROM_BASE+$00005092,a4   ; a4 = DisplaySetup function (display/graphics setup)
+    movea.l  #ROM_BASE+$0001D8AA,a5   ; a5 = DrawTileGrid function (used for placing tile grids)
     jsr ResourceLoad                  ; load required resource set if not already loaded
     jsr PreLoopInit                   ; pre-loop hardware setup (VDP, scroll, display state)
 ; --- Phase: Screen Clear and Scroll Setup ---
@@ -262,7 +262,7 @@ RunWorldMapAnimation:
     pea     ($0031).w                 ; display slot = $31
     move.w  d2, d0                    ; d2 = scenario/mode index
     add.w   d0, d0                    ; d0 = d2 * 2 (word-stride into logo table)
-    movea.l  #$00076520,a0            ; a0 = base of airline logo pointer table at $76520
+    movea.l  #ROM_BASE+$00076520,a0   ; a0 = base of airline logo pointer table at $76520
     pea     (a0, d0.w)                ; push pointer to this scenario's airline logo entry
     jsr     (a4)                      ; DisplaySetup: load airline logo for this scenario
     ; Load second airline logo variant into display slot $33
@@ -270,7 +270,7 @@ RunWorldMapAnimation:
     pea     ($0033).w                 ; display slot = $33
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$00076520,a0
+    movea.l  #ROM_BASE+$00076520,a0
     pea     (a0, d0.w)                ; same lookup but for alternate logo slot
     jsr     (a4)                      ; DisplaySetup
     lea     $18(a7), a7
@@ -552,7 +552,7 @@ l_3a488:
     moveq   #$2,d1
     jsr SignedMod                     ; d0 = d2 mod 2 (0 or 1 — selects even/odd palette variant)
     lsl.w   #$2, d0                   ; d0 = (d2 mod 2) * 4 (longword stride into palette table)
-    movea.l  #$000600E4,a0            ; a0 = base of 2-entry airline display palette table
+    movea.l  #ROM_BASE+$000600E4,a0   ; a0 = base of 2-entry airline display palette table
     pea     (a0, d0.w)                ; push pointer to the even or odd palette entry
     jsr     (a4)                      ; DisplaySetup: cycle the airline animation palette
     lea     $20(a7), a7

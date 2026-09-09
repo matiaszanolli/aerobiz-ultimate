@@ -10,7 +10,7 @@ ShowRelationAction:                                                  ; $0199FA
 ; a2 = pointer to relation record (stack arg +$8): struct with attack/defence counts and base values
     movea.l $0008(a6),a2
 ; a3 = GameCommand ($0D64): central command dispatcher
-    movea.l #$0d64,a3
+    movea.l #ROM_BASE+$0d64,a3
 ; a4 = pointer to stack arg +$16: bar graph color/attribute word for tiles
     lea     $0016(a6),a4
 ; a5 = pointer to stack arg +$12: column/X position word for bar graph origin

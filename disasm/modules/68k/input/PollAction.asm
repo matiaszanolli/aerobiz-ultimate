@@ -6,7 +6,7 @@
 PollAction:                                                      ; $01D62C
     link    a6,#$0000                                            ; create stack frame
     movem.l d2/a2,-(sp)                                          ; save working registers
-    movea.l #$0001E1EC,a2                                        ; A2 = utility function
+    movea.l #ROM_BASE+$0001E1EC,a2                               ; A2 = utility function
     tst.w   ($00FF0A34).l                                        ; is UI/system active?
     beq.s   .inactive                                            ; no -> delay and return default
     tst.w   $E(a6)                                               ; test second arg

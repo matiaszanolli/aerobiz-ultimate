@@ -66,7 +66,7 @@ RefreshControlState:
     bcs.b   .l2cbee
     clr.w   d2
 .l2cc48:
-    movea.l  #$0005F07C,a0
+    movea.l  #ROM_BASE+$0005F07C,a0
     move.b  (a0,d2.w), d0
     andi.l  #$ff, d0
     ext.l   d0

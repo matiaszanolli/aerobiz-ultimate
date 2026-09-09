@@ -9,7 +9,7 @@ HandleAirlineRouteEvent:
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005FA2A,a0
+    movea.l  #ROM_BASE+$0005FA2A,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     moveq   #$0,d0
@@ -32,7 +32,7 @@ l_22acc:
     jsr InitInfoPanel
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     cmpi.b  #$3b, $2(a2)
     beq.b   l_22af2

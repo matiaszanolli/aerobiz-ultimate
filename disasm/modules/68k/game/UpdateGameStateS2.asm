@@ -51,13 +51,13 @@ l_22ff8:
     moveq   #$0,d0
     move.b  $1(a3), d0           ; route_slot +$01 = city_b index
     lsl.w   #$2, d0              ; d0 *= 4 (long pointer index)
-    movea.l  #$0005E680,a0       ; a0 = ROM city name pointer table ($5E680)
+    movea.l  #ROM_BASE+$0005E680,a0 ; a0 = ROM city name pointer table ($5E680)
     move.l  (a0,d0.w), -(a7)     ; push city_b name string ptr as sprintf arg
     ; Fetch city A name: route_slot +$00 = city_a index
     moveq   #$0,d0
     move.b  (a3), d0             ; route_slot +$00 = city_a index
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)     ; push city_a name string ptr as sprintf arg
     ; Fetch player name: $FF00A8 is player_name_tab (16-byte entries, indexed by player_index*$10)
     moveq   #$0,d0
@@ -162,13 +162,13 @@ l_23132:
     moveq   #$0,d0
     move.b  $1(a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)     ; city_b name ptr
     ; Fetch city A name (route_slot +$00)
     moveq   #$0,d0
     move.b  (a3), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)     ; city_a name ptr
     ; Fetch player name (same $FF00A8 table, player_index * $10 stride)
     moveq   #$0,d0

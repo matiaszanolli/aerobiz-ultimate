@@ -4,8 +4,8 @@
 ; ============================================================================
 DisplayModelStats:
     movem.l d2-d5/a2-a4, -(a7)
-    movea.l  #$00000D64,a2
-    movea.l  #$0001E044,a3
+    movea.l  #ROM_BASE+$00000D64,a2
+    movea.l  #ROM_BASE+$0001E044,a3
     movea.l  #$00FF13FC,a4
     clr.l   -(a7)
     pea     ($0011).w
@@ -34,7 +34,7 @@ DisplayModelStats:
     jsr SetTextCursor
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$00047670,a0
+    movea.l  #ROM_BASE+$00047670,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003E5C8).l
     jsr PrintfNarrow

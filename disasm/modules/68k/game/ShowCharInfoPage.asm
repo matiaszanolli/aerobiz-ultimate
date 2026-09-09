@@ -21,7 +21,7 @@ ShowCharInfoPage:                                                  ; $02F430
     pea     ($079E).w
     move.w  d2,d0
     add.w   d0,d0
-    movea.l #$000485d6,a0
+    movea.l #ROM_BASE+$000485d6,a0
     move.w  (a0,d0.w),d1
     move.l  d1,-(sp)
     jsr     (ROM_BASE+$00643C).l

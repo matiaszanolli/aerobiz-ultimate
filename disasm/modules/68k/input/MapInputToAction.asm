@@ -6,8 +6,8 @@ MapInputToAction:
     movem.l d2-d3/a2-a3, -(a7)
     move.l  $18(a7), d2
     move.l  $14(a7), d3
-    movea.l  #$0003B270,a2
-    movea.l  #$00000D64,a3
+    movea.l  #ROM_BASE+$0003B270,a2
+    movea.l  #ROM_BASE+$00000D64,a3
     cmpi.w  #$1, ($00FF000A).l
     bne.w   l_1f0f4
     cmpi.w  #$7, d3
@@ -117,7 +117,7 @@ l_1f0a2:
     bcc.b   l_1f0dc
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$000411D6).l
     jsr     (a2)

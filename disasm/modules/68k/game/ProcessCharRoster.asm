@@ -30,7 +30,7 @@ ProcessCharRoster:
     move.l  (a0,d0.w), d4           ; d4 = raw entity bitfield for player
     move.w  d5, d0
     lsl.w   #$2, d0                 ; d0 = route_type * 4
-    movea.l  #$0005ECDC,a0          ; ROM table: category bitmasks indexed by route_type
+    movea.l  #ROM_BASE+$0005ECDC,a0 ; ROM table: category bitmasks indexed by route_type
     and.l   (a0,d0.w), d4           ; d4 = filtered bitfield (only bits for category d5)
     ; --- Phase: Point a2 at player's route slot array ($FF9A20, stride $320 per player) ---
     move.w  d7, d0
@@ -42,7 +42,7 @@ ProcessCharRoster:
     ; --- Phase: Load arc-style pointer from $5E234 table (14 bytes per route_type entry) ---
     move.w  d5, d0
     mulu.w  #$e, d0                 ; d0 = route_type * 14
-    movea.l  #$0005E234,a0          ; ROM table: arc drawing style descriptors by route_type
+    movea.l  #ROM_BASE+$0005E234,a0 ; ROM table: arc drawing style descriptors by route_type
     lea     (a0,d0.w), a0
     move.l  a0, -$4(a6)             ; store arc-style pointer in frame local (used per-slot)
     bra.w   l_09bc0                 ; jump to loop condition
@@ -89,7 +89,7 @@ l_09b1e:
     moveq   #$0,d0
     move.b  $1(a2), d0              ; d0 = city_b index
     add.w   d0, d0                  ; x2 for word offset into $5E9FA
-    movea.l  #$0005E9FA,a0          ; ROM table: city map coordinates (word pairs)
+    movea.l  #ROM_BASE+$0005E9FA,a0 ; ROM table: city map coordinates (word pairs)
     lea     (a0,d0.w), a0
     movea.l a0, a3                  ; a3 = city_b coordinate entry
     bra.b   l_09b8c
@@ -108,7 +108,7 @@ l_09b56:
     moveq   #$0,d0
     move.b  (a2), d0                ; d0 = city_a
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4                  ; a4 = city_a coordinate entry
     move.w  d2, d0
@@ -164,7 +164,7 @@ l_09bc0:
     move.l  (a0,d0.w), d4           ; d4 = entity bitfield for player (from entity_bits)
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECDC,a0          ; category bitmask table
+    movea.l  #ROM_BASE+$0005ECDC,a0 ; category bitmask table
     and.l   (a0,d0.w), d4           ; d4 = filtered bitfield (international category)
     ; Point a2 at first international slot (starts after domestic_slots * $14)
     moveq   #$0,d0
@@ -194,13 +194,13 @@ l_09c0e:
     moveq   #$0,d0
     move.b  (a2), d0                ; d0 = city_a
     add.w   d0, d0                  ; x2 for word index
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4                  ; a4 = city_a map coordinate
     moveq   #$0,d0
     move.b  $1(a2), d0              ; d0 = city_b
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3                  ; a3 = city_b map coordinate
     ; Color selection (same logic as pass 1)

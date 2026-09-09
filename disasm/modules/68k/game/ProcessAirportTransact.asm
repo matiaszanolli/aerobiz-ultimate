@@ -5,7 +5,7 @@
 ProcessAirportTransact:
     movem.l a2-a3, -(a7)
     movea.l $c(a7), a2
-    movea.l  #$0001D538,a3
+    movea.l  #ROM_BASE+$0001D538,a3
     pea     ($0008).w
     move.l  a2, -(a7)
     move.l  #$200003, -(a7)

@@ -6,8 +6,8 @@ RefreshCharPanel:
     movem.l d2-d3/a2-a5, -(a7)
     move.l  $1c(a7), d2
     move.l  $20(a7), d3
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
     movea.l  #$00FF00A8,a5
     move.w  d2, d0
     mulu.w  #$24, d0

@@ -21,7 +21,7 @@ GetAirlineScenarioInfo:
     moveq   #$7,d1
     jsr SignedMod
     add.w   d0, d0
-    movea.l  #$00048468,a0
+    movea.l  #ROM_BASE+$00048468,a0
     move.w  (a0,d0.w), d2
     pea     ($0020).w
     pea     ($0020).w
@@ -33,7 +33,7 @@ GetAirlineScenarioInfo:
     jsr SetTextCursor
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EB2C,a0
+    movea.l  #ROM_BASE+$0005EB2C,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00042F6A).l
     jsr PrintfWide

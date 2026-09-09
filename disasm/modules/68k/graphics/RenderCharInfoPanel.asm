@@ -30,8 +30,8 @@ RenderCharInfoPanel:
     move.l  $8(a6), d4                              ; d4 = char slot index
     move.l  $14(a6), d5                             ; d5 = mode flag
     lea     -$50(a6), a3                            ; a3 = local 80-byte string work buffer
-    movea.l  #$00007912,a4                          ; a4 = ShowDialog ($7912) function pointer
-    movea.l  #$00048616,a5                          ; a5 = format/string table base ($48616)
+    movea.l  #ROM_BASE+$00007912,a4                 ; a4 = ShowDialog ($7912) function pointer
+    movea.l  #ROM_BASE+$00048616,a5                 ; a5 = format/string table base ($48616)
     ; --- Phase: Check whether this char slot is already occupied ---
     movea.l  #$00FF09D8,a0                          ; char_session_blk base
     move.b  (a0,d3.w), d0                           ; byte for player d3's char slot
@@ -71,7 +71,7 @@ l_37836:
     ; --- Format "already your partner" dialog ---
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0                          ; char name string pointer table
+    movea.l  #ROM_BASE+$0005E680,a0                 ; char name string pointer table
     move.l  (a0,d0.w), -(a7)                        ; char name for this player's type
     move.l  $4(a5), -(a7)                           ; format string at table+$4
 l_3786a:
@@ -106,7 +106,7 @@ l_37884:
     bsr.w ClearCharSprites
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)                        ; char name string
     move.l  $10(a5), -(a7)                          ; format string at table+$10 ("behind" msg)
     move.l  a3, -(a7)
@@ -169,7 +169,7 @@ l_37948:
     bsr.w ClearCharSprites
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)                        ; char name string
     move.l  $c(a5), -(a7)                           ; format string at table+$c ("not known" msg)
     move.l  a3, -(a7)
@@ -186,7 +186,7 @@ l_37948:
     ; --- Also format and show an introduction panel (reuses same char name) ---
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)                        ; char name string (second reference)
     move.l  $14(a5), -(a7)                          ; format string at table+$14 (intro message)
     bra.w   l_3786a                                 ; -> sprintf + ShowDialog
@@ -234,7 +234,7 @@ l_379ea:
     bsr.w ClearCharSprites
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)                        ; rival's char name string
     ; --- Select format string: region 2 uses a special hardcoded string ---
     cmpi.w  #$2, d5                                 ; region == 2?
@@ -244,7 +244,7 @@ l_379ea:
 l_37a0e:
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0                          ; region name string pointer table
+    movea.l  #ROM_BASE+$0005EC84,a0                 ; region name string pointer table
     move.l  (a0,d0.w), -(a7)                        ; region name string
 l_37a1c:
     move.l  $38(a5), -(a7)                          ; format string at table+$38 (rivalry panel fmt)

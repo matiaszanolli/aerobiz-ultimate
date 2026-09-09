@@ -15,8 +15,8 @@ ShowAlternatePlayerView:
     link    a6,#-$88
     movem.l d2-d6/a2-a5, -(a7)
     move.l  $8(a6), d6           ; d6 = player_index (current player to display for)
-    movea.l  #$00000D64,a4       ; a4 = GameCommand dispatch pointer
-    movea.l  #$0003B22C,a5       ; a5 = sprintf ($3B22C) for text formatting
+    movea.l  #ROM_BASE+$00000D64,a4 ; a4 = GameCommand dispatch pointer
+    movea.l  #ROM_BASE+$0003B22C,a5 ; a5 = sprintf ($3B22C) for text formatting
 
 ; --- Phase: Background Screen Setup ---
 ; Initialize display, decompress background tile data, and configure tile windows
@@ -277,7 +277,7 @@ l_3de42:
 l_3de58:
     move.w  d2, d0
     lsl.w   #$2, d0              ; d0 = d2 * 4 (longword stride in pointer table)
-    movea.l  #$0006588E,a0       ; a0 = ROM row format string pointer table
+    movea.l  #ROM_BASE+$0006588E,a0 ; a0 = ROM row format string pointer table
     movea.l (a0,d0.w), a2        ; a2 = ROM string pointer for this row (used as PrintfWide src)
 
 ; --- PrintfWide call and per-row tile commit ---

@@ -65,7 +65,7 @@ RunCharManagement:                                                  ; $01861A
     moveq   #$0,d0
     move.b  ($00FF09C3).l,d0           ; table entry index
     lsl.w   #$3,d0                     ; * 8 (stride for $05F9E1 table)
-    movea.l #$0005f9e1,a0             ; hub city type table (route_field_d == 0 variant)
+    movea.l #ROM_BASE+$0005f9e1,a0    ; hub city type table (route_field_d == 0 variant)
     bra.b   .l186ba
 .l186a0:                                                ; $0186A0
     cmpi.b  #$01,($00FF09C2).l
@@ -73,7 +73,7 @@ RunCharManagement:                                                  ; $01861A
     moveq   #$0,d0
     move.b  ($00FF09C3).l,d0
     lsl.w   #$2,d0                     ; * 4 (stride for $05FA11 table)
-    movea.l #$0005fa11,a0             ; hub city type table (route_field_d == 1 variant)
+    movea.l #ROM_BASE+$0005fa11,a0    ; hub city type table (route_field_d == 1 variant)
 .l186ba:                                                ; $0186BA
     move.b  (a0,d0.w),d0              ; raw airport type byte
     andi.l  #$ff,d0
@@ -283,7 +283,7 @@ RunCharManagement:                                                  ; $01861A
     beq.w   .l189de                    ; no candidate at all -- skip to perf slot
     move.w  d2,d0
     lsl.w   #$2,d0                     ; char_code * 4
-    movea.l #$0005e31d,a0             ; CharWeightTable subrange ($05E31D): weight category per char type
+    movea.l #ROM_BASE+$0005e31d,a0    ; CharWeightTable subrange ($05E31D): weight category per char type
     move.b  (a0,d0.w),d4
     andi.l  #$ff,d4                    ; d4 = weight category (0-3: negotiation types; >3: performance only)
 
@@ -315,15 +315,15 @@ RunCharManagement:                                                  ; $01861A
     move.w  d4,d0
     ext.l   d0
     lsl.l   #$2,d0                     ; d4 * 4 for NameStringPoolPtrs (longword entries)
-    movea.l #$0005e296,a0             ; NameStringPoolPtrs ($05E296): 18 longword ptrs
+    movea.l #ROM_BASE+$0005e296,a0    ; NameStringPoolPtrs ($05E296): 18 longword ptrs
     move.l  (a0,d0.l),-(sp)          ; push ptr to airline type name string
     move.w  d3,d0
     lsl.w   #$2,d0                     ; city_cat * 4 for CityNamePtrs
-    movea.l #$0005e680,a0             ; CityNamePtrs ($05E680): city name string ptrs
+    movea.l #ROM_BASE+$0005e680,a0    ; CityNamePtrs ($05E680): city name string ptrs
     move.l  (a0,d0.w),-(sp)          ; push ptr to city name string
     move.w  d2,d0
     lsl.w   #$2,d0                     ; char_code * 4 for char name ptr table
-    movea.l #$0005e2a2,a0             ; char name ptrs (within NameStringPoolPtrs region)
+    movea.l #ROM_BASE+$0005e2a2,a0    ; char name ptrs (within NameStringPoolPtrs region)
     move.l  (a0,d0.w),-(sp)          ; push ptr to char name string
     move.l  (ROM_BASE+$00047CA4).l,-(sp) ; ptr to dialog format string at $47CA4
     move.l  a5,-(sp)                   ; local display buffer
@@ -347,11 +347,11 @@ RunCharManagement:                                                  ; $01861A
 .l1894a:                                                ; $01894A
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0             ; char name ptrs
+    movea.l #ROM_BASE+$0005e2a2,a0    ; char name ptrs
     move.l  (a0,d0.w),-(sp)          ; char name
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0             ; CityNamePtrs
+    movea.l #ROM_BASE+$0005e680,a0    ; CityNamePtrs
     move.l  (a0,d0.w),-(sp)          ; city name
     move.l  (ROM_BASE+$00047CA8).l,-(sp) ; ptr to dialog format string at $47CA8
     move.l  a5,-(sp)
@@ -468,7 +468,7 @@ RunCharManagement:                                                  ; $01861A
 ; Resolve weight category for the performance char candidate
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e31d,a0
+    movea.l #ROM_BASE+$0005e31d,a0
     move.b  (a0,d0.w),d4
     andi.l  #$ff,d4                    ; d4 = weight category
 
@@ -512,11 +512,11 @@ RunCharManagement:                                                  ; $01861A
 ; Negotiation was shown: use "enhanced departure" dialog format $4810C0
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)          ; city name
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0
+    movea.l #ROM_BASE+$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)          ; char name
     pea     (ROM_BASE+$000410C0).l    ; dialog format string for enhanced departure
     bra.b   .l18b22
@@ -525,11 +525,11 @@ RunCharManagement:                                                  ; $01861A
 .l18b00:                                                ; $018B00
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)          ; city name
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0
+    movea.l #ROM_BASE+$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)          ; char name
     pea     (ROM_BASE+$000410B8).l    ; dialog format string for standard departure
 .l18b22:                                                ; $018B22
@@ -593,11 +593,11 @@ RunCharManagement:                                                  ; $01861A
 ; Post-contract dialog at $4810B2
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0
+    movea.l #ROM_BASE+$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
     pea     (ROM_BASE+$000410B2).l    ; dialog format at $4810B2 (post-negotiation departure)
     bra.b   .l18bf0
@@ -606,11 +606,11 @@ RunCharManagement:                                                  ; $01861A
 .l18bce:                                                ; $018BCE
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0
+    movea.l #ROM_BASE+$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
     pea     (ROM_BASE+$000410AA).l    ; dialog format at $4810AA (simple departure)
 .l18bf0:                                                ; $018BF0
@@ -629,15 +629,15 @@ RunCharManagement:                                                  ; $01861A
     move.w  d4,d0
     ext.l   d0
     lsl.l   #$2,d0                     ; d4 * 4 for NameStringPoolPtrs
-    movea.l #$0005e296,a0             ; NameStringPoolPtrs ($05E296)
+    movea.l #ROM_BASE+$0005e296,a0    ; NameStringPoolPtrs ($05E296)
     move.l  (a0,d0.l),-(sp)          ; airline type name
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0             ; CityNamePtrs
+    movea.l #ROM_BASE+$0005e680,a0    ; CityNamePtrs
     move.l  (a0,d0.w),-(sp)          ; city name
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0             ; char name ptrs
+    movea.l #ROM_BASE+$0005e2a2,a0    ; char name ptrs
     move.l  (a0,d0.w),-(sp)          ; char name
     move.l  (ROM_BASE+$00047CA4).l,-(sp) ; dialog format at $47CA4 (low-score departure)
     bra.w   .l18b28                    ; render and display (shared tail)

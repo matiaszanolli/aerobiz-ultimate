@@ -127,7 +127,7 @@ RunPlayerSelectUI:                                                  ; $010AB6
     link    a6,#-$10
     movem.l d2-d5/a2-a5,-(sp)
     lea     -$0010(a6),a4
-    movea.l #$0d64,a5
+    movea.l #ROM_BASE+$0d64,a5
     move.w  $000e(a6),d2
     move.w  d2,d5
     pea     ($0008).w
@@ -172,7 +172,7 @@ RunPlayerSelectUI:                                                  ; $010AB6
     clr.w   d3
     clr.w   ($00FF13FC).l
     clr.w   ($00FFA7D8).l
-    movea.l #$00076ac0,a3
+    movea.l #ROM_BASE+$00076ac0,a3
     movea.l a4,a2
     addq.l  #$8,a2
 .l10b60:                                                ; $010B60

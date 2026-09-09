@@ -103,7 +103,7 @@ ShowRelPanel:                                                ; $006B78
     ; byte[3]=range2_count (number of chars in range 2)
     move.w  $000e(a6),d0            ; char_index (0-6)
     lsl.w   #2,d0                   ; * 4 = byte offset into CharTypeRangeTable
-    movea.l #$0005ecbc,a0          ; CharTypeRangeTable ($05ECBC)
+    movea.l #ROM_BASE+$0005ecbc,a0 ; CharTypeRangeTable ($05ECBC)
     lea     (a0,d0.w),a0           ; a0 = entry for this char_index
     move.l  a0,-$4(a6)             ; save ptr to table entry in frame
 
@@ -126,7 +126,7 @@ ShowRelPanel:                                                ; $006B78
     move.b  (a0),d0                ; byte[0] = range1_start
     andi.l  #$ff,d0
     add.w   d0,d0                  ; * 2 = word offset into CharRangeScoreMap
-    movea.l #$0005e9fa,a0         ; CharRangeScoreMap ($05E9FA): word-pair per char
+    movea.l #ROM_BASE+$0005e9fa,a0 ; CharRangeScoreMap ($05E9FA): word-pair per char
     lea     (a0,d0.w),a0
     movea.l a0,a3                  ; a3 = ptr to first CharRangeScoreMap entry
 
@@ -259,7 +259,7 @@ ShowRelPanel:                                                ; $006B78
     move.b  $2(a0),d0             ; byte[2] = range2_start char_code
     andi.l  #$ff,d0
     add.w   d0,d0                  ; * 2 = word offset into CharRangeScoreMap
-    movea.l #$0005e9fa,a0         ; CharRangeScoreMap ($05E9FA)
+    movea.l #ROM_BASE+$0005e9fa,a0 ; CharRangeScoreMap ($05E9FA)
     lea     (a0,d0.w),a0
     movea.l a0,a3                  ; a3 = ptr to range2 first CharRangeScoreMap entry
 
@@ -414,7 +414,7 @@ ShowRelPanel:                                                ; $006B78
 .alt_path:                               ; $006E56
     ; Scan first 32 entries of CharPortraitPos ($05E948) for chars in common with player.
     ; CharPortraitPos: word-pair entries (x_screen, y_screen) per char.
-    movea.l #$0005e948,a3        ; CharPortraitPos ($05E948): portrait position table
+    movea.l #ROM_BASE+$0005e948,a3 ; CharPortraitPos ($05E948): portrait position table
     clr.w   d4                   ; d4 = scan index (0-31)
     clr.w   d3                   ; d3 = count of matching entries stored in result buffer
     bra.b   .alt_check

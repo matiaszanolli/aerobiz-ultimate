@@ -24,7 +24,7 @@ HandlePlayerMenuInput:
     link    a6,#-$7C
     movem.l d2-d7/a2-a5, -(a7)
     movea.l $c(a6), a4                  ; a4 = route_slot ptr
-    movea.l  #$00000D64,a5              ; a5 = GameCommand dispatcher
+    movea.l  #ROM_BASE+$00000D64,a5     ; a5 = GameCommand dispatcher
 
 ; --- Phase: Show dialog header and check match slots ---
     ; Display the dialog box for this player's negotiation menu.

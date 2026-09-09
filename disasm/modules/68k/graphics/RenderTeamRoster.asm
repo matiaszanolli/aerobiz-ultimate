@@ -14,7 +14,7 @@ RenderTeamRoster:
     ; d3 = player_index (0-3)
     movea.l $30(a7), a2
     ; a2 = match-data struct pointer (char_a at +$00, char_b at +$01)
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
     ; a4 = GameCommand: cached pointer to central command dispatcher
     movea.l  #$00FF1804,a5
     ; a5 = $FF1804 = save_buf_base: decompression / VRAM DMA scratch buffer
@@ -491,7 +491,7 @@ l_37e66:
     move.w  d2, d0
     lsl.w   #$2, d0
     ; d0 = range_bucket * 4: word offset into threshold table at $5ECBE
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     ; $5ECBE = ROM range threshold table (byte per bucket entry, stride 4)
     move.b  (a0,d0.w), d0
     andi.l  #$ff, d0
@@ -535,7 +535,7 @@ l_37ec0:
     ; char_b code >= 32: look up threshold and compute bucket bitmask for char_b
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     move.b  (a0,d0.w), d0
     andi.l  #$ff, d0
     move.w  d6, d4

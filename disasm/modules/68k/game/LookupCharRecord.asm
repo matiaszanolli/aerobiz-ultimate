@@ -56,7 +56,7 @@ l_364a0:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E31A,a0
+    movea.l  #ROM_BASE+$0005E31A,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4
     moveq   #$0,d0
@@ -77,7 +77,7 @@ l_364a0:
     move.w  -$8(a6), d1
     add.w   d1, d1
     add.w   d1, d0
-    movea.l  #$0005F936,a0
+    movea.l  #ROM_BASE+$0005F936,a0
     move.w  (a0,d0.w), d0
     andi.l  #$ffff, d0
     moveq   #$0,d1

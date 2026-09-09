@@ -38,8 +38,8 @@
 HandleCharInteraction:
     movem.l d2-d6/a2-a3, -(a7)
     move.l  $20(a7), d4                             ; d4 = mode flag (1 or 0)
-    movea.l  #$00000D64,a2                          ; a2 = GameCommand function pointer
-    movea.l  #$0001E044,a3                          ; a3 = TilePlacement function pointer
+    movea.l  #ROM_BASE+$00000D64,a2                 ; a2 = GameCommand function pointer
+    movea.l  #ROM_BASE+$0001E044,a3                 ; a3 = TilePlacement function pointer
     clr.w   d2                                      ; d2 = phase-A counter
     clr.w   d3                                      ; d3 = phase-B counter
     move.w  #$750, d6                               ; d6 = tile attribute word ($750)

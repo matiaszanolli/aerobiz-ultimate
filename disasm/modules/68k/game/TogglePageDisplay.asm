@@ -13,7 +13,7 @@ TogglePageDisplay:                                                  ; $023B10
     move.w  d2,d0
     ext.l   d0
     add.l   d0,d0
-    movea.l #$000482d4,a0
+    movea.l #ROM_BASE+$000482d4,a0
     move.w  (a0,d0.l),d0
     add.w   d0,d0
     movea.l #$00ff1804,a0

@@ -9,10 +9,10 @@
 LoadMapGraphics:
     link    a6,#-$80
     movem.l d2-d3/a2-a5, -(a7)
-    movea.l  #$00000D64,a2       ; a2 = GameCommand dispatcher ($0D64, used as JSR target)
+    movea.l  #ROM_BASE+$00000D64,a2 ; a2 = GameCommand dispatcher ($0D64, used as JSR target)
     lea     -$80(a6), a3         ; a3 = 128-byte ($80) local work buffer on stack
     movea.l  #$00FF1804,a4       ; a4 = $FF1804 (save_buf_base: LZ output / tile staging area)
-    movea.l  #$000045B2,a5       ; a5 = ROM sub at $45B2 (palette/LZ/tile operation helper)
+    movea.l  #ROM_BASE+$000045B2,a5 ; a5 = ROM sub at $45B2 (palette/LZ/tile operation helper)
     ; --- Phase: Decompress Route Tiles (Asset 1) ---
     ; LZ_Decompress(src, dest): decompress first route/city map tile set to $FF1804
     move.l  (ROM_BASE+$000B753C).l, -(a7) ; arg: LZ source pointer (loaded from ROM table at $B753C)

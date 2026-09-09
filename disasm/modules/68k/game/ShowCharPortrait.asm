@@ -10,9 +10,9 @@ ShowCharPortrait:                                                  ; $03A5A8
     move.l  $0010(a6),d4
     move.l  $000c(a6),d5
     move.l  $0008(a6),d6
-    movea.l #$0d64,a3
-    movea.l #$0007bad6,a4
-    movea.l #$3fec,a5
+    movea.l #ROM_BASE+$0d64,a3
+    movea.l #ROM_BASE+$0007bad6,a4
+    movea.l #ROM_BASE+$3fec,a5
     move.w  #$0222,-$0002(a6)
     pea     ($0001).w
     pea     ($000F).w
@@ -23,7 +23,7 @@ ShowCharPortrait:                                                  ; $03A5A8
 .l3a5ec:                                                ; $03A5EC
     move.w  d2,d0
     add.w   d0,d0
-    movea.l #$00076520,a0
+    movea.l #ROM_BASE+$00076520,a0
     pea     (a0,d0.w)
 .l3a5fa:                                                ; $03A5FA
     jsr     (ROM_BASE+$005092).l
@@ -34,7 +34,7 @@ ShowCharPortrait:                                                  ; $03A5A8
     jsr     (ROM_BASE+$03E146).l
     move.w  d0,d2
     mulu.w  #$a,d0
-    movea.l #$00048656,a0
+    movea.l #ROM_BASE+$00048656,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     move.w  (a2)+,d2
@@ -154,7 +154,7 @@ ShowCharPortrait:                                                  ; $03A5A8
     move.b  (a0,d6.w),d0
     andi.l  #$ff,d0
     lsl.w   #$2,d0
-    movea.l #$0005ecfc,a0
+    movea.l #ROM_BASE+$0005ecfc,a0
     move.l  (a0,d0.w),-(sp)
     pea     (ROM_BASE+$00045030).l
     jsr     (ROM_BASE+$03B270).l

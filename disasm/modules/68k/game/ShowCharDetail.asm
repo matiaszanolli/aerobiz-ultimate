@@ -44,7 +44,7 @@ ShowCharDetail:                                                  ; $007D92
     move.l  $001c(a6),d6                            ; d6 = mode (1=portrait, 0=weighted stat)
     move.l  $0008(a6),d7                            ; d7 = player index
     lea     -$0080(a6),a4                           ; a4 = local 128-byte string work buffer
-    movea.l #$0003b270,a5                           ; a5 = PrintfWide function pointer
+    movea.l #ROM_BASE+$0003b270,a5                  ; a5 = PrintfWide function pointer
     ; --- Phase: Index into bitfield_tab sub-region ($FFA6B8) for this slot ---
     ; $FFA6B8 = $FFA6A0 + $18 (start of active char sub-region)
     ; stride $C per slot -> slot * $C

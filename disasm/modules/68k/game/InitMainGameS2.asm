@@ -25,7 +25,7 @@ InitMainGameS2:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $c(a6), d2                  ; d2 = char_class / region index
     move.l  $8(a6), d4                  ; d4 = player_index
-    movea.l  #$00000D64,a3              ; a3 = GameCommand dispatcher
+    movea.l  #ROM_BASE+$00000D64,a3     ; a3 = GameCommand dispatcher
     lea     -$20(a6), a4                ; a4 = char-occupancy buffer (30 bytes)
     lea     -$2(a6), a5                 ; a5 = ptr to ProcessInputLoop result word
     moveq   #$1,d3                      ; d3 = 1: force full redraw on first iteration
@@ -106,7 +106,7 @@ InitMainGameS2:
     move.w  d5, d0
     ext.l   d0
     lsl.l   #$2, d0                     ; d5 * 4 = longword index into pointer table
-    movea.l  #$0005F912,a0             ; ROM pointer table: slot-header format strings
+    movea.l  #ROM_BASE+$0005F912,a0    ; ROM pointer table: slot-header format strings
     move.l  (a0,d0.l), -(a7)           ; select format string for current slot selector d5
     jsr PrintfWide                      ; print slot header text in wide font
     lea     $1c(a7), a7
@@ -314,7 +314,7 @@ InitMainGameS2:
     ; General case: look up region name from RegionNamePtrs table, print with format
     move.w  d2, d0
     lsl.w   #$2, d0                     ; char_class * 4 = longword index
-    movea.l  #$0005EC84,a0             ; RegionNamePtrs ($05EC84): 14 entries x 4 bytes
+    movea.l  #ROM_BASE+$0005EC84,a0    ; RegionNamePtrs ($05EC84): 14 entries x 4 bytes
     move.l  (a0,d0.w), -(a7)           ; push ptr to region name string
     pea     (ROM_BASE+$000413D4).l      ; ROM: "%s" format string for region heading
     jsr PrintfNarrow                    ; print "Region: <name>"

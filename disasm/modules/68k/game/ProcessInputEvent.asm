@@ -216,7 +216,7 @@ l_1eda6:
 l_1edde:
 ; a3 = $5ECBC: ROM table with 4-byte entries describing city slot ranges/counts
 ; Each entry: byte[0]=start, byte[1]=end, byte[2]=range_start_b, byte[3]=range_end_b
-    movea.l  #$0005ECBC,a3
+    movea.l  #ROM_BASE+$0005ECBC,a3
 ; d4 = outer city slot index (0-6)
     clr.w   d4
 l_1ede6:

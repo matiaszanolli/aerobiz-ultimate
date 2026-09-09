@@ -8,7 +8,7 @@ AdvanceToNextMonth:
     move.l  $8(a6), d2
     move.l  $c(a6), d3
     lea     -$194(a6), a2
-    movea.l  #$00006A2E,a3
+    movea.l  #ROM_BASE+$00006A2E,a3
     clr.w   d5
     move.w  d3, d0
     ext.l   d0
@@ -31,7 +31,7 @@ AdvanceToNextMonth:
     jsr     (a3)
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$000477E4).l, -(a7)
     move.l  a2, -(a7)
@@ -79,7 +79,7 @@ l_0fd68:
     jsr ResourceUnload
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$000477E0).l, -(a7)
     move.l  a2, -(a7)

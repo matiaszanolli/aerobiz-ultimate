@@ -14,7 +14,7 @@ GetCharStatField:
     link    a6,#-$4
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d5           ; d5 = player_index
-    movea.l  #$00000D64,a5       ; a5 = GameCommand indirect call pointer
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand indirect call pointer
 
 ; --- Phase: Pre-Loop Init ---
     clr.w   d4                   ; d4 = direction_flag: 0=scroll backward, 1=forward

@@ -19,9 +19,9 @@ FormatRelationStats:                                                  ; $019660
 ; a2 = relation record pointer: byte[0]=char_a_code, byte[1]=char_b_code
     movea.l $0008(a6),a2
 ; a3 = PrintfWide ($3B270): cached for repeated wide-font prints
-    movea.l #$0003b270,a3
+    movea.l #ROM_BASE+$0003b270,a3
 ; a4 = SetTextCursor ($3AB2C): cached for cursor positioning
-    movea.l #$0003ab2c,a4
+    movea.l #ROM_BASE+$0003ab2c,a4
 ; a5 = $FF1804: save_buf_base -- used as decompress destination for portrait tile data
     movea.l #$00ff1804,a5
 ; d5 = 1: priority/mode flag passed to FillTileRect calls (bit 0 = use foreground palette)
@@ -178,7 +178,7 @@ FormatRelationStats:                                                  ; $019660
     moveq   #$0,d0
     move.b  (a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e7e4,a0
+    movea.l #ROM_BASE+$0005e7e4,a0
     move.l  (a0,d0.w),-(sp)
 ; Format string at $41110C: single-argument name print ("%s" or similar)
     pea     (ROM_BASE+$0004110C).l
@@ -255,7 +255,7 @@ FormatRelationStats:                                                  ; $019660
     moveq   #$0,d0
     move.b  $0001(a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e7e4,a0
+    movea.l #ROM_BASE+$0005e7e4,a0
     move.l  (a0,d0.w),-(sp)
 ; Format at $41104: shorter name format for the bottom section label
     pea     (ROM_BASE+$00041104).l
@@ -287,7 +287,7 @@ FormatRelationStats:                                                  ; $019660
     andi.l  #$ff,d0
 ; Use result * 4 to index ROM table $5ECFC: pointer to relation type name string
     lsl.w   #$2,d0
-    movea.l #$0005ecfc,a0
+    movea.l #ROM_BASE+$0005ecfc,a0
     move.l  (a0,d0.w),-(sp)
 ; Format at $410FC: print the relation type name (e.g., "Business", "Rival", etc.)
     pea     (ROM_BASE+$000410FC).l

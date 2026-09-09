@@ -28,8 +28,8 @@ FinalizeQuarterEnd:
     move.l  $c(a6), d3                  ; d3 = quarter index
 
 ; --- Phase: Frame Setup ---
-    movea.l  #$000482FC,a3              ; a3 = StatusMsgPtrs[9] (negotiation dialog strings)
-    movea.l  #$0001183A,a4              ; a4 = ShowTextDialog function ptr
+    movea.l  #ROM_BASE+$000482FC,a3     ; a3 = StatusMsgPtrs[9] (negotiation dialog strings)
+    movea.l  #ROM_BASE+$0001183A,a4     ; a4 = ShowTextDialog function ptr
     lea     $12(a6), a5                 ; a5 = &screen_id (word in caller frame)
     clr.w   d5                          ; d5 = retry flag = 0
 

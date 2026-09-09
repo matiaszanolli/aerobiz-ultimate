@@ -169,7 +169,7 @@ l_33b26:
     ; $5ECBE is a ROM table; entry d2*4 byte 0 = base range offset for this category
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     move.b  (a0,d0.w), d0
     andi.l  #$ff, d0
     ; Compute within-category offset: d5 - base = position within the range
@@ -210,7 +210,7 @@ l_33b80:
     ; International char A (>= $20): same $FFBD6C table update as above for char A's range
     move.w  d6, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     move.b  (a0,d0.w), d0
     andi.l  #$ff, d0
     move.w  d4, d7
@@ -309,12 +309,12 @@ l_33bdc:
     ; Look up char A's display name pointer from $5E680 (ROM name table, stride 4)
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; Look up char B's display name pointer
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; Player name area: $FF00A8 + player_index * $10 (16-byte per-player name buffer)
     move.w  d3, d0

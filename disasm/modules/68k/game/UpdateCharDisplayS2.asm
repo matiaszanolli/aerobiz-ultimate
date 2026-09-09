@@ -236,7 +236,7 @@ UpdateCharDisplayS2:
     move.b  (a0,d4.w), d0                           ; fetch category byte for this slot
     andi.l  #$ff, d0
     lsl.w   #$2, d0                                 ; * 4 = longword index
-    movea.l  #$0005ECFC,a0                          ; category string pointer table
+    movea.l  #ROM_BASE+$0005ECFC,a0                 ; category string pointer table
     move.l  (a0,d0.w), -(a7)                        ; push category name string
     moveq   #$0,d0
     move.w  (a4), d0                                ; count

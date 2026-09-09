@@ -13,7 +13,7 @@ DecompressVDPTiles:                                                  ; $004342
     ; a3 = $FF88DA = decomp_a3 working area base (scratch buffer for lookahead window)
     movea.l #$00ff88da,a3
     ; a4 = $4240 used as a function pointer: jsr (a4) calls an internal advance/shift routine
-    movea.l #$4240,a4
+    movea.l #ROM_BASE+$4240,a4
     ; a5 = $C00000 = VDP data port (writes tile pixels here directly during decompression)
     movea.l #$00c00000,a5
     ; a6 = $C00004 = VDP control port (set VRAM write address before each tile)

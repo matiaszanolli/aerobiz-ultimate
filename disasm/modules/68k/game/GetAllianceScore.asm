@@ -6,9 +6,9 @@ GetAllianceScore:
     link    a6,#-$A0
     movem.l d2-d3/a2-a5, -(a7)
     move.l  $8(a6), d3
-    movea.l  #$0005E680,a3
+    movea.l  #ROM_BASE+$0005E680,a3
     lea     -$a0(a6), a4
-    movea.l  #$0001D6A4,a5
+    movea.l  #ROM_BASE+$0001D6A4,a5
     move.w  d3, d0
     mulu.w  #$320, d0
     move.w  $e(a6), d1

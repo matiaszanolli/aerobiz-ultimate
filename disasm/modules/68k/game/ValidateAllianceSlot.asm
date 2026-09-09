@@ -6,8 +6,8 @@ ValidateAllianceSlot:
     link    a6,#-$A0
     movem.l d2-d4/a2-a4, -(a7)
     move.l  $8(a6), d2
-    movea.l  #$0002FBD6,a3
-    movea.l  #$00047B0C,a4
+    movea.l  #ROM_BASE+$0002FBD6,a3
+    movea.l  #ROM_BASE+$00047B0C,a4
     clr.w   d4
     move.w  d2, d0
     mulu.w  #$24, d0

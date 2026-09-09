@@ -18,7 +18,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     link    a6,#-$108                                  ; -$108 bytes of locals: working buffer at -$84(a6) etc.
     movem.l d2-d7/a2-a5,-(sp)
     lea     -$0084(a6),a4                              ; a4 = local display buffer (char portrait area)
-    movea.l #$000483f0,a5                              ; a5 = ROM ptr table $0004_83F0 (scenario string ptrs)
+    movea.l #ROM_BASE+$000483f0,a5                     ; a5 = ROM ptr table $0004_83F0 (scenario string ptrs)
 
 ; --- Phase: Early-exit checks -- handle terminal state values in session_word_a32 ---
     cmpi.w  #$fffe,($00FF0A32).l                       ; $FFFE = "menu just exited" sentinel
@@ -136,7 +136,7 @@ RunScenarioMenu:                                                  ; $02C2FA
 ; field_offset > 0: look up char-type specific portrait string
     move.w  d2,d0
     lsl.w   #$2,d0                                     ; field_offset * 4 (longword ptr table index)
-    movea.l #$0005eb2c,a0                              ; CountryRoutePtrs ($05EB2C): char/route type string ptrs
+    movea.l #ROM_BASE+$0005eb2c,a0                     ; CountryRoutePtrs ($05EB2C): char/route type string ptrs
     move.l  (a0,d0.w),-(sp)                            ; push ptr to route type name string for this char
     move.l  (ROM_BASE+$0004842C).l,-(sp)               ; ptr to secondary portrait descriptor string
 .l2c422:                                               ; $02C422
@@ -184,7 +184,7 @@ RunScenarioMenu:                                                  ; $02C2FA
 ; --- d6 in 0-3: render route display line for this scenario slot ---
     move.w  d2,d0
     lsl.w   #$2,d0                                     ; field_offset * 4
-    movea.l #$0005eb2c,a0                              ; CountryRoutePtrs ($05EB2C)
+    movea.l #ROM_BASE+$0005eb2c,a0                     ; CountryRoutePtrs ($05EB2C)
     move.l  (a0,d0.w),-(sp)                            ; route type name string (from/city A)
     move.w  d6,d0
     ext.l   d0
@@ -197,7 +197,7 @@ RunScenarioMenu:                                                  ; $02C2FA
 ; render price/score panel line below the portrait
     move.w  d6,d0
     lsl.w   #$2,d0
-    movea.l #$000483e0,a0                              ; secondary scenario string ptr table ($0004_83E0)
+    movea.l #ROM_BASE+$000483e0,a0                     ; secondary scenario string ptr table ($0004_83E0)
     move.l  (a0,d0.w),-(sp)                            ; secondary label string (price row label)
     move.l  $0010(a5),-(sp)                            ; a5+$10 = separator/spacer string from ptr table
     pea     -$0106(a6)                                 ; local price text buffer at -$106(a6)

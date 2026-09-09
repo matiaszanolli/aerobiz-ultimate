@@ -13,7 +13,7 @@ RunModelSelectUI:
     move.l  $8(a6), d3          ; d3 = player_index (0-3)
     move.l  $c(a6), d4          ; d4 = selection bitmask (bit N set = city N already owned)
     lea     -$52(a6), a4        ; a4 -> local text/sprintf scratch buffer
-    movea.l  #$00000D64,a5      ; a5 = GameCommand entry (used for direct jsr (a5) calls)
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand entry (used for direct jsr (a5) calls)
 ; Compute a pointer to this player's record: $FF0018 + player_index * $24
     move.w  d3, d0
     mulu.w  #$24, d0            ; offset = player_index * 36 (player_record stride)
@@ -43,7 +43,7 @@ RunModelSelectUI:
     lea     $20(a7), a7          ; balance pea stack from PlacePlayerNameLabels call
     jsr ResourceUnload           ; release graphics resources after blit
 ; A2 = pointer to a ROM table of destination-city name string pointers ($475E8)
-    movea.l  #$000475E8,a2
+    movea.l  #ROM_BASE+$000475E8,a2
 ; --- Phase: Destination select outer loop ---
 ; Outer loop: re-entered when player cancels back to map selection
 .l0b47a:
@@ -159,7 +159,7 @@ RunModelSelectUI:
 ; City not yet owned: format and display confirmation prompt
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0      ; ROM table: city name string pointers (word-indexed)
+    movea.l  #ROM_BASE+$0005E680,a0 ; ROM table: city name string pointers (word-indexed)
     move.l  (a0,d0.w), -(a7)   ; push city name string pointer
     move.l  (ROM_BASE+$000475F0).l, -(a7) ; push secondary format arg from ROM pointer table
     move.l  a4, -(a7)           ; output buffer
@@ -206,7 +206,7 @@ RunModelSelectUI:
 ; Format "already selected" message using city name and different ROM string ($475FC = "already" template)
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0      ; city name pointer table
+    movea.l  #ROM_BASE+$0005E680,a0 ; city name pointer table
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$000475FC).l, -(a7) ; "already owned" format string pointer
     move.l  a4, -(a7)
@@ -243,7 +243,7 @@ RunModelSelectUI:
     jsr GameCmd16                ; clear sprites
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.l  (ROM_BASE+$000475EC).l, -(a7) ; "alliance city" format string pointer
     move.l  a4, -(a7)

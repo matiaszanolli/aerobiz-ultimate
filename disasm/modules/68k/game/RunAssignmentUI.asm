@@ -28,7 +28,7 @@ RunAssignmentUI:                                                  ; $016958
     movem.l d2-d7/a2-a5,-(sp)
     move.l  $0008(a6),d4               ; d4 = player_index (argument)
     lea     -$0006(a6),a3              ; a3 = &col_offset (grid column cursor state)
-    movea.l #$0d64,a4                  ; a4 = GameCommand dispatcher ($0D64)
+    movea.l #ROM_BASE+$0d64,a4         ; a4 = GameCommand dispatcher ($0D64)
     lea     -$0008(a6),a5              ; a5 = &row_group  (grid row-group selector, 0-3)
 
 ; ============================================================================
@@ -304,7 +304,7 @@ RunAssignmentUI:                                                  ; $016958
     move.w  (a5),d0                    ; row_group (0-3)
     mulu.w  #$1c,d0                    ; row_group * $1C (28 chars per row group)
     add.w   (a3),d0                    ; + col_offset = final table index
-    movea.l #$00047a9c,a0             ; char code lookup table at $47A9C
+    movea.l #ROM_BASE+$00047a9c,a0    ; char code lookup table at $47A9C
     move.b  (a0,d0.w),-$0009(a6)     ; char_code = table[index]
 
 ; Remap char code $2D (hyphen) to $20 (space) for display purposes
@@ -574,7 +574,7 @@ RunAssignmentUI:                                                  ; $016958
     move.w  (a5),d0
     mulu.w  #$1c,d0                    ; row_group * $1C (28 chars per row)
     add.w   (a3),d0                    ; + col_offset = table index
-    movea.l #$00047a9c,a0             ; char code table at $47A9C
+    movea.l #ROM_BASE+$00047a9c,a0    ; char code table at $47A9C
     cmpi.b  #$20,(a0,d0.w)            ; cell == space ($20)?
     beq.w   .l16d70                    ; yes -- advance again (skip empty cells)
 
@@ -619,7 +619,7 @@ RunAssignmentUI:                                                  ; $016958
     move.w  (a5),d0
     mulu.w  #$1c,d0
     add.w   (a3),d0
-    movea.l #$00047a9c,a0
+    movea.l #ROM_BASE+$00047a9c,a0
     cmpi.b  #$20,(a0,d0.w)            ; space char?
     beq.b   .l16e1c                    ; yes -- keep moving left
     bra.w   .l16abe                    ; done -- restart main loop

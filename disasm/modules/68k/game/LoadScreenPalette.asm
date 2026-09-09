@@ -8,7 +8,7 @@ LoadScreenPalette:                                                  ; $0100F2
     movem.l d2-d5/a2-a3,-(sp)
     move.l  $000c(a6),d4
     move.l  $0008(a6),d5
-    movea.l #$0d64,a2
+    movea.l #ROM_BASE+$0d64,a2
     lea     -$0010(a6),a3
     moveq   #$0,d3
     move.b  ($00FF0016).l,d3

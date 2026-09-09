@@ -9,9 +9,9 @@ DecompressGraphicsData:
     ; a3 = save_buf_base ($FF1804): decompression scratch buffer for LZ output
     movea.l  #$00FF1804,a3
     ; a4 = GameCommand dispatcher ($000D64): called via jsr (a4) throughout
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
     ; a5 = graphics descriptor table base at $4E0F4 (ROM, portrait/tile index data)
-    movea.l  #$0004E0F4,a5
+    movea.l  #ROM_BASE+$0004E0F4,a5
     ; args: $a(a6) = player index, $e(a6) = slot index
     ; compute route_slots offset: player * $320 + slot * $14
     move.w  $a(a6), d0
@@ -282,7 +282,7 @@ DecompressGraphicsData:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E7E4,a0
+    movea.l  #ROM_BASE+$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
     ; $41368 = format string for city name display (PrintfWide format)
     pea     (ROM_BASE+$00041368).l
@@ -306,7 +306,7 @@ DecompressGraphicsData:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E7E4,a0
+    movea.l  #ROM_BASE+$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
     ; $41364 = format string for city_b name line
     pea     (ROM_BASE+$00041364).l

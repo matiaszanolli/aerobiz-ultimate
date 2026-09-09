@@ -5,8 +5,8 @@
 RunAircraftStatsDisplay:
     link    a6,#$0
     movem.l d2/a2-a4, -(a7)
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
     jsr ResourceLoad
 .l0c1c6:
     pea     ($001E).w
@@ -66,7 +66,7 @@ RunAircraftStatsDisplay:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005F926,a0
+    movea.l  #ROM_BASE+$0005F926,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003E5EE).l
     jsr     (a3)
@@ -80,7 +80,7 @@ RunAircraftStatsDisplay:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E7E4,a0
+    movea.l  #ROM_BASE+$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003E5EA).l
     jsr     (a3)

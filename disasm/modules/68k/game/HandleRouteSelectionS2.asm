@@ -9,9 +9,9 @@ HandleRouteSelectionS2:
     ; d4 = total number of routes to display (arg from $C(a6))
     move.l  $c(a6), d4
     ; a2 = GameCommand function pointer ($D64) -- called via register for speed
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     ; a3 = TilePlacement function pointer ($1E044) -- called via register
-    movea.l  #$0001E044,a3
+    movea.l  #ROM_BASE+$0001E044,a3
     ; a4 = input_mode_flag ($FF13FC): nonzero = countdown/UI-input mode active
     movea.l  #$00FF13FC,a4
     ; a5 = local work area at -$C(a6) (stores scroll window size)

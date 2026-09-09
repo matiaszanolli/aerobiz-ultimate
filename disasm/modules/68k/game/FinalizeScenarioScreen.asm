@@ -10,7 +10,7 @@ l_239ca:
     moveq   #$0,d0
     move.b  (a2), d0
     add.w   d0, d0
-    movea.l  #$0005E948,a0
+    movea.l  #ROM_BASE+$0005E948,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3
     clr.l   -(a7)

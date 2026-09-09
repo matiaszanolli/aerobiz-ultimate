@@ -19,10 +19,10 @@ DisplayStationDetail:
     move.l  $8(a6), d2           ; d2 = player_index
     move.l  $10(a6), d5          ; d5 = ownership_flag (1 = owned by this player)
     move.l  $c(a6), d6           ; d6 = city_index (identifies which station/facility)
-    movea.l  #$00000D64,a2       ; a2 = GameCommand ($000D64)
+    movea.l  #ROM_BASE+$00000D64,a2 ; a2 = GameCommand ($000D64)
     movea.l  #$00FF1804,a3       ; a3 = VRAM staging buffer ($FF1804, 64KB work area)
-    movea.l  #$00005092,a4       ; a4 = DisplaySetup ($005092)
-    movea.l  #$0001D98C,a5       ; a5 = LZ_Decompress dispatch ($01D98C)
+    movea.l  #ROM_BASE+$00005092,a4 ; a4 = DisplaySetup ($005092)
+    movea.l  #ROM_BASE+$0001D98C,a5 ; a5 = LZ_Decompress dispatch ($01D98C)
     ; --- Phase: Load resources and set up screen ---
     jsr ResourceLoad             ; load display resources needed for station detail screen
     ; GameCommand #$7: initialize display mode with VRAM address $FC00 (tile buffer start)
@@ -171,7 +171,7 @@ l_2bbd6:
     move.b  (a0,d6.w), d0        ; d0 = owner player index for this city
     andi.l  #$ff, d0             ; zero-extend byte
     lsl.w   #$2, d0              ; d0 *= 4 (long pointer table index)
-    movea.l  #$0005ECFC,a0       ; a0 = ROM player name pointer table ($5ECFC)
+    movea.l  #ROM_BASE+$0005ECFC,a0 ; a0 = ROM player name pointer table ($5ECFC)
     move.l  (a0,d0.w), -(a7)     ; push owner's name string ptr as sprintf arg
     move.w  d5, d0
     ext.l   d0

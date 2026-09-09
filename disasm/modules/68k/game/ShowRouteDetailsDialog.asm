@@ -25,9 +25,9 @@ ShowRouteDetailsDialog:
     ; --- Phase: Load arguments ---
     move.l  $c(a6), d3                              ; d3 = slot index (0-3)
     move.l  $8(a6), d4                              ; d4 = player index (0-3)
-    movea.l  #$0003B246,a3                          ; a3 = PrintfNarrow function pointer
-    movea.l  #$0003AB2C,a4                          ; a4 = SetTextCursor function pointer
-    movea.l  #$0001E0B8,a5                          ; a5 = GameCmd16 (clear/place via cmd #16)
+    movea.l  #ROM_BASE+$0003B246,a3                 ; a3 = PrintfNarrow function pointer
+    movea.l  #ROM_BASE+$0003AB2C,a4                 ; a4 = SetTextCursor function pointer
+    movea.l  #ROM_BASE+$0001E0B8,a5                 ; a5 = GameCmd16 (clear/place via cmd #16)
     ; --- Phase: Clear dialog background area via GameCommand #$1A ---
     ; GameCommand #$1A = ClearTileArea: args (priority, height, width, y, x, 0, cmd)
     ; $8000 = priority bit set (clears in foreground plane)
@@ -165,7 +165,7 @@ ShowRouteDetailsDialog:
     moveq   #$0,d0
     move.b  (a2), d0                                ; city/char code from slot +$0
     lsl.w   #$2, d0                                 ; * 4 = longword index into name table
-    movea.l  #$00047818,a0                          ; char name pointer table
+    movea.l  #ROM_BASE+$00047818,a0                 ; char name pointer table
     move.l  (a0,d0.w), -(a7)                        ; push name string pointer
     jsr PrintfWide                                  ; print char name in wide font
 l_1120c:
@@ -208,7 +208,7 @@ l_11258:
     ; --- Other region: look up in region name table $5EC84 ---
     move.w  d2, d0
     lsl.w   #$2, d0                                 ; region * 4
-    movea.l  #$0005EC84,a0                          ; region name string pointer table
+    movea.l  #ROM_BASE+$0005EC84,a0                 ; region name string pointer table
     move.l  (a0,d0.w), -(a7)                        ; push region name string
     pea     (ROM_BASE+$0003F106).l                  ; format string prefix
     jsr PrintfWide                                  ; print "Region: <name>" wide font
@@ -223,7 +223,7 @@ l_11274:
     jsr     (a4)                                    ; SetTextCursor
     move.w  d2, d0
     lsl.w   #$2, d0                                 ; route type index * 4
-    movea.l  #$000477E8,a0                          ; route-type name string pointer table
+    movea.l  #ROM_BASE+$000477E8,a0                 ; route-type name string pointer table
     move.l  (a0,d0.w), -(a7)                        ; push route type name string
     jsr     (a3)                                    ; PrintfNarrow: print route type name
     ; --- Phase: Compute and display route revenue via CalcRouteRevenue ---

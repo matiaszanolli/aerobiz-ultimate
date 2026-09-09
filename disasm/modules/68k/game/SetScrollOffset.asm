@@ -8,7 +8,7 @@ SetScrollOffset:                                                  ; $01D8F4
     move.l  $001c(sp),d2
     move.l  $0020(sp),d3
     move.l  $0018(sp),d4
-    movea.l #$0d64,a3
+    movea.l #ROM_BASE+$0d64,a3
     move.l  #$8b00,-(sp)
     clr.l   -(sp)
     jsr     (a3)

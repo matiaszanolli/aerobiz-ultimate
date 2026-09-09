@@ -62,7 +62,7 @@ RankCharCandidates:                                                  ; $01052E
     lea     $0010(sp),sp
     move.w  d0,d2                      ; d2 = char category index (result of RangeLookup)
     lsl.w   #$2,d0                     ; category * 4 (each CharTypeRangeTable entry is 4 bytes)
-    movea.l #$0005ecbc,a0              ; CharTypeRangeTable base ($05ECBC)
+    movea.l #ROM_BASE+$0005ecbc,a0     ; CharTypeRangeTable base ($05ECBC)
     lea     (a0,d0.w),a0
     movea.l a0,a3                      ; a3 = descriptor entry for this category
     moveq   #$0,d6
@@ -198,7 +198,7 @@ FindBestCharacter:                                                  ; $010686
     lea     $0010(sp),sp
     move.w  d0,d2                      ; d2 = category index
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0              ; CharTypeRangeTable ($05ECBC)
+    movea.l #ROM_BASE+$0005ecbc,a0     ; CharTypeRangeTable ($05ECBC)
     lea     (a0,d0.w),a0
     movea.l a0,a2                      ; a2 = descriptor for this category
     moveq   #$0,d7
@@ -230,7 +230,7 @@ FindBestCharacter:                                                  ; $010686
     andi.l  #$ff,d3                    ; d3 = char type code from table
     move.w  d3,d0
     lsl.w   #$2,d0                     ; type * 4 (CharWeightTable stride)
-    movea.l #$0005e31d,a0              ; CharWeightTable subrange ($05E31D+)
+    movea.l #ROM_BASE+$0005e31d,a0     ; CharWeightTable subrange ($05E31D+)
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     move.w  d0,d3                      ; d3 = weight category (0-3 valid, else skip)
@@ -278,7 +278,7 @@ FindBestCharacter:                                                  ; $010686
     andi.l  #$ff,d3
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e31d,a0              ; CharWeightTable subrange
+    movea.l #ROM_BASE+$0005e31d,a0     ; CharWeightTable subrange
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     move.w  d0,d3
@@ -364,7 +364,7 @@ FindBestCharacter:                                                  ; $010686
     moveq   #$0,d0
     move.b  (a2),d0                    ; d0 = char type code from row
     lsl.w   #$2,d0                     ; * 4 for CharWeightTable stride
-    movea.l #$0005e31a,a0             ; CharWeightTable ($05E31A): byte-pair weight factors
+    movea.l #ROM_BASE+$0005e31a,a0    ; CharWeightTable ($05E31A): byte-pair weight factors
     lea     (a0,d0.w),a0
     movea.l a0,a4                      ; a4 = weight entry for this char type
     moveq   #$0,d0
@@ -477,7 +477,7 @@ FindCharByValue:                                                  ; $0108F2
     moveq   #$0,d0
     move.b  (a2),d0                    ; d0 = char type code
     lsl.w   #$2,d0
-    movea.l #$0005e31a,a0             ; CharWeightTable ($05E31A)
+    movea.l #ROM_BASE+$0005e31a,a0    ; CharWeightTable ($05E31A)
     lea     (a0,d0.w),a0
     movea.l a0,a4                      ; a4 = weight entry for this char
     moveq   #$0,d0

@@ -8,7 +8,7 @@ FillRectColor:
     move.l  $c(a6), d2
     move.l  $8(a6), d3
     lea     -$20(a6), a2
-    movea.l  #$00000D64,a3
+    movea.l  #ROM_BASE+$00000D64,a3
     tst.w   d3
     ble.w   l_3d26e
     tst.w   d2

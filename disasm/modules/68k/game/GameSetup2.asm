@@ -5,8 +5,8 @@
 GameSetup2:
     movem.l d2/a2-a4, -(a7)
     movea.l  #$00FFA78E,a2
-    movea.l  #$0001E1EC,a3
-    movea.l  #$000053BA,a4
+    movea.l  #ROM_BASE+$0001E1EC,a3
+    movea.l  #ROM_BASE+$000053BA,a4
     clr.w   (a2)
     moveq   #$1,d2
 l_3ca68:

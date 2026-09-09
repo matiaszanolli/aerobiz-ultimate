@@ -8,7 +8,7 @@ PackEventRecord:
     movea.l $18(a7), a2
     move.w  d3, d0
     lsl.w   #$3, d0
-    movea.l  #$0005FAB6,a0
+    movea.l  #ROM_BASE+$0005FAB6,a0
     lea     (a0,d0.w), a0
     movea.l a0, a1
     movea.l a0, a3

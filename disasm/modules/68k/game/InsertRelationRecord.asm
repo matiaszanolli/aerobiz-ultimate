@@ -7,7 +7,7 @@ InsertRelationRecord:                                                  ; $0082E4
     movem.l d2-d3/a2-a5,-(sp)
     move.l  $001c(sp),d2
     movea.l $0020(sp),a2
-    movea.l #$0001d538,a5
+    movea.l #ROM_BASE+$0001d538,a5
     move.w  d2,d0
     mulu.w  #$0320,d0
     movea.l #$00ff9a20,a0

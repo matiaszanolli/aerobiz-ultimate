@@ -15,7 +15,7 @@ CheckAirRouteAvail:
     clr.w   d2
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     move.b  (a0,d0.w), d5
     bra.b   l_22546
 l_224dc:

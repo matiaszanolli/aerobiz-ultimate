@@ -36,7 +36,7 @@ CharCodeCompare:                                             ; $006F42
     nop
     lea     $000C(sp),sp                                 ; clean 3 args
     move.w  d0,d2                                        ; D2 = pair index result
-    movea.l #$0005E356,a0                                ; A0 = char range score table
+    movea.l #ROM_BASE+$0005E356,a0                       ; A0 = char range score table
     move.b  (a0,d2.w),d0                                 ; D0 = table[D2]
 .exit_mask:                                              ; $006F94
     andi.l  #$000000FF,d0                                ; zero-extend
@@ -66,7 +66,7 @@ CharCodeCompare:                                             ; $006F42
     ; Same category, D2 < 32: look up range entry at $5ECBC[D4*4]
     move.w  d4,d0
     lsl.w   #2,d0                                        ; D0 = D4 * 4
-    movea.l #$0005ECBC,a0                                ; A0 = range entries
+    movea.l #ROM_BASE+$0005ECBC,a0                       ; A0 = range entries
     lea     (a0,d0.w),a0                                 ; A0 = &RangeEntry[D4]
     movea.l a0,a2                                        ; A2 = save entry pointer
     move.b  (a0),d0                                      ; D0 = entry base byte [+0]
@@ -100,7 +100,7 @@ CharCodeCompare:                                             ; $006F42
     move.w  d2,d0
     dc.w    $C0FC,$0011                                  ; and.w #$0011,d0
     add.w   d3,d0
-    movea.l #$0005E546,a0
+    movea.l #ROM_BASE+$0005E546,a0
 .shared_lookup:                                          ; $007038 (shared by all cases)
     move.b  (a0,d0.w),d0                                 ; look up score in category table
     bra.w   .exit_mask                                   ; → mask + assign + exit
@@ -108,37 +108,37 @@ CharCodeCompare:                                             ; $006F42
     move.w  d2,d0
     dc.w    $C0FC,$0005                                  ; and.w #$0005,d0
     add.w   d3,d0
-    movea.l #$0005E5BE,a0
+    movea.l #ROM_BASE+$0005E5BE,a0
     bra.s   .shared_lookup
 .case2:                                                  ; $007050
     move.w  d2,d0
     dc.w    $C0FC,$0005                                  ; and.w #$0005,d0
     add.w   d3,d0
-    movea.l #$0005E5C8,a0
+    movea.l #ROM_BASE+$0005E5C8,a0
     bra.s   .shared_lookup
 .case3:                                                  ; $007060
     move.w  d2,d0
     dc.w    $C0FC,$000A                                  ; and.w #$000A,d0
     add.w   d3,d0
-    movea.l #$0005E5D8,a0
+    movea.l #ROM_BASE+$0005E5D8,a0
     bra.s   .shared_lookup
 .case4:                                                  ; $007070
     move.w  d2,d0
     dc.w    $C0FC,$0006                                  ; and.w #$0006,d0
     add.w   d3,d0
-    movea.l #$0005E61E,a0
+    movea.l #ROM_BASE+$0005E61E,a0
     bra.s   .shared_lookup
 .case5:                                                  ; $007080
     move.w  d2,d0
     dc.w    $C0FC,$0009                                  ; and.w #$0009,d0
     add.w   d3,d0
-    movea.l #$0005E630,a0
+    movea.l #ROM_BASE+$0005E630,a0
     bra.s   .shared_lookup
 .case6:                                                  ; $007090
     move.w  d2,d0
     dc.w    $C0FC,$0005                                  ; and.w #$0005,d0
     add.w   d3,d0
-    movea.l #$0005E670,a0
+    movea.l #ROM_BASE+$0005E670,a0
     bra.s   .shared_lookup
 .fail:                                                   ; $0070A0
     move.w  #$FFFF,d2

@@ -11,7 +11,7 @@ ShowCharProfile:                                                  ; $007C3C
     move.l  $001c(a6),d5
     move.l  $000c(a6),d6
     move.l  $0008(a6),d7
-    movea.l #$0004978c,a2
+    movea.l #ROM_BASE+$0004978c,a2
     cmpi.w  #$1,d3
     bne.b   .l7cca
     moveq   #$1,d2

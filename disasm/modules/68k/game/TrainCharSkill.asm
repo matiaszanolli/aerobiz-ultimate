@@ -128,7 +128,7 @@ l_356c4:
     move.b  (a0,d4.w), d0
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECFC,a0
+    movea.l  #ROM_BASE+$0005ECFC,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d5, d0
     lsl.w   #$4, d0

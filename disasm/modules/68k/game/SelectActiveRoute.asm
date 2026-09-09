@@ -5,7 +5,7 @@
 SelectActiveRoute:
     movem.l d2-d3/a2-a5, -(a7)
     movea.l  #$00FF0006,a5
-    movea.l  #$0005F9DE,a3
+    movea.l  #ROM_BASE+$0005F9DE,a3
     clr.w   d2
 l_2151c:
     move.w  (a3), d0

@@ -4,8 +4,8 @@
 ; ============================================================================
 MatchRouteOption:
     movem.l d2-d3/a2-a3, -(a7)
-    movea.l  #$00021FA6,a3
-    movea.l  #$0005FA2A,a2
+    movea.l  #ROM_BASE+$00021FA6,a3
+    movea.l  #ROM_BASE+$0005FA2A,a2
     clr.w   d2
     move.w  ($00FF0006).l, d3
 l_2178a:

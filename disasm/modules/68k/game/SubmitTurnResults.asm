@@ -8,8 +8,8 @@ SubmitTurnResults:
     move.l  $c(a6), d3
     move.l  $8(a6), d5
     lea     -$80(a6), a3
-    movea.l  #$0005EC84,a4
-    movea.l  #$0003B22C,a5
+    movea.l  #ROM_BASE+$0005EC84,a4
+    movea.l  #ROM_BASE+$0003B22C,a5
     moveq   #$1,d4
     move.w  d5, d0
     mulu.w  #$24, d0
@@ -59,7 +59,7 @@ l_0fc02:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d3, d0
     ext.l   d0

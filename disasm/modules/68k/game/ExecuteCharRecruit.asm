@@ -141,12 +141,12 @@ l_365c6:
     ; Look up char name pointer from $5E680 (ROM char name table, stride 4)
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; Look up char role/type name from $5E2A2 (ROM type name table, stride 4)
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E2A2,a0
+    movea.l  #ROM_BASE+$0005E2A2,a0
     move.l  (a0,d0.w), -(a7)
     ; Player name buffer: $FF00A8 + player_index * $10 (16-byte per-player name area)
     move.w  d3, d0
@@ -226,12 +226,12 @@ CollectCharRevenue:                                                  ; $0366D0
     jsr     (ROM_BASE+$005A04).l
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
     moveq   #$0,d0
     move.b  (a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0
+    movea.l #ROM_BASE+$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
     move.w  d5,d0
     lsl.w   #$4,d0
@@ -291,12 +291,12 @@ CollectCharRevenue:                                                  ; $0366D0
     jsr     (ROM_BASE+$005A04).l
     move.w  d3,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
     moveq   #$0,d0
     move.b  (a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e2a2,a0
+    movea.l #ROM_BASE+$0005e2a2,a0
     move.l  (a0,d0.w),-(sp)
     move.w  d5,d0
     lsl.w   #$4,d0

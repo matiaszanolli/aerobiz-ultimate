@@ -18,7 +18,7 @@
 PackSaveState:                                                  ; $00EB28
     movem.l d2-d4/a2-a5,-(sp)
     move.l  $0020(sp),d4                               ; d4 = caller arg (save slot index / flags)
-    movea.l #$0001d538,a5                              ; a5 = copy helper ($01D538): bulk memcpy to save buffer
+    movea.l #ROM_BASE+$0001d538,a5                     ; a5 = copy helper ($01D538): bulk memcpy to save buffer
     movea.l #$00ff1804,a3                              ; a3 = write pointer (starts at save_buf_base)
     movea.l a3,a4                                      ; a4 = save_buf_base ($FF1804, fixed anchor for header)
     addq.l  #$6,a3                                     ; skip 6-byte header: a3 = $FF180A (first data byte)

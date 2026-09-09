@@ -54,7 +54,7 @@ DrawPlayerRoutes:                                                  ; $009E1C
     bne.b   .l9ed4
     move.w  d3,d0
     add.w   d0,d0
-    movea.l #$0005e9fa,a0
+    movea.l #ROM_BASE+$0005e9fa,a0
     lea     (a0,d0.w),a0
     movea.l a0,a3
     clr.l   -(sp)
@@ -73,7 +73,7 @@ DrawPlayerRoutes:                                                  ; $009E1C
     bne.b   .l9f32
     move.w  d3,d0
     add.w   d0,d0
-    movea.l #$0005e948,a0
+    movea.l #ROM_BASE+$0005e948,a0
     lea     (a0,d0.w),a0
     movea.l a0,a3
     clr.l   -(sp)

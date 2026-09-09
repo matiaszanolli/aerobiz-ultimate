@@ -25,9 +25,9 @@ AddCharToTeam:
     link    a6,#-$84                ; frame: -$84 bytes local (-$2 = age, -$82 = fmt buf)
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d6              ; d6 = player_index (0-3)
-    movea.l  #$000484BA,a3          ; a3 -> dialogue string block in ROM at $484BA
-    movea.l  #$0002F34A,a4          ; a4 -> PrintfNarrow ($03B246, 2-arg formatted print)
-    movea.l  #$00000D64,a5          ; a5 -> GameCommand dispatcher ($0D64)
+    movea.l  #ROM_BASE+$000484BA,a3 ; a3 -> dialogue string block in ROM at $484BA
+    movea.l  #ROM_BASE+$0002F34A,a4 ; a4 -> PrintfNarrow ($03B246, 2-arg formatted print)
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 -> GameCommand dispatcher ($0D64)
 
 ; --- Phase: Compute current age from frame counter ---
 ; Age is derived from frame_counter ($FF0006): age = (frame_counter / 4) + $37.

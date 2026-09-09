@@ -21,9 +21,9 @@ PostTurnCleanup:
     ; a3 = local text formatting buffer in frame (160 bytes, used by sprintf)
     lea     -$a0(a6), a3
     ; a4 = ShowText function pointer ($2FBD6): displays formatted string at given row
-    movea.l  #$0002FBD6,a4
+    movea.l  #ROM_BASE+$0002FBD6,a4
     ; a5 = sprintf function pointer ($3B22C): formats string into buffer a3
-    movea.l  #$0003B22C,a5
+    movea.l  #ROM_BASE+$0003B22C,a5
     ; d5 = char code A (byte 0 of caller's char record): the primary character this turn
     move.b  (a2), d5
     ; d4 = char code B (byte 1 of caller's char record): the secondary character
@@ -61,7 +61,7 @@ PostTurnCleanup:
     move.b  $1(a2), d0
     lsl.w   #$3, d0
     add.w   d2, d0
-    movea.l  #$0005F9E1,a0
+    movea.l  #ROM_BASE+$0005F9E1,a0
     move.b  (a0,d0.w), d0
     ; check if table entry matches char code A (d5): event involves the primary char
     cmp.b   d5, d0
@@ -71,7 +71,7 @@ PostTurnCleanup:
     move.b  $1(a2), d0
     lsl.w   #$3, d0
     add.w   d2, d0
-    movea.l  #$0005F9E1,a0
+    movea.l  #ROM_BASE+$0005F9E1,a0
     move.b  (a0,d0.w), d0
     cmp.b   d4, d0
     bne.b   .l31f42
@@ -93,7 +93,7 @@ PostTurnCleanup:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$00047D7C,a0
+    movea.l  #ROM_BASE+$00047D7C,a0
     move.l  (a0,d0.w), -(a7)
     ; $47CD4 = indirected pointer to the generic event format string for type-0 events
     move.l  (ROM_BASE+$00047CD4).l, -(a7)
@@ -104,7 +104,7 @@ PostTurnCleanup:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005FA11,a0
+    movea.l  #ROM_BASE+$0005FA11,a0
     move.b  (a0,d0.w), d0
     ; if table entry matches char code A (d5), this event applies
     cmp.b   d5, d0
@@ -113,7 +113,7 @@ PostTurnCleanup:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005FA11,a0
+    movea.l  #ROM_BASE+$0005FA11,a0
     move.b  (a0,d0.w), d0
     cmp.b   d4, d0
     ; neither char matches this type-1 event, skip it
@@ -123,13 +123,13 @@ PostTurnCleanup:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005FA11,a0
+    movea.l  #ROM_BASE+$0005FA11,a0
     move.b  (a0,d0.w), d0
     andi.l  #$ff, d0
     ; use char code as index into $5E680 char-name string table (* 4 for longword pointer)
     lsl.w   #$2, d0
     ; $5E680 = ROM char-name string pointer table (index * 4)
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; $47CD8 = indirected pointer to the format string for type-1 single-match events
     move.l  (ROM_BASE+$00047CD8).l, -(a7)
@@ -183,13 +183,13 @@ PostTurnCleanup:
     moveq   #$0,d0
     move.b  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; look up category-specific message format pointer from $47D94 table
     ; $47D94 = ROM follow-up event message pointer table, indexed by category (1-5)
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$00047D94,a0
+    movea.l  #ROM_BASE+$00047D94,a0
     move.l  (a0,d0.w), -(a7)
     ; $47CDC = indirected pointer to format string for follow-up event
     move.l  (ROM_BASE+$00047CDC).l, -(a7)

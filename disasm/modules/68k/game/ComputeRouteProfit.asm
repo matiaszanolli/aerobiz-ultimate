@@ -7,7 +7,7 @@ ComputeRouteProfit:
     move.l  $8(a7), d2
     move.w  $e(a7), d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECDC,a0
+    movea.l  #ROM_BASE+$0005ECDC,a0
     move.l  (a0,d0.w), d0
     move.w  d2, d1
     lsl.w   #$2, d1

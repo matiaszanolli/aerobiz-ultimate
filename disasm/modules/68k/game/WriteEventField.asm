@@ -6,7 +6,7 @@
 WriteEventField:                                                  ; $028EBE
     move.w  $0006(sp),d0
     lsl.w   #$3,d0
-    movea.l #$0005fab6,a0
+    movea.l #ROM_BASE+$0005fab6,a0
     lea     (a0,d0.w),a0
     movea.l a0,a1
     tst.b   $0006(a1)

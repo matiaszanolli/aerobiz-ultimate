@@ -5,9 +5,9 @@
 LoadGameGraphics:                                                  ; $03A7A0
     movem.l d2/a2-a5,-(sp)
     movea.l #$00ff1804,a2
-    movea.l #$0d64,a3
-    movea.l #$45e6,a4
-    movea.l #$3fec,a5
+    movea.l #ROM_BASE+$0d64,a3
+    movea.l #ROM_BASE+$45e6,a4
+    movea.l #ROM_BASE+$3fec,a5
     pea     ($0001).w
     pea     ($0404).w
     pea     (ROM_BASE+$00048958).l
@@ -18,7 +18,7 @@ LoadGameGraphics:                                                  ; $03A7A0
     moveq   #$0,d0
     move.w  d2,d0
     lsl.l   #$2,d0
-    movea.l #$000780bc,a0
+    movea.l #ROM_BASE+$000780bc,a0
     move.l  (a0,d0.l),-(sp)
     move.l  a2,-(sp)
     jsr     (a5)
@@ -38,7 +38,7 @@ LoadGameGraphics:                                                  ; $03A7A0
     moveq   #$0,d0
     move.w  d2,d0
     lsl.l   #$2,d0
-    movea.l #$00078224,a0
+    movea.l #ROM_BASE+$00078224,a0
     move.l  (a0,d0.l),-(sp)
     move.l  a2,-(sp)
     jsr     (a5)

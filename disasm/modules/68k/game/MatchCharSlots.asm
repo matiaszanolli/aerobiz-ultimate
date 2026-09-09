@@ -7,7 +7,7 @@ MatchCharSlots:                                                  ; $01B324
     move.l  $0030(sp),d2
     move.l  $002c(sp),d4
     move.l  $0028(sp),d7
-    movea.l #$957c,a4
+    movea.l #ROM_BASE+$957c,a4
     move.w  d4,d0
     ext.l   d0
     move.l  d0,-(sp)
@@ -73,7 +73,7 @@ MatchCharSlots:                                                  ; $01B324
     beq.b   .l1b422
     move.w  d5,d0
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0
+    movea.l #ROM_BASE+$0005ecbc,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     clr.w   d2
@@ -119,7 +119,7 @@ MatchCharSlots:                                                  ; $01B324
     beq.b   .l1b488
     move.w  d6,d0
     lsl.w   #$2,d0
-    movea.l #$0005ecbc,a0
+    movea.l #ROM_BASE+$0005ecbc,a0
     lea     (a0,d0.w),a0
     movea.l a0,a2
     clr.w   d2

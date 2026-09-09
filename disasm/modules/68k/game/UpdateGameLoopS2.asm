@@ -15,7 +15,7 @@ l_2fd20:
     add.w   d0, d0
     add.w   d3, d0
     lsl.w   #$2, d0
-    movea.l  #$00047C78,a0
+    movea.l  #ROM_BASE+$00047C78,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d2, d0
     move.l  d0, -(a7)
@@ -34,7 +34,7 @@ l_2fd56:
     clr.l   -(a7)
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$00047C90,a0
+    movea.l  #ROM_BASE+$00047C90,a0
     move.l  (a0,d0.w), -(a7)
     tst.w   d2
     bne.b   l_2fd6e

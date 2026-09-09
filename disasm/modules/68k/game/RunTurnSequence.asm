@@ -15,9 +15,9 @@
 RunTurnSequence:                                                  ; $029ABC
     link    a6,#-$4
     movem.l d2-d6/a2-a5,-(sp)
-    movea.l #$0d64,a3                   ; a3 = GameCommand ($0D64) dispatcher
+    movea.l #ROM_BASE+$0d64,a3          ; a3 = GameCommand ($0D64) dispatcher
     movea.l #$00ff1804,a4               ; a4 = save_buf_base ($FF1804) display context
-    movea.l #$5092,a5                   ; a5 = DisplaySetup ($5092)
+    movea.l #ROM_BASE+$5092,a5          ; a5 = DisplaySetup ($5092)
     jsr     (ROM_BASE+$01D71C).l        ; jsr $01D71C  -- VBlank sync
     moveq   #$0,d4
     move.b  ($00FF0016).l,d4            ; d4 = current_player (0-3)

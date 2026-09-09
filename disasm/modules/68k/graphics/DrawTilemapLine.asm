@@ -165,7 +165,7 @@ l_1db06:
     move.w  d2, d0
     andi.w  #$3, d0                                 ; col & 3 = 2-bit slot index (0-3)
     add.w   d0, d0                                  ; * 2 = word index into mask table
-    movea.l  #$0005F9B6,a0                          ; ROM table: 4 clear-masks, one per slot
+    movea.l  #ROM_BASE+$0005F9B6,a0                 ; ROM table: 4 clear-masks, one per slot
     move.w  (a0,d0.w), d0                           ; fetch AND mask that zeroes this slot
     and.w   d0, (a2)                                ; clear old palette bits at this slot
     move.w  d2, d0
@@ -249,7 +249,7 @@ l_1dbb0:
     move.w  d2, d0
     andi.w  #$3, d0                                 ; col & 3 = slot index
     add.w   d0, d0
-    movea.l  #$0005F9B6,a0                          ; clear-mask table
+    movea.l  #ROM_BASE+$0005F9B6,a0                 ; clear-mask table
     move.w  (a0,d0.w), d0
     and.w   d0, (a2)                                ; zero old slot bits
     move.w  d2, d0

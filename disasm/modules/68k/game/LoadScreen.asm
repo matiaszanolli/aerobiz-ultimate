@@ -6,7 +6,7 @@ LoadScreen:                                                  ; $006A2E
     movem.l d2-d3/a2,-(sp)
     move.l  $0014(sp),d2                                 ; D2 = screen_id
     move.l  $0010(sp),d3                                 ; D3 = screen_type
-    movea.l #$00000D64,a2                                ; A2 = GameCommand
+    movea.l #ROM_BASE+$00000D64,a2                       ; A2 = GameCommand
     move.w  d2,($00FF9A1C).l                             ; store screen_id
     pea     ($0040).w
     clr.l   -(sp)
@@ -53,7 +53,7 @@ LoadScreen:                                                  ; $006A2E
     move.w  d2,d0
     ext.l   d0
     lsl.l   #2,d0                                        ; D0 = screen_id * 4
-    movea.l #$0009511C,a0                                ; A0 = screen table base
+    movea.l #ROM_BASE+$0009511C,a0                       ; A0 = screen table base
     move.l  (a0,d0.l),-(sp)                              ; push table[screen_id]
     pea     ($00FF1804).l
     jsr LZ_Decompress

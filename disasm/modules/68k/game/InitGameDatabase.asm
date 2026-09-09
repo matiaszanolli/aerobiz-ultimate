@@ -6,7 +6,7 @@ InitGameDatabase:
     link    a6,#-$24
     movem.l d2-d4/a2-a4, -(a7)
     lea     -$24(a6), a3
-    movea.l  #$00048F60,a4
+    movea.l  #ROM_BASE+$00048F60,a4
     jsr PreLoopInit
     move.w  #$56b5, -$4(a6)
     move.w  #$6f7b, -$2(a6)

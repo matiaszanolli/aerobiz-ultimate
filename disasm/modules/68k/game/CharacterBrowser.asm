@@ -19,7 +19,7 @@ CharacterBrowser:                                                  ; $008A4A
     movem.l d2-d7/a2-a5,-(sp)
     move.l  $000c(a6),d5
 ; a3 = GameCommand ($0D64) -- central command dispatcher (VDP, input, display)
-    movea.l #$0d64,a3
+    movea.l #ROM_BASE+$0d64,a3
 ; a4 = -$4(a6): word on stack used as current input state word
     lea     -$0004(a6),a4
 ; a5 = $FF1804 = LZ_Decompress destination (save state buffer base, reused as gfx buffer)
@@ -37,7 +37,7 @@ CharacterBrowser:                                                  ; $008A4A
 ; Scan pairs until we find the one that contains d5 (the target code)
     move.w  d3,d0
     add.w   d0,d0
-    movea.l #$0005f6d6,a0
+    movea.l #ROM_BASE+$0005f6d6,a0
     lea     (a0,d0.w),a0
 ; a2 = pointer into $5F6D6 table at current category entry (2 bytes per entry: low, high)
     movea.l a0,a2
@@ -312,7 +312,7 @@ CharacterBrowser:                                                  ; $008A4A
     move.w  d3,d0
     add.w   d0,d0
     add.w   d2,d0
-    movea.l #$0005f6d6,a0
+    movea.l #ROM_BASE+$0005f6d6,a0
     move.b  (a0,d0.w),d6
     andi.l  #$ff,d6
 ; d6 = newly selected character code; set d7=1 to trigger graphics reload next frame

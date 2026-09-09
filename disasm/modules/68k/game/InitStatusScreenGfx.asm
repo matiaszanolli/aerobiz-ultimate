@@ -4,9 +4,9 @@
 ; ============================================================================
 InitStatusScreenGfx:
     movem.l a2-a4, -(a7)
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     movea.l  #$00FF1804,a3
-    movea.l  #$00003FEC,a4
+    movea.l  #ROM_BASE+$00003FEC,a4
     jsr ResourceLoad
     pea     ($0010).w
     pea     ($0013).w

@@ -29,7 +29,7 @@ LoadTileGraphics:                                                  ; $005F00
     moveq   #$0,d0
     move.w  d2,d0
     lsl.l   #$2,d0
-    movea.l #$000ae0c4,a0
+    movea.l #ROM_BASE+$000ae0c4,a0
     move.l  (a0,d0.l),-(sp)
     pea     ($00FF899C).l
     jsr     (ROM_BASE+$003FEC).l
@@ -44,7 +44,7 @@ LoadTileGraphics:                                                  ; $005F00
     bsr.w FillSequentialWords
     move.w  d2,d0
     add.w   d0,d0
-    movea.l #$000473d0,a0
+    movea.l #ROM_BASE+$000473d0,a0
     move.w  (a0,d0.w),d2
     cmpi.w  #$10,d2
     beq.b   .l5f74
@@ -55,7 +55,7 @@ LoadTileGraphics:                                                  ; $005F00
     move.l  d0,-(sp)
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$00047390,a0
+    movea.l #ROM_BASE+$00047390,a0
     bra.b   .l5f8c
 .l5f74:                                                 ; $005F74
     pea     ($0010).w

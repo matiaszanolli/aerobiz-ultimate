@@ -12,7 +12,7 @@ RunSlotCountPicker:
     link    a6,#-$54
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d5           ; d5 = max_slots (number of options to display)
-    movea.l  #$00000D64,a2       ; a2 = GameCommand entry point (called via indirect jsr)
+    movea.l  #ROM_BASE+$00000D64,a2 ; a2 = GameCommand entry point (called via indirect jsr)
     movea.l  #$00FF13FC,a3       ; a3 = input_mode_flag: nonzero = input countdown active
     lea     -$52(a6), a4         ; a4 -> local tile attribute word array (on stack frame)
     lea     -$2a(a6), a5         ; a5 -> local highlight tile word array (on stack frame)

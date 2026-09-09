@@ -10,7 +10,7 @@ DrawRoutePair:                                                  ; $009994
     movea.l $0030(sp),a2
     movea.l $002c(sp),a3
     movea.l #$00ff1804,a4
-    movea.l #$0001da34,a5
+    movea.l #ROM_BASE+$0001da34,a5
     move.b  (a3),d0
     cmp.b   (a2),d0
     bcc.b   .l99d0

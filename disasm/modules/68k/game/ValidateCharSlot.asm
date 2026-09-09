@@ -49,7 +49,7 @@ ValidateCharSlot:
 .l2b5e6:
     cmpi.w  #$1, d5
     bne.b   .l2b614
-    movea.l  #$0005F07C,a0
+    movea.l  #ROM_BASE+$0005F07C,a0
     move.b  (a0,d4.w), d0
     andi.l  #$ff, d0
     move.l  d0, -(a7)

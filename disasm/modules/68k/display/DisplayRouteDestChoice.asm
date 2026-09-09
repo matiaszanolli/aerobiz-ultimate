@@ -17,7 +17,7 @@ DisplayRouteDestChoice:
     link    a6,#-$60              ; allocate $60 = 96 bytes (includes sprintf buffer at -$5E)
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $10(a6), d7           ; d7 = route type index ($10 = 16th stack byte)
-    movea.l  #$00000D64,a5        ; a5 = GameCommand dispatcher ($000D64)
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand dispatcher ($000D64)
 ; Select slot table based on route type: domestic (< $20) vs international (>= $20)
     cmpi.w  #$20, d7              ; is route type >= $20 (international)?
     bge.b   l_0dbc4               ; yes: use international slot tables
@@ -243,7 +243,7 @@ l_0dc8a:
     moveq   #$0,d0
     move.b  (a3), d0             ; d0 = city index (slot city_a field)
     lsl.w   #$2, d0              ; * 4 (long pointer table index)
-    movea.l  #$0005E2A2,a0       ; a0 -> city name string pointer table
+    movea.l  #ROM_BASE+$0005E2A2,a0 ; a0 -> city name string pointer table
     move.l  (a0,d0.w), -(a7)    ; push city name string pointer
     pea     (ROM_BASE+$0003E8CC).l ; push "%s" city-name format string
     jsr PrintfWide                ; print city name in wide font
@@ -345,7 +345,7 @@ l_0deb6:
     move.b  (a2,a0.w), d0        ; d0 = city index from city slot array
     andi.l  #$ff, d0             ; zero-extend to long
     lsl.w   #$2, d0              ; * 4 (long pointer table index)
-    movea.l  #$0005E2A2,a0       ; a0 -> city name pointer table
+    movea.l  #ROM_BASE+$0005E2A2,a0 ; a0 -> city name pointer table
     move.l  (a0,d0.w), -(a7)    ; push city name string pointer
     move.l  (ROM_BASE+$000477A0).l, -(a7) ; push "assigned to you: %s" format string
     pea     -$5e(a6)             ; push output buffer (96-byte frame local at -$5E(a6))
@@ -363,7 +363,7 @@ l_0defc:
     move.b  (a2,a0.w), d0        ; d0 = city index
     andi.l  #$ff, d0
     lsl.w   #$2, d0              ; * 4
-    movea.l  #$0005E2A2,a0       ; a0 -> city name pointer table
+    movea.l  #ROM_BASE+$0005E2A2,a0 ; a0 -> city name pointer table
     move.l  (a0,d0.w), -(a7)    ; push city name string pointer
     move.l  (ROM_BASE+$00047790).l, -(a7) ; push "%s - %s" or "assigned to %s: %s" format string
     pea     -$5e(a6)             ; push output buffer

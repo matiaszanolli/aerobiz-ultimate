@@ -6,8 +6,8 @@ SelectCharRelation:
     movem.l d2-d6/a2-a4, -(a7)
     move.l  $28(a7), d5
     move.l  $24(a7), d6
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
     move.w  d5, d0
     ext.l   d0
     move.l  d0, -(a7)
@@ -44,7 +44,7 @@ l_13568:
     move.w  d2, d0
     ext.l   d0
     lsl.l   #$2, d0
-    movea.l  #$0005E296,a0
+    movea.l  #ROM_BASE+$0005E296,a0
     move.l  (a0,d0.l), -(a7)
     jsr     (a3)
     move.w  d4, d0

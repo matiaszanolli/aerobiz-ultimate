@@ -31,7 +31,7 @@ RunPurchaseMenu:                                                  ; $02C9C8
     link    a6,#-$4
     movem.l d2-d4/a2-a3,-(sp)
     movea.l #$00ff9a1c,a2
-    movea.l #$0001d71c,a3
+    movea.l #ROM_BASE+$0001d71c,a3
     moveq   #$0,d4
     move.b  ($00FF0016).l,d4
     jsr     (a3)

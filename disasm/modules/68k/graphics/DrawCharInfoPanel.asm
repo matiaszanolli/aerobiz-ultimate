@@ -14,11 +14,11 @@ DrawCharInfoPanel:                                                  ; $00643C
     ; d6 = stat value B (arg7, $18(a6)) -- e.g., secondary stat/type
     move.l  $0018(a6),d6
     ; a3 = GameCommand function pointer ($D64) -- called frequently via register
-    movea.l #$0d64,a3
+    movea.l #ROM_BASE+$0d64,a3
     ; a4 = local tile data buffer at -$30(a6) (scratch for sequential word fill)
     lea     -$0030(a6),a4
     ; a5 = ROM data pointer at $4743C (tile/scroll bar configuration tables)
-    movea.l #$0004743c,a5
+    movea.l #ROM_BASE+$0004743c,a5
     ; --- Determine panel column offset based on display mode ---
     ; $22(a6) = panel mode: nonzero = right-side panel (wide layout), 0 = left-side
     tst.w   $0022(a6)
@@ -174,7 +174,7 @@ DrawCharInfoPanel:                                                  ; $00643C
     moveq   #$0,d0
     move.w  d5,d0
     lsl.l   #$2,d0
-    movea.l #$000ae19c,a0
+    movea.l #ROM_BASE+$000ae19c,a0
     move.l  (a0,d0.l),-(sp)
     ; LZ_Decompress: expand portrait graphics to screen_buf ($FF899C)
     pea     ($00FF899C).l

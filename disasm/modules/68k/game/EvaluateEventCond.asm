@@ -5,7 +5,7 @@
 EvaluateEventCond:
     movem.l d2-d5/a2-a5, -(a7)
     movea.l  #$00FFA792,a3
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
     movea.l  #$00FF0018,a5
     clr.l   -(a7)
     pea     ($0001).w

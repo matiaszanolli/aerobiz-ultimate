@@ -212,7 +212,7 @@ ProcessCharModifier:
     move.w  d2, d0
     add.w   d0, d0
     ; d0 = char_index * 2 (word stride into pointer table)
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3
     ; a3 = ROM tile position record for char_index (byte-pair: col, row for stat display)
@@ -261,7 +261,7 @@ ProcessCharModifier:
     move.w  d2, d0
     lsl.w   #$2, d0
     ; d0 = char_index * 4 (longword stride into character name pointer table)
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; push char name string pointer from ROM table at $5E680[char_index]
     cmpi.w  #$1, d4
@@ -297,7 +297,7 @@ ProcessCharModifier:
     move.w  d2, d0
     lsl.w   #$2, d0
     ; d0 = char_index * 4
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; push char name string pointer (same table as above)
     cmpi.w  #$1, d4
@@ -431,7 +431,7 @@ ProcessCharModifier:
     move.w  d3, d0
     lsl.w   #$2, d0
     ; d0 = d3 * 4 (region index * 4 = stride into range table)
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     move.b  (a0,d0.w), d0
     ; base column offset from ROM table $5ECBC[region*4]
     andi.l  #$ff, d0
@@ -446,7 +446,7 @@ ProcessCharModifier:
 .l2b388:
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     move.b  (a0,d0.w), d0
     ; upper-range base column from $5ECBE[region*4]
     andi.l  #$ff, d0
@@ -455,7 +455,7 @@ ProcessCharModifier:
     ; d1 = char_index - upper_base
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBD,a0
+    movea.l  #ROM_BASE+$0005ECBD,a0
     move.b  (a0,d0.w), d0
     ; range start adjustment from $5ECBD[region*4]
     andi.l  #$ff, d0

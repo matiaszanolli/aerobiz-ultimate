@@ -28,7 +28,7 @@ l_13e9c:
 l_13e9e:
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$0005F908,a0
+    movea.l  #ROM_BASE+$0005F908,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4
     moveq   #$0,d2

@@ -303,7 +303,7 @@ LZ_Decompress:
     movea.l $1C(sp),a0                                     ; $003FF0 | dest buffer
     movea.l $20(sp),a1                                     ; $003FF4 | compressed source
     movea.l #$00FFBD56,a3                                  ; $003FF8 | -> bitstream window
-    movea.l #$00003F72,a4                                  ; $003FFE | -> helper function
+    movea.l #ROM_BASE+$00003F72,a4                         ; $003FFE | -> helper function
     clr.w   ($FF1802).l                                    ; $004004 | clear init flag
     pea     ($0010).w                                      ; $00400A | push 16 (read 16 bits)
     jsr     (a4)                                           ; $00400E | fill bitstream window

@@ -93,7 +93,7 @@ GetPlayerModelSelect:
     jsr RandRange
     addq.l  #$8, a7
     add.w   d0, d0
-    movea.l  #$0005FD24,a0
+    movea.l  #ROM_BASE+$0005FD24,a0
     move.w  (a0,d0.w), d2
 .l0b3ec:
     move.w  d2, d0

@@ -27,9 +27,9 @@ RenderEndingCredits:
     link    a6,#-$C0
     movem.l d2-d3/a2-a5, -(a7)
     lea     -$c0(a6), a2                            ; a2 = local 192-byte credit block buffer
-    movea.l  #$000045B2,a3                          ; a3 = MemMove function pointer ($45B2)
-    movea.l  #$00000D64,a4                          ; a4 = GameCommand function pointer
-    movea.l  #$0003B994,a5                          ; a5 = animation step function (VBlank + frame)
+    movea.l  #ROM_BASE+$000045B2,a3                 ; a3 = MemMove function pointer ($45B2)
+    movea.l  #ROM_BASE+$00000D64,a4                 ; a4 = GameCommand function pointer
+    movea.l  #ROM_BASE+$0003B994,a5                 ; a5 = animation step function (VBlank + frame)
     ; --- Phase: Set up display for credits screen ---
     pea     ($0010).w                               ; DisplaySetup arg
     pea     ($0020).w                               ; DisplaySetup arg

@@ -77,7 +77,7 @@ ProcessRouteAction:                                                  ; $00F5AA
 .lf67a:                                                 ; $00F67A
     move.w  d5,d0
     lsl.w   #$2,d0
-    movea.l #$0005e680,a0
+    movea.l #ROM_BASE+$0005e680,a0
     move.l  (a0,d0.w),-(sp)
     pea     (ROM_BASE+$0003EA7A).l
     pea     -$0054(a6)

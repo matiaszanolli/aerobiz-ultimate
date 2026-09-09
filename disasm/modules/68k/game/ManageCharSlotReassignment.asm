@@ -9,10 +9,10 @@ ManageCharSlotReassignment:
     ; d3 = player_index (arg1 from $8(a6))
     move.l  $8(a6), d3
     ; a4 = ShowDialog function pointer ($7912) -- called repeatedly for dialog prompts
-    movea.l  #$00007912,a4
+    movea.l  #ROM_BASE+$00007912,a4
     ; a5 = ROM data block pointer ($48330): holds 4 longword entries used as dialog text pointers
     ; a5[0] = first dialog string ptr, a5[4..C] = other strings
-    movea.l  #$00048330,a5
+    movea.l  #ROM_BASE+$00048330,a5
     ; d5 = redraw flag (1 = needs full screen reload, 0 = use cached screen)
     clr.w   d5
     ; Load resources and show the initial relation/character screen
@@ -197,7 +197,7 @@ l_286ea:
     ; Look up char name pointer from $5E680 (ROM char name table, stride 4): char d4
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; Choose singular ($41ACE = "slot") vs plural ($41AC8 = "slots") format string
     cmpi.w  #$1, d2
@@ -294,7 +294,7 @@ l_28810:
     ; Look up char name pointer for d4 from $5E680 (stride 4)
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     ; Choose singular ($41AB6 = "slot was") vs plural ($41AAA = "slots were") for result text
     cmpi.w  #$1, d5

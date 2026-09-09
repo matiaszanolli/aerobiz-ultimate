@@ -6,8 +6,8 @@ ShowPlayerDetailScreen:
     link    a6,#-$84
     movem.l d2-d6/a2-a5, -(a7)
     move.l  $8(a6), d6
-    movea.l  #$00000D64,a3
-    movea.l  #$00005092,a4
+    movea.l  #ROM_BASE+$00000D64,a3
+    movea.l  #ROM_BASE+$00005092,a4
     movea.l  #$00FF1804,a5
     clr.w   -$82(a6)
     clr.l   -(a7)
@@ -116,7 +116,7 @@ l_3daba:
 l_3dada:
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0006583E,a0
+    movea.l  #ROM_BASE+$0006583E,a0
     movea.l (a0,d0.w), a2
 l_3dae8:
     move.l  a2, -(a7)

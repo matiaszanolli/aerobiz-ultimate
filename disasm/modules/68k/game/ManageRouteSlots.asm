@@ -114,7 +114,7 @@ ManageRouteSlots:                                                  ; $0112EE
     ; Append scenario-specific string from 4-entry pointer table at $47982
     move.w  $000e(a6),d0              ; scenario_type (0-3)
     lsl.w   #$2,d0                    ; * 4 = longword index
-    movea.l #$00047982,a0            ; $47982: 4 ROM longword ptrs (one per scenario type)
+    movea.l #ROM_BASE+$00047982,a0   ; $47982: 4 ROM longword ptrs (one per scenario type)
     move.l  (a0,d0.w),-(sp)          ; push scenario string ptr
     pea     -$0094(a6)                ; push work buffer (already has prefix)
     jsr     (ROM_BASE+$01E1BA).l      ; jsr StringAppend ($01E1BA): strcat scenario string
@@ -425,7 +425,7 @@ ManageRouteSlots:                                                  ; $0112EE
     addi.w  #$ffff,d4                 ; make 0-based: slot_type - 1
     move.w  d4,d0
     lsl.w   #$2,d0                    ; * 4 = longword index
-    movea.l #$00047800,a0            ; $47800: ROM table of route format string ptrs (by slot type)
+    movea.l #ROM_BASE+$00047800,a0   ; $47800: ROM table of route format string ptrs (by slot type)
     move.l  (a0,d0.w),-(sp)          ; push route-type format string
     move.l  (ROM_BASE+$00047996).l,-(sp) ; $47996: ROM ptr to revenue/profit format string
     pea     -$0094(a6)                ; string work buffer

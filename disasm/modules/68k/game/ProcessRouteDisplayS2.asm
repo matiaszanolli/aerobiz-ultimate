@@ -391,7 +391,7 @@ l_2a3fc:
 ; Table $A1B34 holds LZ-compressed source pointers, one per plane type (4 bytes each)
     move.l  d5, d0
     lsl.l   #$2, d0
-    movea.l  #$000A1B34,a0
+    movea.l  #ROM_BASE+$000A1B34,a0
 ; Decompress the plane graphic for this stat category into scratch buffer $FF899C
     move.l  (a0,d0.l), -(a7)
     pea     ($00FF899C).l

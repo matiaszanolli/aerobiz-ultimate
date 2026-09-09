@@ -15,7 +15,7 @@ ShowPlayerInfo:                                                  ; $01C43C
     pea     ($000F).w
     move.w  d2,d0
     add.w   d0,d0
-    movea.l #$00076520,a0
+    movea.l #ROM_BASE+$00076520,a0
     pea     (a0,d0.w)
     jsr     (ROM_BASE+$005092).l
     pea     (ROM_BASE+$0004975E).l

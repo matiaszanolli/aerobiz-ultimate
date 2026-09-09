@@ -8,7 +8,7 @@ RenderGameDialogs:
     movem.l d2-d7/a2-a5, -(a7)
     movea.l $c(a6), a2
     ; a2 = pointer to char stat record (per-player stat, $FF05C4-based)
-    movea.l  #$00000D64,a3
+    movea.l  #ROM_BASE+$00000D64,a3
     ; a3 = GameCommand dispatcher (cached)
     lea     -$8(a6), a4
     ; a4 = pointer to local word var -$8(a6): current negotiation offer (adjusted score)

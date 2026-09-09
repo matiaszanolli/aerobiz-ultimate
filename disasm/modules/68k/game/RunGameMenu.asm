@@ -11,10 +11,10 @@
 ;   d4 = current highlighted menu item index (0-4), init = 4 (bottom = end-turn)
 RunGameMenu:                                                  ; $016F9E
     movem.l d2-d4/a2-a5,-(sp)
-    movea.l #$0001725a,a2           ; a2 = sub-menu dispatch table (5 function pointers)
+    movea.l #ROM_BASE+$0001725a,a2  ; a2 = sub-menu dispatch table (5 function pointers)
     movea.l #$00ffa792,a3           ; a3 = $FFA792 (working player/menu state word)
-    movea.l #$00017c9e,a4           ; a4 = secondary function table
-    movea.l #$0d64,a5               ; a5 = GameCommand ($0D64)
+    movea.l #ROM_BASE+$00017c9e,a4  ; a4 = secondary function table
+    movea.l #ROM_BASE+$0d64,a5      ; a5 = GameCommand ($0D64)
     ; --- Phase: Store current player index into menu state ---
     moveq   #$0,d0
     move.b  ($00FF0016).l,d0        ; d0 = current_player ($FF0016): 0-3

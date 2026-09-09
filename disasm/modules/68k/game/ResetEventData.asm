@@ -5,15 +5,15 @@
 ResetEventData:
     movem.l d2/a2-a5, -(a7)
     move.l  $18(a7), d2
-    movea.l  #$0000C860,a5
+    movea.l  #ROM_BASE+$0000C860,a5
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005F26A,a0
+    movea.l  #ROM_BASE+$0005F26A,a0
     lea     (a0,d0.w), a0
     movea.l a0, a4
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005F3CE,a0
+    movea.l  #ROM_BASE+$0005F3CE,a0
     lea     (a0,d0.w), a0
     movea.l a0, a3
     move.w  d2, d0

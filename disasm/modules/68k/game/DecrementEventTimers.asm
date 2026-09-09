@@ -4,9 +4,9 @@
 ; ============================================================================
 DecrementEventTimers:
     movem.l d2-d5/a2-a5, -(a7)
-    movea.l  #$00048348,a4
-    movea.l  #$0005EB2C,a5
-    movea.l  #$0005FAB6,a2
+    movea.l  #ROM_BASE+$00048348,a4
+    movea.l  #ROM_BASE+$0005EB2C,a5
+    movea.l  #ROM_BASE+$0005FAB6,a2
     clr.w   d3
     movea.l a4, a3
     addq.l  #$8, a3

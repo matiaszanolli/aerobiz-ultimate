@@ -9,12 +9,12 @@ HandleRouteEventType0:
     movem.l d2/a2-a5, -(a7)
     movea.l $8(a6), a2              ; a2 = event record pointer (first arg)
     lea     -$80(a6), a4            ; a4 = text-format scratch buffer in frame (128 bytes)
-    movea.l  #$0003B22C,a5          ; a5 = sprintf (cached for repeated calls)
+    movea.l  #ROM_BASE+$0003B22C,a5 ; a5 = sprintf (cached for repeated calls)
     ; --- Phase: Build transition table pointer from event group index ---
     moveq   #$0,d0
     move.b  $1(a2), d0              ; d0 = event_record[+1] = group/category index
     lsl.w   #$3, d0                 ; x8: 8 bytes per entry in $5F9DE table
-    movea.l  #$0005F9DE,a0          ; ROM table: transition step descriptors (by group)
+    movea.l  #ROM_BASE+$0005F9DE,a0 ; ROM table: transition step descriptors (by group)
     lea     (a0,d0.w), a0           ; a0 = pointer to entry for this group
     movea.l a0, a3                  ; a3 = retained descriptor pointer throughout function
     ; --- Phase: Play transition animation and init info panel ---
@@ -36,7 +36,7 @@ HandleRouteEventType0:
     moveq   #$0,d0
     move.b  $1(a2), d0              ; d0 = group index again
     lsl.w   #$2, d0                 ; x4: longword-indexed table
-    movea.l  #$00047D7C,a0          ; ROM table: group name strings (longword pointers)
+    movea.l  #ROM_BASE+$00047D7C,a0 ; ROM table: group name strings (longword pointers)
     move.l  (a0,d0.w), -(a7)        ; push group name string pointer
     pea     (ROM_BASE+$00047E22).l  ; push format string (e.g. "%s has arrived!")
     move.l  a4, -(a7)               ; push output buffer
@@ -62,7 +62,7 @@ HandleRouteEventType0:
     move.b  (a0,d0.w), d0           ; d0 = field offset (byte 0 of descriptor = field in 57B record)
     andi.l  #$ff, d0                ; zero-extend
     lsl.w   #$2, d0                 ; x4 to index $5EB2C string pointer table
-    movea.l  #$0005EB2C,a0          ; ROM table: character type name string pointers
+    movea.l  #ROM_BASE+$0005EB2C,a0 ; ROM table: character type name string pointers
     move.l  (a0,d0.w), -(a7)        ; push character type name string
     pea     -$c0(a6)                ; push output buffer (full frame local area)
     jsr     (a5)                    ; sprintf(buf, char_type_name)
@@ -77,7 +77,7 @@ l_22750:
     move.b  (a0,d0.w), d0           ; get field offset for second char type
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EB2C,a0          ; char type name string table
+    movea.l  #ROM_BASE+$0005EB2C,a0 ; char type name string table
     move.l  (a0,d0.w), -(a7)        ; push second char type name
     moveq   #$0,d0
     move.b  $3(a3), d0              ; d0 = first char type code from descriptor[+3]
@@ -86,7 +86,7 @@ l_22750:
     move.b  (a0,d0.w), d0           ; get field offset for first char type
     andi.l  #$ff, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EB2C,a0          ; char type name string table
+    movea.l  #ROM_BASE+$0005EB2C,a0 ; char type name string table
     move.l  (a0,d0.w), -(a7)        ; push first char type name
     pea     (ROM_BASE+$0004130C).l  ; format string: "%s and %s" (or equivalent)
     pea     -$c0(a6)                ; output buffer
@@ -166,7 +166,7 @@ l_2285c:
     moveq   #$0,d0
     move.b  $1(a2), d0              ; d0 = group index
     lsl.w   #$2, d0
-    movea.l  #$00047D7C,a0          ; group name string pointer table
+    movea.l  #ROM_BASE+$00047D7C,a0 ; group name string pointer table
     move.l  (a0,d0.w), -(a7)        ; push group name
     pea     (ROM_BASE+$00047E5C).l  ; alternate format string (not-yet-arrived message)
     move.l  a4, -(a7)
@@ -188,7 +188,7 @@ l_2285c:
     moveq   #$0,d0
     move.b  $1(a2), d0              ; d0 = group index
     lsl.w   #$2, d0
-    movea.l  #$00047D7C,a0
+    movea.l  #ROM_BASE+$00047D7C,a0
     move.l  (a0,d0.w), -(a7)        ; push group name
     pea     (ROM_BASE+$00047E98).l  ; outcome format string
     move.l  a4, -(a7)

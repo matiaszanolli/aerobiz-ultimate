@@ -18,7 +18,7 @@ SetScrollQuadrant:                                                  ; $005518
     move.w  d2,d0
     lsl.w   #$2,d0
     add.w   d3,d0
-    movea.l #$0004737e,a0
+    movea.l #ROM_BASE+$0004737e,a0
     move.b  (a0,d0.w),d4
     andi.l  #$ff,d4
     tst.w   d4

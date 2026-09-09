@@ -10,7 +10,7 @@ l_23dca:
     pea     ($0015).w
     move.w  d2, d0
     lsl.w   #$3, d0
-    movea.l  #$0005FA6E,a0
+    movea.l  #ROM_BASE+$0005FA6E,a0
     pea     (a0, d0.w)
     jsr DisplaySetup
     pea     ($0002).w

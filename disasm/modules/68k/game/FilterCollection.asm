@@ -212,7 +212,7 @@ CalcCityStats:                                                  ; $01E98E
     ; Index into CharTypeRangeTable: $05ECBC + category*4
     move.w  d5,d0
     lsl.w   #$2,d0                     ; d0 = category * 4
-    movea.l #$0005ecbc,a0             ; $05ECBC = CharTypeRangeTable (7 entries x 4 bytes)
+    movea.l #ROM_BASE+$0005ecbc,a0    ; $05ECBC = CharTypeRangeTable (7 entries x 4 bytes)
     lea     (a0,d0.w),a0
     movea.l a0,a3                      ; a3 = CharTypeRangeTable[category]
 

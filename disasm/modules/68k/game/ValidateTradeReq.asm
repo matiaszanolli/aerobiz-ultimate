@@ -6,7 +6,7 @@ ValidateTradeReq:
     movem.l d2-d5/a2-a4, -(a7)
     move.l  $20(a7), d2
     move.l  $24(a7), d5
-    movea.l  #$0000D648,a4
+    movea.l  #ROM_BASE+$0000D648,a4
     moveq   #$1,d4
     moveq   #$7,d3
     move.w  d2, d0
@@ -37,7 +37,7 @@ l_2056c:
     moveq   #$0,d0
     move.b  $1(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005FA2C,a0
+    movea.l  #ROM_BASE+$0005FA2C,a0
     move.b  (a0,d0.w), d0
     andi.l  #$ff, d0
     bra.b   l_20560

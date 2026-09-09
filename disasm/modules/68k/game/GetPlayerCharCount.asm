@@ -44,7 +44,7 @@ RecruitCharacter:                                                  ; $036F12
     link    a6,#-$80
     movem.l d2-d4/a2-a5,-(sp)
     movea.l #$00ff9a1c,a4        ; a4 = recruit slot count / status word at $FF9A1C
-    movea.l #$0001e0b8,a5        ; a5 = GameCommand ($01E0B8)
+    movea.l #ROM_BASE+$0001e0b8,a5 ; a5 = GameCommand ($01E0B8)
     clr.w   d4                   ; d4 = done flag = 0 (will be set when recruit finishes)
     moveq   #$0,d2
     move.b  ($00FF0016).l,d2     ; d2 = active_player_index ($FF0016)
@@ -116,7 +116,7 @@ RecruitCharacter:                                                  ; $036F12
     moveq   #$0,d0
     move.b  (a2),d0              ; slot index stored at scratch+$00
     lsl.w   #$2,d0               ; d0 *= 4 (long pointer table index)
-    movea.l #$0005e680,a0        ; a0 = ROM char name pointer table ($5E680)
+    movea.l #ROM_BASE+$0005e680,a0 ; a0 = ROM char name pointer table ($5E680)
     move.l  (a0,d0.w),-(sp)      ; push char name string ptr
     move.l  (ROM_BASE+$000485F6).l,-(sp) ; push ROM format string ptr ($485F6) for name dialog
     pea     -$0080(a6)           ; destination = local sprintf buffer (-$80(a6), $80 bytes)

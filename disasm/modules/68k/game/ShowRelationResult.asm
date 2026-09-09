@@ -13,7 +13,7 @@ ShowRelationResult:                                                  ; $019DE6
     link    a6,#$0
     movem.l d2-d7/a2-a5,-(sp)
     movea.l $0008(a6),a2              ; a2 = ptr to char-pair stat record (char code bytes, score fields)
-    movea.l #$0d64,a3                 ; a3 = GameCommand dispatcher
+    movea.l #ROM_BASE+$0d64,a3        ; a3 = GameCommand dispatcher
     lea     $0016(a6),a4              ; a4 = ptr to $16(a6): icon bar row/Y position word
     lea     $0012(a6),a5              ; a5 = ptr to $12(a6): icon bar column/X position word
     ; Conditional portrait load: only if flag $1A(a6) == 1

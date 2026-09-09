@@ -9,8 +9,8 @@ RenderQuarterReport:
     move.l  $10(a6), d5             ; d5 = 3rd stack arg (cargo/passenger data ptr, passed to sub-renderers)
     move.l  $14(a6), d6             ; d6 = 4th stack arg (funds data ptr, passed to DisplayRouteFunds)
     move.l  $8(a6), d7              ; d7 = 1st stack arg: page-mode selector (1 = first-call setup, else sub-page)
-    movea.l  #$0003B270,a4          ; a4 = PrintfWide: format+display string in 2-tile wide font
-    movea.l  #$00000D64,a5          ; a5 = GameCommand: central command dispatcher
+    movea.l  #ROM_BASE+$0003B270,a4 ; a4 = PrintfWide: format+display string in 2-tile wide font
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand: central command dispatcher
     ; --- Compute tile base index from frame counter (calendar quarter display) ---
     move.w  ($00FF0006).l, d0       ; d0 = frame_counter ($FF0006): incremented each main-loop tick
     ext.l   d0                      ; sign-extend to 32 bits for arithmetic right-shift

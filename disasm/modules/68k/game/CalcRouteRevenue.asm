@@ -92,7 +92,7 @@ ProcessRouteChange:                                                  ; $0119B4
     move.l  $001c(sp),d2
     movea.l $0020(sp),a2
     movea.l #$00ff08ec,a3
-    movea.l #$d648,a4
+    movea.l #ROM_BASE+$d648,a4
     move.w  d2,d0
     ext.l   d0
     lsl.l   #$2,d0

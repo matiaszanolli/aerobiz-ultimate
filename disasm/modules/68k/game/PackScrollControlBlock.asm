@@ -26,8 +26,8 @@ PackScrollControlBlock:
 LoadMapTiles:                                                  ; $01DE92
     movem.l a2-a4,-(sp)
     movea.l #$00ff1804,a2
-    movea.l #$3fec,a3
-    movea.l #$0001d568,a4
+    movea.l #ROM_BASE+$3fec,a3
+    movea.l #ROM_BASE+$0001d568,a4
     pea     (ROM_BASE+$0004943A).l
     move.l  a2,-(sp)
     jsr     (a3)

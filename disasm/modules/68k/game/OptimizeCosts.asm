@@ -5,7 +5,7 @@
 OptimizeCosts:
     link    a6,#-$80
     movem.l d2-d5/a2-a5, -(a7)
-    movea.l  #$00005FF6,a4
+    movea.l  #ROM_BASE+$00005FF6,a4
     lea     -$80(a6), a5
     movea.l  #$00FF0018,a3
     movea.l  #$00FF0338,a2
@@ -21,12 +21,12 @@ l_298da:
     move.b  (a2), d2
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
     moveq   #$0,d0
     move.w  $6(a2), d0
     lsl.l   #$2, d0
-    movea.l  #$0005E296,a0
+    movea.l  #ROM_BASE+$0005E296,a0
     move.l  (a0,d0.l), -(a7)
     move.w  d3, d0
     lsl.w   #$4, d0

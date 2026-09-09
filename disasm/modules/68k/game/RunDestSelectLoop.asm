@@ -7,7 +7,7 @@ RunDestSelectLoop:
     movem.l d2-d7/a2-a5, -(a7)
     movea.l  #$00FF13FC,a2
     lea     -$12(a6), a3
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
     movea.l  #$00FFA7D8,a5
     move.w  #$ff, d3
     clr.w   d6
@@ -136,7 +136,7 @@ RunDestSelectLoop:
     move.w  d6, d0
     add.w   d0, d0
     add.w   d7, d0
-    movea.l  #$0005F6D6,a0
+    movea.l  #ROM_BASE+$0005F6D6,a0
     move.b  (a0,d0.w), d2
     andi.l  #$ff, d2
 .l0ca2a:

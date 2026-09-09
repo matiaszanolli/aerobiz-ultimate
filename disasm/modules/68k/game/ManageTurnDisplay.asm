@@ -194,11 +194,11 @@ ManageTurnDisplay:
     ; Format: "<city_name> has <facility_type>. <count> turn(s) remain."
     move.w  d3, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0                          ; char name string pointer table
+    movea.l  #ROM_BASE+$0005E680,a0                 ; char name string pointer table
     move.l  (a0,d0.w), -(a7)                        ; push city/char name string
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E2A2,a0                          ; facility-type string pointer table
+    movea.l  #ROM_BASE+$0005E2A2,a0                 ; facility-type string pointer table
     move.l  (a0,d0.w), -(a7)                        ; push facility-type string
     ; Choose singular ("turn") vs plural ("turns") based on d2
     tst.w   d2                                      ; d2 == 0?
@@ -236,7 +236,7 @@ ManageTurnDisplay:
     move.l  d0, -(a7)                               ; slot index
     move.w  d4, d0
     lsl.w   #$2, d0                                 ; category * 4
-    movea.l  #$000483CC,a0                          ; dialog string pointer table (by category)
+    movea.l  #ROM_BASE+$000483CC,a0                 ; dialog string pointer table (by category)
     move.l  (a0,d0.w), -(a7)                        ; push dialog string for this facility category
     moveq   #$0,d0
     move.w  d5, d0

@@ -6,7 +6,7 @@ ToggleScrollBar:
     movem.l d2-d3/a2-a4, -(a7)
     move.l  $18(a7), d3
     movea.l  #$00FFBDAC,a3
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
     movea.l  #$00FFBDE2,a2
     moveq   #$1,d2
     moveq   #$0,d0

@@ -7,8 +7,8 @@ ShowRoutePanel:
     movem.l d2-d4/a2-a5, -(a7)
     move.l  $c(a6), d3
     move.l  $8(a6), d4
-    movea.l  #$00000D64,a4
-    movea.l  #$0004E65E,a5
+    movea.l  #ROM_BASE+$00000D64,a4
+    movea.l  #ROM_BASE+$0004E65E,a5
     jsr ResourceLoad
     pea     ($0040).w
     clr.l   -(a7)

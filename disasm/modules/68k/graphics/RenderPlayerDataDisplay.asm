@@ -7,8 +7,8 @@ RenderPlayerDataDisplay:
     movem.l d2-d6/a2-a4, -(a7)
     move.l  $8(a6), d4
     move.l  $c(a6), d6
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
     lea     -$a(a6), a2
     move.w  d4, d5
     mulu.w  #$a, d5
@@ -81,7 +81,7 @@ RenderPlayerDataDisplay:
     jsr     (a4)
     move.w  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E7E4,a0
+    movea.l  #ROM_BASE+$0005E7E4,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$000413F4).l
     jsr     (a3)
@@ -93,7 +93,7 @@ RenderPlayerDataDisplay:
     lea     $2c(a7), a7
     move.w  $4(a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E2DE,a0
+    movea.l  #ROM_BASE+$0005E2DE,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$000413F0).l
     jsr     (a3)

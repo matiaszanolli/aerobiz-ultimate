@@ -27,7 +27,7 @@ ExecMenuCommand:
 ; --- Phase: Prologue -- resolve player record and check hub-city region ---
     move.l  $c(a6), d5          ; d5 = region_id (map region to filter cities)
     move.l  $8(a6), d6          ; d6 = player_index
-    movea.l  #$00000D64,a5      ; a5 = GameCommand dispatcher ($000D64)
+    movea.l  #ROM_BASE+$00000D64,a5 ; a5 = GameCommand dispatcher ($000D64)
     move.w  d6, d0
     mulu.w  #$24, d0            ; player_index * $24 (player record stride = 36 bytes)
     movea.l  #$00FF0018,a0      ; player_records base ($FF0018)
@@ -52,14 +52,14 @@ ExecMenuCommand:
     moveq   #$0,d0
     move.b  $1(a3), d0          ; hub_city index again
     add.w   d0, d0              ; *2 -> word-stride into table
-    movea.l  #$0005E9FA,a0      ; CharPortraitPos x-column ($05E9FA)
+    movea.l  #ROM_BASE+$0005E9FA,a0 ; CharPortraitPos x-column ($05E9FA)
     move.b  (a0,d0.w), d0       ; load x scroll byte
     andi.l  #$ff, d0
     move.w  d0, (a2)            ; charlist_ptr[+$00] = x scroll position
     moveq   #$0,d0
     move.b  $1(a3), d0          ; hub_city index
     add.w   d0, d0
-    movea.l  #$0005E9FB,a0      ; CharPortraitPos y-column ($05E9FB = x+1, interleaved)
+    movea.l  #ROM_BASE+$0005E9FB,a0 ; CharPortraitPos y-column ($05E9FB = x+1, interleaved)
     move.b  (a0,d0.w), d0       ; load y scroll byte
     andi.l  #$ff, d0
     move.w  d0, $2(a2)          ; charlist_ptr[+$02] = y scroll position
@@ -182,8 +182,8 @@ l_1bd64:
     addq.l  #$8, a7
     andi.w  #$c0, d0            ; test button bits: $40=B, $80=A
     bne.b   l_1bd64             ; still held -- keep spinning
-    movea.l  #$0004DFB8,a3     ; a3 = ptr to world-map tileset (for ResourceUnload)
-    movea.l  #$0004DD9C,a4     ; a4 = ptr to char-list data block (for ResourceUnload)
+    movea.l  #ROM_BASE+$0004DFB8,a3 ; a3 = ptr to world-map tileset (for ResourceUnload)
+    movea.l  #ROM_BASE+$0004DD9C,a4 ; a4 = ptr to char-list data block (for ResourceUnload)
 
 ; --- Phase: Main dispatch loop -- hover city tracking + input processing ---
 l_1bd84:

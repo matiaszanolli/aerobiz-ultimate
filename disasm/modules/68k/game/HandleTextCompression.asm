@@ -11,11 +11,11 @@
 HandleTextCompression:
     move.l  $8(a6), d7
 ; a3 = GameCommand ($0D64) -- central VDP/display dispatcher
-    movea.l  #$00000D64,a3
+    movea.l  #ROM_BASE+$00000D64,a3
 ; a4 = $FF13FC = input_mode_flag -- nonzero when countdown input active
     movea.l  #$00FF13FC,a4
 ; a5 = PrintfWide ($03B270) -- format + display string using 2-tile wide font
-    movea.l  #$0003B270,a5
+    movea.l  #ROM_BASE+$0003B270,a5
 ; d6 = 1: initial state flag indicating selection mode is active
     moveq   #$1,d6
 ; ResourceLoad: load graphics resources for this screen

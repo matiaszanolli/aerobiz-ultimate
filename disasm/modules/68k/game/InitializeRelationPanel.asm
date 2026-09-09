@@ -5,8 +5,8 @@
 InitializeRelationPanel:
     movem.l d2-d3/a2-a5, -(a7)
     move.l  $1c(a7), d2
-    movea.l  #$0003B246,a4
-    movea.l  #$0003AB2C,a5
+    movea.l  #ROM_BASE+$0003B246,a4
+    movea.l  #ROM_BASE+$0003AB2C,a5
     move.l  (ROM_BASE+$000A1AFC).l, -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress

@@ -55,7 +55,7 @@ l_072aa:
     move.w  d2, d1
     add.w   d1, d1
     add.w   d1, d0
-    movea.l  #$0005E234,a0
+    movea.l  #ROM_BASE+$0005E234,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
     move.w  d3, d5
@@ -63,7 +63,7 @@ l_072aa:
     addi.w  #$670, d5
     move.w  d4, d0
     lsl.w   #$6, d0
-    movea.l  #$00051942,a0
+    movea.l  #ROM_BASE+$00051942,a0
     pea     (a0, d0.w)
     pea     ($0001).w
     pea     ($0002).w

@@ -15,7 +15,7 @@ RunRouteManagementUI:
     move.l  $c(a6), d6           ; d6 = relation_type (category to display)
     movea.l $14(a6), a2          ; a2 = caller-supplied data list pointer
     movea.l  #$00FF13FC,a3       ; a3 -> input_mode_flag (nonzero = UI countdown active)
-    movea.l  #$000479AE,a4       ; a4 -> ROM string/format table for relation display
+    movea.l  #ROM_BASE+$000479AE,a4 ; a4 -> ROM string/format table for relation display
     lea     -$b6(a6), a5         ; a5 -> local stack buffer for sprintf output
 
 ; --- Phase: Build Relation List ---

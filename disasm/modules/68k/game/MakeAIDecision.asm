@@ -4,7 +4,7 @@
 ; ============================================================================
 MakeAIDecision:
     movem.l d2/a2-a4, -(a7)
-    movea.l  #$000090F4,a4
+    movea.l  #ROM_BASE+$000090F4,a4
     movea.l  #$00FF0120,a2
     movea.l  #$00FF03F0,a3
     clr.w   d2

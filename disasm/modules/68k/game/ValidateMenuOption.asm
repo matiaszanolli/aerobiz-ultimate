@@ -11,11 +11,11 @@ ValidateMenuOption:
     jsr SignedMod
     move.w  d0, d2
     add.w   d0, d0
-    movea.l  #$000482AC,a0
+    movea.l  #ROM_BASE+$000482AC,a0
     move.w  (a0,d0.w), d0
     andi.l  #$ffff, d0
     lsl.l   #$2, d0
-    movea.l  #$00088C90,a0
+    movea.l  #ROM_BASE+$00088C90,a0
     move.l  (a0,d0.l), -(a7)
     pea     ($00FF1804).l
     jsr LZ_Decompress

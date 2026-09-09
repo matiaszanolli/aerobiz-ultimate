@@ -7,8 +7,8 @@ RenderCharTransfer:
     movem.l d2-d4/a2-a4, -(a7)
     move.l  $c(a6), d2
     move.l  $8(a6), d3
-    movea.l  #$0003B270,a3
-    movea.l  #$0003AB2C,a4
+    movea.l  #ROM_BASE+$0003B270,a3
+    movea.l  #ROM_BASE+$0003AB2C,a4
     moveq   #$0,d0
     move.w  d2, d0
     move.l  d0, d1

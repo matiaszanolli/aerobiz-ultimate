@@ -15,7 +15,7 @@ CalcCharValue:                                                  ; $00E08E
     movea.l a0,a2
     move.w  d2,d0
     lsl.w   #$2,d0
-    movea.l #$0005e31a,a0
+    movea.l #ROM_BASE+$0005e31a,a0
     move.b  (a0,d0.w),d0
     andi.l  #$ff,d0
     move.l  #$01f4,d1

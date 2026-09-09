@@ -18,7 +18,7 @@ RenderCharacterPanel:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $8(a6), d7
     ; d7 = player_index (0-3): identifies which player's panel to render
-    movea.l  #$0003B270,a5
+    movea.l  #ROM_BASE+$0003B270,a5
     ; a5 = PrintfWide: cached for all subsequent wide-font text calls
     ; compute pointer to per-slot char data: base $FF0338 + player*32 + slot*8
     move.w  d7, d0
@@ -163,7 +163,7 @@ l_137fa:
     ; a2+$06 = route entry index: identifies the character assigned to this slot
     lsl.l   #$2, d0
     ; d0 *= 4: longword offset into character name pointer table at $5E296
-    movea.l  #$0005E296,a0
+    movea.l  #ROM_BASE+$0005E296,a0
     ; $5E296 = ROM character name string pointer table (one longword per character)
     move.l  (a0,d0.l), -(a7)
     ; push pointer to character name string
@@ -323,7 +323,7 @@ l_13982:
     move.w  $6(a2), d0
     ; a2+$06 = character slot index for name lookup
     lsl.l   #$2, d0
-    movea.l  #$0005E296,a0
+    movea.l  #ROM_BASE+$0005E296,a0
     move.l  (a0,d0.l), -(a7)
     jsr     (a5)
     ; re-print full-value label at (d3+3, d2+2)
@@ -469,7 +469,7 @@ l_13ac8:
     move.w  d4, d0
     lsl.w   #$2, d0
     ; d4 * 4 = offset into tier-label pointer table
-    movea.l  #$000479E2,a0
+    movea.l  #ROM_BASE+$000479E2,a0
     ; $479E2 = ROM table of format string pointers for each star-bar tier label
     move.l  (a0,d0.w), -(a7)
     jsr     (a5)

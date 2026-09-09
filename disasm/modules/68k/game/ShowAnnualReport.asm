@@ -28,8 +28,8 @@ ShowAnnualReport:                                                  ; $02BDB8
     movem.l d2-d7/a2-a5,-(sp)
     move.l  $0008(a6),d4                ; d4 = player index (0-3)
     lea     -$00a6(a6),a3               ; a3 = report string buffer (170-byte stack area)
-    movea.l #$0001183a,a4               ; a4 = report display/format function
-    movea.l #$0004843c,a5               ; a5 = ROM dialog pointer table (base for a5+offset ptrs)
+    movea.l #ROM_BASE+$0001183a,a4      ; a4 = report display/format function
+    movea.l #ROM_BASE+$0004843c,a5      ; a5 = ROM dialog pointer table (base for a5+offset ptrs)
 
 ; --- Phase: guard -- only run on the "correct" frame ---
 ; Computes the expected frame_counter value for annual report:
@@ -210,7 +210,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     nop
     move.w  -$0002(a6),d0              ; aircraft_region
     lsl.w   #$2,d0                      ; region * 4 (longword index)
-    movea.l #$0005ec84,a0              ; RegionNamePtrs ($05EC84): 14 region name ptrs
+    movea.l #ROM_BASE+$0005ec84,a0     ; RegionNamePtrs ($05EC84): 14 region name ptrs
     move.l  (a0,d0.w),-(sp)            ; arg: region name string ptr
     move.l  $0024(a5),-(sp)            ; a5+$24 = ROM dialog ptr [9] (bankruptcy msg template)
     move.l  a3,-(sp)                   ; arg: report buffer
@@ -247,7 +247,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     nop
     move.w  -$0002(a6),d0              ; aircraft_region
     lsl.w   #$2,d0
-    movea.l #$0005ec84,a0              ; RegionNamePtrs
+    movea.l #ROM_BASE+$0005ec84,a0     ; RegionNamePtrs
     move.l  (a0,d0.w),-(sp)            ; arg: player's region name
     move.w  -$00a8(a6),d0              ; rival_license_player index
     lsl.w   #$4,d0                      ; rival * $10 (16 bytes per entry in $FF00A8)
@@ -318,7 +318,7 @@ ShowAnnualReport:                                                  ; $02BDB8
 .l2c0ac:                                                ; $02C0AC
     move.w  -$0006(a6),d0              ; best_route_slot (last slot scanned without license)
     lsl.w   #$2,d0                      ; slot * 4
-    movea.l #$0005ec84,a0              ; RegionNamePtrs
+    movea.l #ROM_BASE+$0005ec84,a0     ; RegionNamePtrs
     move.l  (a0,d0.w),-(sp)            ; arg: route slot's region name
     move.l  $0008(a5),-(sp)
     move.l  a3,-(sp)
@@ -340,7 +340,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     beq.w   .l2c2c0                     ; no competitor found -> exit
     move.w  -$0006(a6),d0             ; best_route_slot
     lsl.w   #$2,d0
-    movea.l #$0005ec84,a0
+    movea.l #ROM_BASE+$0005ec84,a0
     move.l  (a0,d0.w),-(sp)
     move.w  d5,d0                       ; competitor player index
     lsl.w   #$4,d0                      ; competitor * $10
@@ -518,7 +518,7 @@ ShowAnnualReport:                                                  ; $02BDB8
     pea     (a0,d0.w)                 ; arg: competitor's $FF00A8[competitor] record
     move.w  d7,d0                     ; d7 = best route slot index
     lsl.w   #$2,d0                    ; slot * 4 = longword index into RegionNamePtrs
-    movea.l #$0005ec84,a0            ; RegionNamePtrs ($05EC84): 14 region name ptrs
+    movea.l #ROM_BASE+$0005ec84,a0   ; RegionNamePtrs ($05EC84): 14 region name ptrs
     move.l  (a0,d0.w),-(sp)          ; arg: region name string for best slot
     move.l  $0020(a5),-(sp)          ; a5+$20 = ROM dialog ptr [8] (best-route msg template)
 .l2c29e:                                                ; $02C29E

@@ -20,7 +20,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; a3 = save_buf_base ($FF1804) -- used as LZ decompress output buffer throughout
     movea.l #$00ff1804,a3
 ; a4 = SetTextCursor ($03AB2C) -- called frequently to position text before printing
-    movea.l #$0003ab2c,a4
+    movea.l #ROM_BASE+$0003ab2c,a4
 ; a5 = city_data ($FFBA80) -- 89 cities × 4 entries × 2 bytes; indexed by char_code * 8 + relation * 2
     movea.l #$00ffba80,a5
 ; d5 = 1 = base tile row for this panel (Y position in tile coordinates)
@@ -136,7 +136,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; char_a code = byte 0 of pair record
     move.b  (a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e7e4,a0
+    movea.l #ROM_BASE+$0005e7e4,a0
 ; Name string pointer for char_a
     move.l  (a0,d0.w),-(sp)
 ; Format string at $410F8 -- prints first character's name with wide font
@@ -232,7 +232,7 @@ FormatRelationDisplay:                                                  ; $01924
 ; char_b code = byte +1 of pair record
     move.b  $0001(a2),d0
     lsl.w   #$2,d0
-    movea.l #$0005e7e4,a0
+    movea.l #ROM_BASE+$0005e7e4,a0
 ; Name string pointer for char_b
     move.l  (a0,d0.w),-(sp)
 ; Format string at $410F0 -- prints second character's name

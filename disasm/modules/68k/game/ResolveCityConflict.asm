@@ -5,9 +5,9 @@
 ResolveCityConflict:
     movem.l d2-d4/a2-a4, -(a7)
     move.l  $1c(a7), d3
-    movea.l  #$0003B270,a2
-    movea.l  #$0003AB2C,a3
-    movea.l  #$00047A78,a4
+    movea.l  #ROM_BASE+$0003B270,a2
+    movea.l  #ROM_BASE+$0003AB2C,a3
+    movea.l  #ROM_BASE+$00047A78,a4
     pea     ($008F).w
     tst.w   d3
     bne.b   l_17280
@@ -42,7 +42,7 @@ l_172b2:
     move.w  d2, d1
     lsl.w   #$2, d1
     add.w   d1, d0
-    movea.l  #$00047A36,a0
+    movea.l  #ROM_BASE+$00047A36,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$0003F94C).l
     jsr     (a2)
@@ -68,7 +68,7 @@ l_172dc:
     lea     $14(a7), a7
     move.w  ($00FF0008).l, d0
     lsl.w   #$2, d0
-    movea.l  #$00047A88,a0
+    movea.l  #ROM_BASE+$00047A88,a0
     move.l  (a0,d0.w), -(a7)
     bra.b   l_1735c
 l_17322:

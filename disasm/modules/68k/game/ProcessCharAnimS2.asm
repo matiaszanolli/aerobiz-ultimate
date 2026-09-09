@@ -7,7 +7,7 @@ ProcessCharAnimS2:
     movem.l d2-d6/a2-a5, -(a7)
     move.l  $8(a6), d6
     lea     -$100(a6), a4
-    movea.l  #$000483C4,a5
+    movea.l  #ROM_BASE+$000483C4,a5
     move.w  d6, d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0
@@ -58,7 +58,7 @@ ProcessCharAnimS2:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00042244).l
 .l2a9d0:
@@ -77,7 +77,7 @@ ProcessCharAnimS2:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$00042212).l
     bra.b   .l2a9d0
@@ -112,11 +112,11 @@ ProcessCharAnimS2:
     moveq   #$0,d0
     move.b  (a2), d0
     lsl.w   #$2, d0
-    movea.l  #$0005E680,a0
+    movea.l  #ROM_BASE+$0005E680,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005E2A2,a0
+    movea.l  #ROM_BASE+$0005E2A2,a0
     move.l  (a0,d0.w), -(a7)
     pea     (ROM_BASE+$000421DC).l
     bra.b   .l2aab8
@@ -130,12 +130,12 @@ ProcessCharAnimS2:
     move.l  (a5,a0.l), -(a7)
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EC84,a0
+    movea.l  #ROM_BASE+$0005EC84,a0
     move.l  (a0,d0.w), -(a7)
     moveq   #$0,d0
     move.w  $6(a2), d0
     lsl.l   #$2, d0
-    movea.l  #$0005E296,a0
+    movea.l  #ROM_BASE+$0005E296,a0
     move.l  (a0,d0.l), -(a7)
     pea     (ROM_BASE+$000421B8).l
 .l2aab8:

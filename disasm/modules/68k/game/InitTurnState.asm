@@ -10,7 +10,7 @@ InitTurnState:
     ; a3 = pointer to turn-state record to fill in (arg 2 from $30(a7))
     movea.l $30(a7), a3
     ; a5 = RandRange function pointer ($1D6A4) -- called repeatedly to pick random indices
-    movea.l  #$0001D6A4,a5
+    movea.l  #ROM_BASE+$0001D6A4,a5
     ; --- Branch 1: Player Mode or AI Mode ---
     ; Roll RandRange(0, 3): returns 0-3. Non-zero = AI/alliance path
     pea     ($0003).w
@@ -129,7 +129,7 @@ l_1a870:
     ; Look up city info for d7: $5E9FA table, entry d7*2 (word pointer per city)
     move.w  d7, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     ; a2 = city info entry for the primary city (d7)
     movea.l a0, a2
@@ -140,7 +140,7 @@ l_1a870:
     move.w  d6, d1
     add.w   d1, d1
     add.w   d1, d0
-    movea.l  #$0005E234,a0
+    movea.l  #ROM_BASE+$0005E234,a0
 l_1a8a4:
     ; a4 = pointer to route speed/data entry
     lea     (a0,d0.w), a0
@@ -155,7 +155,7 @@ l_1a8b6:
     ; Look up city info for d7 (now secondary)
     move.w  d7, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     ; a4 = city info for secondary city
     movea.l a0, a4
@@ -165,7 +165,7 @@ l_1a8b6:
     move.w  d6, d1
     add.w   d1, d1
     add.w   d1, d0
-    movea.l  #$0005E234,a0
+    movea.l  #ROM_BASE+$0005E234,a0
     bra.w   l_1aa34
 ; --- Phase: AI/Alliance Path ---
 l_1a8dc:
@@ -173,7 +173,7 @@ l_1a8dc:
     ; This gives the base city and range for this player's alliance category
     move.w  d5, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     ; a2 = category range descriptor for player d5
     movea.l a0, a2
@@ -200,7 +200,7 @@ l_1a8dc:
     ; Mask with player's valid city bitmask from $5ECDC (ROM table, stride 4)
     move.w  d5, d1
     lsl.w   #$2, d1
-    movea.l  #$0005ECDC,a0
+    movea.l  #ROM_BASE+$0005ECDC,a0
     and.l   (a0,d1.w), d0
     ; If any bits set: at least one active alliance city -- proceed
     bne.b   l_1a940
@@ -320,25 +320,25 @@ l_1a9e4:
     ; d7 is primary city, d2 is secondary city
     move.w  d7, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     ; a2 = city info for d7 (primary)
     movea.l a0, a2
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     bra.w   l_1a8a4
 l_1aa1a:
     ; d7 is secondary city, d2 is primary city (roles swapped)
     move.w  d7, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     ; a4 = city info for d7 (now secondary)
     movea.l a0, a4
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
 l_1aa34:
     lea     (a0,d0.w), a0
     ; a2 = city info for d2 (primary in swapped case)

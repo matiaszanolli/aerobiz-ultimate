@@ -4,9 +4,9 @@
 ; ============================================================================
 ProcessRouteOptionB:
     movem.l d2-d3/a2-a5, -(a7)
-    movea.l  #$0002211A,a3
-    movea.l  #$00021FD4,a4
-    movea.l  #$0005FA0E,a5
+    movea.l  #ROM_BASE+$0002211A,a3
+    movea.l  #ROM_BASE+$00021FD4,a4
+    movea.l  #ROM_BASE+$0005FA0E,a5
     movea.l  #$00FF09C2,a2
     cmpi.b  #$ff, (a2)
     beq.b   l_21688

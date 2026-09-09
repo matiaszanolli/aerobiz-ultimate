@@ -10,7 +10,7 @@ RenderGameplayScreen:
     movem.l d2-d7/a2-a5, -(a7)
     move.l  $10(a6), d3               ; d3 = char code / character type of current player
     move.l  $8(a6), d5                ; d5 = player index (0-3)
-    movea.l  #$00000D64,a5            ; a5 = GameCommand dispatcher (cached for repeated calls)
+    movea.l  #ROM_BASE+$00000D64,a5   ; a5 = GameCommand dispatcher (cached for repeated calls)
     move.w  #$1, -$b8(a6)            ; local flag at -$B8(a6) = 1 (first-entry / dirty flag)
     move.w  d5, d0
     mulu.w  #$24, d0                  ; d0 = player_index * $24 (stride into player_records at $FF0018)
@@ -218,7 +218,7 @@ l_37388:
     ; Table at $5E680: 4 longword pointers, one per player, indexed by player_index * 4
     move.w  d3, d0
     lsl.w   #$2, d0                   ; d0 = player_index * 4 (longword pointer stride)
-    movea.l  #$0005E680,a0            ; a0 = base of player name pointer table
+    movea.l  #ROM_BASE+$0005E680,a0   ; a0 = base of player name pointer table
     movea.l (a0,d0.w), a3            ; a3 = pointer to player name string
     move.l  a3, -(a7)                 ; arg: player name string (×2, format uses it twice)
     move.l  a3, -(a7)
@@ -387,7 +387,7 @@ l_37576:
     ; Format the player name into local string buffer at -$B6(a6) using sprintf
     move.w  d3, d0
     lsl.w   #$2, d0                   ; d0 = player_index * 4
-    movea.l  #$0005E680,a0            ; a0 = player name pointer table
+    movea.l  #ROM_BASE+$0005E680,a0   ; a0 = player name pointer table
     move.l  (a0,d0.w), -(a7)         ; arg = player name string
     move.l  (ROM_BASE+$000485F6).l, -(a7) ; arg = format string for cost message
     pea     -$b6(a6)                  ; output buffer in stack frame
@@ -423,7 +423,7 @@ l_375f0:
     ; Format the player's own name into the local stack buffer
     move.w  d3, d0
     lsl.w   #$2, d0                   ; d0 = player_index * 4
-    movea.l  #$0005E680,a0            ; a0 = player name pointer table
+    movea.l  #ROM_BASE+$0005E680,a0   ; a0 = player name pointer table
     move.l  (a0,d0.w), -(a7)         ; arg = player name string
     move.l  (ROM_BASE+$0004861A).l, -(a7) ; format string for "own hub" message
     pea     -$b6(a6)                  ; output buffer in stack frame

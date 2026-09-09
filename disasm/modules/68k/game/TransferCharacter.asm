@@ -35,7 +35,7 @@ TransferCharacter:
 
 ; --- Phase: Prologue -- resolve player record and initial char-slot entry ---
     move.l  $8(a6), d5          ; d5 = player_index
-    movea.l  #$0004848A,a5      ; a5 = ROM table base $0004848A (dialog string ptrs)
+    movea.l  #ROM_BASE+$0004848A,a5 ; a5 = ROM table base $0004848A (dialog string ptrs)
     ; Locate the player record: base $FF0018 + player*$24 (36 bytes/player)
     move.w  d5, d0
     mulu.w  #$24, d0            ; player_index * $24 = byte offset into player_records
@@ -423,7 +423,7 @@ TransferCharacter:
     move.b  (a0,d4.w), d0       ; aircraft type for candidate d4
     andi.l  #$ff, d0
     lsl.w   #$2, d0             ; * 4 (longword ptr stride)
-    movea.l  #$0005ECFC,a0      ; AircraftModelPtrs ($05ECFC)
+    movea.l  #ROM_BASE+$0005ECFC,a0 ; AircraftModelPtrs ($05ECFC)
     move.l  (a0,d0.w), -(a7)    ; -> ptr to aircraft model name string
     move.l  $28(a5), -(a7)      ; a5+$28 = sprintf format string ptr [index 10]
     pea     -$84(a6)            ; output buffer (frame local, 132 bytes)

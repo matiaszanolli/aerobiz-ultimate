@@ -58,7 +58,7 @@ InitPlayerAircraftState:
     move.b  (a2), d0
     move.w  d3, d1
     lsl.w   #$2, d1
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     move.b  (a0,d1.w), d1
     andi.l  #$ff, d1
     sub.w   d1, d0
@@ -95,7 +95,7 @@ InitPlayerAircraftState:
     move.b  $1(a2), d0
     move.w  d5, d1
     lsl.w   #$2, d1
-    movea.l  #$0005ECBE,a0
+    movea.l  #ROM_BASE+$0005ECBE,a0
     move.b  (a0,d1.w), d1
     andi.l  #$ff, d1
     sub.w   d1, d0

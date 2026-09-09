@@ -9,7 +9,7 @@ LoadAllGameData:
 ; d3 = save slot index (passed on stack at +$18 after saves)
     move.l  $18(a7), d3
 ; a4 = copy helper at $1D538 (CopyBytesToWords / stride-2 loader) -- used throughout
-    movea.l  #$0001D538,a4
+    movea.l  #ROM_BASE+$0001D538,a4
 ; a3 = save_buf_base ($FF1804); will advance through the save buffer as fields are unpacked
     movea.l  #$00FF1804,a3
 ; Push size $2000 (8KB) -- read entire SRAM save block into $FF1804 buffer

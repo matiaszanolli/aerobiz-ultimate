@@ -8,7 +8,7 @@ DrawScreenElement:
     movem.l d2-d7/a2-a5, -(a7)
     movea.l $c(a6), a2
     ; a2 = pointer to char stat record (per-player stat, $FF05C4-based)
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
     ; a4 = GameCommand dispatcher (cached)
     lea     -$2e(a6), a5
     ; a5 = pointer to local word variable -$2e(a6), used as partner count storage

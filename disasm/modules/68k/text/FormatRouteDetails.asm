@@ -25,7 +25,7 @@ FormatRouteDetails:
     moveq   #$0,d0
     move.w  d4, d0
     lsl.l   #$2, d0
-    movea.l  #$0009511C,a0
+    movea.l  #ROM_BASE+$0009511C,a0
     move.l  (a0,d0.l), -(a7)
     ; Decompress the region background tiles to save_buf_base ($FF1804)
     pea     ($00FF1804).l
@@ -88,7 +88,7 @@ FormatRouteDetails:
     moveq   #$0,d0
     move.b  (a2), d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     ; a4 = pointer to city_a info entry (source city)
     movea.l a0, a4
@@ -96,7 +96,7 @@ FormatRouteDetails:
     moveq   #$0,d0
     move.b  $1(a2), d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     ; a3 = pointer to city_b info entry (destination city)
     movea.l a0, a3
@@ -199,7 +199,7 @@ FormatRouteDetails:
     ; AND narrows to only cities the player is currently active in
     move.w  d4, d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECDC,a0
+    movea.l  #ROM_BASE+$0005ECDC,a0
     move.l  (a0,d0.w), d0
     and.l   $10(a6), d0
     ; d4 now = filtered city bitmask (player's cities in this region)
@@ -225,7 +225,7 @@ FormatRouteDetails:
     ; d2 = city index of the first active city; look up its info entry
     move.w  d2, d0
     add.w   d0, d0
-    movea.l  #$0005E9FA,a0
+    movea.l  #ROM_BASE+$0005E9FA,a0
     lea     (a0,d0.w), a0
     ; a4 = pointer to city info entry for the extra city
     movea.l a0, a4

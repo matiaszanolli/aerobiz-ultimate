@@ -4,8 +4,8 @@
 ; ============================================================================
 ProcessPlayerSelectInput:
     movem.l d2-d5/a2-a4, -(a7)
-    movea.l  #$00000D64,a3
-    movea.l  #$0001D520,a4
+    movea.l  #ROM_BASE+$00000D64,a3
+    movea.l  #ROM_BASE+$0001D520,a4
     move.l  #$22889011, d5
     pea     ($0010).w
     clr.l   -(a7)
@@ -122,7 +122,7 @@ ProcessPlayerSelectInput:
     or.l    d0, d4
     move.w  d2, d0
     lsl.w   #$2, d0
-    movea.l  #$0005EAAC,a0
+    movea.l  #ROM_BASE+$0005EAAC,a0
     move.l  (a0,d0.w), -(a7)
     move.w  d3, d0
     lsl.w   #$4, d0

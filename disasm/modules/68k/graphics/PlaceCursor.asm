@@ -8,7 +8,7 @@ PlaceCursor:                                                  ; $009CEC
     move.l  $0018(sp),d2
     move.l  $0014(sp),d3
     move.l  $001c(sp),d4
-    movea.l #$0d64,a2
+    movea.l #ROM_BASE+$0d64,a2
     pea     ($0006).w
     jsr     (ROM_BASE+$01D444).l
     move.l  #$8000,-(sp)

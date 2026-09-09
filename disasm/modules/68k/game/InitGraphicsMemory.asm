@@ -10,7 +10,7 @@ InitGraphicsMemory:
 ; d7 = player_index argument passed by caller
     move.l  $8(a6), d7
 ; a4 = GameCommand dispatch address ($000D64) -- cached for all subsequent indirect calls
-    movea.l  #$00000D64,a4
+    movea.l  #ROM_BASE+$00000D64,a4
 ; a5 = -$2C(a6): local frame buffer used as owned-char list (up to 16 word entries)
     lea     -$2c(a6), a5
 ; d5 = 1: resource ID (loaded before entering the char management UI)

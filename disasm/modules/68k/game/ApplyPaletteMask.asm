@@ -19,7 +19,7 @@ l_048e2:
     clr.w   d3
     move.w  d3, d0
     add.w   d0, d0
-    movea.l  #$0004735E,a0
+    movea.l  #ROM_BASE+$0004735E,a0
     lea     (a0,d0.w), a0
     movea.l a0, a2
 l_04904:

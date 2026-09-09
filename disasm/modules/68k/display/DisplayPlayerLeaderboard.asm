@@ -8,8 +8,8 @@ DisplayPlayerLeaderboard:
     move.l  $c(a6), d3
     move.l  $8(a6), d4
     lea     -$a0(a6), a3
-    movea.l  #$0003B22C,a4
-    movea.l  #$000482D8,a5
+    movea.l  #ROM_BASE+$0003B22C,a4
+    movea.l  #ROM_BASE+$000482D8,a5
     move.w  d4, d0
     mulu.w  #$24, d0
     movea.l  #$00FF0018,a0

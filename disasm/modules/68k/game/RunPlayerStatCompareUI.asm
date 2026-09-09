@@ -6,7 +6,7 @@ RunPlayerStatCompareUI:
     link    a6,#$0
     movem.l d2-d6/a2-a4, -(a7)
     move.l  $c(a6), d6
-    movea.l  #$00000D64,a2
+    movea.l  #ROM_BASE+$00000D64,a2
     movea.l  #$00FF13FC,a3
     movea.l  #$00FFBD58,a4
     moveq   #$1,d4

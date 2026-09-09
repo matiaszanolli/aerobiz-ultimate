@@ -8,7 +8,7 @@ FindRelationByChar:
     movea.l $30(a7), a4
     move.w  $2e(a7), d0
     lsl.w   #$2, d0
-    movea.l  #$0005ECBC,a0
+    movea.l  #ROM_BASE+$0005ECBC,a0
     lea     (a0,d0.w), a0
     movea.l a0, a1
     clr.w   d3
