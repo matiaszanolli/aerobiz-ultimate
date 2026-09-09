@@ -11,6 +11,64 @@ manual section or the tool output that backs it.
 
 ## 2026-09-08
 
+### The rebasing mechanism was never actually wired up
+
+`ROM_BASE` is the whole dual-build design (PORT_ARCHITECTURE.md §3), and it did
+not exist. It was undefined for the Genesis target -- CLAUDE.md's source table
+claimed `disasm/aerobiz.asm` set it to 0, and it did not -- and it appeared zero
+times in the shared sources. U-010 could not have started.
+
+It is now `equ $00000000` in `disasm/aerobiz.asm`, with one literal converted as
+a worked template (`movea.l #ROM_BASE+$000D64,a3` in `VRAMBulkLoad`). `make
+verify` still matches, which is the part that matters: it confirms
+`#ROM_BASE+$000D64` encodes identically to `#$00000D64` under `-no-opt`, the
+encoding hazard KNOWN_ISSUES.md warns about.
+
+### The 32X image must keep the Genesis layout byte for byte
+
+A constraint the design implied but never stated, and it is the kind that bites
+silently. Rebased expressions carry the *Genesis* offsets, so inserting a single
+byte into a shared source moves everything after it while every literal keeps
+naming the old offset. The Genesis build stays byte-identical throughout,
+because `ROM_BASE` is zero there and its own literals shift with it.
+
+So 32X-only changes to shared code must be size-neutral, and target-specific
+behaviour has to live in the boot half or in work RAM. `$FFFC80-$FFFFFF`
+measures free for the latter -- the A5 work area tops out at offset `$C70`
+(`$FFFC80`), nothing in the shared sources references above `$FFFC74`, and the
+stack grows down from `$FFF000`. About 896 bytes, by reference scan; not yet
+confirmed dynamically.
+
+### `DMA_BASE` was the wrong fix, and is dropped
+
+Filed this morning as U-022 and gating U-010; closed the same day as superseded.
+
+The plan was to classify every literal that becomes a DMA source and rebase it
+to cartridge offset `$100000 + orig` rather than `ROM_BASE + orig`. It does not
+work. A pointer to graphics data is not necessarily used only for DMA -- the
+68000 may dereference the same value, and a CPU read needs `$900000`, because
+`$100000` is unmapped while `RV = 0`. One value cannot be both, and a literal is
+only safe to rebase that way if it feeds DMA and nothing else. That cannot be
+established by pattern matching: sources reach `CmdSetupDMA` as `GameCommand`
+command 5's third longword, and callers pass them through wrappers
+(`VRAMBulkLoad` forwards `$10(a6)` in a register), so it is an interprocedural
+dataflow problem.
+
+Translating at the sink removes the question. `ConfigVDPDMA` is the only code in
+the game that programs a memory-to-VRAM DMA source -- `ConfigVDPColors` uses
+mode `$9780` (VRAM fill) and `ConfigVDPScroll` `$97C0` (VRAM copy, source is a
+VRAM address), and neither writes a bus address to registers 21-23. One
+conditional subtract there, and every literal rebases uniformly to `ROM_BASE`.
+
+This also collapses U-020 and U-022 into one change, and hands it a hook that
+costs nothing: the hand-encoded `dc.w $4EB9,$00FF,$F000` in `ConfigVDPDMA` is
+already a six-byte `jsr` into RAM. Repointing it at a larger stub is
+size-neutral, and the stub has to be RAM-resident for the `RV` window anyway.
+
+Recording the shape of the mistake, since it is the second of its kind today: in
+both cases the instinct was to fix the *data* -- 2,886 literals, then a subset of
+them -- when the cheaper fix was one place in the *code*.
+
 ### M1 half reached: the 32X cartridge boots and idles
 
 `U-001` closed. `build/aerobiz-ultimate-m1.32x` runs 600 frames under the

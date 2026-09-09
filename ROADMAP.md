@@ -83,11 +83,7 @@ U-002 grows into real rendering work.**
 
 ## M2 -- Rebase the game to $900000
 
-### U-010 -- Rewrite the 1,990 "safe" ROM literals [OPEN]
-
-**Gated on U-022.** Not every ROM literal rebases to `ROM_BASE`: DMA source
-addresses rebase to `$100000` instead, and nothing in the build catches the
-mistake. See [PORT_ARCHITECTURE.md §2.1](PORT_ARCHITECTURE.md#a-second-rebase-constant-dma_base).
+### U-010 -- Rewrite the 1,990 "safe" ROM literals [OPEN, next]
 
 `tools/scan_rom_refs.py` classifies them. Rewrite each as `ROM_BASE+$xxxxxx`.
 `make verify` must still report an MD5 match afterwards -- that proves no
@@ -96,6 +92,23 @@ encoding changed. Do it in reviewable batches, not one commit.
 Forms in scope: `($imm).l` operands (1,075), `movea #imm` (831), `dbra` literal
 targets (40), `dc.l` ROM pointers (31), `bsr.b` literal targets (12), one
 `jmp $xxx(pc)`.
+
+The mechanism is now wired and proven. `ROM_BASE` was declared in
+PORT_ARCHITECTURE.md §3 but had never actually been defined for the Genesis
+target, nor used once in shared sources; it is now `equ $00000000` in
+`disasm/aerobiz.asm`. One site is converted as a worked example and template:
+
+    movea.l #ROM_BASE+$000D64,a3    ; VRAMBulkLoad.asm:11
+
+`make verify` still matches, which is what confirms `#ROM_BASE+$000D64` encodes
+identically to `#$00000D64` under `-no-opt` -- the encoding hazard
+KNOWN_ISSUES.md warns about.
+
+**Size neutrality is not optional.** These expressions carry *Genesis* offsets,
+so the 32X image must keep the Genesis layout byte for byte. Never insert or
+remove bytes in a shared source to accommodate the 32X; see
+[PORT_ARCHITECTURE.md §2.1](PORT_ARCHITECTURE.md). The Genesis check cannot see
+this class of mistake either.
 
 ### U-011 -- Classify the 896 "review" literals [OPEN]
 
@@ -124,62 +137,62 @@ being one-offs.
 
 ## M3 -- Full game on 32X, layer blank
 
-### U-020 -- Implement the `RV = 1` DMA window [OPEN, high risk]
+### U-020 -- Implement the 32X DMA stub: `RV` window and source translation [OPEN, high risk]
 
-**The design question is answered from the manuals; see
-[PORT_ARCHITECTURE.md §2.1](PORT_ARCHITECTURE.md#21-genesis-vdp-dma-from-the-banked-game-image).
-This item is now implementation plus one experiment, not research.**
+**Design settled from the manuals and the sources; see
+[PORT_ARCHITECTURE.md §2.1](PORT_ARCHITECTURE.md). This is implementation plus
+one experiment.** It absorbs what was filed separately as U-022.
 
-Summary of what changed: the source register was never the constraint -- VDP
-register 23 carries seven source bits (bits 23-17; `DMD0` doubles as bit 23),
-which the game's own `andi.w #$7f` in `ConfigVDPDMA` confirms. The barrier is
-that the adapter does not serve `$880000-$9FFFFF` to a VDP-mastered cycle, and
-the `RV` bit at `$A15106` -- named "ROM to VRAM DMA" -- exists to solve exactly
-this. Option 3 (relocate graphics to the fixed window) is dead for the same
-reason, not for the range reason originally given.
+The source register was never the constraint -- VDP register 23 carries seven
+source bits, which the game's own `andi.w #$7f` confirms. The barrier is that
+the adapter does not serve `$880000-$9FFFFF` to a VDP-mastered cycle, and the
+`RV` bit at `$A15106`, named "ROM to VRAM DMA", exists to solve exactly that.
 
-Implementation, in order:
+One routine does the whole job, in free work RAM, reached by repointing the six
+bytes of `dc.w $4EB9,$00FF,$F000` in `ConfigVDPDMA` under `ifne ROM_BASE`. That
+patch is size-neutral, which it must be.
 
-1. **Experiment first.** Determine whether `$880000-$9FFFFF` stays readable by
-   the 68000 while `RV = 1`. The manual is silent. Write the answer into §5.3.
-   The design does not depend on it -- the window runs from work RAM either way
-   -- but it decides how much has to move.
-2. **Relocate and grow the work-RAM stub.** Today: 10 bytes at `$FFF000`,
-   boot-copied from `$000362`. Needed: set `RV = 1`, trigger, poll DMA-busy,
-   clear `RV = 0`, all resident in RAM. Only six spare bytes before the A5 base
-   at `$FFF010`, so pick a new home and make the hand-encoded
-   `dc.w $4EB9,$00FF,$F000` in `ConfigVDPDMA` a dual-build divergence.
-3. **Move the busy-wait inside the window.** The `l_0121c` poll after the
-   `jsr $FFF000` currently runs from ROM. It must not.
-4. **Clear `RV` in the reset path.** `VRES` with `RV = 1` prevents restart after
+1. **Experiment first.** Is `$880000-$9FFFFF` still readable by the 68000 while
+   `RV = 1`? The manual is silent. Write the answer into §5.3. The design does
+   not depend on it -- the stub is RAM-resident either way -- but it decides how
+   much else has to move.
+2. **Place the stub.** `$FFFC80-$FFFFFF` measures free (~896 bytes): the A5 work
+   area tops out at `$FFFC80` and nothing in the shared sources references above
+   `$FFFC74`. Confirm dynamically before relying on it. Install from the boot
+   half, after the initial program's 64 KB work-RAM clear.
+3. **Translate the source.** `if (src & $F00000) == $900000: src -= $800000`,
+   then reprogram VDP registers 21-23. Work-RAM sources fail the test, pass
+   through untouched, and need no `RV` window -- the same test decides both.
+4. **Window, trigger, wait, close.** Raise `RV`, write the staged command word
+   from `$42(a5)`/`$44(a5)`, poll DMA-busy, lower `RV`. The poll currently runs
+   from ROM at `l_0121c` and must move inside.
+5. **Clear `RV` in the reset path.** `VRES` with `RV = 1` prevents restart after
    power-off (docs/32x-technical-info.md:63).
-5. **Measure the stall.** The SH2 blocks on cartridge reads for the window's
-   duration. Our SH2 image runs from SDRAM, so the cost should be near zero --
-   confirm it, and confirm no SH2 code path touches `$22000000` during a window.
+6. **Measure the stall.** The SH2 blocks on cartridge reads for the window.
+   Our image runs from SDRAM, so this should be near zero -- confirm it, and
+   confirm no SH2 path touches `$22000000` during a window.
 
-Already satisfied, do not re-solve: interrupts are masked for the whole of
-`ConfigVDPDMA` (`ori.w #$700, sr`), which meets the "no 68000 interrupts while
-`RV = 1`" requirement (docs/32x-technical-info.md:103); and the DMA trigger
-already runs from RAM.
+Already satisfied, do not re-solve: interrupts are masked across the whole of
+`ConfigVDPDMA` (`ori.w #$700, sr`), meeting the "no 68000 interrupts while
+`RV = 1`" requirement (docs/32x-technical-info.md:103); and the trigger already
+runs from RAM.
 
-One caveat to carry: `$001070`, `$002070` and `$003070` (4 bytes each) are
+Carry this caveat: `$001070`, `$002070` and `$003070` (4 bytes each) are
 unreadable while `RV = 1` (docs/32x-technical-info.md:140). They sit in the boot
-half, clear of the game image at `$100000`. Keep DMA-sourced data off them.
+half, clear of the game image at `$100000`.
 
-### U-022 -- Teach `scan_rom_refs.py` the `DMA_BASE` class [OPEN, blocks U-010]
+### U-022 -- Teach `scan_rom_refs.py` the `DMA_BASE` class [CLOSED, superseded]
 
-A DMA source address is consumed while `RV = 1`, where the cartridge is visible
-at its own offsets. It must be rebased to `$100000 + orig`, **not**
-`ROM_BASE + orig`. Rewriting one to `ROM_BASE` keeps the Genesis ROM
-byte-identical, assembles without complaint, encodes into register 23 cleanly,
-and silently DMAs garbage -- rule 8's blind spot with no compensating signal.
+Dropped in favour of translating at the sink (U-020 step 3). Kept here because
+the reasoning matters: rebasing a literal to cartridge offset `$100000` is only
+correct if that literal feeds DMA **and nothing else**. The same pointer is
+often dereferenced by the 68000 too, which needs `$900000`; one value cannot be
+both. Identifying the DMA-only ones would need interprocedural dataflow, since
+callers pass sources through wrappers, and getting it wrong fails silently.
 
-The source is centralised, which makes this tractable: `CmdSetupDMA` stores it
-to `$20(a5)` from the command block at `$16(a6)`. Trace back to every site that
-builds such a block and classify those literals as `DMA_BASE` before U-010
-rewrites anything.
-
-**U-010 and U-011 must not start until this lands.**
+Translating in `ConfigVDPDMA` -- the only code in the game that programs a
+memory-to-VRAM DMA source -- makes the question disappear. **U-010 is no longer
+gated.**
 
 ### U-021 -- Full playthrough on 32X [OPEN]
 

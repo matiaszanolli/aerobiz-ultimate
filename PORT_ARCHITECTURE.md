@@ -135,18 +135,70 @@ the window. `$FFF000-$FFF00F` has only six spare bytes before the A5 base at
 divergence, since moving it changes the hand-encoded `dc.w $4EB9,$00FF,$F000`
 in shared code.
 
-### A second rebase constant: `DMA_BASE`
+### Translating the DMA source, and why not with a second constant
 
-This changes M2, not just M3. A DMA source address is consumed under `RV = 1`,
-where the cartridge is visible at its own offsets -- so it must be rebased to
-**cartridge offset `$100000 + orig`**, not `ROM_BASE + orig` (`$900000`). Two
-different constants for what looks like one kind of literal.
+The first plan here was a second rebase constant: classify each literal that
+ends up as a DMA source and rewrite it to cartridge offset `$100000 + orig`
+instead of `ROM_BASE + orig`. That plan is wrong, and the reason is worth
+keeping.
 
-This is the rule-8 blind spot in its sharpest form: a DMA source rewritten to
-`ROM_BASE` leaves the Genesis ROM byte-identical, assembles cleanly, encodes
-into register 23 without complaint, and silently DMAs garbage. `make verify`
-cannot see it and neither can the assembler. `tools/scan_rom_refs.py` does not
-model this class yet; U-010 and U-011 must not run until it does.
+A pointer to graphics data is not necessarily used only for DMA. The same value
+can be dereferenced by the 68000 -- a decompressor reading its input, a loader
+walking a table -- and a CPU read needs `$900000 + orig`, because `$100000` is
+not mapped to anything while `RV = 0`. One value cannot be both. Rebasing a
+literal to `$100000` is therefore only correct if that literal feeds DMA and
+nothing else, which cannot be established cheaply and fails silently when it is
+wrong.
+
+Worse, the classification is not even tractable by inspection. The source
+reaches `CmdSetupDMA` as the third longword argument of `GameCommand` command 5,
+but callers pass it through wrappers -- `VRAMBulkLoad` takes it as `$10(a6)` and
+forwards a register -- so identifying the literals means interprocedural
+dataflow, not pattern matching.
+
+**Translate at the sink instead.** `ConfigVDPDMA` is the only code in the game
+that programs a memory-to-VRAM DMA source: `ConfigVDPColors` uses mode `$9780`
+(VRAM fill) and `ConfigVDPScroll` mode `$97C0` (VRAM copy, whose "source" is a
+VRAM address), and neither puts a bus address in registers 21-23. So one place
+converts, at the moment the value is used as a DMA source and nowhere else:
+
+    if (source & $F00000) == $900000: source -= $800000
+
+Everything else rebases uniformly to `ROM_BASE`, the `DMA_BASE` literal class
+disappears, and with it the rule-8 blind spot it would have created. Work-RAM
+sources (`$FF0000`) fail the test and pass through untouched, which is also
+exactly the condition for deciding whether an `RV` window is needed at all.
+
+### The 32X image must keep the Genesis layout, byte for byte
+
+This constrains every 32X-specific change to shared code, and it is easy to miss.
+
+Rebasing expresses each address as `ROM_BASE + <original offset>`. Those offsets
+are the *Genesis* offsets. Insert or remove a single byte in a shared source and
+every literal after the insertion point still names the old offset while the
+data has moved -- silently, with the Genesis build still byte-identical, because
+`ROM_BASE` is zero there and the Genesis image shifts along with its own
+literals.
+
+So a 32X-only change to shared code may not change its size. In practice that
+leaves three places to put 32X behaviour:
+
+1. **The boot half** at `$880000`, which is not part of the rebased image and
+   may be any size.
+2. **Work RAM**, reachable from either half. `$FFFC80-$FFFFFF` is free -- the
+   A5 work area tops out at offset `$C70` (`$FFFC80`), no absolute reference in
+   the shared sources reaches above `$FFFC74`, and the stack grows down from
+   `$FFF000`. Roughly 896 bytes. Measured by reference scan, not yet confirmed
+   dynamically.
+3. **Size-neutral in-place patches** to shared code, under `ifne ROM_BASE`.
+
+The DMA work needs all three, and the hook already exists: `ConfigVDPDMA`
+contains a hand-encoded `dc.w $4EB9,$00FF,$F000` -- `jsr $FFF000`, six bytes,
+the Genesis DMA-from-ROM trick of triggering from RAM. Repointing those same six
+bytes at a larger stub in free work RAM costs no bytes and needs no new call
+site. The stub, installed by the boot half, does the whole job: translate the
+source, reprogram registers 21-23, raise `RV`, trigger, wait, lower `RV` --
+all resident in RAM, which the `RV = 1` window requires anyway.
 
 ### Cartridge layout
 
@@ -238,6 +290,12 @@ break.
 Mechanism: `ROM_BASE` is `$000000` for the Genesis target and `$900000` for the
 32X target. Shared sources reference ROM addresses through `ROM_BASE`, never as
 bare literals.
+
+The corollary is easy to miss and is spelled out in §2.1: because those
+expressions carry the *original* offsets, **the 32X image must keep the Genesis
+layout byte for byte**. A 32X-only change to shared code may not change its
+size. Target-specific code belongs in the boot half or in work RAM, reached by a
+size-neutral patch under `ifne ROM_BASE`.
 
 ---
 
