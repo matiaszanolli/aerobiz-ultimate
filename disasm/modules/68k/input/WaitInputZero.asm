@@ -8,7 +8,7 @@ l_01c86:
 l_01c8a:
     move.b  (a0), d0
     btst    #$4, d0
-    dbeq    d7, $1C8A
+    dbeq    d7, ROM_BASE+$1C8A
     bne.b   l_01c9a
     move.b  (a0), d0
     rts

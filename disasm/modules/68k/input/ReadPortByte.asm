@@ -15,7 +15,7 @@ ReadPortByte:
     move.w  d0, -(a7)
     andi.w  #$e, d0
     add.w   d0, d0
-    jsr     $198e(pc, d0.w)
+    jsr     (ROM_BASE+$198e,pc, d0.w)
     move.w  (a7)+, d0
     movem.l (a7)+, d1-d7/a1-a3
     rts

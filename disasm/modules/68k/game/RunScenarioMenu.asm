@@ -215,8 +215,8 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $6200,$0096                                 ; bhi.w $02C56A  ; out of range (d6 > 7): skip
 ; PC-relative jump table dispatch: table at $02C4E0 (4 entries × word offset)
     add.l   d0,d0                                      ; * 2 (word offsets in jump table)
-    move.w  $2c4e0(pc,d0.l),d0                         ; load signed offset from jump table
-    jmp     $2c4e0(pc,d0.w)                            ; jump to case handler (PC = $02C4E0 base)
+    move.w  (ROM_BASE+$2c4e0,pc,d0.l),d0               ; load signed offset from jump table
+    jmp     (ROM_BASE+$2c4e0,pc,d0.w)                  ; jump to case handler (PC = $02C4E0 base)
     ; WARNING: 768 undecoded trailing bytes at $02C4E0
     ; Jump table at $02C4E0 (4 word entries, offsets from $02C4E0):
     ;   [0] = $0008  -> case 4: d6==4 handler

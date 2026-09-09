@@ -8,7 +8,7 @@ ProcessTradeS2:
     moveq   #$52,d1
     cmp.l   d1, d0
     bhi.b   l_23382
-    lea     $23348(pc), a0
+    lea     (ROM_BASE+$23348,pc), a0
     nop
     moveq   #$C,d1
     cmp.b   (a0)+, d0

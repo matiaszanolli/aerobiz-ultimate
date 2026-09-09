@@ -10,7 +10,7 @@ PollInputStatus_Main:                                        ; $001C72
 l_01c76:
     move.b  (a0), d0
     btst    #$4, d0
-    dbne    d7, $1C76
+    dbne    d7, ROM_BASE+$1C76
     beq.b   l_01c9a
     move.b  (a0), d0
     rts

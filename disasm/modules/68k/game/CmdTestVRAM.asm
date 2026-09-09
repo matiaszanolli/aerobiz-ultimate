@@ -8,7 +8,7 @@ CmdTestVRAM_WithA3:                                          ; $0007DC
     move.w  sr, -(a7)
     ori.w   #$700, sr
     bsr.w VDPWriteZ80Path
-    lea     $80e(pc), a4
+    lea     (ROM_BASE+$80e,pc), a4
     move.b  (a4), $6(a3)
     moveq   #$0,d0
     moveq   #$8,d1

@@ -7,7 +7,7 @@ InitAnimTable:
     move.w  #$12c, $48(a5)
     move.b  #$a, $4a(a5)
     moveq   #$0,d0
-    lea     $1d1a(pc, d0.w), a0
+    lea     (ROM_BASE+$1d1a,pc, d0.w), a0
     movea.l  #$00FFF06A,a1
     moveq   #$A,d0
 l_01cc0:

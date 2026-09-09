@@ -10,7 +10,7 @@ UpdateAnimTimer:
     move.w  $46(a5), d0
     bmi.b   l_01d86
     subq.w  #$2, $46(a5)
-    lea     $1d1a(pc, d0.w), a0
+    lea     (ROM_BASE+$1d1a,pc, d0.w), a0
     movea.l  #$00FFF06A,a1
     moveq   #$A,d0
 l_01d80:

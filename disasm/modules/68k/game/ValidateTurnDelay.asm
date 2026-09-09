@@ -50,8 +50,8 @@ ProcessTradeAction:                                                  ; $021E5E
     cmp.l   d1,d0
     dc.w    $6200,$00ac                                 ; bhi.w $021F34
     add.l   d0,d0
-    move.w  $21e94(pc,d0.l),d0
-    jmp     $21e94(pc,d0.w)
+    move.w  (ROM_BASE+$21e94,pc,d0.l),d0
+    jmp     (ROM_BASE+$21e94,pc,d0.w)
     ; WARNING: 274 undecoded trailing bytes at $021E94
     dc.w    $000a
     dc.w    $0042

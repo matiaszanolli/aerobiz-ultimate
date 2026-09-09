@@ -275,8 +275,8 @@ RunQuarterScreen:                                                  ; $023EA8
     cmp.l   d1,d0
     dc.w    $6200,$014a                 ; bhi.w $024288  -- d6 > 5 -> idle (out of range)
     add.l   d0,d0                       ; d0 * 2 = word offset into jump table
-    move.w  $2414a(pc,d0.l),d0         ; load signed word displacement from table at $02414A
-    jmp     $2414a(pc,d0.w)            ; PC-relative jump: dispatch to sub-screen handler
+    move.w  (ROM_BASE+$2414a,pc,d0.l),d0 ; load signed word displacement from table at $02414A
+    jmp     (ROM_BASE+$2414a,pc,d0.w)  ; PC-relative jump: dispatch to sub-screen handler
     ; WARNING: 514 undecoded trailing bytes at $02414A
     ; Jump table (5 entries × word = 10 bytes, then handler code follows):
     ;   entry 0 ($000A): sub-screen 1 handler -- player info / char list view

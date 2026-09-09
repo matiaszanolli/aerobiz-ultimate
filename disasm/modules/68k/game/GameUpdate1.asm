@@ -313,8 +313,8 @@ ShowQuarterReport:                                                  ; $02F712
     cmp.l   d1,d0
     dc.w    $6200,$00d6                                 ; bhi.w $02FA0A
     add.l   d0,d0
-    move.w  $2f940(pc,d0.l),d0
-    jmp     $2f940(pc,d0.w)
+    move.w  (ROM_BASE+$2f940,pc,d0.l),d0
+    jmp     (ROM_BASE+$2f940,pc,d0.w)
     ; WARNING: 232 undecoded trailing bytes at $02F940
     dc.w    $0008
     dc.w    $0018

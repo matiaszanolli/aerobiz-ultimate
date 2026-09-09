@@ -117,8 +117,8 @@ RunGameMenu:                                                  ; $016F9E
     dc.w    $6200,$0092             ; bhi.w $017166 (d0 > 4 -> out of range, loop back)
     ; PC-relative jump table dispatch: 5 cases (0=aircraft, 1=routes, 2=staff, 3=finance, 4=end-turn)
     add.l   d0,d0                   ; d0 = selection * 2 (word offset into table)
-    move.w  $170e0(pc,d0.l),d0     ; d0 = signed word offset from jump table at $170E0
-    jmp     $170e0(pc,d0.w)         ; jump to case handler via PC-relative dispatch
+    move.w  (ROM_BASE+$170e0,pc,d0.l),d0 ; d0 = signed word offset from jump table at $170E0
+    jmp     (ROM_BASE+$170e0,pc,d0.w) ; jump to case handler via PC-relative dispatch
     ; Jump table at $0170E0 (5 entries x word = 10 bytes):
     ;   entry 0 (+$000A): case 0 = aircraft menu  ($0170EA)
     ;   entry 1 (+$002E): case 1 = routes menu    ($017110)

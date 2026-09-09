@@ -12,7 +12,7 @@ EarlyInit:
     move.b  ($00A10001).l, d0     ; read hardware version register (I/O port 1 control)
     lsr.b   #$6, d0               ; shift region bits [7:6] down to [1:0]
     andi.b  #$3, d0               ; mask to 2-bit region index (0-3)
-    lea     $3d16(pc), a0         ; a0 -> TMSSRegionTable (4-byte table: J, \0, U, E)
+    lea     (ROM_BASE+$3d16,pc), a0 ; a0 -> TMSSRegionTable (4-byte table: J, \0, U, E)
     move.b  (a0,d0.w), d0         ; d0 = region character ('J', 'U', 'E', or $00)
     tst.b   d0                    ; is the region code null (no match)?
     beq.w   l_03cde               ; yes: skip TMSS screen, jump to infinite halt
@@ -58,7 +58,7 @@ l_03c0c:
 ; The expansion loop converts each bit to a 4-pixel run in d2 using a rotating palette index,
 ; OR-ing the run into d4 to build each output long, then writing d4 to the VDP data port.
 ; Result: each 0-bit pixel gets color 0 (transparent), each 1-bit pixel gets a cycling palette index.
-    lea     $3d98(pc), a0         ; a0 -> TMSSFontTiles (59 tiles x 8 bytes = 472 bytes of 1bpp data)
+    lea     (ROM_BASE+$3d98,pc), a0 ; a0 -> TMSSFontTiles (59 tiles x 8 bytes = 472 bytes of 1bpp data)
     move.w  #$3a, d0              ; d0 = $3A = 58 (loop count for 59 tiles, dbra counts down to -1)
     move.l  #$10000000, d2        ; d2 = rotating color index register, starts with palette index 1 in bits[31:28]
 l_03c56:
@@ -85,7 +85,7 @@ l_03c6a:
 ; and (a0) = null-terminated string of ASCII chars to write as BAT name-table entries.
 ; Each character is mapped to a tile index by subtracting $20 (ASCII space = tile 0).
     move.b  #$8, d1               ; d1 = 8 (tile row for the top license text line)
-    lea     $3d2e(pc), a0         ; a0 -> TMSSTopStr: [col_byte] "DEVELOPED FOR USE ONLY WITH\0"
+    lea     (ROM_BASE+$3d2e,pc), a0 ; a0 -> TMSSTopStr: [col_byte] "DEVELOPED FOR USE ONLY WITH\0"
     move.b  (a0)+, d0             ; d0 = tile column (first byte of string: $06 = column 6); a0 now -> text
     bsr.w WriteVDPTileRow         ; write "DEVELOPED FOR USE ONLY WITH" to Plane A at row 8, col 6
 ; --- Phase: Render Region-Specific License Text ---
@@ -99,7 +99,7 @@ l_03c6a:
 l_03c8a:
     cmpi.b  #$20, (a1)            ; is current byte a space (end of meaningful content)?
     beq.b   l_03cd2               ; yes: fall through to write final "SYSTEMS." row
-    lea     $3d1a(pc), a2         ; a2 -> TMSSCharTable: 3 entries of (word char, long offset), terminated by $0000
+    lea     (ROM_BASE+$3d1a,pc), a2 ; a2 -> TMSSCharTable: 3 entries of (word char, long offset), terminated by $0000
 l_03c94:
     move.w  (a2)+, d4             ; d4 = table entry char code (word, e.g. $004A = 'J')
     tst.b   d4                    ; is this the end-of-table sentinel ($0000)?
@@ -112,13 +112,13 @@ l_03c94:
     cmpa.l  #$1f0, a1             ; are we at the very start of the security string ($01F0)?
     beq.b   l_03cba               ; yes: skip separator (no preceding word to separate)
 ; Write the "&" separator on a new tile row (between first and second lines of license text)
-    lea     $3d4b(pc), a0         ; a0 -> TMSSSpaceStr: [col=$12] "&\0"
+    lea     (ROM_BASE+$3d4b,pc), a0 ; a0 -> TMSSSpaceStr: [col=$12] "&\0"
     move.b  (a0)+, d0             ; d0 = column byte ($12 = col 18); a0 -> "&\0"
     addq.w  #$1, d1               ; advance to next tile row (d1++)
     bsr.w WriteVDPTileRow         ; write "&" at row d1, col 18
 l_03cba:
 ; Write the region system string (e.g. "NTSC MEGA DRIVE" / "NTSC GENESIS" / "PAL AND...")
-    lea     $3d16(pc), a0         ; a0 -> TMSSRegionTable base ($3D16)
+    lea     (ROM_BASE+$3d16,pc), a0 ; a0 -> TMSSRegionTable base ($3D16)
     adda.l  (a2)+, a0             ; add offset from table entry: a0 -> region-specific draw string
     move.b  (a0)+, d0             ; d0 = tile column for this string; a0 -> null-terminated text
     addq.w  #$1, d1               ; advance to next tile row
@@ -132,7 +132,7 @@ l_03cce:
     bra.b   l_03c8a               ; loop until we find a space (end of string)
 l_03cd2:
 ; Write the final row: "SYSTEMS." to close the license text
-    lea     $3d4e(pc), a0         ; a0 -> TMSSSystemsStr: [col=$0F] "SYSTEMS.\0"
+    lea     (ROM_BASE+$3d4e,pc), a0 ; a0 -> TMSSSystemsStr: [col=$0F] "SYSTEMS.\0"
     move.b  (a0)+, d0             ; d0 = column byte ($0F = col 15); a0 -> "SYSTEMS.\0"
     addq.w  #$1, d1               ; advance to next tile row
     bsr.w WriteVDPTileRow         ; write "SYSTEMS." at row d1, col 15

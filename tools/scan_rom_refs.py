@@ -32,7 +32,17 @@ import sys
 ROM_LO, ROM_HI = 0x200, 0x100000
 
 INSTR = re.compile(r"^\s+([a-z][a-z0-9]*(?:\.[bwls])?)\s+(.*?)\s*(?:;.*)?$")
-BRANCHES = {"bra", "bsr", "jmp", "jsr", "dbra", "dbf"}
+BRANCHES = {"bra", "bsr", "jmp", "jsr"}
+# Every DBcc, not just dbra/dbf: dbne and dbeq both appear in this ROM and were
+# missed until the 32X build refused them as out of range.
+DECREMENT_BRANCH = re.compile(
+    r"db(ra|f|t|hi|ls|cc|cs|ne|eq|vc|vs|pl|mi|ge|lt|gt|le)$"
+)
+# PC-relative operands carry the absolute target as a literal and let the
+# assembler work out the displacement, so they must be rebased along with
+# everything else -- otherwise the target stays near zero while the program
+# counter moves to $900000. Covers `$80e(pc)` and `$198e(pc,d0.w)` alike.
+PC_RELATIVE = re.compile(r"\$([0-9A-Fa-f]+)\((pc|PC)([^)]*)\)")
 CONDITIONAL = re.compile(r"b(hi|ls|cc|cs|ne|eq|vc|vs|pl|mi|ge|lt|gt|le)$")
 BARE_TARGET = re.compile(r"\$([0-9A-Fa-f]+)\s*(?:\(pc\))?$")
 ABS_LONG = re.compile(r"\(\$([0-9A-Fa-f]{5,8})\)\.l")
@@ -72,6 +82,10 @@ EXCLUDED = {"disasm/sections/header.asm"}
 
 # A dc.w hand-encoding usually carries the decoded instruction as a comment.
 # Once the mnemonic is restored the comment is a duplicate.
+# A literal already written as ROM_BASE+$xxxx is done. Blank those out before
+# classifying, or the scan reports completed sites as outstanding work.
+REBASED = re.compile(r"ROM_BASE\+\$[0-9A-Fa-f]+")
+
 REDUNDANT = re.compile(r"^;\s*(?:jsr|jmp|pea|lea|movea\.l)\s+\$([0-9A-Fa-f]+)\s*$")
 
 
@@ -86,7 +100,7 @@ def scan(paths):
             continue
         with open(path, errors="replace") as fh:
             for num, raw in enumerate(fh, 1):
-                line = raw.rstrip("\n")
+                line = REBASED.sub("REBASED", raw.rstrip("\n"))
                 if line.lstrip().startswith(";"):
                     continue
 
@@ -117,7 +131,14 @@ def scan(paths):
                     continue
                 mnemonic = op.split(".")[0]
 
-                if mnemonic in BRANCHES or CONDITIONAL.match(mnemonic):
+                for pcrel in PC_RELATIVE.finditer(args):
+                    if in_rom(int(pcrel.group(1), 16)):
+                        findings.append(
+                            (path, num, "safe", "pc-relative literal", line.strip())
+                        )
+
+                if (mnemonic in BRANCHES or CONDITIONAL.match(mnemonic)
+                        or DECREMENT_BRANCH.match(mnemonic)):
                     target = BARE_TARGET.search(args)
                     if target and in_rom(int(target.group(1), 16)):
                         findings.append(
@@ -202,7 +223,17 @@ def rewrite_code(code):
     start = match.start(2)
     new_args = args
 
-    if mnemonic in BRANCHES or CONDITIONAL.match(mnemonic):
+    def sub_pc(match):
+        if in_rom(int(match.group(1), 16)):
+            forms.append("pc-relative literal")
+            # $80e(pc) -> (ROM_BASE+$80e,pc); $198e(pc,d0.w) keeps its index.
+            return f"({rebase(match.group(1))},{match.group(2)}{match.group(3)})"
+        return match.group(0)
+
+    new_args = PC_RELATIVE.sub(sub_pc, new_args)
+
+    if (mnemonic in BRANCHES or CONDITIONAL.match(mnemonic)
+            or DECREMENT_BRANCH.match(mnemonic)):
         target = BARE_TARGET.search(new_args)
         if target and in_rom(int(target.group(1), 16)):
             new_args = (
