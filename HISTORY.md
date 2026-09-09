@@ -11,6 +11,35 @@ manual section or the tool output that backs it.
 
 ## 2026-09-09
 
+### The display fault is unrebased pointers, and savestates proved it
+
+Comparing PicoDrive savestates turned out to be the instrument we needed, and it
+needed no core changes: the format is chunked (id byte, 4-byte little-endian
+length, data), so VRAM, CRAM and VSRAM can be lifted straight out and compared
+between the two builds. Both states are the same size even though only one has
+32X sections, so the parse is the same for each.
+
+At frame 1450: VRAM differs in 61,132 of 65,536 bytes, CRAM in 31 of 128, VSRAM
+in none. 32X VRAM is **54,328 bytes of `$FF`** where the Genesis build holds
+52,325 bytes of zero, and palette line 0 reads `$0EEE` throughout -- which is
+`$FFFF` masked into the Genesis 9-bit colour format. Reads from unmapped
+cartridge space, filling both VRAM and CRAM. The white block was a white palette
+over `$FF` tiles.
+
+So the rebasing is still incomplete, and a fourth hidden class turned up: 32-bit
+ROM pointers emitted as two consecutive `dc.w` words. 1,290 of them, in tables
+the disassembly labels as pointer tables. Rebased, byte-identical, and it
+changed nothing on the failing path -- because the tables are not line-aligned.
+`GraphicSequencePtrs` spans `$048D18-$048D2B` and its first entry shares a line
+with the graphics data before it, so a line-oriented rule converts four of five.
+
+Worth recording as a pattern, since it is now three for three: every time the
+scanner has been wrong it has been wrong by *omission*, and the omission has
+never been visible from inside the tool. It took the assembler for the
+PC-relative class, and the emulator for this one. The count is not the
+deliverable; the evidence that nothing is left is.
+
+
 ### U-020 is done, and it was not what was blanking the screen
 
 The thunk is implemented and exercised -- 616 entries over 3,000 frames, 31 of

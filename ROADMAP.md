@@ -141,40 +141,41 @@ shifted -- which is the property the whole rebasing scheme depends on. Roughly
 3,000 of those are the literal rebases; the rest are symbolic references that
 `org ROM_BASE` moved on their own.
 
-### U-013 -- Reach the title screen [OPEN, cause still unknown]
+### U-013 -- Reach the title screen [OPEN, cause identified]
 
-The screen is not uniformly black, which the earlier sampling missed. Counting
-non-black pixels per frame over 1,500 frames:
+**Unrebased ROM pointers are still reaching the graphics loaders.** On 32X
+`$000200-$0FFFFF` is unmapped while `RV = 0`, so those reads return `$FF`.
 
-| Build | frames with content |
+Measured from savestates at frame 1450 (PicoDrive's format is chunked: id byte,
+4-byte LE length, data, so VRAM/CRAM/VSRAM come straight out):
+
+| | vs Genesis |
 |---|---|
-| Genesis | 20-320, 390-660, 667-829, 843-1106, 1320-1499 |
-| 32X | 24-324, 1398-1499 |
+| VRAM | 61,132 of 65,536 bytes differ |
+| CRAM | 31 of 128 |
+| VSRAM | 0 of 128 |
 
-The 32X renders the boot screen **identically** -- same non-zero pixel count as
-the Genesis build, four frames later for adapter bring-up -- then loses
-everything from the first game screen onward. At frame 1450 the Genesis shows
-the blue trademark text screen and the 32X shows a white block on black, which
-is the signature of tiles fetched from somewhere that reads as `$FF`.
+32X VRAM is **54,328 bytes of `$FF`** where the Genesis build has 52,325 bytes
+of zero, and every CRAM entry in palette line 0 reads `$0EEE` -- exactly `$FFFF`
+masked to the Genesis 9-bit colour format. A white palette over `$FF` tiles is
+the white block seen at frame 1450.
 
-Ruled out, each by measurement rather than argument:
+What remains is finding the rest of the pointers. The `dc.w pointer table` class
+took 1,290 and changed nothing on this path, because tables are not line-aligned:
+`GraphicSequencePtrs` runs `$048D18-$048D2B` and its first entry shares a line
+with preceding graphics data, so four of five convert and `$0735A0` does not.
 
-- **Not the DMA window.** U-020 is implemented and exercised; the display is
-  unchanged with and without it.
-- **Not H32.** Forcing every `$8c00`/`$8c08` write to H40 in the cartridge
-  changes the content runs not at all.
-- **Not the 32X layer covering the Genesis one.** `$A15180` reads `$8000`
-  throughout: mode bits `00`, blanked.
-- **Not the review literals (U-011).** Of the 896, only 560 are long-sized and
-  only 19 of those are `>= $10000`; every one is a money value (`$186a0` =
-  100,000) or the `$30000` DMA mask. None is a ROM address.
-- **Not game state.** All 64 KB of work RAM compared against the Genesis build
-  at frame 500 differ in 308 bytes across 128 runs, none longer than 16 bytes.
+Approaches, cheapest first:
 
-So the fault is on the VDP side -- VRAM or CRAM contents -- with correct work
-RAM feeding it. The next instrument is the one we do not have yet: a VRAM/CRAM
-comparison between the two builds. PicoDrive's debugger exposes the 68000 bus
-and SH2 registers but not VDP memory, so this needs a core-side addition.
+1. **Enumerate at runtime.** Have the DMA thunk log sources whose top nibble is
+   zero -- unrebased by construction -- into the 32X frame buffer, which the
+   game never touches and which is 128 KB. That gives the actual failing
+   addresses instead of a static guess, and each one leads back to its table.
+2. **Use the disassembly's own annotations.** Tables carry comments naming their
+   byte range (`GraphicSequencePtrs ... $048D18-$048D2B`). Parsing those gives
+   exact boundaries and handles mixed lines, which a per-line rule cannot.
+3. Only then widen the heuristic, which risks corrupting data that merely looks
+   like pointers -- and `make verify` cannot see that mistake.
 
 ---
 
