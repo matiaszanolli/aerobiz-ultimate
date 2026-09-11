@@ -1300,8 +1300,13 @@
     dc.w    $17F9,$F20F,$526E,$E1F6,$C691,$170A,$0028,$B76C; $0950E0
     dc.w    $9090,$4999,$8ED3,$CB7B,$C79C,$D300,$A49E,$47E9; $0950F0
     dc.w    $BC51,$FF61,$E484,$A0E3,$0080,$CD9B,$B014,$3E8F; $095100
-    dc.w    $78B8,$CFE0,$0F03,$81FF,$0008,$8CF8,$0008,$AB4C; $095110
-    dc.w    $0008,$C536,$0008,$DE52,$0008,$FE00,$0009,$10AA; $095120
+    dc.w    $78B8,$CFE0,$0F03,$81FF    ; $095110
+    dc.l    ROM_BASE+$088CF8    ; $095118
+    dc.l    ROM_BASE+$08AB4C    ; $09511C
+    dc.l    ROM_BASE+$08C536    ; $095120
+    dc.l    ROM_BASE+$08DE52    ; $095124
+    dc.l    ROM_BASE+$08FE00    ; $095128
+    dc.l    ROM_BASE+$0910AA    ; $09512C
     dc.l    ROM_BASE+$09219E,ROM_BASE+$093A7E,ROM_BASE+$09483E,ROM_BASE+$094DD8 ; $095130
     dc.w    $1042,$FA77,$7AAA,$AA11,$2184,$7190,$08A2,$A7AA; $095140
     dc.w    $20C4,$030C,$7744,$1B81,$11AE,$6882,$4420,$4117; $095150
@@ -1445,20 +1450,76 @@
     dc.w    $0D11,$0D7A,$ACA7,$9818,$27AA,$7330,$682D,$FAA6; $0959F0
     dc.w    $22A7,$8F80,$84F4,$2772,$7C62,$B717,$1739,$3F87; $095A00
     dc.w    $9119,$375B,$97D9,$4823,$92F0,$5872,$2700,$7F00; $095A10
-    dc.w    $0000,$0009,$5140,$0009,$5198,$0009,$51A8,$0009; $095A20
-    dc.w    $51BA,$0009,$51CC,$0009,$51DC,$0009,$51EC,$0009; $095A30
-    dc.w    $520E,$0009,$522A,$0009,$526C,$0009,$528C,$0009; $095A40
-    dc.w    $52AA,$0009,$52C6,$0009,$52F0,$0009,$5302,$0009; $095A50
-    dc.w    $5314,$0009,$5324,$0009,$5336,$0009,$535A,$0009; $095A60
-    dc.w    $538E,$0009,$539E,$0009,$53DC,$0009,$540C,$0009; $095A70
-    dc.w    $541E,$0009,$5458,$0009,$5462,$0009,$5488,$0009; $095A80
-    dc.w    $54B6,$0009,$54EC,$0009,$550C,$0009,$5536,$0009; $095A90
-    dc.w    $555A,$0009,$557E,$0009,$55B8,$0009,$55F0,$0009; $095AA0
-    dc.w    $561A,$0009,$5630,$0009,$5672,$0009,$5682,$0009; $095AB0
-    dc.w    $56C4,$0009,$56FC,$0009,$5726,$0009,$575C,$0009; $095AC0
-    dc.w    $5790,$0009,$57D0,$0009,$581A,$0009,$5852,$0009; $095AD0
-    dc.w    $589A,$0009,$58BC,$0009,$58E0,$0009,$5930,$0009; $095AE0
-    dc.w    $5952,$0009,$596E,$0009,$59B0,$0009,$59D2,$4040; $095AF0
+    dc.w    $0000    ; $095A20
+    dc.l    ROM_BASE+$095140    ; $095A22
+    dc.l    ROM_BASE+$095198    ; $095A26
+    dc.l    ROM_BASE+$0951A8    ; $095A2A
+    dc.w    $0009    ; $095A2E
+    dc.w    $51BA    ; $095A30
+    dc.l    ROM_BASE+$0951CC    ; $095A32
+    dc.l    ROM_BASE+$0951DC    ; $095A36
+    dc.l    ROM_BASE+$0951EC    ; $095A3A
+    dc.w    $0009    ; $095A3E
+    dc.w    $520E    ; $095A40
+    dc.l    ROM_BASE+$09522A    ; $095A42
+    dc.l    ROM_BASE+$09526C    ; $095A46
+    dc.l    ROM_BASE+$09528C    ; $095A4A
+    dc.w    $0009    ; $095A4E
+    dc.w    $52AA    ; $095A50
+    dc.l    ROM_BASE+$0952C6    ; $095A52
+    dc.l    ROM_BASE+$0952F0    ; $095A56
+    dc.l    ROM_BASE+$095302    ; $095A5A
+    dc.w    $0009    ; $095A5E
+    dc.w    $5314    ; $095A60
+    dc.l    ROM_BASE+$095324    ; $095A62
+    dc.l    ROM_BASE+$095336    ; $095A66
+    dc.l    ROM_BASE+$09535A    ; $095A6A
+    dc.w    $0009    ; $095A6E
+    dc.w    $538E    ; $095A70
+    dc.l    ROM_BASE+$09539E    ; $095A72
+    dc.l    ROM_BASE+$0953DC    ; $095A76
+    dc.l    ROM_BASE+$09540C    ; $095A7A
+    dc.w    $0009    ; $095A7E
+    dc.w    $541E    ; $095A80
+    dc.l    ROM_BASE+$095458    ; $095A82
+    dc.l    ROM_BASE+$095462    ; $095A86
+    dc.l    ROM_BASE+$095488    ; $095A8A
+    dc.w    $0009    ; $095A8E
+    dc.w    $54B6    ; $095A90
+    dc.l    ROM_BASE+$0954EC    ; $095A92
+    dc.l    ROM_BASE+$09550C    ; $095A96
+    dc.l    ROM_BASE+$095536    ; $095A9A
+    dc.w    $0009    ; $095A9E
+    dc.w    $555A    ; $095AA0
+    dc.l    ROM_BASE+$09557E    ; $095AA2
+    dc.l    ROM_BASE+$0955B8    ; $095AA6
+    dc.l    ROM_BASE+$0955F0    ; $095AAA
+    dc.w    $0009    ; $095AAE
+    dc.w    $561A    ; $095AB0
+    dc.l    ROM_BASE+$095630    ; $095AB2
+    dc.l    ROM_BASE+$095672    ; $095AB6
+    dc.l    ROM_BASE+$095682    ; $095ABA
+    dc.w    $0009    ; $095ABE
+    dc.w    $56C4    ; $095AC0
+    dc.l    ROM_BASE+$0956FC    ; $095AC2
+    dc.l    ROM_BASE+$095726    ; $095AC6
+    dc.l    ROM_BASE+$09575C    ; $095ACA
+    dc.w    $0009    ; $095ACE
+    dc.w    $5790    ; $095AD0
+    dc.l    ROM_BASE+$0957D0    ; $095AD2
+    dc.l    ROM_BASE+$09581A    ; $095AD6
+    dc.l    ROM_BASE+$095852    ; $095ADA
+    dc.w    $0009    ; $095ADE
+    dc.w    $589A    ; $095AE0
+    dc.l    ROM_BASE+$0958BC    ; $095AE2
+    dc.l    ROM_BASE+$0958E0    ; $095AE6
+    dc.l    ROM_BASE+$095930    ; $095AEA
+    dc.w    $0009    ; $095AEE
+    dc.w    $5952    ; $095AF0
+    dc.l    ROM_BASE+$09596E    ; $095AF2
+    dc.l    ROM_BASE+$0959B0    ; $095AF6
+    dc.l    ROM_BASE+$0959D2    ; $095AFA
+    dc.w    $4040    ; $095AFE
     dc.w    $B6FF,$1380,$FDDD,$FD11,$970D,$10E4,$A214,$34DD; $095B00
     dc.w    $0700,$F0E2,$5E4E,$8286,$9BDF,$C081,$0081,$FD21; $095B10
     dc.w    $FD12,$65C0,$81FD,$2241,$8023,$FD92,$3211,$702E; $095B20
@@ -3199,7 +3260,10 @@
     dc.w    $2217,$7777,$8765,$8345,$675B,$F7E5,$28E6,$8988; $09C790
     dc.w    $EED8,$8884,$2086,$8774,$5F06,$AD69,$0E03,$19EC; $09C7A0
     dc.w    $B545,$5660,$1B36,$BE66,$012F,$B044,$566B,$4000; $09C7B0
-    dc.w    $00FC,$844D,$0009,$5AFE,$0009,$5B76,$0009,$5CF8; $09C7C0
+    dc.w    $00FC,$844D    ; $09C7C0
+    dc.l    ROM_BASE+$095AFE    ; $09C7C4
+    dc.l    ROM_BASE+$095B76    ; $09C7C8
+    dc.l    ROM_BASE+$095CF8    ; $09C7CC
     dc.l    ROM_BASE+$095FEE,ROM_BASE+$09633A,ROM_BASE+$096620,ROM_BASE+$096754 ; $09C7D0
     dc.l    ROM_BASE+$096884,ROM_BASE+$096BEE,ROM_BASE+$096FF6,ROM_BASE+$097314 ; $09C7E0
     dc.l    ROM_BASE+$0976C0,ROM_BASE+$097A74,ROM_BASE+$097E9C,ROM_BASE+$0982C6 ; $09C7F0
@@ -3210,7 +3274,10 @@
     dc.l    ROM_BASE+$09A6D8,ROM_BASE+$09A910,ROM_BASE+$09AB60,ROM_BASE+$09AE14 ; $09C840
     dc.l    ROM_BASE+$09AFBE,ROM_BASE+$09B238,ROM_BASE+$09B36E,ROM_BASE+$09B59C ; $09C850
     dc.l    ROM_BASE+$09B7D4,ROM_BASE+$09B9B0,ROM_BASE+$09BBF6,ROM_BASE+$09BE66 ; $09C860
-    dc.w    $0009,$C09E,$0009,$C2A2,$0009,$C57E,$4040,$B0CC; $09C870
+    dc.l    ROM_BASE+$09C09E    ; $09C870
+    dc.l    ROM_BASE+$09C2A2    ; $09C874
+    dc.l    ROM_BASE+$09C57E    ; $09C878
+    dc.w    $4040,$B0CC    ; $09C87C
     dc.w    $860B,$CDDD,$D0CB,$C0A0,$CB02,$3CC0,$E071,$3077; $09C880
     dc.w    $777D,$DD44,$61F8,$7DFA,$7387,$2ED7,$0630,$08F2; $09C890
     dc.w    $135E,$A43F,$187D,$F3D3,$3002,$2602,$89D7,$B87D; $09C8A0

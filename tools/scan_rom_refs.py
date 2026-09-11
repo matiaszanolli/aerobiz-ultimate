@@ -366,6 +366,133 @@ def rewrite(paths, only=None):
     return changed, files
 
 
+# ---------------------------------------------------------------------------
+# Indirect pointers: longwords stored in ROM *data* that code loads and then
+# dereferences. The load site is rebased (`move.l (ROM_BASE+$0AF190).l,-(a7)`),
+# but the value it reads is still a raw Genesis address, so on 32X it points at
+# the boot half's $FF padding.
+#
+# These cannot be found by looking at the data: a pointer sits in the middle of
+# a compressed-graphics dc.w line and looks like graphics. They can be found
+# exactly by looking at the *code*: every `move/movea.l (ROM_BASE+$X).l` says
+# that ROM offset X holds a pointer. In this ROM all 260 such sites load a value
+# that is itself a ROM address, which is the confirmation that the rule is right.
+# ---------------------------------------------------------------------------
+INDIRECT_LOAD = re.compile(
+    r"^\s+(?:move|movea)\.l\s+\(ROM_BASE\+\$([0-9A-Fa-f]+)\)\.l"
+)
+DCW_ADDR = re.compile(r"^(\s*)dc\.w\s+(\S.*?)\s*;\s*\$([0-9A-Fa-f]{6})\s*$")
+
+
+def indirect_targets(paths, rom):
+    """ROM offsets that code loads a longword from, where the value is an address."""
+    targets = {}
+    for path in paths:
+        if path in EXCLUDED:
+            continue
+        with open(path, errors="replace") as fh:
+            for num, raw in enumerate(fh, 1):
+                match = INDIRECT_LOAD.match(raw.rstrip("\n"))
+                if not match:
+                    continue
+                off = int(match.group(1), 16)
+                if off + 4 > len(rom):
+                    continue
+                value = int.from_bytes(rom[off:off + 4], "big")
+                if in_rom(value):
+                    targets[off] = value
+    return targets
+
+
+TABLE_BASE = re.compile(
+    r"(?:lea\s+\(ROM_BASE\+\$([0-9A-Fa-f]+)\)\.l|movea\.l\s+#ROM_BASE\+\$([0-9A-Fa-f]+))"
+)
+
+
+def table_targets(paths, rom):
+    """Pointer tables the code takes the address of.
+
+    A rebased literal used as a base (`lea (ROM_BASE+$0780BC).l,a0`) followed in
+    ROM by a run of longwords that are all even ROM addresses is a pointer table
+    indexed at runtime. The entries are data, so nothing in the source marks
+    them; the code taking their address is the evidence.
+    """
+    bases = set()
+    for path in paths:
+        if path in EXCLUDED:
+            continue
+        with open(path, errors="replace") as fh:
+            for raw in fh:
+                m = TABLE_BASE.search(raw)
+                if m:
+                    bases.add(int(m.group(1) or m.group(2), 16))
+    targets = {}
+    for base in bases:
+        n = 0
+        while base + 4 * n + 4 <= len(rom):
+            v = int.from_bytes(rom[base + 4 * n:base + 4 * n + 4], "big")
+            if not in_rom(v) or v & 1:
+                break
+            n += 1
+        if n >= 3:
+            for i in range(n):
+                off = base + 4 * i
+                targets[off] = int.from_bytes(rom[off:off + 4], "big")
+    return targets
+
+
+def rewrite_indirect(paths, rom, also_tables=False):
+    """Split the dc.w line holding each pointer so the pointer becomes a dc.l."""
+    targets = indirect_targets(paths, rom)
+    if also_tables:
+        targets.update(table_targets(paths, rom))
+    placed, missing = 0, dict(targets)
+    for path in paths:
+        if path in EXCLUDED:
+            continue
+        with open(path, errors="replace") as fh:
+            lines = fh.readlines()
+        touched = False
+        for index, raw in enumerate(lines):
+            match = DCW_ADDR.match(raw.rstrip("\n"))
+            if not match:
+                continue
+            indent, operands, addr = match.group(1), match.group(2), int(match.group(3), 16)
+            words = DCW_WORD.findall(operands)
+            if not words:
+                continue
+            hit = [o for o in targets if addr <= o < addr + 2 * len(words) and not (o - addr) % 2]
+            hit = [o for o in hit if (o - addr) // 2 + 1 < len(words) or (o - addr) // 2 + 2 <= len(words)]
+            if not hit:
+                continue
+            out, i, changed = [], 0, False
+            pending = []
+            while i < len(words):
+                off = addr + 2 * i
+                if off in targets and i + 1 < len(words):
+                    if pending:
+                        out.append(indent + "dc.w".ljust(8) + ",".join("$" + w for w in pending)
+                                   + " " * 4 + "; $%06X" % (off - 2 * len(pending)))
+                        pending = []
+                    out.append(indent + "dc.l".ljust(8) + rebase("%06X" % targets[off])
+                               + " " * 4 + "; $%06X" % off)
+                    missing.pop(off, None)
+                    placed += 1; changed = True; i += 2
+                else:
+                    pending.append(words[i]); i += 1
+            if not changed:
+                continue
+            if pending:
+                out.append(indent + "dc.w".ljust(8) + ",".join("$" + w for w in pending)
+                           + " " * 4 + "; $%06X" % (addr + 2 * (len(words) - len(pending))))
+            lines[index] = "\n".join(out) + "\n"
+            touched = True
+        if touched:
+            with open(path, "w") as fh:
+                fh.writelines(lines)
+    return placed, missing
+
+
 def main(argv):
     listing = None
     rewriting = False
@@ -376,6 +503,10 @@ def main(argv):
             listing, args = args[1], args[2:]
         elif args[0] == "--rewrite":
             rewriting, args = True, args[1:]
+        elif args[0] == "--rewrite-indirect":
+            rewriting, only, args = "indirect", None, args[1:]
+        elif args[0] == "--rewrite-tables":
+            rewriting, only, args = "tables", None, args[1:]
         elif args[0] == "--form":
             only, args = args[1], args[2:]
         else:
@@ -385,6 +516,17 @@ def main(argv):
         sorted(glob.glob("disasm/modules/68k/*/*.asm"))
         + sorted(glob.glob("disasm/sections/*.asm"))
     )
+
+    if rewriting in ("indirect", "tables"):
+        with open("build/aerobiz.bin", "rb") as fh:
+            rom = fh.read()
+        placed, missing = rewrite_indirect(paths, rom, also_tables=(rewriting == "tables"))
+        print("indirect pointers rebased: %d" % placed)
+        if missing:
+            print("not placed (%d):" % len(missing))
+            for off, val in sorted(missing.items())[:10]:
+                print("   $%06X -> $%06X" % (off, val))
+        return
 
     if rewriting:
         changed, files = rewrite(paths, only)
