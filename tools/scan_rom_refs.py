@@ -434,10 +434,19 @@ def table_targets(paths, rom):
             if not in_rom(v) or v & 1:
                 break
             n += 1
-        if n >= 3:
-            for i in range(n):
-                off = base + 4 * i
-                targets[off] = int.from_bytes(rom[off:off + 4], "big")
+        if n < 3:
+            continue
+        # The code may take the address of the middle of a table -- the palette
+        # pointer at $07702E sits one entry before the base the code names -- so
+        # walk backwards on the same test as well as forwards.
+        first = base
+        while first - 4 >= 0:
+            v = int.from_bytes(rom[first - 4:first], "big")
+            if not in_rom(v) or v & 1:
+                break
+            first -= 4
+        for off in range(first, base + 4 * n, 4):
+            targets[off] = int.from_bytes(rom[off:off + 4], "big")
     return targets
 
 
@@ -452,6 +461,31 @@ def rewrite_indirect(paths, rom, also_tables=False):
             continue
         with open(path, errors="replace") as fh:
             lines = fh.readlines()
+
+        # A pointer can straddle two dc.w lines once an earlier pass has split
+        # the line that held it. Merge address-contiguous dc.w lines when a
+        # target falls on the last word of one, so the pair can be joined.
+        merged = True
+        while merged:
+            merged = False
+            for i in range(len(lines) - 1):
+                a = DCW_ADDR.match(lines[i].rstrip("\n"))
+                b = DCW_ADDR.match(lines[i + 1].rstrip("\n"))
+                if not a or not b:
+                    continue
+                aw = DCW_WORD.findall(a.group(2))
+                addr = int(a.group(3), 16)
+                if addr + 2 * len(aw) != int(b.group(3), 16):
+                    continue
+                if addr + 2 * (len(aw) - 1) not in targets:
+                    continue
+                lines[i] = (a.group(1) + "dc.w".ljust(8)
+                            + ",".join("$" + w for w in aw + DCW_WORD.findall(b.group(2)))
+                            + " " * 4 + "; $%06X\n" % addr)
+                del lines[i + 1]
+                merged = True
+                break
+
         touched = False
         for index, raw in enumerate(lines):
             match = DCW_ADDR.match(raw.rstrip("\n"))

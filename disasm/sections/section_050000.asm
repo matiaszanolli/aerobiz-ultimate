@@ -3639,23 +3639,19 @@
     dc.w    $0090,$4000,$0000    ; $05E290
     dc.l    ROM_BASE+$0455FE    ; $05E296
     dc.l    ROM_BASE+$0455EE    ; $05E29A
-    dc.w    $0004    ; $05E29E
-    dc.w    $55DE    ; $05E2A0
+    dc.l    ROM_BASE+$0455DE    ; $05E29E
     dc.l    ROM_BASE+$0456CA    ; $05E2A2
     dc.l    ROM_BASE+$0456C2    ; $05E2A6
     dc.l    ROM_BASE+$0456B4    ; $05E2AA
-    dc.w    $0004    ; $05E2AE
-    dc.w    $56A8    ; $05E2B0
+    dc.l    ROM_BASE+$0456A8    ; $05E2AE
     dc.l    ROM_BASE+$04569A    ; $05E2B2
     dc.l    ROM_BASE+$04568E    ; $05E2B6
     dc.l    ROM_BASE+$045680    ; $05E2BA
-    dc.w    $0004    ; $05E2BE
-    dc.w    $5670    ; $05E2C0
+    dc.l    ROM_BASE+$045670    ; $05E2BE
     dc.l    ROM_BASE+$045664    ; $05E2C2
     dc.l    ROM_BASE+$045658    ; $05E2C6
     dc.l    ROM_BASE+$045648    ; $05E2CA
-    dc.w    $0004    ; $05E2CE
-    dc.w    $5642    ; $05E2D0
+    dc.l    ROM_BASE+$045642    ; $05E2CE
     dc.l    ROM_BASE+$045630    ; $05E2D2
     dc.l    ROM_BASE+$04561E    ; $05E2D6
     dc.l    ROM_BASE+$045610    ; $05E2DA
@@ -3666,13 +3662,11 @@
     dc.l    ROM_BASE+$045752    ; $05E2E2
     dc.l    ROM_BASE+$04574A    ; $05E2E6
     dc.l    ROM_BASE+$045740    ; $05E2EA
-    dc.w    $0004    ; $05E2EE
-    dc.w    $5736    ; $05E2F0
+    dc.l    ROM_BASE+$045736    ; $05E2EE
     dc.l    ROM_BASE+$04572C    ; $05E2F2
     dc.l    ROM_BASE+$045722    ; $05E2F6
     dc.l    ROM_BASE+$045718    ; $05E2FA
-    dc.w    $0004    ; $05E2FE
-    dc.w    $570E    ; $05E300
+    dc.l    ROM_BASE+$04570E    ; $05E2FE
     dc.l    ROM_BASE+$045704    ; $05E302
     dc.l    ROM_BASE+$0456FC    ; $05E306
     dc.l    ROM_BASE+$0456F6    ; $05E30A
@@ -4015,18 +4009,15 @@ AircraftStatsByRegion:                                  ; $05EDD0
     dc.w    $1E1A,$2E06,$3414    ; $05F090
     dc.l    ROM_BASE+$046302    ; $05F096
     dc.l    ROM_BASE+$0462FE    ; $05F09A
-    dc.w    $0004    ; $05F09E
-    dc.w    $62FA    ; $05F0A0
+    dc.l    ROM_BASE+$0462FA    ; $05F09E
     dc.l    ROM_BASE+$0462F6    ; $05F0A2
     dc.l    ROM_BASE+$0462F2    ; $05F0A6
     dc.l    ROM_BASE+$0462EE    ; $05F0AA
-    dc.w    $0004    ; $05F0AE
-    dc.w    $62EA    ; $05F0B0
+    dc.l    ROM_BASE+$0462EA    ; $05F0AE
     dc.l    ROM_BASE+$0462E6    ; $05F0B2
     dc.l    ROM_BASE+$0462E2    ; $05F0B6
     dc.l    ROM_BASE+$0462DE    ; $05F0BA
-    dc.w    $0004    ; $05F0BE
-    dc.w    $62DA    ; $05F0C0
+    dc.l    ROM_BASE+$0462DA    ; $05F0BE
     dc.l    ROM_BASE+$0462D6    ; $05F0C2
     dc.w    $0102,$050A,$0C0E,$0001,$0203    ; $05F0C6
     dc.w    $050D,$0003,$0A0A,$0C0F,$0000,$0305,$0A0C,$0101; $05F0D0
@@ -4125,13 +4116,12 @@ AircraftStatsByRegion:                                  ; $05EDD0
     dc.w    $3600,$1C00,$1E00,$1600,$3100,$3200,$2000,$2200; $05F6A0
     dc.w    $2D00,$3300,$2700,$2700,$3100,$5200,$4000,$5E00; $05F6B0
     dc.w    $3500,$4B00,$5300,$2300,$2800,$4000,$2600,$1800; $05F6C0
-    dc.w    $2500,$2000,$1A00,$0001,$0202,$0304,$0506,$0004; $05F6D0
-    dc.w    $6328    ; $05F6E0
+    dc.w    $2500,$2000,$1A00,$0001,$0202,$0304,$0506    ; $05F6D0
+    dc.l    ROM_BASE+$046328    ; $05F6DE
     dc.l    ROM_BASE+$046322    ; $05F6E2
     dc.l    ROM_BASE+$04631C    ; $05F6E6
     dc.l    ROM_BASE+$046312    ; $05F6EA
-    dc.w    $0004    ; $05F6EE
-    dc.w    $6306    ; $05F6F0
+    dc.l    ROM_BASE+$046306    ; $05F6EE
     dc.l    ROM_BASE+$020000    ; $05F6F2
     dc.w    $0001,$0001,$0000,$0000,$0000    ; $05F6F6
     dc.w    $0001,$0000,$0009,$0001,$0000,$0001,$0002,$0000; $05F700
@@ -4171,8 +4161,7 @@ AircraftStatsByRegion:                                  ; $05EDD0
     dc.l    ROM_BASE+$046368    ; $05F912
     dc.l    ROM_BASE+$046360    ; $05F916
     dc.l    ROM_BASE+$046356    ; $05F91A
-    dc.w    $0004    ; $05F91E
-    dc.w    $6342    ; $05F920
+    dc.l    ROM_BASE+$046342    ; $05F91E
     dc.l    ROM_BASE+$046330    ; $05F922
     dc.l    ROM_BASE+$046380    ; $05F926
     dc.l    ROM_BASE+$04637C    ; $05F92A
