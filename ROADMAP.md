@@ -141,41 +141,39 @@ shifted -- which is the property the whole rebasing scheme depends on. Roughly
 3,000 of those are the literal rebases; the rest are symbolic references that
 `org ROM_BASE` moved on their own.
 
-### U-013 -- Reach the title screen [OPEN, cause identified]
+### U-013 -- Reach the title screen [DONE]
 
-**Unrebased ROM pointers are still reaching the graphics loaders.** On 32X
-`$000200-$0FFFFF` is unmapped while `RV = 0`, so those reads return `$FF`.
+**The 32X build renders identically to the Genesis build.** At frame 2550, and
+frame-for-frame through 4,500 frames driven by the same recorded input:
 
-Measured from savestates at frame 1450 (PicoDrive's format is chunked: id byte,
-4-byte LE length, data, so VRAM/CRAM/VSRAM come straight out):
-
-| | vs Genesis |
+| | differing |
 |---|---|
-| VRAM | 61,132 of 65,536 bytes differ |
-| CRAM | 31 of 128 |
+| VRAM | 2 of 65536 bytes |
+| CRAM | 1 of 128 |
 | VSRAM | 0 of 128 |
+| VDP registers | 0 of 64 |
+| work RAM | 60 of 65536 |
 
-32X VRAM is **54,328 bytes of `$FF`** where the Genesis build has 52,325 bytes
-of zero, and every CRAM entry in palette line 0 reads `$0EEE` -- exactly `$FFFF`
-masked to the Genesis 9-bit colour format. A white palette over `$FF` tiles is
-the white block seen at frame 1450.
+Frames-with-content runs match exactly, offset by five frames of adapter
+bring-up.
 
-What remains is finding the rest of the pointers. The `dc.w pointer table` class
-took 1,290 and changed nothing on this path, because tables are not line-aligned:
-`GraphicSequencePtrs` runs `$048D18-$048D2B` and its first entry shares a line
-with preceding graphics data, so four of five convert and `$0735A0` does not.
+The cause was never a literal in the source. It was pointer **values stored in
+ROM data**: the code that loads them was rebased, the pointer it read was not,
+and on 32X a raw address lands in the boot half's `$FF` padding -- which is why
+VRAM filled with `$FF` and palettes came out `$0EEE`, that being `$FFFF` masked
+into the Genesis 9-bit colour format.
 
-Approaches, cheapest first:
+No data-side heuristic can find these -- a pointer sits mid-line in compressed
+graphics and looks like graphics. The code is the evidence, so both new passes
+read the code:
 
-1. **Enumerate at runtime.** Have the DMA thunk log sources whose top nibble is
-   zero -- unrebased by construction -- into the 32X frame buffer, which the
-   game never touches and which is 128 KB. That gives the actual failing
-   addresses instead of a static guess, and each one leads back to its table.
-2. **Use the disassembly's own annotations.** Tables carry comments naming their
-   byte range (`GraphicSequencePtrs ... $048D18-$048D2B`). Parsing those gives
-   exact boundaries and handles mixed lines, which a per-line rule cannot.
-3. Only then widen the heuristic, which risks corrupting data that merely looks
-   like pointers -- and `make verify` cannot see that mistake.
+- `--rewrite-indirect`: every `move/movea.l (ROM_BASE+$X).l` proves offset X
+  holds a pointer. All 260 such sites load a value that is itself a ROM address.
+- `--rewrite-tables`: a rebased literal used as a base, followed by a run of
+  even ROM addresses, is a table indexed at runtime. Runs extend both
+  directions, since the code may take the address of a table's middle.
+
+567 pointers rebased in total, every batch byte-identical on the Genesis side.
 
 ---
 

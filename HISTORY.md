@@ -9,6 +9,69 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-11
+
+### The game runs on the 32X
+
+M2 complete in the sense that matters: the 32X build's video output is
+indistinguishable from the Genesis build's. At frame 2550 VRAM differs in 2
+bytes of 65536, CRAM in 1 of 128, VSRAM and all 64 VDP registers not at all.
+Driven by the same recorded input for 4,500 frames, the frames-with-content
+runs match exactly, five frames apart for adapter bring-up, and captured frames
+are pixel-identical.
+
+The cause was a class nothing had looked for: **pointer values stored in ROM
+data**. Rebasing rewrites addresses that appear in *code*. These are addresses
+that appear in *data* -- the load site is rebased, the pointer it reads is not.
+On 32X a raw address lands in the boot half's `$FF` padding, which is why VRAM
+filled with `$FF` and palette lines read `$0EEE`: that is `$FFFF` masked into
+the Genesis 9-bit colour format. Both symptoms were visible for days and neither
+pointed at the cause.
+
+No data-side heuristic finds them. The pointer feeding `DecompressVDPTiles` sits
+at `$0AF190`, mid-line, in bytes that are otherwise compressed graphics; nothing
+distinguishes it from the graphics around it. What finds them is the *code*:
+
+- every `move/movea.l (ROM_BASE+$X).l` proves that offset X holds a pointer, and
+  all 260 such sites load a value that is itself a ROM address -- a 100% hit
+  rate, which is what made the rule trustworthy rather than plausible;
+- a rebased literal used as a base address, followed by a run of even ROM
+  addresses, is a table indexed at runtime -- 98 of them, 4,192 entries.
+
+567 pointers in total, each batch verified byte-identical.
+
+Two refinements were needed, both found by chasing a single wrong colour -- the
+sky was white -- down to the pointer at `$07702E`: runs must extend *backwards*
+from the base, because the code takes the address of the middle of that table;
+and a pointer can straddle two `dc.w` lines once an earlier pass has split the
+line that held it, so address-contiguous lines must be merged before rewriting.
+
+### A measurement error worth recording
+
+Several conclusions in the middle of this were drawn from an emulator run whose
+ROM did not exist. `make clean` had removed it, only the Genesis target was
+rebuilt, and the frontend's "Failed to open ROM" went to a stream I was
+filtering. Empty output read exactly like "the 32X performs no DMA and never
+touches the VDP", which is a dramatic finding and was entirely an artefact.
+
+The tell was available and I missed it: the same run reported *nothing at all*,
+not even the startup lines the Genesis run printed. A comparison that produces a
+striking asymmetry deserves a check that both sides ran, before the asymmetry is
+interpreted.
+
+### Instrumenting the emulator was the thing that worked
+
+Four hypotheses were eliminated by argument and measurement over two days and
+none was the cause. What resolved it in one step was hooking PicoDrive: report
+the 68000 PC whenever `$FFFF` reaches the VDP. One line of output --
+`FFPORT +1 a=c00000 d=ffff pc=90433e` -- named the routine, its caller named the
+pointer, and the pointer named the class.
+
+The hooks are kept as a patch rather than committed to that repository, which is
+otherwise untouched.
+
+---
+
 ## 2026-09-09
 
 ### Retraction: the RV probe answered nothing
