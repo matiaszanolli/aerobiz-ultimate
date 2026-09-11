@@ -364,8 +364,7 @@ ShowQuarterReport:                                                  ; $02F712
     dc.w    $b280
     dc.w    $66e4
     dc.w    $4879
-    dc.w    $0004
-    dc.w    $472e
+    dc.l    ROM_BASE+$04472E    ; pea operand
     dc.w    $2f39
     dc.w    $0004
     dc.w    $7b98
@@ -404,8 +403,7 @@ ShowQuarterReport:                                                  ; $02F712
     dc.w    $3002
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0001
-    dc.w    $8214
+    dc.l    ROM_BASE+$018214    ; jsr operand
     dc.w    $6000
     dc.w    $ff5c
     dc.w    $3006
@@ -413,8 +411,7 @@ ShowQuarterReport:                                                  ; $02F712
     dc.w    $3002
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0001
-    dc.w    $861a
+    dc.l    ROM_BASE+$01861A    ; jsr operand
     dc.w    $6088
     dc.w    $7a01
     dc.w    $5243

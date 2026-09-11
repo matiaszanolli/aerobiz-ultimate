@@ -118,7 +118,24 @@ per ground rule 4.
 The true inventory was 3,872, not 2,886. `disasm/sections/header.asm` is
 excluded: its vector table is inert on 32X.
 
-### U-011 -- Classify the 896 "review" literals [OPEN]
+Two further classes surfaced only when START was first pressed (see
+[HISTORY.md](HISTORY.md)), both of them blind spots in the scanner rather than
+in the source:
+
+| Missed class | Count | Why |
+|---|---|---|
+| upper-case mnemonics | 2 | `INSTR` matched `[a-z]` only, so nine modules were never seen as instructions |
+| hand-encoded instructions in untranslated `dc.w` blocks | 50 | one word per line, so no three-word pattern can match |
+
+`--rewrite-dcw-code` handles the second: the two operand words become one
+`dc.l ROM_BASE+$xxxxxx`, the same four bytes on Genesis. `make verify` cannot
+see this class, so each site is confirmed by decoding its enclosing block
+linearly with capstone -- a word that only looks like an opcode inside data does
+not land on an instruction boundary. All 50 do.
+
+`scan_rom_refs.py` now reports **zero** `safe` sites outstanding.
+
+### U-011 -- Classify the 901 "review" literals [OPEN]
 
 `tools/scan_rom_refs.py --list review`. Each is a `move`/`andi`/`addi`/`cmpi`/
 `ori`/`mulu`/`subi` immediate that happens to fall in `$000200-$0FFFFF`. Most
@@ -218,6 +235,21 @@ gated.**
 
 Scenario select through a completed game, save and load, against the Genesis
 build as the behavioural reference.
+
+Started. The same 30,000-frame input script into both builds -- START on the
+title screen, A every 400 frames -- drives the 32X from the title through the
+NEW GAME menu into a running game, with no 68000 exception in either build and
+the route map rendering identically. At frame 20,000 work RAM differs in 79
+bytes of 65,536: 74 are dead stack below the pointer (the U-020 DMA thunk runs
+its window body there), four are stored ROM pointers holding exactly Genesis
++ `$900000`, and one is a counter two ahead.
+
+Still to cover: a full turn cycle, save and load, and the end-of-game path.
+
+Comparing the two builds frame by frame cannot be done on pixels: the Genesis
+build reports H32 as 256 wide and the 32X build composites at 320, so no
+screenshot hash will ever match across them. Compare 68000 work RAM instead --
+it is width-independent, and a real divergence shows up there first.
 
 ---
 

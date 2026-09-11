@@ -18,6 +18,7 @@ I/O ($00Axxxxx) and the VDP ($00Cxxxxx) do not move on the 32X.
 Usage:
     scan_rom_refs.py [--list safe|review] [path ...]
     scan_rom_refs.py --rewrite [--form "<form>"] [path ...]
+    scan_rom_refs.py --rewrite-dcw-code [path ...]
 
 `--rewrite` applies the safe rebases, sharing this file's classifier so the tool
 that finds a site is the tool that fixes it. Restrict a batch with `--form`.
@@ -31,7 +32,12 @@ import sys
 
 ROM_LO, ROM_HI = 0x200, 0x100000
 
-INSTR = re.compile(r"^\s+([a-z][a-z0-9]*(?:\.[bwls])?)\s+(.*?)\s*(?:;.*)?$")
+# Nine modules were transcribed with upper-case mnemonics. Matching only
+# lower case meant those lines were never even seen as instructions, so
+# `MOVEA.L #$00000D64,A2` -- the address of GameCommand, the most-called
+# function in the game -- stayed a raw Genesis address and the 32X jumped
+# into unmapped space the first time START was pressed.
+INSTR = re.compile(r"^\s+([A-Za-z][A-Za-z0-9]*(?:\.[BWLSbwls])?)\s+(.*?)\s*(?:;.*)?$")
 BRANCHES = {"bra", "bsr", "jmp", "jsr"}
 # Every DBcc, not just dbra/dbf: dbne and dbeq both appear in this ROM and were
 # missed until the 32X build refused them as out of range.
@@ -45,7 +51,7 @@ DECREMENT_BRANCH = re.compile(
 PC_RELATIVE = re.compile(r"\$([0-9A-Fa-f]+)\((pc|PC)([^)]*)\)")
 CONDITIONAL = re.compile(r"b(hi|ls|cc|cs|ne|eq|vc|vs|pl|mi|ge|lt|gt|le)$")
 BARE_TARGET = re.compile(r"\$([0-9A-Fa-f]+)\s*(?:\(pc\))?$")
-ABS_LONG = re.compile(r"\(\$([0-9A-Fa-f]{5,8})\)\.l")
+ABS_LONG = re.compile(r"\(\$([0-9A-Fa-f]{5,8})\)\.([lL])")
 IMMEDIATE = re.compile(r"#\$([0-9A-Fa-f]{4,8})")
 # dc.l takes a comma-separated list; match the whole operand list, not just
 # the first value. Matching only the first undercounted the GameCommand jump
@@ -168,7 +174,7 @@ def scan(paths):
                 op, args = match.group(1), match.group(2)
                 if not args:
                     continue
-                mnemonic = op.split(".")[0]
+                mnemonic = op.split(".")[0].lower()
 
                 for pcrel in PC_RELATIVE.finditer(args):
                     if in_rom(int(pcrel.group(1), 16)):
@@ -184,7 +190,7 @@ def scan(paths):
                             (path, num, "safe", f"{mnemonic} literal target", line.strip())
                         )
 
-                for hexval in ABS_LONG.findall(args):
+                for hexval, _suffix in ABS_LONG.findall(args):
                     if in_rom(int(hexval, 16)):
                         findings.append(
                             (path, num, "safe", "($imm).l operand", line.strip())
@@ -269,7 +275,7 @@ def rewrite_code(code):
     if not match:
         return code, [], None
     op, args = match.group(1), match.group(2)
-    mnemonic = op.split(".")[0]
+    mnemonic = op.split(".")[0].lower()
     start = match.start(2)
     new_args = args
 
@@ -296,7 +302,7 @@ def rewrite_code(code):
     def sub_abs(match):
         if in_rom(int(match.group(1), 16)):
             forms.append("($imm).l operand")
-            return f"({rebase(match.group(1))}).l"
+            return f"({rebase(match.group(1))}).{match.group(2)}"
         return match.group(0)
 
     new_args = ABS_LONG.sub(sub_abs, new_args)
@@ -527,6 +533,129 @@ def rewrite_indirect(paths, rom, also_tables=False):
     return placed, missing
 
 
+# ---------------------------------------------------------------------------
+# Hand-encoded instructions inside untranslated dc.w blocks.
+#
+# Where the disassembly could not translate a block it emitted the bytes as
+# dc.w, often one word per line. A jsr/jmp/pea/lea/movea.l inside such a block
+# carries its 32-bit address in the next two words, and nothing above can see
+# it: HAND_ENCODED needs all three words on one line with the opcode first,
+# which never happens in these blocks.
+#
+# This is the class that survived every earlier pass. RunScenarioMenu's input
+# loop calls GameCommand as `dc.w $4EB9` / `dc.w $0000` / `dc.w $0d64`, so the
+# first time START was pressed the 32X jumped to $000D64 -- unmapped under
+# ADEN -- and took a line-F exception.
+#
+# The two operand words become one `dc.l ROM_BASE+$xxxxxx`: the same four bytes
+# on Genesis, the rebased address on 32X. Because `make verify` cannot see this
+# class (ground rule 8), every site is confirmed instead by decoding the
+# enclosing block linearly with capstone -- a word that merely looks like an
+# opcode inside data does not land on an instruction boundary. All 50 sites in
+# the tree do; see HISTORY.md.
+# ---------------------------------------------------------------------------
+DCW_ANY = re.compile(
+    r"^(\s*)dc\.w\s+(\$[0-9A-Fa-f]{1,4}(?:\s*,\s*\$[0-9A-Fa-f]{1,4})*)\s*(;.*)?$"
+)
+
+ADDRESS_OPERAND = {
+    0x4EB9: "jsr", 0x4EF9: "jmp", 0x4879: "pea",
+}
+for _i, _reg in enumerate(("a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7")):
+    ADDRESS_OPERAND[0x41F9 + _i * 0x200] = "lea"          # lea (abs).l,aN
+    ADDRESS_OPERAND[0x2079 + _i * 0x200] = "movea.l"      # movea.l (abs).l,aN
+    ADDRESS_OPERAND[0x207C + _i * 0x200] = "movea.l"      # movea.l #imm,aN
+
+
+def dcw_runs(lines):
+    """Parse the file into runs of consecutive dc.w lines.
+
+    Returns (parsed, runs). parsed[i] is (indent, [(text, value)], comment) for
+    a dc.w line and None otherwise; a run is the list of (line, word_index)
+    positions making up one uninterrupted word stream.
+    """
+    parsed = []
+    for raw in lines:
+        match = DCW_ANY.match(raw.rstrip("\n"))
+        if not match:
+            parsed.append(None)
+            continue
+        words = [(text, int(text, 16)) for text in DCW_WORD.findall(match.group(2))]
+        parsed.append((match.group(1), words, (match.group(3) or "").rstrip()))
+    runs, run = [], []
+    for index, entry in enumerate(parsed):
+        if entry is None:
+            if len(run) >= 3:
+                runs.append(run)
+            run = []
+            continue
+        run.extend((index, position) for position in range(len(entry[1])))
+    if len(run) >= 3:
+        runs.append(run)
+    return parsed, runs
+
+
+def rewrite_dcw_code(paths):
+    placed = collections.Counter()
+    files = 0
+    for path in paths:
+        if path in EXCLUDED:
+            continue
+        with open(path, errors="replace") as fh:
+            lines = fh.readlines()
+        parsed, runs = dcw_runs(lines)
+        sites = []
+        for run in runs:
+            for i in range(len(run) - 2):
+                opcode = parsed[run[i][0]][1][run[i][1]][1]
+                if opcode not in ADDRESS_OPERAND:
+                    continue
+                hi = parsed[run[i + 1][0]][1][run[i + 1][1]][1]
+                lo = parsed[run[i + 2][0]][1][run[i + 2][1]][1]
+                if in_rom((hi << 16) | lo):
+                    sites.append((run[i + 1], run[i + 2],
+                                  ADDRESS_OPERAND[opcode], (hi << 16) | lo))
+        if not sites:
+            continue
+        # Back to front, so an earlier edit never moves a later one.
+        for (line1, word1), (line2, word2), mnemonic, target in reversed(sites):
+            indent, words1, comment1 = parsed[line1]
+            _, words2, comment2 = parsed[line2]
+            before = words1[:word1]
+            after = words2[word2 + 1:]
+            out = []
+            if before:
+                out.append(dcw_line(indent, before, comment1))
+            out.append(indent + "dc.l".ljust(8) + rebase("%06X" % target)
+                       + " " * 4 + "; %s operand" % mnemonic)
+            if after:
+                out.append(dcw_line(indent, after, address_comment(comment2,
+                                                                   word2 + 1)))
+            lines[line1:line2 + 1] = [text + "\n" for text in out]
+            placed[mnemonic] += 1
+        files += 1
+        with open(path, "w") as fh:
+            fh.writelines(lines)
+    return placed, files
+
+
+def dcw_line(indent, words, comment):
+    text = indent + "dc.w".ljust(8) + ",".join("$" + word for word, _ in words)
+    return text + (" " * 4 + comment if comment else "")
+
+
+ADDR_COMMENT = re.compile(r"^;\s*\$([0-9A-Fa-f]{6})\s*$")
+
+
+def address_comment(comment, dropped):
+    """A `; $0003F90` comment names the line's first word; if words were taken
+    off the front, the remainder starts `dropped` words later."""
+    match = ADDR_COMMENT.match(comment.strip()) if comment else None
+    if not match:
+        return comment
+    return "; $%06X" % (int(match.group(1), 16) + 2 * dropped)
+
+
 def main(argv):
     listing = None
     rewriting = False
@@ -541,6 +670,8 @@ def main(argv):
             rewriting, only, args = "indirect", None, args[1:]
         elif args[0] == "--rewrite-tables":
             rewriting, only, args = "tables", None, args[1:]
+        elif args[0] == "--rewrite-dcw-code":
+            rewriting, only, args = "dcw-code", None, args[1:]
         elif args[0] == "--form":
             only, args = args[1], args[2:]
         else:
@@ -550,6 +681,13 @@ def main(argv):
         sorted(glob.glob("disasm/modules/68k/*/*.asm"))
         + sorted(glob.glob("disasm/sections/*.asm"))
     )
+
+    if rewriting == "dcw-code":
+        placed, files = rewrite_dcw_code(paths)
+        for mnemonic, count in sorted(placed.items(), key=lambda kv: -kv[1]):
+            print(f"{mnemonic:28} {count:7}")
+        print(f"{'total':28} {sum(placed.values()):7}  in {files} files")
+        return
 
     if rewriting in ("indirect", "tables"):
         with open("build/aerobiz.bin", "rb") as fh:

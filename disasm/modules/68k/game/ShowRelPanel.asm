@@ -503,7 +503,7 @@ BitFieldSearch:                                                ; $006EEA
     MOVE.L  $C(SP),D1                                          ; entity index
     MOVE.W  $12(SP),D0                                         ; table index
     LSL.W   #2,D0                                              ; * 4 (entry size)
-    MOVEA.L #$0005ECBC,A0                                      ; ROM lookup table
+    MOVEA.L #ROM_BASE+$0005ECBC,A0                             ; ROM lookup table
     LEA     0(A0,D0.W),A0                                      ; point to entry
     MOVEA.L A0,A1                                              ; A1 = entry pointer
     MOVEQ   #0,D0

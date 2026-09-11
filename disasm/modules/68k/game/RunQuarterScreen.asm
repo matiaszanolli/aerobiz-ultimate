@@ -312,8 +312,7 @@ RunQuarterScreen:                                                  ; $023EA8
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0001
-    dc.w    $12ee
+    dc.l    ROM_BASE+$0112EE    ; jsr operand
     dc.w    $508f
     dc.w    $60a2
     dc.w    $3002
@@ -372,8 +371,7 @@ RunQuarterScreen:                                                  ; $023EA8
     dc.w    $000e
     dc.w    $7203
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $e08a
+    dc.l    ROM_BASE+$03E08A    ; jsr operand
     dc.w    $3c00
     dc.w    $2f3c
     dc.w    $0000
@@ -421,14 +419,12 @@ RunQuarterScreen:                                                  ; $023EA8
     dc.w    $5680
     dc.w    $7204
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $e146
+    dc.l    ROM_BASE+$03E146    ; jsr operand
     dc.w    $3400
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0001
-    dc.w    $c43c
+    dc.l    ROM_BASE+$01C43C    ; jsr operand
     dc.w    $588f
     dc.w    $6100
     dc.w    $fbd0
@@ -479,8 +475,7 @@ RunQuarterScreen:                                                  ; $023EA8
     dc.w    $b042
     dc.w    $6748
     dc.w    $4eb9
-    dc.w    $0001
-    dc.w    $d71c
+    dc.l    ROM_BASE+$01D71C    ; jsr operand
     dc.w    $4878
     dc.w    $0001
     dc.w    $3007
@@ -493,8 +488,7 @@ RunQuarterScreen:                                                  ; $023EA8
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $6a2e
+    dc.l    ROM_BASE+$006A2E    ; jsr operand
     dc.w    $4878
     dc.w    $0002
     dc.w    $3007
@@ -507,8 +501,7 @@ RunQuarterScreen:                                                  ; $023EA8
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $6b78
+    dc.l    ROM_BASE+$006B78    ; jsr operand
     dc.w    $4fef
     dc.w    $0018
     dc.w    $6100
@@ -516,8 +509,7 @@ RunQuarterScreen:                                                  ; $023EA8
     dc.w    $6024
     dc.w    $42a7
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $538e
+    dc.l    ROM_BASE+$00538E    ; jsr operand
     dc.w    $4878
     dc.w    $077d
     dc.w    $4878

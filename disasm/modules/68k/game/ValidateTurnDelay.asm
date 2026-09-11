@@ -67,8 +67,7 @@ ProcessTradeAction:                                                  ; $021E5E
     dc.w    $0001
     dc.w    $e748
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $f9e1
+    dc.l    ROM_BASE+$05F9E1    ; movea.l operand
     dc.w    $4870
     dc.w    $0000
     dc.w    $4eba
@@ -91,8 +90,7 @@ ProcessTradeAction:                                                  ; $021E5E
     dc.w    $0001
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $fa11
+    dc.l    ROM_BASE+$05FA11    ; movea.l operand
     dc.w    $1030
     dc.w    $0000
     dc.w    $b004
@@ -105,8 +103,7 @@ ProcessTradeAction:                                                  ; $021E5E
     dc.w    $ffff
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $d648
+    dc.l    ROM_BASE+$00D648    ; jsr operand
     dc.w    $588f
     dc.w    $7200
     dc.w    $122a

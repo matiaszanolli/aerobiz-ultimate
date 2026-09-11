@@ -9,6 +9,85 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-11 (later)
+
+### START crashed the 32X; 50 addresses hidden in untranslated dc.w blocks
+
+Reported symptom: the title screen is reached but the game resets on START.
+It was not a reset. With an exception hook in the 68000 core (`execute_exception`
+in PicoDrive's `cpu/fame/famec.c`, the one point every exception passes through)
+the 32X run took exactly one exception and the Genesis run took none:
+
+    EXC vect=11 at=000d64 newPC=88023c sp=ffef8e
+
+Vector 11 is line-F, and `$000D64` is `GameCommand` -- the game's central
+dispatcher, its most-called function -- at its *Genesis* address. The 68000 had
+jumped to `$000D64` instead of `$900D64`, which under ADEN is unmapped, so it
+executed garbage and trapped. The exception handler chain then re-entered the
+game, which looks exactly like a reset.
+
+Two sources, two classes, both invisible to `tools/scan_rom_refs.py`:
+
+- **Upper-case mnemonics.** `INSTR` matched `[a-z]` only, so the nine modules
+  transcribed in upper case were never even seen as instructions.
+  `MOVEA.L #$00000D64,A2` in `WeightedAverage.asm` was one of two sites.
+- **Hand-encoded instructions inside untranslated `dc.w` blocks.** Where the
+  disassembly could not translate a block it emitted one word per line, so a
+  call reads `dc.w $4eb9` / `dc.w $0000` / `dc.w $0d64`. `HAND_ENCODED` needs
+  all three words on one line with the opcode first, which never happens there.
+  50 sites: 31 `jsr`, 14 `movea.l`, 5 `pea`, in 5 files.
+
+`RunScenarioMenu.asm` holds 34 of the 50 -- the screen START leads to, which is
+why nothing before START ever touched them.
+
+### Verifying a class `make verify` cannot see
+
+Ground rule 8 applies in full here: rewriting these keeps the Genesis ROM
+byte-identical whatever the bytes meant, so an MD5 match proves nothing about
+whether a word was really an opcode. The evidence used instead was a linear
+capstone decode of each enclosing block, located in the ROM by matching its
+whole byte sequence: all 50 candidate opcodes land on an instruction boundary,
+and a word that merely *looks* like an opcode inside data does not. Widening the
+opcode set from the 22 forms first tried to all 27 address-operand forms found
+the same 50 sites, and the section data files -- 2,697 lines of graphics -- yield
+none.
+
+The rebase itself is `dc.l ROM_BASE+$xxxxxx` in place of the two operand words:
+the same four bytes on Genesis, the rebased address on 32X. Afterwards the 32X
+game image differs from the Genesis ROM only in rebased pointers, plus the one
+deliberate six-byte U-020 DMA thunk swap at `$001216`.
+
+### What the 32X now does
+
+Same 30,000-frame input script into both builds, START on the title screen and
+A every 400 frames: no exception in either, and both walk the same path into a
+running game. At frame 20,000 the 68000 work RAM differs in 79 bytes of 65,536.
+74 of them are dead stack below the pointer -- the DMA thunk runs its window
+body there -- four are stored ROM pointers holding exactly Genesis + `$900000`,
+which is the correct value, and one is a counter two ahead. The route map
+renders identically on both.
+
+`scan_rom_refs.py` now reports zero `safe` sites outstanding. The 901 remaining
+are the `review` class (U-011), unchanged.
+
+### The input mask was wrong all along
+
+The earlier "START tapped from frame 300" evidence was not START. In libretro
+`RETRO_DEVICE_ID_JOYPAD_START` is 3, so the mask is `8`; the scripts used `0x80`,
+which is RIGHT. The 4,500-frame agreement recorded above stands, but it never
+exercised START, and that is why this crash survived a run that looked thorough.
+A frontend that cannot press the button you think it is pressing produces
+confident, wrong evidence.
+
+Two smaller traps in the same session, both of which produced silent empty
+measurements rather than errors: `VRD_INPUT_SCRIPT` must contain exactly
+`max_frames` rows, so a short run against a long script aborts before the core
+starts -- which is how a "positive control" for the exception hook came back
+empty; and `grep` treats `famec.c` as binary because it is ISO-8859, so a search
+for `exception` in it returns nothing at all unless `-a` is passed.
+
+---
+
 ## 2026-09-11
 
 ### The game runs on the 32X

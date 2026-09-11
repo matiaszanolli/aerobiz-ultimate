@@ -42,7 +42,7 @@ WeightedAverage:                                                  ; $01E346
 ; ---------------------------------------------------------------------------
 PreLoopInit:                                                   ; $01E398
     MOVE.L  A2,-(SP)                                           ; save A2
-    MOVEA.L #$00000D64,A2                                      ; A2 = GameCommand
+    MOVEA.L #ROM_BASE+$00000D64,A2                             ; A2 = GameCommand
     PEA     ($0040).W                                          ; push 64 (columns)
     CLR.L   -(SP)                                              ; push 0
     PEA     ($0010).W                                          ; command 16 (set display mode)

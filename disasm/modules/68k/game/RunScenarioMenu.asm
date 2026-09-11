@@ -231,15 +231,13 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $3004
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $e680
+    dc.l    ROM_BASE+$05E680    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $2f2d
@@ -248,24 +246,21 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $2f2d
     dc.w    $001c
     dc.w    $2f0c
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $b22c
+    dc.l    ROM_BASE+$03B22C    ; jsr operand
     dc.w    $4fef
     dc.w    $000c
     dc.w    $6040
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $2f2d
@@ -274,23 +269,20 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $3004
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $e680
+    dc.l    ROM_BASE+$05E680    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $2f2d
     dc.w    $002c
     dc.w    $2f0c
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $b22c
+    dc.l    ROM_BASE+$03B22C    ; jsr operand
     dc.w    $4fef
     dc.w    $0010
     dc.w    $3006
@@ -314,22 +306,18 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $42a7
     dc.w    $42a7
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $a942
+    dc.l    ROM_BASE+$03A942    ; jsr operand
     dc.w    $4878
     dc.w    $000f
     dc.w    $4878
     dc.w    $0001
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $ab2c
+    dc.l    ROM_BASE+$03AB2C    ; jsr operand
     dc.w    $2f05
     dc.w    $4879
-    dc.w    $0004
-    dc.w    $2f20
+    dc.l    ROM_BASE+$042F20    ; pea operand
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $b270
+    dc.l    ROM_BASE+$03B270    ; jsr operand
     dc.w    $4fef
     dc.w    $002c
     dc.w    $42a7
@@ -347,15 +335,13 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $42a7
     dc.w    $42a7
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $a942
+    dc.l    ROM_BASE+$03A942    ; jsr operand
     dc.w    $4878
     dc.w    $0019
     dc.w    $4878
     dc.w    $0013
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $ab2c
+    dc.l    ROM_BASE+$03AB2C    ; jsr operand
     dc.w    $3003
     dc.w    $c0fc
     dc.w    $0024
@@ -365,11 +351,9 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $2f30
     dc.w    $0000
     dc.w    $4879
-    dc.w    $0004
-    dc.w    $2f1a
+    dc.l    ROM_BASE+$042F1A    ; pea operand
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $b270
+    dc.l    ROM_BASE+$03B270    ; jsr operand
     dc.w    $4fef
     dc.w    $002c
     dc.w    $42a7
@@ -383,8 +367,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $7912
+    dc.l    ROM_BASE+$007912    ; jsr operand
     dc.w    $4fef
     dc.w    $0014
     dc.w    $0c40
@@ -404,8 +387,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $2f39
@@ -413,8 +395,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $8434
     dc.w    $2f0c
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $b22c
+    dc.l    ROM_BASE+$03B22C    ; jsr operand
     dc.w    $4878
     dc.w    $0001
     dc.w    $42a7
@@ -425,21 +406,18 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $7912
+    dc.l    ROM_BASE+$007912    ; jsr operand
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $2f2d
     dc.w    $0034
     dc.w    $2f0c
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $b22c
+    dc.l    ROM_BASE+$03B22C    ; jsr operand
     dc.w    $4fef
     dc.w    $002c
     dc.w    $42a7
@@ -473,8 +451,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $7912
+    dc.l    ROM_BASE+$007912    ; jsr operand
     dc.w    $4fef
     dc.w    $0014
     dc.w    $42a7
@@ -494,18 +471,15 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $4878
     dc.w    $0010
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $0d64
+    dc.l    ROM_BASE+$000D64    ; jsr operand
     dc.w    $4fef
     dc.w    $000c
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $814a
+    dc.l    ROM_BASE+$00814A    ; jsr operand
     dc.w    $4878
     dc.w    $0007
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $9f4a
+    dc.l    ROM_BASE+$009F4A    ; jsr operand
     dc.w    $6000
     dc.w    $00c0
     dc.w    $4246
@@ -523,8 +497,7 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $48c0
     dc.w    $2f00
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $9d92
+    dc.l    ROM_BASE+$009D92    ; jsr operand
     dc.w    $508f
     dc.w    $0c40
     dc.w    $0001
@@ -555,16 +528,14 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $4878
     dc.w    $0002
     dc.w    $4eb9
-    dc.w    $0000
-    dc.w    $5a04
+    dc.l    ROM_BASE+$005A04    ; jsr operand
     dc.w    $0c46
     dc.w    $0001
     dc.w    $6624
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $3003
@@ -575,14 +546,12 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $4870
     dc.w    $0000
     dc.w    $4879
-    dc.w    $0004
-    dc.w    $2f00
+    dc.l    ROM_BASE+$042F00    ; pea operand
     dc.w    $6022
     dc.w    $3002
     dc.w    $e548
     dc.w    $207c
-    dc.w    $0005
-    dc.w    $eb2c
+    dc.l    ROM_BASE+$05EB2C    ; movea.l operand
     dc.w    $2f30
     dc.w    $0000
     dc.w    $3003
@@ -593,16 +562,13 @@ RunScenarioMenu:                                                  ; $02C2FA
     dc.w    $4870
     dc.w    $0000
     dc.w    $4879
-    dc.w    $0004
-    dc.w    $2ede
+    dc.l    ROM_BASE+$042EDE    ; pea operand
     dc.w    $4eb9
-    dc.w    $0003
-    dc.w    $b270
+    dc.l    ROM_BASE+$03B270    ; jsr operand
     dc.w    $4878
     dc.w    $001e
     dc.w    $4eb9
-    dc.w    $0001
-    dc.w    $e2f4
+    dc.l    ROM_BASE+$01E2F4    ; jsr operand
     dc.w    $4cee
     dc.w    $3cfc
     dc.w    $fed0
