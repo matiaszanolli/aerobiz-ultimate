@@ -393,7 +393,43 @@ multiply by it rather than by a literal. So the change is:
 | `UpdateScrollDisplay` | has a literal `cmpi.w #$20` against the stride |
 | audit | anything else assuming 32 cells |
 
-Still open: the VRAM budget for the doubled nametables, whether any other code
+**The VRAM budget, measured -- H40 costs nothing.** The layout is identical on
+every screen sampled through a demo game (frames 12,000 to 36,000):
+
+| | |
+|---|---|
+| Tiles | `$0000-$BFFF`, last non-zero byte `$BFDA` -- **1,534 of 1,536 tiles used** |
+| Plane A | `$C000` |
+| Plane B | `$E000` |
+| Sprites | `$F800` |
+| HScroll | `$FC00` |
+| Register 16 | `$30` -- **V 128 cells, H 32 cells** |
+
+The tile area is full, so the earlier worry was that widening the planes would
+need VRAM that does not exist. It does not, because the planes are **already
+8,192 bytes each**: 32 x 128 cells and 64 x 64 cells are the same size. The
+change is register 16 `$30` -> `$11` and nothing moves.
+
+Nor does the vertical loss matter for display. A 224-line screen is 28 rows,
+and the vertical scroll is **zero in every state sampled** -- the game does not
+scroll these planes vertically at all -- so 64 rows is more than twice what is
+ever shown.
+
+**The real risk is the off-screen rows.** Plane A holds real tilemap data out
+to row 91 and plane B to row 78, far past the 28 that are displayed; on the
+sampled screens plane A rows 0-28 are a uniform filler tile while rows 40+
+carry varied content with tile indices up to `$7FA`. Something is being kept
+there. Reshaping to 64 x 64 cuts that off-screen area from rows 28-127 down to
+rows 28-63, so 100 spare rows become 36. Before changing register 16, find out
+whether the game stages tilemaps in those rows -- the VDP's VRAM-copy DMA makes
+it plausible -- or whether they are simply stale.
+
+Worth noting plane B's nominal 128 rows already run into the sprite table at
+`$F800`, so only 96 of them are usable today. The declared plane size is
+already larger than what the game can really use, which is mild evidence that
+the off-screen rows are slack rather than a design.
+
+Still open: the off-screen row question above, whether any other code
 hard-codes 32, and the backdrop going transparent while the layer is on (see
 U-003 -- that one is `/YS` behaviour PicoDrive itself calls unclear).
 
