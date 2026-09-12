@@ -182,6 +182,14 @@ MARS_DMA_THUNK      equ $00880900   ; cartridge $000900 via the fixed window
 ; game half is assembled separately, so it can only reach the boot half at a
 ; fixed address.  Keep in step with the pad in md_main.asm.
 MARS_SH2_UDIV       equ $00880A00   ; cartridge $000A00 via the fixed window
+MARS_SH2_LZ         equ $00880B00   ; cartridge $000B00 via the fixed window
+
+; Scratch region of the 32X frame buffer used to hand decompressed bytes back
+; to the 68000.  Past the 256-word line table plus 224 lines of 320 pixels
+; ($11A40), so it cannot collide with a displayed image; 56 KB remain, and the
+; largest compressed block in the game expands to 27,872 bytes.
+MARS_LZ_FB_OFFSET   equ $00012000
+MARS_LZ_FB_ADDR     equ MARS_FRAMEBUFFER+MARS_LZ_FB_OFFSET
 
 ; Comm-register RPC.  Slots and command numbers must match
 ; disasm/sh2/master/rpc.c.  COMM0/COMM2 carry the boot handshake but are free
@@ -198,4 +206,5 @@ MARS_SH2_CMD_MAPTEST equ $0004
 MARS_SH2_CMD_ZOOM   equ $0005
 MARS_SH2_CMD_TIMING equ $0006
 MARS_SH2_CMD_LZ     equ $0007
+MARS_SH2_CMD_LZ_JOB equ $0008
 MARS_STOCK_TRIGGER  equ $00FFF000   ; the game's own 10-byte RAM trigger stub

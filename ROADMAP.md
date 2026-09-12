@@ -861,7 +861,7 @@ Now has a target to beat: it must move enough state per transfer that the
 per-call cost measured in U-039 is amortised well below 560 cycles per unit of
 work.
 
-### U-046 -- Offload LZ decompression to the SH2 [DECOMPRESSOR DONE, integration open]
+### U-046 -- Offload LZ decompression to the SH2 [DONE, in the shipping build]
 
 The measured hot spot: **11.93% of all gameplay frames**, 3.4x the next item,
 and the bulk of the 74-76 frame stalls at each quarter boundary. Those stalls
@@ -969,20 +969,59 @@ repeating the same block is not warming the cache in a way real use would not.
 **So the 74-76 frame quarter-boundary stall becomes about 5 frames.** That is
 the whole of M5's value, and it is now a measured number rather than a hope.
 
-Still to build, and none of it is the hard part any more:
+**It is wired into the game and it works.** `disasm/32x/sh2_lz.asm` is a
+size-neutral swap for `LZ_Decompress`'s first eight bytes under
+`ifne ROM_BASE` -- eight bytes for eight, patching the routine rather than its
+92 call sites, so one edit covers every screen load. It falls back to the stock
+68000 code if the SH2 does not answer within a bounded wait: a slow screen load
+beats a hung one.
 
-- **Transport.** SDRAM -> frame buffer in words, then the 68000 to `$FF1804`
-  or straight to VRAM by DMA. Decided by the two constraints above; the copy
-  is noise against 285 cycles/byte.
-- **Batching**, per the interface note above: a job list, not a job.
-- **The 68000 side**: a size-neutral patch at the call sites under
-  `ifne ROM_BASE`, keeping the 68000 implementation selectable so the two can
-  be diffed -- M5's own rule, and the reason U-039 exists.
-- **RV interlock.** The SH2 reads the compressed stream through the *cached*
-  cartridge alias, and the 68000 raises `RV` to DMA from ROM. While `RV = 1`
-  an SH2 cartridge access stalls until it clears
-  (`docs/32x-hardware-manual.md:281`). U-093 counts those; the count is zero
-  today only because the SH2 does no cartridge work in the shipping build.
+Transport goes through the 32X frame buffer, the only memory both CPUs can
+reach -- the SH2 cannot touch 68000 work RAM and the 68000 cannot touch SDRAM.
+The shipping build leaves the frame buffer entirely unused (the layer is
+blanked, M3), so `$012000` onward is free scratch, past the line table and the
+224 displayed lines.
+
+**Measured against a baseline built from the previous commit**, 12,000 frames
+each, compared with U-092 because the two builds diverge by construction:
+
+| | |
+|---|---|
+| Shared screens | **2,247 of 2,273** (98.9%) |
+| Frames at matched screens | **31 of 31 bit-identical**, across two samples |
+| Frame drift | **-198** -- the patched build runs *ahead* |
+| Cartridge size | unchanged, 2,097,152 bytes |
+| Genesis ROM | byte-identical |
+
+The 198 frames are the point, and they corroborate the prediction from a
+different direction: quarter boundaries recur about every 4,000 frames
+(U-045), so 12,000 frames covers roughly three of them, and 198 / 3 is about
+66 frames saved each -- which is the 74-76 frame stall becoming about five.
+
+Why it is not larger: the game is frame-locked and the 68000 is idle 69.5% of
+the time, so a faster decompressor does not raise the frame rate. It only
+shortens the stalls. That is the whole of the user-visible effect and it is
+what M5 was for.
+
+One caveat recorded rather than smoothed over: at 12,000 frames the matcher
+reports the shared screens visited in different orders. With 98.9% shared and
+every matched frame identical, that is most likely the first-occurrence
+heuristic tripping on a revisited screen rather than real divergence -- but it
+has not been chased down, and it is the kind of thing that has been wrong
+before in this project.
+
+Still open:
+
+- **Batching**, per the interface note above: a job list, not a job. The
+  handshake is currently one round trip per block, which the measurement says
+  is affordable but which FM handover makes worth amortising.
+- **RV interlock.** The SH2 now reads cartridge ROM through the *cached*
+  alias while the 68000 raises `RV` to DMA from ROM, and an SH2 cartridge
+  access while `RV = 1` stalls until it clears
+  (`docs/32x-hardware-manual.md:281`). U-093 counts those. **This is a real
+  interaction now, not a hypothetical**, and it is the next thing to measure.
+- The scratch region assumes the 32X layer stays blanked. M4 turns it on, and
+  the two uses of the frame buffer will have to be reconciled.
 
 ### U-041 -- Port quarterly processing to the SH2 [OPEN, no measured benefit]
 ### U-042 -- Port the AI decision tree to the SH2 [OPEN, no measured benefit]

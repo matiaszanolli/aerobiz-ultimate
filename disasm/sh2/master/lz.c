@@ -81,12 +81,19 @@ static void lz_read_bits(lz_stream *s, int n)
         (s->window | ((s->word >> s->avail) & lz_mask[n]));
 }
 
-/* $003FEC.  Returns the number of bytes written.
+/* Returned instead of a length when the output would leave the buffer.  The
+ * check is per token and leaves a token's worth of headroom (max length is
+ * 0xFE + 1), because checking after the fact would mean the overrun had
+ * already happened -- which is exactly the bug this replaced. */
+#define LZ_OVERRUN  0xFFFFFFFFuL
+
+/* $003FEC.  Returns the number of bytes written, or LZ_OVERRUN.
  *
  * Note that literals and control bytes come off the same pointer the bit
  * reader refills from -- the byte and bit streams are interleaved, not
  * separate.  That is the detail most likely to be lost in a tidier rewrite. */
-unsigned long lz_decompress(const unsigned char *src, unsigned char *dst)
+unsigned long lz_decompress(const unsigned char *src, unsigned char *dst,
+                            unsigned long limit)
 {
     lz_stream s;
     unsigned long out = 0;
@@ -103,6 +110,8 @@ unsigned long lz_decompress(const unsigned char *src, unsigned char *dst)
         unsigned int ctrl = s.d[s.p++];
 
         for (i = 0u; i < 8u; i++) {
+            if (out + 0x100u > limit)
+                return LZ_OVERRUN;              /* refuse before writing */
             if (ctrl & 0x80u) {
                 dst[out++] = s.d[s.p++];        /* literal */
             } else {
@@ -152,6 +161,61 @@ unsigned long lz_decompress(const unsigned char *src, unsigned char *dst)
     }
 }
 
+#define LZ_OUT_MAX     65536u
+
+static unsigned char lz_out[LZ_OUT_MAX];
+
+/* ==========================================================================
+ * The offload entry point the 68000 actually calls.
+ *
+ * Transport, and why it is shaped this way.  The SH2 cannot reach 68000 work
+ * RAM at any address, and the 68000 cannot reach SDRAM at all, so the only
+ * memory both sides can touch is the 32X frame buffer.  In the shipping build
+ * that is free: the layer is blanked (M3) and nothing else uses it.
+ *
+ * The output is therefore decompressed into SDRAM -- for the two reasons in
+ * the file header, zero bytes and back-reference reads -- and then copied into
+ * the frame buffer in whole words, which the 68000 copies out to its scratch
+ * buffer.  The copy costs the 68000 about 10 clocks per word against the 285
+ * cycles per byte it would otherwise spend decompressing, so it is under 2%.
+ * ========================================================================== */
+
+#define FRAMEBUFFER_B  ((volatile unsigned short *)0x24000000u)
+
+/* In: arg0 = SH2 cached cartridge address of the compressed source,
+ *     arg1 = byte offset into the frame buffer for the output.
+ * Out: the number of bytes written. */
+volatile unsigned long sh2_lz_jobs;      /* jobs accepted */
+volatile unsigned long sh2_lz_maxlen;    /* largest output seen */
+volatile unsigned long sh2_lz_overruns;  /* jobs refused for size */
+
+unsigned long sh2_lz_job(unsigned long src, unsigned long fb_byte_offset)
+{
+    volatile unsigned short *dst =
+        (volatile unsigned short *)((unsigned long)FRAMEBUFFER_B
+                                    + fb_byte_offset);
+    unsigned long n, i, words;
+
+    n = lz_decompress((const unsigned char *)src, lz_out, LZ_OUT_MAX);
+    if (n == LZ_OVERRUN) {
+        sh2_lz_overruns++;
+        return 0;
+    }
+    sh2_lz_jobs++;
+    if (n > sh2_lz_maxlen)
+        sh2_lz_maxlen = n;
+
+    /* Word writes only: a byte write to the frame buffer cannot store zero
+     * (manual :1162) and decompressed tile data is full of zeros.  An odd
+     * length reads one byte past the output, which is inside lz_out and which
+     * the 68000 will not copy. */
+    words = (n + 1u) >> 1;
+    for (i = 0u; i < words; i++)
+        dst[i] = (unsigned short)((lz_out[i * 2u] << 8) | lz_out[i * 2u + 1u]);
+
+    return n;
+}
+
 /* ==========================================================================
  * Test and benchmark.
  *
@@ -172,10 +236,6 @@ unsigned long lz_decompress(const unsigned char *src, unsigned char *dst)
 /* CACHED cartridge alias -- see the header note. */
 #define CART_CACHED    ((const unsigned char *)0x02000000u)
 
-#define LZ_OUT_MAX     32768u
-
-static unsigned char lz_out[LZ_OUT_MAX];
-
 extern volatile unsigned long sh2_vint_count;
 
 volatile unsigned long sh2_lz_len;
@@ -188,7 +248,7 @@ void sh2_lz_test(void)
 {
     unsigned long t0, n, i;
 
-    n = lz_decompress(CART_CACHED + LZ_SRC_OFFSET, lz_out);
+    n = lz_decompress(CART_CACHED + LZ_SRC_OFFSET, lz_out, LZ_OUT_MAX);
     sh2_lz_len = n;
 
     {   unsigned long h = 2166136261uL;
@@ -202,7 +262,7 @@ void sh2_lz_test(void)
     sh2_lz_iters = LZ_ITERS;
     t0 = sh2_vint_count;
     for (i = 0u; i < (unsigned long)LZ_ITERS; i++)
-        (void)lz_decompress(CART_CACHED + LZ_SRC_OFFSET, lz_out);
+        (void)lz_decompress(CART_CACHED + LZ_SRC_OFFSET, lz_out, LZ_OUT_MAX);
     sh2_lz_frames = sh2_vint_count - t0;
 
     sh2_lz_done = 0x7D07E;

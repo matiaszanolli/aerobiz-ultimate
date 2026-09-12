@@ -301,8 +301,19 @@ TMSSFontTiles:                                                  ; $003D98
 ; 123 calls | 596 bytes | $003FEC-$00423F
 ; ---------------------------------------------------------------------------
 LZ_Decompress:
+; U-046: on 32X the whole routine goes to the SH2 instead -- eight bytes for
+; eight, so both targets assemble to the same size and every one of the 92 call
+; sites is covered by this one edit.  Measured 285 cycles per output byte here
+; against 59.7 on the SH2, 14x in wall clock; the largest block in the game
+; costs the 68000 62 frames and the SH2 4.4.  The thunk falls back to the code
+; below if the SH2 does not answer.  See disasm/32x/sh2_lz.asm.
+    ifne ROM_BASE
+    jmp     (MARS_SH2_LZ).l                                ; 32X: hand it over
+    nop                                                    ; pad; never reached
+    else
     movem.l d2-d4/a2-a4,-(sp)                             ; $003FEC
     movea.l $1C(sp),a0                                     ; $003FF0 | dest buffer
+    endif
     movea.l $20(sp),a1                                     ; $003FF4 | compressed source
     movea.l #$00FFBD56,a3                                  ; $003FF8 | -> bitstream window
     movea.l #ROM_BASE+$00003F72,a4                         ; $003FFE | -> helper function

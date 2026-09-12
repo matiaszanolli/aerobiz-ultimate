@@ -36,12 +36,14 @@
 #define SH2_CMD_ZOOM    0x0005u
 #define SH2_CMD_TIMING  0x0006u
 #define SH2_CMD_LZ      0x0007u
+#define SH2_CMD_LZ_JOB  0x0008u
 
 void sh2_fb_test(void);
 void sh2_map_test(void);
 void sh2_zoom_test(void);
 void sh2_timing_test(void);
 void sh2_lz_test(void);
+unsigned long sh2_lz_job(unsigned long src, unsigned long fb_byte_offset);
 
 /* V-Blank tally, incremented by vint_handler in main.s.  Defined here rather
  * than in assembly so the C side gets the type right; U-035 uses it as its
@@ -117,6 +119,15 @@ void sh2_rpc_loop(void)
         case SH2_CMD_LZ:
             sh2_lz_test();             /* halts when done; does not return */
             break;
+
+        case SH2_CMD_LZ_JOB: {
+            /* Both arguments must be read before either result is written --
+             * the argument and result slots are the same registers. */
+            unsigned long src = COMM_ARG0;
+            unsigned long fbo = COMM_ARG1;
+            COMM_ARG0 = sh2_lz_job(src, fbo);
+            break;
+        }
 
         default:
             COMM_ARG0 = 0xDEAD0000uL | (unsigned long)cmd;

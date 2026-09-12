@@ -249,6 +249,14 @@ MarsSecurityFailed:
         dcb.b   (CART_BASE+$000A00)-*,$FF
         include "32x/sh2_math.asm"
 
+; ---------------------------------------------------------------------------
+; The LZ thunk sits at a FIXED cartridge offset ($000B00) for the same reason:
+; the game half is assembled separately and reaches it by address.
+; MARS_SH2_LZ in definitions_32x.asm must match this pad.
+; ---------------------------------------------------------------------------
+        dcb.b   (CART_BASE+$000B00)-*,$FF
+        include "32x/sh2_lz.asm"
+
     ifd RVPROBE
         include "32x/rv_probe.asm"
     endif

@@ -68,7 +68,8 @@ BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
                $(DISASM_DIR)/32x/dma_stub.asm \
                $(DISASM_DIR)/32x/rv_probe.asm \
                $(DISASM_DIR)/32x/sh2_probe.asm \
-               $(DISASM_DIR)/32x/lz_probe.asm
+               $(DISASM_DIR)/32x/lz_probe.asm \
+               $(DISASM_DIR)/32x/sh2_lz.asm
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
 SH2_CSRCS    = $(DISASM_DIR)/sh2/master/rpc.c $(DISASM_DIR)/sh2/master/fb.c \
