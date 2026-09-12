@@ -37,9 +37,17 @@
  * rather than reading back its own argument. */
 #define SH2_PING_REPLY  0x5A5AC0DEuL
 
+/* Same tally as COMM_COUNT, kept in SDRAM as well.  PicoDrive's debug read
+ * serves RAM but not the $A151xx I/O range, so a counter that lives only in a
+ * comm register cannot be sampled from outside while the game runs -- reading
+ * it returns zero, which looks exactly like "the offload never fired".  This
+ * one is reachable as `read master <addr>`. */
+volatile unsigned long sh2_calls_serviced;
+
 void sh2_rpc_loop(void)
 {
     COMM_COUNT = 0;
+    sh2_calls_serviced = 0;
 
     for (;;) {
         unsigned short cmd = COMM_CMD;
@@ -79,6 +87,7 @@ void sh2_rpc_loop(void)
             break;
         }
 
+        sh2_calls_serviced = sh2_calls_serviced + 1uL;
         COMM_COUNT = COMM_COUNT + 1uL;
         COMM_CMD   = 0u;               /* release the 68000 */
     }

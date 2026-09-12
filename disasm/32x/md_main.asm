@@ -127,6 +127,15 @@ MarsSecurityFailed:
         dcb.b   (CART_BASE+$000900)-*,$FF
         include "32x/dma_stub.asm"
 
+; ---------------------------------------------------------------------------
+; The SH2 math thunk sits at a FIXED cartridge offset ($000A00, i.e. $880A00)
+; for the same reason as the DMA thunk above: the game half is assembled
+; separately and can only reach it by address.  MARS_SH2_UDIV in
+; definitions_32x.asm must match this pad.
+; ---------------------------------------------------------------------------
+        dcb.b   (CART_BASE+$000A00)-*,$FF
+        include "32x/sh2_math.asm"
+
     ifd RVPROBE
         include "32x/rv_probe.asm"
     endif

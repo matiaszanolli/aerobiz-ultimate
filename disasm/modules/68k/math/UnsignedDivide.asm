@@ -39,8 +39,16 @@ UDiv_Overflow:                                              ; $03E0DE
 ;   Quotient fits in 16 bits since divisor >= $10000
 ; ---------------------------------------------------------------------------
 UDiv_Full32:                                                ; $03E0FE
+; U-044: on 32X the 16-iteration path goes to the SH2 instead -- six bytes for
+; six, so both targets assemble to the same size.  The fast DIVU.W path above
+; is untouched, because U-039 measured the comm round trip at ~560 cycles
+; against ~200 for that path.  See disasm/32x/sh2_math.asm.
+    ifne ROM_BASE
+    jmp     (MARS_SH2_UDIV).l          ; 32X: hand the slow path to the SH2
+    else
     movem.l d2-d3,-(sp)               ; save D2-D3
     move.l  d1,d3                      ; D3 = divisor
+    endif
     move.l  d0,d1                      ; D1 = dividend
     swap    d0
     clr.w   d0                         ; D0 = dividend_low:0 (quotient accum)

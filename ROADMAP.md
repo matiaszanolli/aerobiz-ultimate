@@ -363,6 +363,58 @@ Also established, and reusable: the SH2 C toolchain path. The dispatcher is C
 `master_start` before any C runs. U-041 and U-042 are large enough that they
 were always going to be C; this proves the route before they depend on it.
 
+### U-044 -- Offload UnsignedDivide's slow path [DONE, and inert]
+
+The first real math moved into the shipping 32X build, and the first useful
+negative result.
+
+`UnsignedDivide` (`$03E0C6`) already branches on exactly the right predicate:
+`cmpi.l #$10000,d1 / bcc UDiv_Full32` splits a single `DIVU.W` (~200 cycles)
+from a 16-iteration shift-subtract (~900). U-039 measured the comm round trip
+at ~560, so the slow half is worth offloading and the fast half is not. The
+32X build therefore replaces the first six bytes of `UDiv_Full32` with
+`jmp (MARS_SH2_UDIV).l` under `ifne ROM_BASE` -- six bytes for six, the same
+size-neutral swap `ConfigVDPDMA` already uses -- and leaves the fast path
+entirely on the 68000.
+
+**Correct.** With and without the offload, 12,000 frames of identical input
+produce bit-identical 68000 work RAM, VRAM, CRAM, VSRAM *and* register file.
+`make verify` still MATCHes; the Genesis ROM never sees the patch.
+
+**And never once used.** The SH2 dispatcher's own call counter reads zero
+after 200,000 frames, spanning the attract loop and a full DEMO game. Aerobiz
+never divides by anything `>= $10000`. The expensive path exists in the ROM
+and does not execute.
+
+So the mechanism is proven end to end in the shipping build and buys nothing.
+Both halves of that are worth having written down:
+
+- The **pattern** is now validated and reusable -- fixed thunk address in the
+  fixed window (`$880A00`, beside the DMA thunk at `$880900`), size-neutral
+  `ifne ROM_BASE` patch in shared code, comm-port RPC with interrupts masked
+  for the call, and a bounded wait that falls back to the stock 68000
+  algorithm so a stalled SH2 cannot wedge the game.
+- The **lesson** is that picking an offload target by reading the code is
+  guessing. This one looked like the single best candidate in the whole math
+  module -- pure, self-contained, comfortably above break-even -- and its call
+  count is zero. Nothing further should be ported before it is profiled.
+
+Kept rather than reverted: it costs nothing on a branch that is never taken,
+it is the only validated instance of the mechanism, and M8's larger economies
+may yet reach it.
+
+### U-045 -- Profile what the game actually computes [OPEN]
+
+The prerequisite U-044 proved we need. Rank the math and economy routines by
+*measured* dynamic cost -- call count times cycles -- across a real DEMO game,
+not by inspection. Only then choose what U-041 and U-042 move.
+
+Note that the obvious instrument is unavailable: PicoDrive's debug read serves
+RAM but returns zero for the `$A151xx` I/O range, so a counter parked in a
+comm register reads as zero and is indistinguishable from "never called".
+U-044's counter had to live in SDRAM and be read as `read master <addr>`.
+Anything that profiles from outside needs the same care.
+
 ### U-040 -- RAM snapshot transport over DREQ FIFO [OPEN]
 
 Now has a target to beat: it must move enough state per transfer that the

@@ -177,4 +177,20 @@ MARS_DMA_BIAS       equ MARS_GAME_WINDOW-MARS_CART_OFFSET
 ; game half is a separate assembly and cannot see the boot half's symbols.  Keep
 ; this in step with the pad in disasm/32x/md_main.asm.
 MARS_DMA_THUNK      equ $00880900   ; cartridge $000900 via the fixed window
+
+; SH2 math thunk -- U-039/U-044.  Same reasoning as the DMA thunk above: the
+; game half is assembled separately, so it can only reach the boot half at a
+; fixed address.  Keep in step with the pad in md_main.asm.
+MARS_SH2_UDIV       equ $00880A00   ; cartridge $000A00 via the fixed window
+
+; Comm-register RPC.  Slots and command numbers must match
+; disasm/sh2/master/rpc.c.  COMM0/COMM2 carry the boot handshake but are free
+; once the 68000 has cleared them to release the SH2s.
+MARS_RPC_CMD        equ MARS_COMM0  ; word: command; 0 = idle / complete
+MARS_RPC_ARG0       equ MARS_COMM2  ; long: argument 0 -> result 0
+MARS_RPC_ARG1       equ MARS_COMM4  ; long: argument 1 -> result 1
+MARS_RPC_COUNT      equ MARS_COMM6  ; long: dispatcher's own call counter
+
+MARS_SH2_CMD_PING   equ $0001
+MARS_SH2_CMD_UDIV32 equ $0002
 MARS_STOCK_TRIGGER  equ $00FFF000   ; the game's own 10-byte RAM trigger stub
