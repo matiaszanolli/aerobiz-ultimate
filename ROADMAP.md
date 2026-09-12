@@ -367,16 +367,17 @@ number below is re-derivable with the command in the last column.
 | Airports (major) | 32 | **hard 32** -- one longword bitmask per region | `RegionBitmaskTable` `$05ECDC` |
 | Airports (secondary) | 57 | byte index, `$FF` = empty; no ceiling below 255 | `CharTypeRangeTable` `$05ECBC` second ranges |
 | Aircraft (pool) | 53 | none -- ROM table, freely extendable | `AircraftStatsByRegion` `$05EDD0`, 12-byte entries |
-| Aircraft (per scenario) | 16 | **hard 16** -- `plane_type` packs two classes as nibbles | route slot `+$02`; `SortAircraftByMetric` `$00C540` fills `$C0` = 16x12 |
+| Aircraft (per era) | 16 | 16 as built; 32 reachable without growing the route slot -- see U-078 | route slot `+$02`; fleet table `$FFB9E8`; `SortAircraftByMetric` `$00C540` |
 | Scenarios | 4 | selector is bounds-tested 0..3 in two places | `$FF0002`; `BuildAircraftAttrTable` `$00C68A`, `HandleEventCallback` |
 | Regions | 7 | 7 -- fixed-size parallel tables | `RegionBitmaskTable` `$05ECDC`, `CharTypeRangeTable` `$05ECBC` |
 
 Each scenario shows a **sliding 16-wide window** into the 53-entry aircraft
 pool, with the window starts held in `RegionAircraftIndex` (`$05ECF8`) =
 `{0, 12, 26, 37}`. The windows overlap, which is how an aircraft stays
-available across eras. This is the single most useful structural fact for M8:
-**adding an era is cheap (a new window start plus new pool entries); adding a
-17th aircraft to an existing era is not (it changes the save format).**
+available across eras. Adding an era is therefore cheap -- a new window start
+plus new pool entries. Going past 16 *within* an era is not free, but it is
+cheaper than it first looks: U-078 shows the route slot can stay 20 bytes, and
+the cost lands on the fleet table and the save instead.
 
 ### The airport tier already exists
 
@@ -467,7 +468,62 @@ rather than misread. Depends on U-071.
 
 Append entries to `AircraftStatsByRegion`, `AircraftModelPtrs` and the
 `AircraftModels` string pool. No format change while each scenario still shows
-16. Independent of U-070..U-072 -- the cheapest visible win in M8.
+16. Independent of U-070..U-072 -- the cheapest visible win in M8, and the
+prerequisite for U-078.
+
+### U-078 -- Double the aircraft available per era, 16 -> 32 [OPEN]
+
+Target: up to 32 aircraft per era, **not** necessarily 32 in every era. The
+early scenarios should stay sparse -- 1955 did not have thirty airliners worth
+choosing between, and a half-empty list is the honest depiction.
+
+That last point changes the mechanism as much as the number does. Today an era
+is a fixed 16-wide sliding window into the pool, with the starts in
+`RegionAircraftIndex` (`$05ECF8`) = `{0, 12, 26, 37}`. Variable fill means the
+window needs a length as well as a start: a parallel 4-byte count table beside
+`$05ECF8`, and the loops bounded by it instead of by a literal 16.
+
+**Where the 16 actually lives.** Not in one place, and not where the aircraft
+tables are:
+
+| Site | Now | At 32 |
+|---|---|---|
+| `plane_type`, route slot `+$02` | two 4-bit nibbles | two 5-bit fields |
+| Fleet table `$FFB9E8` | 4 players x 16 x 2 = 128 B | 256 B, stride `$20` -> `$40` |
+| Fleet table save | 64 B at `$FF02A8` | 128 B |
+| `SortAircraftByMetric` buffers | `$C0` = 16x12, `$20` flags | 384 B, 64 B |
+| Aircraft pool | 53 entries | ~70-90 |
+
+`$FFB9E8` is the per-player fleet, confirmed by `SumStatBytes` (`$010492`):
+`lsl.w #$5` for the player stride, `d2*2` for the slot, `cmpi.w #$10` for the
+bound. 37 files reference the base; the stride shift `#$5 -> #$6` has to be
+found at every one of them.
+
+**The route slot does not have to grow.** `plane_type` needs 10 bits for two
+5-bit classes and only has 8 -- but `frequency` at `+$03` is capped at 14
+(`cmpi.b #$e` in `RunAIMainLoop.asm:260` and `EvaluateNegotiation.asm:44`), so
+its high nibble is spare. Packing the two classes across the `+$02`/`+$03` pair
+gives 12 bits where 10 are needed, and **the route slot stays 20 bytes with its
+saved 12-byte prefix unchanged.** That removes the single largest save-format
+risk in M8.
+
+*Verify before relying on it:* two range checks cap `frequency` at 14, but
+nothing yet proves no site writes the high nibble of `+$03`. This is a ground
+rule 8 class risk -- the sites are identical in both builds, so `make verify`
+is blind to getting it wrong. Audit every write to `+$03` first.
+
+The save still grows, because the fleet table doubles. That is one block rather
+than a per-route change, so it belongs to U-072's versioned save header.
+
+**Relocation is not the obstacle.** Both tables are boxed in -- `$FFB9E8` has 24
+bytes of slack before `city_data` at `$FFBA80`, and `SortAircraftByMetric`'s
+destination `$FFA6B8` has 2 bytes before `$FFA77A` -- so both must move. Given
+how completely the cartridge is mapped, moving them is bookkeeping, not risk;
+this is the same relayout U-071 already has to do, and the two should be done
+together rather than twice.
+
+Depends on U-071 (relayout), U-072 (save format) and U-073 (pool). Not on
+U-070, which is airports.
 
 ### U-074 -- Additional scenarios / eras [OPEN]
 
