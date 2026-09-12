@@ -271,7 +271,8 @@ width-independent.
 ### U-035 -- Map scaling (zoom) [OPEN]
 
 The flagship effect, and the reason M8's content density matters: a world map
-the player can zoom into. The 32X has **no hardware scaler** -- the "enhanced
+the player can zoom into, with U-077 revealing the 57 secondary airports as it
+goes in. The 32X has **no hardware scaler** -- the "enhanced
 scaling and rotation" in `docs/32x-introduction-and-system-features.md:45` is
 overview prose, not a register. Scaling is SH2 software rasterization into the
 frame buffer, with one large exception in our favour.
@@ -363,7 +364,8 @@ number below is re-derivable with the command in the last column.
 
 | Axis | Today | Ceiling in the current format | Evidence |
 |---|---|---|---|
-| Airports | 89 | byte index, `$FF` = empty; no format ceiling below 255 | `CityNames` `$045764`, 89 full + 89 short names |
+| Airports (major) | 32 | **hard 32** -- one longword bitmask per region | `RegionBitmaskTable` `$05ECDC` |
+| Airports (secondary) | 57 | byte index, `$FF` = empty; no ceiling below 255 | `CharTypeRangeTable` `$05ECBC` second ranges |
 | Aircraft (pool) | 53 | none -- ROM table, freely extendable | `AircraftStatsByRegion` `$05EDD0`, 12-byte entries |
 | Aircraft (per scenario) | 16 | **hard 16** -- `plane_type` packs two classes as nibbles | route slot `+$02`; `SortAircraftByMetric` `$00C540` fills `$C0` = 16x12 |
 | Scenarios | 4 | selector is bounds-tested 0..3 in two places | `$FF0002`; `BuildAircraftAttrTable` `$00C68A`, `HandleEventCallback` |
@@ -375,6 +377,38 @@ pool, with the window starts held in `RegionAircraftIndex` (`$05ECF8`) =
 available across eras. This is the single most useful structural fact for M8:
 **adding an era is cheap (a new window start plus new pool entries); adding a
 17th aircraft to an existing era is not (it changes the save format).**
+
+### The airport tier already exists
+
+The 89 airports are **not** a flat list. They are two tiers, encoded as index
+order, and the split is exactly the one U-077 needs:
+
+| Tier | Indices | Count | Per region (0..6) |
+|---|---|---|---|
+| Major | 0-31 | 32 | 7, 2, 3, 7, 3, 7, 3 |
+| Secondary | 32-88 | 57 | 17, 5, 5, 10, 6, 9, 5 |
+
+Cities 0-31 are London, Paris, Frankfurt, Amsterdam, Rome, Berlin, Moscow,
+Cairo, Tunis, Tehran, Baghdad, New Delhi, Tokyo, Beijing, Seoul, Hong Kong,
+Singapore, Bangkok, Manila, Sydney, Perth, Auckland, Washington, New York,
+Chicago, Los Angeles, Dallas, Atlanta, Vancouver, Mexico City, Sao Paulo,
+Havana -- the hub-tier cities. 32-88 are the secondaries, Manchester through
+Santiago.
+
+`CharTypeRangeTable` (`$05ECBC`) holds both ranges per region as
+`[base1, size1, base2, size2]`. `RegionBitmaskTable` (`$05ECDC`) holds one
+longword per region whose set bits are exactly that region's major-city
+indices; the seven masks partition bits 0-31 with **none spare**. Both tables
+have 10+ callers each, so this is core, not incidental.
+
+Two consequences, and they pull in opposite directions:
+
+- **Adding secondary airports is cheaper than a flat reading suggests.** Index
+  32 and above lives outside the region bitmask entirely, so the cost is the
+  `#$59` sweep, work RAM and the save -- not a format change.
+- **A 33rd major airport is hard-blocked.** The longword is full. Promoting a
+  city to hub tier means widening `RegionBitmaskTable` to a quad or a bit
+  array, and touching every one of its callers. Prefer adding secondaries.
 
 ### Space available
 
@@ -451,8 +485,35 @@ the aircraft tables just received before this item can be estimated.
 
 The headline item, and last on purpose. Depends on U-070, U-071, U-072, and on
 M4: at H32 on a Genesis tilemap there is nowhere to put more pins legibly, and
-the answer to that is U-035's zoom rather than a smaller pin. More airports and
-the map zoom justify each other, so neither is worth shipping alone.
+the answer to that is U-035's zoom plus U-077's tiering rather than a smaller
+pin. More airports and the map zoom justify each other, so neither is worth
+shipping alone.
+
+Add secondary airports (index >= 32), not major ones -- see the tier section
+above. The major tier is full at 32 and widening it is a much larger job than
+the airports themselves are worth.
+
+### U-077 -- Draw secondary airports only when zoomed in [OPEN]
+
+Level of detail on the map: zoomed out shows the 32 major airports, zooming in
+reveals the 57 secondaries. This is what keeps the map readable as U-076 grows
+the world, and it is the other half of why U-035's zoom is worth building.
+
+The pleasant surprise is that **no new data is needed**. The tier is already
+the index: `city_index < 32` is the major tier, and the existing
+`RegionBitmaskTable` already enumerates exactly those per region. The LOD test
+is a comparison, not a lookup, and it costs nothing in ROM, work RAM or the
+save.
+
+Design note: the threshold should be a renderer-side constant, not a second
+copy of the number 32. If U-070 introduces `CITY_COUNT`, this wants
+`CITY_MAJOR_COUNT` alongside it, and the two must stay consistent with the
+bitmask width.
+
+Open question, to answer with U-035: whether the zoom is continuous or a small
+number of discrete steps. Discrete steps make LOD a clean switch; continuous
+zoom needs a fade or a pop threshold, and pins popping in mid-zoom looks worse
+than it sounds. Decide this before the renderer is written, not after.
 
 ### Corrections found while measuring this
 
