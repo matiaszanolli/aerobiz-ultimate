@@ -356,6 +356,10 @@ rate instead of Genesis CRAM tricks.
 
 ## 5. Known unknowns (to be resolved empirically, not guessed)
 
+The subset that needs real hardware is collected as a working checklist in
+[HARDWARE_TESTS.md](HARDWARE_TESTS.md) -- which build to flash, what to read,
+and what a pass looks like.
+
 1. ~~**Security block extent and patchability.**~~ **Resolved by U-001.** The
    premise was wrong twice over. The block is **1040 bytes, `$3F0-$7FF`**, and
    the `lea $000006BC,a0 / adda.l #$00880000,a0 / jmp (a0)` near `$4C0` is not a

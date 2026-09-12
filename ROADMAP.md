@@ -429,9 +429,36 @@ Worth noting plane B's nominal 128 rows already run into the sprite table at
 already larger than what the game can really use, which is mild evidence that
 the off-screen rows are slack rather than a design.
 
-Still open: the off-screen row question above, whether any other code
-hard-codes 32, and the backdrop going transparent while the layer is on (see
-U-003 -- that one is `/YS` behaviour PicoDrive itself calls unclear).
+**And the engine already supports 64 x 64.** `SetScrollQuadrant` (`$005518`)
+takes two quadrant indices, looks up a byte in a table at `$04737E`, and issues
+it as `$9000 | value` through `GameCommand` -- which is a **VDP register 16
+write**, `$8000 | (16 << 8)`. It then sets `$FFA77E` and `$FFA77C` to the
+matching cell dimensions. So plane geometry is table-driven and already changes
+at runtime. The table:
+
+| | d3=0 | d3=1 | d3=2 | d3=3 |
+|---|---|---|---|---|
+| **d2=0** | -- | `$01` 64x32 | -- | `$03` 128x32 |
+| **d2=1** | `$10` 32x64 | **`$11` 64x64** | -- | -- |
+| **d2=2** | -- | -- | -- | -- |
+| **d2=3** | `$30` 32x128 | -- | -- | -- |
+
+The game runs `(3,0)` -> `$30`, 32 x 128. What U-036 wants is `(1,1)` -> `$11`,
+**64 x 64** -- already present, already wired, same 8,192 bytes. `$FFA77E` is
+the horizontal size in cells and `$FFA77C` the vertical, both derived as
+`index * 32 + 32`, which is why the drawing code multiplies by `$FFA77E`
+instead of by a literal.
+
+That reduces the plane half of U-036 to selecting a different quadrant mode on
+the map screen, and makes the off-screen-row worry much smaller: 64 x 64 is a
+configuration the engine already knows how to produce.
+
+Still open: whether the map screen's tilemap content needs re-laying-out for
+the 64-cell stride (most addressing follows `$FFA77E` automatically, but not
+necessarily all of it), the literal `cmpi.w #$20` in `UpdateScrollDisplay`,
+and the backdrop going transparent while the layer is on (see U-003 -- that one
+is `/YS` behaviour PicoDrive itself calls unclear, and is item 3 in
+[HARDWARE_TESTS.md](HARDWARE_TESTS.md)).
 
 Do this before U-030: the data path is shaped by what the renderer is allowed
 to assume about geometry.
