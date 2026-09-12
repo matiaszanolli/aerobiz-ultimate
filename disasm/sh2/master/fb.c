@@ -253,6 +253,16 @@ static void scale_row(const unsigned char *src, volatile unsigned short *dst,
     }
 }
 
+static void fb_draw_airports(unsigned long u0, unsigned long v0,
+                             unsigned long step, unsigned int slots);
+#define PAL_MAJOR      250u
+#define PAL_MINOR      251u
+
+/* The window fb_blit_scaled last used, so the airport overlay lands in the
+ * same coordinate space without recomputing the clamps. */
+static unsigned long fb_u0, fb_v0, fb_step;
+static unsigned int  fb_slots;
+
 /* step is 16.16 source pixels per display dot: FP_ONE is 1:1, FP_ONE/2 is 2x
  * magnification.  (cx, cy) is the source pixel held at the centre of the
  * screen, clamped so the window stays inside the source.
@@ -303,6 +313,7 @@ static unsigned int fb_blit_scaled(unsigned int cx, unsigned int cy,
     for (y = VISIBLE_LINES; y < LINE_TABLE_WORDS; y++)
         FRAMEBUFFER[y] = FRAMEBUFFER[VISIBLE_LINES - 1u];
 
+    fb_u0 = u0; fb_v0 = v0; fb_step = step; fb_slots = slots;
     return slots;
 }
 
@@ -326,6 +337,8 @@ void sh2_zoom_test(void)
     unsigned int i;
 
     map_load();
+    PALETTE[PAL_MAJOR] = 0x001Fu;       /* red   -- major airports */
+    PALETTE[PAL_MINOR] = 0x03FFu;       /* yellow -- secondaries */
 
     /* 1:1 first, which is the worst case: it needs a distinct source row per
      * display line, so nothing the animation does afterwards costs more.
@@ -345,6 +358,7 @@ void sh2_zoom_test(void)
     for (;;) {
         fb_wait_vblank();
         (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, step);
+        fb_draw_airports(fb_u0, fb_v0, fb_step, fb_slots);
         VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
 
         step = (unsigned long)((long)step + dir);
@@ -355,5 +369,91 @@ void sh2_zoom_test(void)
             step = FP_ONE;
             dir = -(long)ZOOM_STEP;
         }
+    }
+}
+/* ==========================================================================
+ * U-077: level of detail -- the 32 major airports always, the 57 secondaries
+ * only once the map is zoomed in.
+ *
+ * This is what U-035's zoom is *for*. At 4x each map pixel is a 4x4 block and
+ * the terrain has no more detail to give, so the reward for zooming has to be
+ * information the zoomed-out view could not fit.
+ *
+ * No new data is needed, which is the pleasant part: the tier is already the
+ * index. Cities 0-31 are the majors and 32-88 the secondaries, and the
+ * coordinate table at Genesis $05E948 is two bytes per city, x then y, in map
+ * pixels -- exactly the space the rasterizer works in. `DrawRouteLines`
+ * ($0098D2) reads it the same way to place route endpoints.
+ *
+ * Markers scale with the map rather than staying a constant size on screen,
+ * and that is a property of the line-table trick rather than a choice: display
+ * lines that share a slot share its pixels, so anything drawn into a slot is
+ * repeated by however many lines point at it. Breaking that would mean giving
+ * every display line its own row and paying full price for the vertical axis.
+ * U-032's arcs and U-033's aircraft inherit the same constraint.
+ * ========================================================================== */
+
+/* Cartridge offset of the coordinate table: the game half lives at cartridge
+ * $100000, so the Genesis address $05E948 lands here. Cached alias, since it
+ * is read repeatedly. */
+#define CITY_TABLE     ((const unsigned char *)0x0215E948u)
+#define CITY_COUNT     89u
+#define CITY_MAJOR     32u          /* U-070 wants this as CITY_MAJOR_COUNT */
+
+/* Palette entries the asset does not use: declared with the forward
+ * declaration above, where sh2_zoom_test can see them. */
+
+/* Secondaries appear once a source pixel covers at least two dots. Discrete,
+ * not a fade: at this scale a pin either reads or it does not, and the
+ * threshold is a single comparison. */
+#define LOD_STEP       (FP_ONE / 2uL)
+
+static void fb_mark(unsigned int slot, unsigned int col, unsigned int w,
+                    unsigned int colour)
+{
+    volatile unsigned char *row = (volatile unsigned char *)
+        (FRAMEBUFFER + LINE_TABLE_WORDS + slot * WORDS_PER_LINE);
+    unsigned int i;
+
+    /* Byte writes are safe here where they are not for the map: the manual's
+     * restriction is that a byte write cannot store *zero*, and a marker
+     * colour never is. */
+    for (i = 0u; i < w; i++)
+        if (col + i < 320u)
+            row[col + i] = (unsigned char)colour;
+}
+
+/* Draw the airports over an already-rasterized frame.  u0/v0/step describe the
+ * same window fb_blit_scaled used, and slots were allocated in source-row
+ * order from v0, so a source row's slot is just its offset from the first. */
+static void fb_draw_airports(unsigned long u0, unsigned long v0,
+                             unsigned long step, unsigned int slots)
+{
+    const unsigned char *city = CITY_TABLE;
+    unsigned long recip = 0x01000000uL / step;   /* one divide, not 178 */
+    unsigned int first_row = (unsigned int)(v0 >> 16);
+    unsigned int show_minor = (step <= LOD_STEP);
+    unsigned int i;
+
+    for (i = 0u; i < CITY_COUNT; i++) {
+        unsigned int cx = city[i * 2u];
+        unsigned int cy = city[i * 2u + 1u];
+        unsigned long ux, vy;
+        unsigned int col, slot, major;
+
+        major = (i < CITY_MAJOR);
+        if (!major && !show_minor)
+            continue;
+
+        ux = ((unsigned long)cx << 16);
+        vy = ((unsigned long)cy << 16);
+        if (ux < u0 || vy < v0)
+            continue;
+        col  = (unsigned int)(((ux - u0) >> 8) * recip >> 16);
+        slot = cy - first_row;
+        if (col >= 320u || slot >= slots)
+            continue;
+
+        fb_mark(slot, col, major ? 3u : 2u, major ? PAL_MAJOR : PAL_MINOR);
     }
 }

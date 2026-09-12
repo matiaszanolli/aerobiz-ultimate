@@ -1364,7 +1364,7 @@ Add secondary airports (index >= 32), not major ones -- see the tier section
 above. The major tier is full at 32 and widening it is a much larger job than
 the airports themselves are worth.
 
-### U-077 -- Draw secondary airports only when zoomed in [OPEN]
+### U-077 -- Draw secondary airports only when zoomed in [DONE, in 32x-zoomtest]
 
 Level of detail on the map: zoomed out shows the 32 major airports, zooming in
 reveals the 57 secondaries. This is what keeps the map readable as U-076 grows
@@ -1381,10 +1381,35 @@ copy of the number 32. If U-070 introduces `CITY_COUNT`, this wants
 `CITY_MAJOR_COUNT` alongside it, and the two must stay consistent with the
 bitmask width.
 
-Open question, to answer with U-035: whether the zoom is continuous or a small
-number of discrete steps. Discrete steps make LOD a clean switch; continuous
-zoom needs a fade or a pop threshold, and pins popping in mid-zoom looks worse
-than it sounds. Decide this before the renderer is written, not after.
+**Built, and the prediction held: no new data was needed.** The coordinate
+table is at Genesis **`$05E948`**, two bytes per city -- x then y in map
+pixels, which is exactly the space the rasterizer works in. `DrawRouteLines`
+(`$0098D2`) reads it the same way to place route endpoints, which is how it
+was found.
+
+Verified rather than eyeballed: at 1:1 **all 32 majors land on their exact
+table coordinates** in the rendered frame, and **zero secondaries are drawn**.
+Past the threshold the secondaries appear and then vanish again on the way
+out -- yellow pixels are present only in the deepest third of the zoom cycle.
+
+**The open question is answered: a discrete threshold, not a fade.** One
+comparison against the scale, `step <= FP_ONE / 2`, so secondaries appear once
+a source pixel covers at least two dots. At this resolution a pin either reads
+or it does not; there is no intermediate size worth crossfading to, and the
+pop is hidden by the zoom motion itself.
+
+**A constraint discovered in the building, which U-032 and U-033 inherit.**
+Markers scale with the map rather than holding a constant size on screen, and
+that is forced by the line-table trick rather than chosen: display lines that
+share a slot share its pixels, so anything drawn into a slot is repeated by
+every line pointing at it. Constant-size overlays would mean giving each
+display line its own row and paying full price for the vertical axis -- which
+is precisely the cost U-035 avoids. Route arcs and aircraft sprites will scale
+too.
+
+Still open: the threshold is a renderer-side constant as the design note asks,
+but U-070's `CITY_MAJOR_COUNT` does not exist yet, so `CITY_MAJOR` is defined
+in `fb.c` and must move when it does.
 
 ### Corrections found while measuring this
 
