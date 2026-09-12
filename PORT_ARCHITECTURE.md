@@ -407,6 +407,15 @@ rate instead of Genesis CRAM tricks.
 | M5 | AI/economy offloaded to SH2 | Flagship responsiveness |
 | M6 | PWM audio | Flagship audio |
 | M7 | High-colour art and transitions | Polish |
+| M8 | More scenarios, events, aircraft and airports | The reason for the port |
 
 M3 is the gate. Everything after it is additive; everything before it is
 plumbing.
+
+M8 is the project goal -- Aerobiz Ultimate as the successor the series never
+received -- and it is sequenced last on purpose. Every content axis multiplies
+the per-city and per-route loop counts the turn cycle already spends its time
+in, so M5 moves that work to the SH2 first rather than porting it twice. M8's
+airport work additionally depends on M4: the current map is a Genesis tilemap
+with no room for more pins, so "scaling the map" is a renderer change before it
+is a data change. See ROADMAP.md M8 for the measured format ceilings.

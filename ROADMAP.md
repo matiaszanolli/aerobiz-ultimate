@@ -283,6 +283,10 @@ Each ported routine keeps its 68K implementation selectable at assembly time so
 results can be diffed against the original. Correctness first, speed second --
 this code decides the outcome of the game.
 
+M5 is also the prerequisite for M8. The content expansion multiplies exactly
+the loop counts this milestone offloads, so the AI and economy move to the SH2
+before the world grows, not after.
+
 ---
 
 ## M6 -- PWM audio
@@ -300,6 +304,135 @@ Note manual 5.3: whichever SH2 drives PWM cannot use auto-request DMA.
 ### U-060 -- Art conversion pipeline [OPEN]
 ### U-061 -- Title and city art on the 32X layer [OPEN]
 ### U-062 -- Fades and wipes as 32X palette operations [OPEN]
+
+---
+
+## M8 -- Content expansion
+
+The project goal, stated 2026-09-11: **Aerobiz Ultimate should be the successor
+the series never received** -- more scenarios, more events, more aircraft and
+more airports. Not an unbounded amount; enough that scaling the map is worth
+doing.
+
+M8 is sequenced **after M5**, deliberately. The turn cycle already spends its
+time in 68000 AI and economy code that iterates per-city and per-route arrays;
+every axis below multiplies those loop counts. Moving that work to the SH2
+first means the content work lands on a machine that can afford it, and it
+avoids porting code twice. Nothing in M8 should start until U-041 and U-042
+close.
+
+### What the format actually allows
+
+Measured 2026-09-11 against `build/aerobiz.bin` and the assembly sources; every
+number below is re-derivable with the command in the last column.
+
+| Axis | Today | Ceiling in the current format | Evidence |
+|---|---|---|---|
+| Airports | 89 | byte index, `$FF` = empty; no format ceiling below 255 | `CityNames` `$045764`, 89 full + 89 short names |
+| Aircraft (pool) | 53 | none -- ROM table, freely extendable | `AircraftStatsByRegion` `$05EDD0`, 12-byte entries |
+| Aircraft (per scenario) | 16 | **hard 16** -- `plane_type` packs two classes as nibbles | route slot `+$02`; `SortAircraftByMetric` `$00C540` fills `$C0` = 16x12 |
+| Scenarios | 4 | selector is bounds-tested 0..3 in two places | `$FF0002`; `BuildAircraftAttrTable` `$00C68A`, `HandleEventCallback` |
+| Regions | 7 | 7 -- fixed-size parallel tables | `RegionBitmaskTable` `$05ECDC`, `CharTypeRangeTable` `$05ECBC` |
+
+Each scenario shows a **sliding 16-wide window** into the 53-entry aircraft
+pool, with the window starts held in `RegionAircraftIndex` (`$05ECF8`) =
+`{0, 12, 26, 37}`. The windows overlap, which is how an aircraft stays
+available across eras. This is the single most useful structural fact for M8:
+**adding an era is cheap (a new window start plus new pool entries); adding a
+17th aircraft to an existing era is not (it changes the save format).**
+
+### Space available
+
+| Region | Size | Used | Free |
+|---|---|---|---|
+| Cart `$000000-$07FFFF` -> `$880000` fixed window | 512 KB | to `$01036F` | ~507 KB, always addressable |
+| Cart `$080000-$0FFFFF` (bank 0 upper) | 512 KB | nothing | 512 KB, needs a bank switch |
+| Cart `$100000-$1FFFFF` -> `$900000` game bank | 1 MB | 646,825 non-fill bytes | ~400 KB in-bank |
+
+Content is not constrained by ROM. The cartridge can also grow past 2 MB --
+`$A15104` selects a 1 MB bank and only bank 1 is spoken for.
+
+The two budgets that *are* tight:
+
+- **68000 work RAM, 64 KB.** Per-city arrays are fixed-stride and packed
+  against their neighbours (`city_data` at `$FFBA80` is 89 x 4 x 2 = 712 bytes;
+  the char-stat descriptor table at `$FF1298` is 89 x 4 = 356). Growing the
+  city count moves every array above it.
+- **Cartridge SRAM, 8 KB odd-addressed** (`$200001-$203FFF`). The save block is
+  read as `$2000` stride-2 bytes from `$200003 + slot * $2000`
+  (`LoadAllGameData` `$00CA3E`). More cities and more routes both grow the
+  save; the slot layout has to be re-planned before, not after.
+
+### The real cost of more airports
+
+89 is not a constant anywhere. It is the literal `#$59`, compared inline at
+**41 sites across 31 files**, and 39 files reference the `city_data` base
+`$FFBA80` directly. Any change to the city count is a mechanical sweep of all
+of them plus a work-RAM relayout -- the same shape of job as U-010/U-013, and
+the same blind spot applies: `make verify` cannot see a wrong one, because
+these sites are identical in both builds.
+
+Prerequisite: introduce a `CITY_COUNT` equate and convert all 41 sites to it
+under `make verify`, *before* changing its value. That is U-070.
+
+### Items
+
+### U-070 -- Replace the 41 hard-coded `#$59` city-count literals with an equate [OPEN]
+
+Pure refactor, value unchanged, `make verify` must still MATCH. This is the
+gate for every other airport item and is worth doing on its own -- it converts
+an unmeasurable sweep into a one-line change.
+
+### U-071 -- Relocatable work-RAM layout for per-city arrays [OPEN]
+
+Replace the fixed bases (`$FFBA80`, `$FF1298`, `$FF05C4`, ...) with equates
+derived from `CITY_COUNT`. Needed before the count can move. Depends on U-070.
+
+### U-072 -- Re-plan the SRAM save layout for a larger world [OPEN]
+
+Establish what a save costs per city and per route slot, and whether the
+existing slot count survives. Versioned save header so old saves are detected
+rather than misread. Depends on U-071.
+
+### U-073 -- Extend the aircraft pool [OPEN]
+
+Append entries to `AircraftStatsByRegion`, `AircraftModelPtrs` and the
+`AircraftModels` string pool. No format change while each scenario still shows
+16. Independent of U-070..U-072 -- the cheapest visible win in M8.
+
+### U-074 -- Additional scenarios / eras [OPEN]
+
+A new era needs a window start in `RegionAircraftIndex`, a per-scenario data
+block (the `$0164`-byte blocks at `$05F26A`+ are per-scenario variants), and
+the 0..3 bounds tests widened. Depends on U-073.
+
+### U-075 -- Additional events [OPEN]
+
+Scope not yet measured: the event tables (`EventNamePtrs` `$047D7C`,
+`UnpackEventRecord`, `HandleEventCallback`) need the same inventory treatment
+the aircraft tables just received before this item can be estimated.
+
+### U-076 -- More airports [OPEN]
+
+The headline item, and last on purpose. Depends on U-070, U-071, U-072, and on
+M4 -- the current map is a Genesis tilemap at H32, and there is no room on it
+for more pins. "Scaling the map" is M4's renderer, not a data change.
+
+### Corrections found while measuring this
+
+- `analysis/GAME_PHASE_FLOW.md` describes `LoadAllGameData` as streaming
+  scenario data from ROM and LZ-decompressing it. It does neither: it reads the
+  **save state from cartridge SRAM**. The module's own header comment is right.
+- `analysis/DATA_TABLES.md` describes `RegionAircraftIndex` as region-indexed
+  and `AircraftStatsByRegion` as "16 entries per category". The index is the
+  **scenario** (`$FF0002`), and the table is 53 entries with overlapping
+  16-wide windows.
+- `analysis/DATA_TABLES.md` calls `RegionNamePtrs` "14 entries, one per game
+  region". There are **7** regions; the 14 pointers are 7 long plus 7 short
+  name forms, the same doubling as `CityNamePtrs` (2 x 89 = 178).
+
+These are analysis-doc errors, not code errors, and are left recorded here
+rather than silently patched.
 
 ---
 
