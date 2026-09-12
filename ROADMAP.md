@@ -324,7 +324,7 @@ The map is on the layer and scaling (U-030, U-031, U-035). What remains is the
 screen it lives on (U-036), the things drawn over it (U-032, U-033), and
 retiring the Genesis renderer it replaces (U-034).
 
-### U-036 -- Switch the map screen to H40 [SCOPED]
+### U-036 -- Switch the map screen to H40 [CAUSE FOUND, fix open]
 
 The gate U-003 landed on. The map screen has to run 40 tiles per line for its
 Genesis overlay to register against a 32X-drawn map; every other screen stays
@@ -470,12 +470,54 @@ those figures were meaningless. Redo it with `tools/extract_map.py`, which
 renders a plane correctly and makes the answer visible rather than
 statistical.
 
-Next step is a cell-by-cell diff of plane A between stock and the 64-cell
-build **on the same screen**. That is the piece missing so far: display-mode
-and geometry changes make the demo diverge, so the two builds are never on the
-same screen at the same frame, and every comparison to date has been between
-different screens. Match the screens by content first, then diff the
-nametable; the wrong cells will identify the writer.
+**Found, with U-092.** The cell-by-cell diff this was waiting for, taken at a
+matched screen, and the answer is not corruption at all.
+
+First, a confound that had to go. Comparing the stock build against the
+64-cell build is worthless: at every matched screen the only differing VDP
+register is **reg 12** (`$00` vs `$81`), i.e. H32 against H40, and that alone
+makes 40-50% of pixels differ. Every earlier "the plane change breaks this
+screen" reading was partly measuring the display mode. The controlled pair is
+`32x-h40` against `32x-h40map` -- both H40, differing only in plane geometry.
+Those two run **frame-locked, zero drift**, which makes the comparison direct.
+
+With that control: frames 2250-2400 and 4230-4360 are **pixel-identical**, and
+frames 400-660 differ in **every** frame. So the damage is confined, not
+general. The screen is the KOEI logo, and the logo itself renders perfectly --
+what appears is a block of stale colour in the right ~64 pixels.
+
+The nametable says why, at plane A of the same frame:
+
+| | cols 0-31 | cols 32-63 |
+|---|---|---|
+| `32x-h40` (32x128) | content, 112 cells written | *do not exist* |
+| `32x-h40map` (64x64) | **byte-identical content** | **all `$0000`** |
+
+**The engine writes the visible columns correctly. Nothing ever initialises
+the new ones.** A cell of `$0000` is tile 0 at palette line 0, and tile 0
+holds real graphics -- the tile area is 1,534 of 1,536 full -- so the block on
+the right is a real tile shown through the wrong palette. The 32-cell plane
+wrapped columns 0-63 into that space, which looked correct by accident; the
+64-cell plane shows uninitialised nametable instead.
+
+That also explains the "repeated glyphs tiled across the background" seen on
+Regional Rankings: same cause, different stale contents.
+
+**So the fix is initialisation, not arithmetic**, and the five eliminated
+hypotheses were all eliminated correctly -- the engine's address path really
+does handle HSZ properly. What is missing is a clear of the widened plane.
+That is a much smaller job on the map screen alone, which is what U-003 already
+decided, than it would have been globally.
+
+Remaining work on this item:
+
+- Find what clears the plane at screen init and why it stops at 32 columns --
+  the audit line "anything else assuming 32 cells" is now pointed at a
+  specific routine rather than at the whole engine.
+- Apply the geometry change to the map screen only, with the extra columns
+  filled, and re-run the same controlled comparison.
+- Note the patch actually selects `$11` (64x64), not the `$01` (64x32)
+  recorded above; harmless, since only HSZ matters, but the note was wrong.
 
 **The useful conclusion is about scope, not the bug.** The screens that break
 are ranking and status screens; the map-bearing screens survive. This
