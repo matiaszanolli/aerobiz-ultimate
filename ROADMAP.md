@@ -154,10 +154,39 @@ re-lay-out from 32 tiles to 40, and it confines the H40 switch -- and the
 backdrop change -- to one place. The rest of the game stays H32 with the layer
 blanked, exactly as it is today.
 
-*This settles the design question, not the hardware one.* PicoDrive's stretch
-is emulator behaviour; manual 3.3's requirement remains unverified on real
-hardware, and so does what a real 32X does with an H32 input. Both go on the
-§5 list rather than being treated as answered.
+**How far to trust this.** The stretch is not an emulator shortcut. PicoDrive
+models a specific hardware mechanism, and says so in `pico/32x/draw.c:11-19`:
+
+> 32X officially doesn't support H32 mode. However, it does work since the
+> cartridge slot carries the EDCLK signal which is always H40 clock and is
+> used as video clock by the 32X. The H32 MD image is overlaid with the 320 px
+> 32X image which has the same on-screen width.
+
+That is the whole explanation. H32 and H40 fill the same visible width; H32
+just uses fewer, wider pixels; the 32X always clocks video at H40 off EDCLK.
+So 256 MD pixels landing on 320 32X pixels is physics, not emulation, and the
+1.25x scale mismatch would be there on a real console. Manual 3.3's "must be
+320-wide" turns out to mean *officially unsupported*, not *broken*.
+
+Worth noting the core is FAME/C here (`fm68k_emulate`), not Musashi -- but the
+68000 core is irrelevant to this question either way; the compositing is
+PicoDrive's own 32X code.
+
+Two things are still genuinely open, both narrower than the original doubt:
+
+- **The backdrop.** The same comment says the `/YS` signal, which is what
+  signals display of the background colour, is of "unclear" handling in H32
+  and "might lead to glitches due to race conditions by the different video
+  clocks". Our observation that the Genesis backdrop goes transparent is
+  exactly that path, so it is the finding to distrust -- not the geometry.
+- **The 4-pixel offset.** `draw.c` applies `H32_OFFSET 4` between the MD and
+  32X layers in H32. Scanning offsets against the captured frames, the best
+  match is at 0, so it is already inside the composite rather than a residual
+  shift -- but it is a hardware detail worth re-checking if H32 compositing is
+  ever relied on.
+
+Neither affects the decision: the map screen goes H40, where none of this
+applies.
 
 ---
 
