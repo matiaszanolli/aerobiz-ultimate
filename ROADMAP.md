@@ -751,7 +751,53 @@ source sprite magnified 4x is a 4x4-blocky plane. Either accept that, matching
 the map's own pixels, or carry two or three sprite sizes and switch on the
 same threshold U-077 uses for the airport tiers. Decide it with U-033, since
 both want the same sprite pipeline.
-### U-034 -- Retire the Genesis-side map renderer [OPEN]
+### U-034 -- Retire the Genesis-side map renderer [OPEN, scoped]
+
+What is being retired is larger than "the map": `LoadMapGraphics` (`$03C1B8`,
+1,252 bytes) decompresses the route and city tile sets and tiles them to VRAM,
+and `RunWorldMapAnimation` (`$039EAA`, 1,668 bytes) runs the animated map
+display. Both are reached from `GameSetup2`.
+
+**The hard part is not drawing, it is hit-testing -- and it turns out to be
+U-081's problem wearing a different hat.** `HitTestMapTile` (`$007B1E`) tests a
+screen (X, Y) against hit-rectangle tables in ROM at `$05E9FA` and `$05ECBC`
+and returns **a region, or `$FF`**. So the map's interaction model is a set of
+fixed screen rectangles that resolve to one of the seven subcontinents. Those
+tables *are* the subcontinent views. Any zoom or pan invalidates every
+rectangle in them, because they are screen coordinates for a map that no longer
+sits still.
+
+That merges the two items: U-034 cannot keep the existing hit test once the map
+moves, and U-081 wants the regions gone anyway. The replacement is the same in
+both cases -- hit-test against **city coordinates** rather than region
+rectangles, which U-032 already showed is a solved problem: the table at
+`$05E948` is two bytes per city in map space, and the transform from map space
+to screen is the one the rasterizer already computes. Pick the nearest city
+within a radius, scaled by the zoom.
+
+**Ordering correction.** An earlier note here said U-034 comes first and U-081
+follows. It is the other way round in one respect: **U-036 must land before
+U-034**, because the map screen has to be H40 before the layer can be shown
+under it without the 1.25x mismatch U-003 measured. The good news is that
+`SetScrollQuadrant` is already called per screen from seven sites, including
+`RunWorldMapAnimation` -- so U-036 applied to the map screen alone is a change
+at one call site, not a global one, which is exactly the scope U-003 asked for
+and the global experiment was never meant to be.
+
+Staged plan:
+
+1. **U-036, map screen only.** One `SetScrollQuadrant` call site. Verify with
+   U-092 and the layer blanked, which is the control the global experiment
+   lacked.
+2. **Turn the layer on for that screen**, `PRI = 0`, Genesis chrome in front,
+   and blank the Genesis map tiles so the SH2 map shows through. This is where
+   the two deferred decisions land: the 64 transparent columns from U-036 stop
+   being a defect and become the point, and **U-046's frame-buffer scratch at
+   `$012000` collides with a live layer** and has to move or be interlocked.
+3. **Replace the hit test** with city-proximity in map space, shared with
+   U-081.
+4. **Then** delete the Genesis renderer, not before -- keeping it selectable is
+   what lets the two be diffed, which is M5's rule and the reason U-039 exists.
 
 ### U-035 -- Map scaling (zoom) [DONE, emulator; hardware pending]
 
