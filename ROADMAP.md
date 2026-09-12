@@ -778,8 +778,9 @@ function. The PC is reachable from outside only through the savestate --
 `CHUNK_M68K` (id 1) carries it as a **little-endian** longword at offset
 `$40` -- so the frontend serialises into a reusable buffer each frame and
 reads that field. 426,000 frames cost 70 seconds. The addition is kept as
-`tools/profiling-frontend-pc-sampler.patch` against the upstream
-`profiling_frontend.c`; nothing in `../32x-playground` was modified.
+the frontend (**since upstreamed into `../32x-playground` as
+`VRD_FRAME_FINGERPRINT`, where the PC is one column of several -- see
+U-093**).
 
 Symbol attribution comes from the `N bytes | $xxxxxx-$yyyyyy` header line each
 module carries -- 752 of them have one.
@@ -834,7 +835,7 @@ Now has a target to beat: it must move enough state per transfer that the
 per-call cost measured in U-039 is amortised well below 560 cycles per unit of
 work.
 
-### U-046 -- Offload LZ decompression to the SH2 [ANALYSED, blocked on U-093]
+### U-046 -- Offload LZ decompression to the SH2 [ANALYSED, ready to build]
 
 The measured hot spot: **11.93% of all gameplay frames**, 3.4x the next item,
 and the bulk of the 74-76 frame stalls at each quarter boundary. Those stalls
@@ -907,10 +908,13 @@ Where batching actually applies: the call sites interleave
 batch naturally. The place they cluster is the quarter-boundary stall, which
 is also the user-visible one. Target those sites, not all 92.
 
-**Blocked, deliberately, on emulator work.** The one number that decides the
-design -- how fast the SH2 decompresses -- is exactly what PicoDrive cannot
-say: no cache model, no SDRAM latency, no bus contention. Writing the SH2
-decompressor now would produce a benchmark that is fiction. See U-093.
+**Was blocked on emulator work; U-093 has now landed.** The one number that
+decides the design -- how fast the SH2 decompresses -- is one PicoDrive could
+not produce. It can now: `VRD_SH2_TIMING=1` on the interpreter core models the
+cache and the wait states, validated to the cycle against the manuals. The
+decompressor can be written and measured against the 285 cycles/byte the 68000
+costs. Bus contention is still not modelled, which is why the batching case
+rests on FM handover and the frame-buffer FIFO instead.
 
 ### U-041 -- Port quarterly processing to the SH2 [OPEN, no measured benefit]
 ### U-042 -- Port the AI decision tree to the SH2 [OPEN, no measured benefit]
@@ -1214,28 +1218,92 @@ linked against libgcc for `__udivsi3`, with `.bss` bounds exported from
 `sh2.lds` and cleared by `master_start` before any C runs. That code ships in
 `build/aerobiz-ultimate.32x`.
 
-### U-092 -- Screen-matched comparison harness [OPEN]
+### U-092 -- Screen-matched comparison harness [DONE]
 
-Three times now a change has made the demo diverge, so the two builds are on
-different screens at the same frame and any frame-to-frame comparison is
-meaningless. It has caused two wrong conclusions this session alone, both
-caught only by re-checking:
+Three times a change made the demo diverge, putting two builds on different
+screens at the same frame number and making frame-to-frame comparison
+meaningless. It caused two wrong conclusions in one session.
 
-| Cause of divergence | Where it bit |
+Fixed in two halves. The frontend gained `VRD_FRAME_FINGERPRINT=<csv>`: one row
+per frame with the 68000 PC and hashes of VRAM, CRAM, VSRAM and the VDP
+registers, all from a single `retro_serialize` into a reusable buffer. VRAM and
+CRAM identify a screen -- the loaded tile set and palette change when the
+screen changes and hold still while it is displayed. `tools/match_screens.py`
+then pairs frames showing the same screen.
+
+**Choosing the key is the part that matters**, and the default is not always
+right. `--key=both` (VRAM + CRAM) is the most specific. `--key=cram` is the one
+to use when the change under test rewrites VRAM itself -- a plane-geometry or
+display-mode change moves the nametable, so a VRAM key matches nothing and
+reports "these builds never show the same screen", which is true and useless.
+
+Validated on the case it was built for. Stock 32X build against the H40 build,
+3,000 frames each:
+
+| | |
 |---|---|
-| input timing shifted by one frame | U-021 -- game length 433,515 vs 172,286 frames |
-| display mode changed | U-036 -- H40 build on the world map, stock on the Quarterly Report, same frame |
-| plane geometry changed | U-036 -- "the plane change renders correctly", from one lucky screen |
+| Distinct screens | 56 in each |
+| Shared (`--key=cram`) | **56 of 56** |
+| Screen order | agrees |
+| Frame drift | constant **+7** |
 
-What is needed is a harness that **matches screens by content and then
-compares**, rather than trusting frame numbers: hash the tile set or the UI
-region, find the frame in each build showing the same screen, and diff work
-RAM or the nametable there. This is the thing currently blocking U-036's
-cell-by-cell plane A diff.
+So frame 2315 in the stock build is frame 2322 in the H40 build, same screen,
+100 frames long. **This unblocks U-036.**
 
-The PC sampler from U-045 is the starting point -- it already serialises
-per frame cheaply (426,000 frames in 70 seconds) and knows how to read the
-savestate chunks. See `tools/profiling-frontend-pc-sampler.patch`.
+It also reproduces a number that was previously measured by hand: the Genesis
+build against the 32X build drifts +0 to +6 frames, which is U-013's "offset by
+five frames of adapter bring-up", now derived automatically.
+
+### U-093 -- Make PicoDrive the instrument this project needs [DONE]
+
+U-046 stalled on a number the emulator could not produce, so the emulator got
+the work instead. All of it in `../32x-playground`, all of it **opt-in**: the
+permissive behaviours are what every existing measurement and every other game
+depends on, and a silent shift would invalidate them.
+
+| Env | What it adds |
+|---|---|
+| `VRD_SH2_TIMING=1` | SH2 wait states (32x manual 4.1) and a timing-only SH7604 cache (sh7604 section 8) |
+| `VRD_SH2_TIMING_WAIT` | `min`/`max`/`mid` within the manual's ranges, so results are quoted as a range |
+| `VRD_RV_EMULATION=1` | the `RV` bit actually switching the cartridge windows |
+| `VRD_FRAME_FINGERPRINT` | per-frame screen identity (U-092) |
+| `VRD_RAM_TRACE` | one 68000 RAM value per frame |
+
+Two cores are now built by `build_cores.sh`, because they cannot share an
+object tree -- the Makefile has no dependency on `use_sh2drc`, so switching it
+reuses stale objects. `picodrive_libretro.so` is the DRC core for long
+profiling runs; `picodrive_libretro_timing.so` is the interpreter core and the
+only one where the timing model works, since the recompiler keeps the live
+cycle count packed in SR around a memory call. The model **refuses to enable**
+under the DRC rather than silently ignoring every wait state.
+
+**Validated, not asserted.** `make 32x-timingtest` makes a known number of
+accesses of one kind; measured by slope between two iteration counts so fixed
+overhead cancels. Over 1,000,000 accesses each:
+
+| Access | Measured | From the manual |
+|---|---|---|
+| cache-through SDRAM longword read | **11.0000** | 12-clock burst − 1 |
+| frame buffer word write | **2.0000** | 2 + 1 wait − 1 |
+| cache-through cart ROM longword read | **7.0000** | 2 + 6 wait − 1 |
+
+**What it found immediately.** The SH2 slave had never enabled its cache, so
+every fetch of its two-instruction idle spin was an 8-word SDRAM burst: 139.4M
+wait cycles against the master's 19.3M, for a CPU doing nothing. Fixed; now
+472,472, a 295x reduction.
+
+**`RV` is no longer unverifiable-in-principle, only unverified-on-hardware.**
+Upstream stores the bit and acts on nothing, leaving both cartridge windows
+readable where hardware offers one. With it enforced, the Aerobiz 32X build ran
+3,000 frames through **233 mapping changes** with **100 of 100 captured frames
+identical** to the baseline -- so the U-020 DMA thunk works against the
+documented model. The transition counter exists because "no change" and "never
+fired" look identical otherwise.
+
+What is still out of reach, and stated so it is not forgotten: whether hardware
+really unmaps `$880000` while `RV` is set, whether a longword access to a
+16-bit port is one bus cycle or two, and contention between the two SH2s and
+the 68000 on the cartridge bus. HARDWARE_TESTS items 6 and 7.
 
 ### U-091 -- Emulator harness for automated boot tests [DONE]
 
