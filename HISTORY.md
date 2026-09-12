@@ -9,6 +9,107 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-12
+
+Nine commits, and the useful output was mostly negative results. Recorded here
+because the beliefs they overturned were this project's own, written down with
+more confidence than the evidence supported.
+
+### The 32X layer works, and the display-mode question is settled
+
+U-002: `make 32x-fbtest` paints the line table, palette and 224 lines from C on
+the SH2. Five consecutive frames hash identically. Pinned down: line table is
+256 words at the buffer head, packed-pixel lines are 160 words, palette is
+`through:1 B:5 G:5 R:5`, `FM = 1` hands over the frame buffer *and* the 32X VDP
+registers, an `FS` write lands only at the next V-Blank, and word writes
+throughout because a byte write cannot store zero.
+
+U-003 resolved by measurement. In H32 the Genesis and 32X layers sit at
+**1.25x different scales** -- measured 95.6% pixel match for a nearest-neighbour
+256->320 stretch against 85.0% centred and 83.4% left-aligned, with content
+spanning 8-230 becoming 10-288. In H40 they are **100.00% identical** over the
+5,077 non-backdrop pixels of a test frame.
+
+**Believed wrong:** that this was emulator behaviour pending hardware. It is
+physics -- `pico/32x/draw.c:11-19` explains that the cartridge slot carries
+EDCLK, always the H40 clock, which the 32X uses as its video clock; H32 and H40
+fill the same on-screen width with different pixel counts. Manual 3.3's "must
+be 320-wide" means *officially unsupported*, not *broken*.
+
+### M5's premise was false
+
+U-039 measured the comm-port round trip at a flat **~560 68000 cycles**,
+independent of payload -- 228 calls/frame whether the SH2 does a cheap divide
+or an expensive one. U-044 then offloaded `UnsignedDivide`'s slow path
+correctly (12,000 frames bit-identical in work RAM, VRAM, CRAM, VSRAM and
+registers) and found it is **never called**: zero in 200,000 frames.
+
+U-045 profiled properly, sampling the 68000 PC from the savestate once per
+frame across a full 20-year demo game, 418,549 gameplay frames:
+
+| | share |
+|---|---|
+| idle in `CmdWaitFrames` | 69.5% |
+| graphics and decompression | 20.4% |
+| everything else | 10.1% |
+
+with the LZ decompressor at `$003F70-$004220` alone at **11.93%**, and **no AI
+or economy routine in the top 25**.
+
+**Believed wrong:** that the turn cycle is spent in AI and economy code, and
+that offloading it would buy responsiveness. M5 was rescoped to the measured
+hot path and M8's dependency on it removed.
+
+**Believed wrong:** that picking an offload target by reading the code was
+sound. `UnsignedDivide`'s slow path looked like the best candidate in the whole
+math module -- pure, self-contained, comfortably above break-even -- and its
+dynamic call count is zero.
+
+### U-036 is unsolved, after five eliminated hypotheses
+
+64-cell planes corrupt some screens. Ruled out: H40 itself (fine alone), the
+`cmpi.w #$20` gate in `UpdateScrollDisplay` (patched, frame hashes identically),
+vertical plane size (64x32 and 64x64 give byte-identical frames), horizontal
+scroll wrapping (hscroll is `(2,2)` in both builds, reg 11 `$00`), and the
+central address path (`ComputeMapCoordOffset` and `CmdDMABatchWrite` both scale
+by the register-16 shadow and trap on the prohibited HSZ=2).
+
+The engine turned out to be *more* parameterised than expected: plane geometry
+is table-driven through `SetScrollQuadrant`, whose table at `$04737E` already
+contains 64x64, and the BAT row stride is a variable at `$FFA77E`.
+
+**Believed wrong, twice, both from a single frame:** that the plane change
+rendered correctly (it was one lucky screen; Regional Rankings is corrupt), and
+that the corruption was in plane A (that rested on byte-swapped nametable
+reads and is withdrawn).
+
+### The measurement traps cost more than the code
+
+Three findings in this session came from *reading the instrument wrong*, and
+all three are now in [KNOWN_ISSUES.md](KNOWN_ISSUES.md): savestates store VRAM,
+CRAM and work RAM **byte-swapped**; debug reads return zero for `$A151xx`, so a
+counter in a comm register cannot be distinguished from "never called"; and any
+timing change makes the demo diverge, so **frames from two builds cannot be
+compared at the same frame number**.
+
+The last one is the expensive one. It has now caused a wrong conclusion three
+times -- once via input timing in U-021, twice here -- and U-092 exists to fix
+it properly.
+
+### Also
+
+- `m3-full-game-32x` tagged and pushed.
+- SH2 C toolchain closed (U-090) -- not merely available but shipping, two C
+  files in `build/aerobiz-ultimate.32x`.
+- M8 written up with measured content ceilings: 32 major airports (a full
+  32-bit region bitmask), 57 secondary, 53 aircraft with 16 visible per era
+  through sliding windows, 4 scenarios, 7 regions.
+- `tools/extract_map.py` renders a Genesis plane out of a savestate; the world
+  map comes out at 256x224 with 24 distinct palette indices.
+- `HARDWARE_TESTS.md` added -- five questions only a real 32X can answer.
+
+---
+
 ## 2026-09-11 (U-021)
 
 ### A full game, a save and a load, on the 32X

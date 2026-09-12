@@ -219,3 +219,55 @@ Manual 3.2.1 / 3.4: with `RV = 1` the SH2 stalls on any cartridge access until
 the 68000 clears it. The 68000 needs `RV = 1` for Genesis VDP DMA from ROM, so
 these two requirements are in direct conflict. See PORT_ARCHITECTURE.md §5.3 --
 this is the port's highest-risk open item.
+
+---
+
+## Emulator and tooling traps (PicoDrive / libretro harness)
+
+Each of these cost real time in the 2026-09-12 session, and each is invisible
+until you know it: the wrong answer looks like a plausible finding about the
+game rather than a broken measurement.
+
+### Savestates store VRAM, CRAM and work RAM byte-swapped
+
+A logical byte at address `a` is at index `a ^ 1`; a logical word is a
+**little-endian** read. Read big-endian, a tilemap renders as convincing
+coloured noise, and tile-distribution statistics come out meaningless while
+still looking like data.
+
+Cheap check: Genesis CRAM entries are `0000 bbb0 ggg0 rrr0`. Read the first 16
+both ways and count how many match the pattern -- it was 16/16 little-endian
+against 4/16 big-endian. `tools/extract_map.py` does this correctly.
+
+### Debug reads return zero for the `$A151xx` I/O range
+
+`vrd_debug_read` serves RAM but not 32X system registers, so a counter parked
+in a comm register reads as zero -- **indistinguishable from "never called"**.
+Put anything you intend to sample from outside in SDRAM (`read master <addr>`)
+or work RAM, and validate the read path against a case you know is non-zero
+before trusting a zero.
+
+### Any timing change makes the demo diverge
+
+Shifting input by one frame, changing display mode, or changing plane geometry
+all send the AI demo down a different path. Two builds are then on **different
+screens at the same frame number**, so frame-to-frame comparison is
+meaningless. It produced two wrong conclusions in one session, both from
+looking at a single frame.
+
+Compare 68000 work RAM, or match screens by content first. Never compare
+captured frames across builds by frame number.
+
+### `$FF0006` is not a usable frame counter
+
+`analysis/RAM_MAP.md` calls it "incremented each MainLoop iteration". In
+practice it is cleared and sits at 1 for an entire game. `GAME_PHASE_FLOW.md`
+even notes a `clr.w $FF0006` described as dead code. Do not use it as a clock.
+
+### Harness preconditions fail loudly but early
+
+`VRD_INPUT_SCRIPT` must have **exactly** `max_frames` rows, and
+`VRD_VIDEO_DUMP_END` must be **strictly less than** `max_frames`. Violate
+either and the run aborts before the core starts -- which reads as "the test
+produced nothing" rather than "the test never ran".
+
