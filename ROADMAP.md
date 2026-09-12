@@ -645,11 +645,36 @@ indices: three pairs collapse in the BGR333 -> BGR555 -> RGB565 round trip.)
 An exact-colour comparison is *not* the right test here, because it would be
 testing PicoDrive's output conversion rather than the renderer.
 
+**Now sourced from a clean screen.** The first asset came off the Quarterly
+Report, so it carried the coloured panel frames. Sampling states across a demo
+game for one where plane A is *entirely* index 0 finds a screen showing the
+bare world map: 256x224 in **14 palette indices, all from a single Genesis
+palette row**. That is the asset now.
+
+**Where the real source lives.** `LoadMapTiles` (`$01DE92`) builds the map by
+decompressing five ROM blocks through the routine at `$3FEC`:
+
+| Block | Then |
+|---|---|
+| `$04943A` | `DrawTileGrid($0740, $000A, $0002, buf)` |
+| `$04959E` | `ProcessTextControl($0760, $0014, buf)` |
+| `$04E1D8` | helper at `$01D568`, target `$077D` |
+| `$04E1EC` | helper at `$01D568`, target `$077F` |
+| `$04E230` | helper at `$01D568`, target `$077E` |
+
+Reading those directly means reimplementing that decompressor. **That work pays
+twice**: it is the same routine U-046 wants to move to the SH2 -- 11.93% of
+gameplay frames -- so understanding it well enough to reimplement in Python for
+build-time extraction is the specification for the SH2 port. Do it once, use it
+for both.
+
 Still to do before this closes:
 
-- The source is a **screen grab of plane B**, so it carries the coloured panel
-  frames along with the map and is specific to one screen. The real source is
-  the map's own ROM data.
+- **The build is not hermetic.** `build/map_asset.bin` comes from a savestate
+  that is not in the repository, so the asset cannot be regenerated from a
+  clean checkout. The Makefile now fails with an explanation rather than
+  make's "no rule to make target", but the real fix is the ROM-data path
+  above.
 - Nothing scrolls or zooms yet; this is a static blit. U-035 is where the
   geometry gets interesting.
 - The map is 256 wide against the layer's 320. Filling the extra 64 needs

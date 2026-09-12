@@ -185,6 +185,18 @@ $(BUILD_DIR)/aerobiz-ultimate-maptest.32x: $(BUILD_DIR)/32x_boot_maptest.bin $(G
 	@cat $(BUILD_DIR)/32x_boot_maptest.bin $(GAME_HALF) > $@
 	@echo "==> Build complete: $@"
 
+# The map asset is not reproducible from the repository yet -- it is extracted
+# from a savestate, which is not checked in. Fail with an explanation rather
+# than make's "no rule to make target". Fixing this properly means reading the
+# map's compressed ROM data instead; see ROADMAP U-031.
+$(BUILD_DIR)/map_asset.bin:
+	@echo "ERROR: $@ is missing."; \
+	 echo "  Generate it with:"; \
+	 echo "    python3 tools/make_map_asset.py <savestate> $@"; \
+	 echo "  It needs a savestate on a screen showing the bare world map"; \
+	 echo "  (plane A empty). See ROADMAP.md U-031."; \
+	 exit 1
+
 $(BUILD_DIR)/32x_boot_maptest.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) $(BUILD_DIR)/map_asset.bin | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half, map test (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -DMAPTEST=1 -o $@ $<
