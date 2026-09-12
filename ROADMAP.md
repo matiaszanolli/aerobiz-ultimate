@@ -784,11 +784,50 @@ under it without the 1.25x mismatch U-003 measured. The good news is that
 at one call site, not a global one, which is exactly the scope U-003 asked for
 and the global experiment was never meant to be.
 
+**Three findings from scoping stage 1, one of which corrects this file.**
+
+*The gameplay map screen is 32x64, not 32x128.* Measured directly: a savestate
+at the world map in the demo reads **`reg16 = $10`**, `reg12 = $00`, plane B
+carrying the map and plane A nearly blank. U-036 recorded "the game runs
+`(3,0)` -> `$30`, 32 x 128", which was measured on other screens -- the KOEI
+logo reads `$30` -- and does not describe the map.
+
+*So the H40MAP experiment never tested the map screen.* It patched the `(3,0)`
+site in `GameSetup2`, which governs those other screens. That is why the
+map-bearing screens "survived" while ranking screens broke: the patch changed
+everything **except** the thing U-036 exists to change.
+
+*And the engine already ships a 64-cell plane.* `RenderEndingCredits`
+(`$05ECBC` region, call site line 123) passes `(1,1)`, which is table entry
+**`$11` -- 64 x 64**. The original game runs a 64-cell horizontal plane for its
+own ending credits. That is independent corroboration of U-036's conclusion,
+arrived at from a completely different direction than the pixel comparison:
+the engine handles HSZ = 64 because it has always had to.
+
+Quadrant usage across all seven call sites:
+
+| Site | quadrant | reg 16 |
+|---|---|---|
+| `RunWorldMapAnimation`:23 | (1,0) | `$10` 32x64 |
+| `GameSetup2`:13 | (1,0) | `$10` 32x64 |
+| `InitStatusScreenGfx`:17 | (1,0) | `$10` 32x64 |
+| `GameSetup2`:84 | (3,0) | `$30` 32x128 |
+| `RenderEndingCredits`:123 | **(1,1)** | **`$11` 64x64** |
+| `RunWorldMapAnimation`:593, `RenderPlayerStatusUI`:14 | (0,0) | restore |
+
+Open before stage 1 can be written: **which of the three `(1,0)` sites is live
+for the gameplay map.** `InitStatusScreenGfx` is plainly not it, but
+`GameSetup2` and `RunWorldMapAnimation` both set the same quadrant and the
+savestate cannot say which ran last. Trace it rather than guess -- the
+size-neutral form is known (`moveq #1,d0 / move.l d0,-(a7)` twice, six bytes
+for six, which is what the H40MAP experiment used), so the only missing piece
+is where to put it.
+
 Staged plan:
 
-1. **U-036, map screen only.** One `SetScrollQuadrant` call site. Verify with
-   U-092 and the layer blanked, which is the control the global experiment
-   lacked.
+1. **U-036, map screen only.** One `SetScrollQuadrant` call site, once the
+   three above are told apart. Verify with U-092 and the layer blanked, which
+   is the control the global experiment lacked.
 2. **Turn the layer on for that screen**, `PRI = 0`, Genesis chrome in front,
    and blank the Genesis map tiles so the SH2 map shows through. This is where
    the two deferred decisions land: the 64 transparent columns from U-036 stop
