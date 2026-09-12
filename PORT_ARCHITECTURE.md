@@ -408,7 +408,7 @@ and what a pass looks like.
 | M2 | Rebased Aerobiz runs to the title screen on 32X | Rebasing correct |
 | M3 | Full game playable on 32X, 32X layer blank | Item 5.3 resolved -- the real gate |
 | M4 | World map on the 32X layer | Flagship visual |
-| M5 | AI/economy offloaded to SH2 | Flagship responsiveness |
+| M5 | SH2 offload of the measured hot path (decompression, graphics) | Throughput where it is actually spent |
 | M6 | PWM audio | Flagship audio |
 | M7 | High-colour art and transitions | Polish |
 | M8 | More scenarios, events, aircraft and airports | The reason for the port |
@@ -417,9 +417,11 @@ M3 is the gate. Everything after it is additive; everything before it is
 plumbing.
 
 M8 is the project goal -- Aerobiz Ultimate as the successor the series never
-received -- and it is sequenced last on purpose. Every content axis multiplies
-the per-city and per-route loop counts the turn cycle already spends its time
-in, so M5 moves that work to the SH2 first rather than porting it twice. M8's
+received -- and it is sequenced last on purpose. It was also placed behind M5,
+on the reasoning that content multiplies the AI and economy loops; U-045
+retired that, measuring the 68000 idle 69.5% of the time with no AI or economy
+routine in the top 25. M5 is no longer a prerequisite, though re-profiling
+after M8 is worthwhile. M8's
 airport work additionally depends on M4, and specifically on U-035, the map
 zoom: at H32 on a Genesis tilemap there is nowhere to put more pins legibly.
 The two justify each other -- the zoom is the flagship visual, and the content

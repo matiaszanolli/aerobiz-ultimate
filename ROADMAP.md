@@ -14,6 +14,34 @@ work is complete.
 
 ---
 
+## State of play, 2026-09-12
+
+**Done and shipping.** The game runs on the 32X (`m3-full-game-32x`), the
+Genesis ROM is still byte-identical, the 32X layer works, and the SH2 runs C
+that is part of the shipping cartridge.
+
+**What the measurements changed.** Three findings redirected the plan, and all
+three contradicted something this roadmap previously asserted:
+
+| Finding | What it overturned |
+|---|---|
+| U-045: the 68000 is idle **69.5%** of gameplay; no AI or economy routine in the top 25; the LZ decompressor alone is **11.93%** | M5's premise. It was "AI and economy on the SH2, for responsiveness"; there is no queue to shorten. Rescoped to the hot path, and M8 no longer waits on it |
+| U-003: H32 puts the Genesis and 32X layers at **1.25x different scales**, for a hardware reason (EDCLK is always the H40 clock) | §4.1 as written. The map screen must run H40, and only that screen |
+| U-039/U-044: a comm-port round trip costs **~560 68000 cycles** flat, and the one offload that looked ideal is **never called** | The idea that per-call offload is the mechanism. Batching is |
+
+**Critical path.** M4. U-030 and U-031 (map onto the 32X layer) are unblocked
+and are the next real work. U-036 is blocked on a bug whose cause has survived
+five hypotheses, and which needs U-092 before it can be found.
+
+**Honest state of the evidence.** Everything is PicoDrive; nothing has run on
+real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the five
+questions only a console can answer. And any change that perturbs timing makes
+the demo diverge, so frames from two builds cannot be compared at the same
+frame number; that has produced two wrong conclusions already and is why U-092
+exists.
+
+---
+
 ## M1 -- Adapter bring-up
 
 ### U-001 -- Verify the milestone-1 cartridge actually boots [DONE]
@@ -532,8 +560,20 @@ Still open: what breaks in the H40 + 64x32 combination, the literal
 `cmpi.w #$20` in `UpdateScrollDisplay`, and the backdrop going transparent with
 the layer on (U-003; item 3 in [HARDWARE_TESTS.md](HARDWARE_TESTS.md)).
 
-Do this before U-030: the data path is shaped by what the renderer is allowed
-to assume about geometry.
+**No longer blocks U-030.** It was placed before the map data path on the
+reasoning that the renderer's geometry assumptions depend on it. Two findings
+since say otherwise:
+
+- **Plane B is the world map; plane A is the UI.** Measured in-game: plane B
+  carries 34 distinct tiles with no dominant one, while plane A is 79% a single
+  filler tile. U-030 and U-031 replace *plane B*, and the H40 corruption is in
+  *plane A*.
+- Once the map is on the 32X layer, plane B goes blank on the Genesis side and
+  its geometry stops mattering at all.
+
+So U-030 and U-031 can proceed now. U-036 is still needed before the layer
+goes live during play -- the plane A UI must fill 40 columns in H40 -- but it
+gates the *switch-on*, not the renderer.
 
 ### U-030 -- Map data path to the SH2 [OPEN]
 ### U-031 -- Packed-pixel map renderer on the SH2 master [OPEN]
@@ -579,7 +619,19 @@ have measured budgets. Neither milestone should assume it owns both CPUs.
 
 ---
 
-## M5 -- AI and economy on the SH2
+## M5 -- SH2 offload of the measured hot path
+
+**Rescoped 2026-09-12 by U-045.** This milestone was "AI and economy on the
+SH2", justified as flagship responsiveness. The profile says that premise is
+false: over a full 20-year demo game the 68000 is **idle 69.5% of the time**,
+and **not one AI or economy routine appears in the top 25**. There is nothing
+to win there.
+
+What is actually hot is graphics -- 20.4% of gameplay frames, over half of it
+in one routine, the LZ decompressor at `$003F70-$004220`. So the milestone
+keeps its purpose (move work the 68000 cannot afford onto the SH2) and changes
+its target.
+
 
 ### U-039 -- Comm-port RPC and the break-even measurement [DONE]
 
@@ -741,17 +793,38 @@ Now has a target to beat: it must move enough state per transfer that the
 per-call cost measured in U-039 is amortised well below 560 cycles per unit of
 work.
 
-### U-041 -- Port quarterly processing to the SH2 [OPEN]
-### U-042 -- Port the AI decision tree to the SH2 [OPEN]
+### U-046 -- Offload LZ decompression to the SH2 [OPEN]
+
+The measured hot spot: **11.93% of all gameplay frames**, 3.4x the next item,
+and the bulk of the 74-76 frame stalls at each quarter boundary. Those stalls
+are screen loading, not thinking.
+
+It suits the SH2 unusually well. The input is compressed data in cartridge
+ROM, which the SH2 can read directly at `$22000000`; the work is bit-serial
+and branch-heavy, which is what a 32-bit RISC is for; and it is *batch* work,
+so it clears U-039's ~560-cycle break-even by a wide margin instead of
+straddling it the way a single divide did.
+
+The awkward part is the output. Decompressed tiles go to VRAM, which the SH2
+cannot write. Options to weigh before building: decompress into the frame
+buffer and have the 68000 DMA from there, or into a shared staging area, and
+in either case measure whether the copy gives back what the decompression
+saved. Do that arithmetic before writing the decompressor.
+
+### U-041 -- Port quarterly processing to the SH2 [OPEN, no measured benefit]
+### U-042 -- Port the AI decision tree to the SH2 [OPEN, no measured benefit]
 ### U-043 -- Split work across master and slave [OPEN]
 
-Each ported routine keeps its 68K implementation selectable at assembly time so
-results can be diffed against the original. Correctness first, speed second --
-this code decides the outcome of the game.
+Kept, not deleted, but nothing should start on U-041 or U-042 until there is a
+measurement that justifies it. U-045 found no AI or economy routine in the top
+25; the nearest were `$01E226`/`$01E22E`/`$01E232` in the `MulDiv` /
+`WeightedAverage` cluster at about 0.5% between them. Re-profile after M8
+lands -- more cities and routes multiply exactly these loops, and the answer
+may change -- but today porting them would be work with no user-visible
+result.
 
-M5 is also the prerequisite for M8. The content expansion multiplies exactly
-the loop counts this milestone offloads, so the AI and economy move to the SH2
-before the world grows, not after.
+Each ported routine keeps its 68K implementation selectable at assembly time so
+results can be diffed against the original. Correctness first, speed second.
 
 ---
 
@@ -782,12 +855,16 @@ doing -- "scaling" meaning the zoom effect of U-035, not a bigger world. The
 causality runs that way round: the map zoom is the flagship visual, and the
 content has to be dense enough that zooming into it shows the player something.
 
-M8 is sequenced **after M5**, deliberately. The turn cycle already spends its
-time in 68000 AI and economy code that iterates per-city and per-route arrays;
-every axis below multiplies those loop counts. Moving that work to the SH2
-first means the content work lands on a machine that can afford it, and it
-avoids porting code twice. Nothing in M8 should start until U-041 and U-042
-close.
+M8 was sequenced after M5 on the reasoning that the content expansion
+multiplies the AI and economy loops, so that work should move to the SH2
+first. **U-045 retired that argument**: those loops are not hot -- the 68000 is
+idle 69.5% of the time and no AI or economy routine reaches the top 25. There
+is no queue to get out of the way of.
+
+**M8's real dependency is M4**, and specifically U-035's zoom and U-077's
+tiering: more airports are only worth adding to a map that can show them. M5
+is no longer a prerequisite. It is worth re-profiling *after* M8 lands, since
+more cities and routes multiply exactly the loops that are quiet today.
 
 ### What the format actually allows
 
@@ -1023,13 +1100,41 @@ rather than silently patched.
 
 ## Infrastructure
 
-### U-090 -- Build or install an SH2 C toolchain [OPEN]
+### U-090 -- Build or install an SH2 C toolchain [DONE]
 
-Only `sh-elf-as`, `sh-elf-ld`, `sh-elf-objcopy` and `sh-elf-nm` are present;
-there is no `sh-elf-gcc`. The SH2 renderer and the AI port are both large enough
-that assembly-only would be a poor trade. marsdev or crosstool-ng `sh-elf`.
+`sh-elf-gcc` 13.2.0 is on `PATH` with a big-endian SH2 multilib
+(`/usr/lib/gcc/sh-elf/13/m2/libgcc.a`); marsdev also carries 15.1.0. Nothing
+needed building.
 
-Not urgent -- M1 and M2 need no SH2 C -- but it blocks M4 and M5.
+More to the point it is now **in use and proven**, not merely available: the
+SH2 command dispatcher and the frame buffer test are both C
+(`disasm/sh2/master/rpc.c`, `fb.c`), compiled `-m2 -mb -O2 -ffreestanding` and
+linked against libgcc for `__udivsi3`, with `.bss` bounds exported from
+`sh2.lds` and cleared by `master_start` before any C runs. That code ships in
+`build/aerobiz-ultimate.32x`.
+
+### U-092 -- Screen-matched comparison harness [OPEN]
+
+Three times now a change has made the demo diverge, so the two builds are on
+different screens at the same frame and any frame-to-frame comparison is
+meaningless. It has caused two wrong conclusions this session alone, both
+caught only by re-checking:
+
+| Cause of divergence | Where it bit |
+|---|---|
+| input timing shifted by one frame | U-021 -- game length 433,515 vs 172,286 frames |
+| display mode changed | U-036 -- H40 build on the world map, stock on the Quarterly Report, same frame |
+| plane geometry changed | U-036 -- "the plane change renders correctly", from one lucky screen |
+
+What is needed is a harness that **matches screens by content and then
+compares**, rather than trusting frame numbers: hash the tile set or the UI
+region, find the frame in each build showing the same screen, and diff work
+RAM or the nametable there. This is the thing currently blocking U-036's
+cell-by-cell plane A diff.
+
+The PC sampler from U-045 is the starting point -- it already serialises
+per frame cheaply (426,000 frames in 70 seconds) and knows how to read the
+savestate chunks. See `tools/profiling-frontend-pc-sampler.patch`.
 
 ### U-091 -- Emulator harness for automated boot tests [DONE]
 
