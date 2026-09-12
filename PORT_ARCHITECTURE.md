@@ -419,18 +419,27 @@ and what a pass looks like.
    wrong -- the source register was never the constraint.
 
    The narrow part that remained -- **is `$880000-$9FFFFF` still readable while
-   `RV = 1`?** -- is **still open, and cannot be answered on PicoDrive.** The
-   emulator does not implement the `RV` bit at all: `pico/32x/memory.c:2358`
-   says "don't need to care about RV - not emulated", and :2481 says "we take
-   the easy way and don't unmap ROM, so that we can avoid handling the RV bit",
-   leaving `m68k_map_unmap(0x000000, 0x3fffff)` commented out.
+   `RV = 1`?** -- was unanswerable here, because the emulator did not implement
+   the `RV` bit at all: `pico/32x/memory.c` said "don't need to care about RV -
+   not emulated" and "we take the easy way and don't unmap ROM", leaving
+   `m68k_map_unmap(0x000000, 0x3fffff)` commented out. So `make 32x-rvprobe`
+   reporting that both windows survive `RV = 1` was not evidence -- nothing was
+   ever remapped. An earlier revision of this section recorded it as an answer;
+   it was not one.
 
-   So `make 32x-rvprobe` reporting that both windows survive `RV = 1` is not
-   evidence: nothing was ever remapped. An earlier revision of this section
-   recorded that as an answer; it was not one. The whole `RV` mechanism is
-   currently unverifiable here -- the thunk can be shown not to break anything,
-   but not to work. Settling this needs real hardware or an emulator that
-   models `RV`.
+   **U-093 changed what can be tested.** `VRD_RV_EMULATION=1` now switches the
+   windows as the manual describes: `RV = 1` puts the cartridge at
+   `$000100-$3FFFFF` and takes `$880000-$9FFFFF` away
+   (`docs/32x-hardware-manual.md:237-238`). Under it, the 32X build ran 3,000
+   frames through **233 mapping changes** with **100 of 100 captured frames
+   identical** to the run with it off, so the U-020 thunk works against the
+   documented model.
+
+   **That is a different claim from "hardware does this".** What the manual
+   says and what the silicon does are the same question only until they are
+   not, and this section exists precisely for that gap. The status is now
+   *unverified on hardware* rather than *unverifiable in principle*; the
+   experiment is HARDWARE_TESTS item 7.
 4. ~~**SH2 C toolchain.**~~ **Resolved.** marsdev is installed at
    `/mnt/data/src/marsdev` and carries `sh-elf-gcc` 15.1.0 at
    `mars/sh-elf/bin/sh-elf-gcc`. Nothing needs building; the SH2 side can move

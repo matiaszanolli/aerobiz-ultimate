@@ -21,7 +21,7 @@ byte-identical, and the SH2 runs C that is part of the shipping cartridge. The
 world map is on the 32X layer, built from the ROM rather than a savestate, and
 **it scales** -- U-035, the flagship effect, is measured and working.
 
-**What the measurements changed.** Four findings redirected the plan, and every
+**What the measurements changed.** Six findings redirected the plan, and every
 one contradicted something this roadmap previously asserted:
 
 | Finding | What it overturned |
@@ -30,10 +30,13 @@ one contradicted something this roadmap previously asserted:
 | U-003: H32 puts the Genesis and 32X layers at **1.25x different scales**, for a hardware reason (EDCLK is always the H40 clock) | §4.1 as written. The map screen must run H40, and only that screen |
 | U-039/U-044: a comm-port round trip costs **~560 68000 cycles** flat, and the one offload that looked ideal is **never called** | The idea that per-call offload is the mechanism. Batching is |
 | U-035: the zoom costs (source rows) x 320 dots, so vertical scale is free and the budget is **2.13 / 1.06 / 0.53** frames per blit at 1x / 2x / 4x | The worry that scaling might not fit at all. It fits from 2x in, on the master alone |
+| U-046: decompression output goes to a **work-RAM scratch buffer**, not VRAM, and the 68000 costs **285 cycles per output byte** | Both of that item's stated premises. Transport is 2-3% of decompression, so the offload wins by a wide margin |
+| U-093: the emulator modelled no SH2 cache and no memory latency at all | The idea that any SH2 timing here was a measurement. They were instruction counts |
 
-**Critical path.** Still M4, but the flagship is no longer the risk. What is
-left there is U-036, blocked on a bug whose cause has survived five hypotheses
-and which needs U-092 first, and the content questions -- U-032, U-033, U-077.
+**Critical path.** M4, and nothing on it is blocked any more. U-036's bug has
+survived five hypotheses, but U-092 now matches frames by screen so the
+plane-by-plane diff that should find it can actually be taken. Then the content
+questions -- U-032, U-033, U-077.
 
 **The result that reframes M8.** At 4x each map pixel is a 4x4 block: zooming
 in reveals that there is nothing to reveal. The payoff has to come from
@@ -41,17 +44,33 @@ U-077's tiering -- airports and routes appearing as the map goes in -- and not
 from more map pixels. That is the clearest evidence yet for the content
 milestone, arrived at from the rendering side.
 
-**Honest state of the evidence.** Everything is PicoDrive; nothing has run on
-real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the six
-questions only a console can answer. Two standing caveats:
+**The tooling is now part of the project.** U-093 turned PicoDrive into an
+instrument: an SH2 cache and wait-state model validated to the cycle against
+the manuals, the `RV` bit actually switching cartridge windows, and per-frame
+screen fingerprints. All of it opt-in, because the permissive behaviours are
+what every existing measurement depends on. It paid for itself immediately --
+the SH2 slave had never enabled its cache, and every fetch of its idle spin was
+an 8-word SDRAM burst.
 
-- **SH2 timings are optimistic.** PicoDrive models neither the SH2 cache nor
-  SDRAM latency, so every SH2 figure here is close to a raw instruction count.
-  Hardware charges 12 clocks per 8-word SDRAM burst even for a single
-  cache-through word.
-- **Any timing change makes the demo diverge**, so frames from two builds
-  cannot be compared at the same frame number. That has produced two wrong
-  conclusions already and is why U-092 exists.
+**Honest state of the evidence.** Everything is PicoDrive; nothing has run on
+real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the seven
+questions only a console can answer. What that caveat means has changed, so it
+is worth restating precisely:
+
+- **SH2 timings are now modelled and validated against the manuals** --
+  `VRD_SH2_TIMING=1` on the interpreter core, exact to the cycle over a million
+  accesses of each kind. That makes them *defensible*, not *confirmed*: they
+  are what the documentation says the hardware does.
+- **Three things remain genuinely unmodelled**, and are deliberately not
+  guessed: whether `$880000-$9FFFFF` really goes away while `RV = 1`, whether
+  a longword access to a 16-bit port is one bus cycle or two, and contention
+  between the two SH2s and the 68000 on the cartridge bus. The last is why
+  U-046's batching case rests on FM handover and the frame-buffer FIFO
+  instead.
+- **Divergence is handled rather than feared.** Any timing change still sends
+  the demo down a different path, but U-092 matches frames by what is on
+  screen, so two builds can be compared at the right frames instead of the
+  same frame number.
 
 ---
 
@@ -672,6 +691,13 @@ What is actually hot is graphics -- 20.4% of gameplay frames, over half of it
 in one routine, the LZ decompressor at `$003F70-$004220`. So the milestone
 keeps its purpose (move work the 68000 cannot afford onto the SH2) and changes
 its target.
+
+**And the size of the prize is now measured, not inferred.** The 68000 spends
+**285 cycles per output byte** decompressing, so the largest block in the game
+costs 62 frames on its own -- which is where the 74-76 frame quarter-boundary
+stall comes from. Transport back across the frame buffer costs 2-3% of that.
+U-046 is the whole milestone in practice; U-041 and U-042 have no measured
+benefit and U-043 is a scheduling question, not a workload.
 
 
 ### U-039 -- Comm-port RPC and the break-even measurement [DONE]
@@ -1312,12 +1338,19 @@ usable binary: the checked-in `profiling_frontend` is older than its own source
 and has no video capture, so it accepted `VRD_VIDEO_DUMP_DIR` and silently
 wrote nothing. Rebuilding from the same source
 (`cc -O2 -o frontend profiling_frontend.c -ldl`) gives working RGB565 frame
-dumps. Nothing in that repository was modified; the build goes to a scratch
-directory.
+dumps.
 
-One patch is worth upstreaming there: the capture path hard-codes 320x224 and
-rejects anything else, which silently drops every Genesis-mode frame. Relaxing
-it to accept the reported geometry is what produced the H32 answer in U-003.
+**The "nothing in that repository was modified" policy recorded here is
+superseded by U-093.** It was right while we were only borrowing a tool; it
+stopped being right once the tool was the thing standing between us and a
+measurement. The frontend and the PicoDrive core are now modified there
+deliberately, and the local patch file that used to hold our changes is
+deleted rather than maintained as a second copy.
+
+Still worth doing there: the capture path hard-codes 320x224 and rejects
+anything else, which silently drops every Genesis-mode frame. Relaxing it to
+accept the reported geometry is what produced the H32 answer in U-003, and it
+is still carried as a local edit rather than upstreamed.
 
 U-001 is manual. A headless run that asserts on comm-port state would make every
 subsequent milestone cheaper to verify.

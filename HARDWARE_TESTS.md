@@ -97,12 +97,13 @@ PicoDrive models neither the SH2 cache nor SDRAM latency (KNOWN_ISSUES), so its
 - **Note:** `master_start` now purges and enables the cache itself, so this
   measures the cache-on case whether or not the boot ROM did it.
 
-## 7. Two questions the timing model had to leave open (U-093)
+## 7. What the manuals say versus what the silicon does (U-093)
 
-The SH2 timing model in 32x-playground is validated against the manuals to the
-cycle, but two things the manuals do not state were deliberately left
-unmodelled rather than guessed. Both are cheap to settle on hardware and both
-change SH2 budgets if the guess would have been right.
+The emulator now implements the SH2 timing model and the `RV` bit, both
+validated against the manuals -- the timing model to the cycle, `RV` by running
+3,000 frames through 233 mapping changes with no visible change. That makes
+these behaviours *documented and self-consistent*, which is not the same as
+*confirmed*. Three questions need a console.
 
 - **Is a longword access to a 16-bit port one bus cycle or two?** Manual 4.1
   gives wait figures without reference to width. The model charges one access
@@ -114,6 +115,14 @@ change SH2 budgets if the guess would have been right.
   and PicoDrive cannot: it models no cache. Both our SH2s now enable it
   explicitly, so this is only a question about what *would* have happened.
   Test: read `CCR` at `$FFFFFE92` before our own write.
+- **Does `$880000-$9FFFFF` really stop responding while `RV = 1`?** This is
+  PORT_ARCHITECTURE §5.3, open since U-020. The manual implies it
+  (`docs/32x-hardware-manual.md:237-238` presents the two windows as
+  alternatives) and the emulator now enforces that reading, but the DMA thunk
+  deliberately runs its windowed sequence from below the stack pointer
+  precisely because the answer was unknown. Test: with `RV = 1`, read a known
+  byte from `$880000` and compare against its value with `RV = 0`. If it still
+  reads correctly, the thunk could be simplified.
 
 Also unmodelled, and not resolvable by a single reading: **contention between
 the two SH2s and the 68000 on the cartridge bus.** The model charges each CPU
