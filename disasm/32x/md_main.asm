@@ -161,6 +161,15 @@
         bra.s   .sh2_idle
     endif
 
+    ifd LZPROBE
+; U-046. Same placement as SH2PROBE and for the same reason: it calls the
+; game's own LZ_Decompress in bank 1. It never returns -- the harness supplies
+; the clock by running a fixed number of frames and reading $FFFD00.
+        bsr.w   LzProbeRun
+.lz_idle:
+        bra.s   .lz_idle
+    endif
+
     ifd MILESTONE1
 ; Milestone-1 cartridge: there is no game half to jump to (the image is
 ; $FF-filled from $100000 on), so idle here instead.  Everything the M1
@@ -176,7 +185,9 @@
     ifnd FBTEST
     ifnd MAPTEST
     ifnd ZOOMTEST
+    ifnd LZPROBE
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
     endif
@@ -219,6 +230,10 @@ MarsSecurityFailed:
 
     ifd SH2PROBE
         include "32x/sh2_probe.asm"
+    endif
+
+    ifd LZPROBE
+        include "32x/lz_probe.asm"
     endif
 
 ; ===========================================================================

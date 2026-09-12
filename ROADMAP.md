@@ -834,7 +834,7 @@ Now has a target to beat: it must move enough state per transfer that the
 per-call cost measured in U-039 is amortised well below 560 cycles per unit of
 work.
 
-### U-046 -- Offload LZ decompression to the SH2 [OPEN]
+### U-046 -- Offload LZ decompression to the SH2 [ANALYSED, blocked on U-093]
 
 The measured hot spot: **11.93% of all gameplay frames**, 3.4x the next item,
 and the bulk of the 74-76 frame stalls at each quarter boundary. Those stalls
@@ -846,11 +846,71 @@ and branch-heavy, which is what a 32-bit RISC is for; and it is *batch* work,
 so it clears U-039's ~560-cycle break-even by a wide margin instead of
 straddling it the way a single divide did.
 
-The awkward part is the output. Decompressed tiles go to VRAM, which the SH2
-cannot write. Options to weigh before building: decompress into the frame
-buffer and have the 68000 DMA from there, or into a shared staging area, and
-in either case measure whether the copy gives back what the decompression
-saved. Do that arithmetic before writing the decompressor.
+**The arithmetic is done, and two of its premises were wrong.**
+
+*Wrong premise 1: "decompressed tiles go to VRAM".* They do not. The signature
+is `LZ_Decompress(dest, src)` with the arguments on the stack, and **66 of the
+92 static call sites decompress to one shared work-RAM scratch buffer at
+`$FF1804`**; 6 more go to `$FF899C`. The recurring pattern is
+
+```
+DisplaySetup(...)
+LZ_Decompress(src_rom, $FF1804)
+VRAMBulkLoad(tile, count, $FF1804, ...)     ; DMA scratch -> VRAM
+```
+
+so the buffer is pure staging and nothing else reads it. That opens a path the
+original framing had ruled out: the SH2 decompresses into the frame buffer and
+the 68000 either copies to `$FF1804` (safe) or points the existing DMA at the
+frame buffer instead (cheaper, but needs the VDP to DMA from `$840000`, which
+is unverified).
+
+*Wrong premise 2: that the copy might eat the saving.* It cannot come close.
+`make 32x-lzprobe` runs the real routine over eight real blocks spanning the
+measured size distribution and lets the harness supply the clock:
+
+| | |
+|---|---|
+| Rate | **285 cycles per output byte** (448 bytes/frame), from the slope between 300 and 1,200 frames so the boot offset cancels |
+| Median block, 1,952 bytes | 4.35 frames |
+| Largest block, 27,872 bytes | **62 frames** |
+
+**This is independently corroborated.** U-045 measured the quarter-boundary
+stalls at 74-76 frames by PC sampling; the largest block alone accounts for 62
+of them. Two measurements taken different ways agreeing on the stall is the
+strongest evidence in this item.
+
+285 cycles/byte is 6-10x a typical 68000 LZSS, and the code says why: a
+`jsr (a4)` with a `pea`-pushed argument for **every bit read**, and the control
+byte re-fetched from absolute long `$FFA78C` on every bit. Against that, a
+68000 copy out of the frame buffer costs 6-8 clocks per word access (manual
+4.1: 2-4 wait on a 4-clock cycle), so **transport is 2-3% of decompression**.
+The offload wins on arithmetic by a wide margin.
+
+**Size distribution**, from decompressing all 46 distinct sources reachable
+from the call sites: min 192, median 1,952, mean 4,560, max 27,872 bytes.
+
+**Batch, do not call per block.** Decided on three grounds, strongest first:
+FM handover is a mutual stall ("SH2 and 68000 wait together until access
+authorization returns", manual:737), so one rendezvous per batch beats one per
+block; the frame-buffer write FIFO costs 3 clocks per word unfilled against 5
+filled and the manual assumes "continuous accessing without an Idle Cycle"
+(4.1), so sustained runs are cheaper per word; and RPC amortisation, which at
+~560 cycles against a 1,952-byte median is already comfortable and is
+therefore the weakest reason, not the strongest. The intuitive argument --
+cartridge bus contention -- is the one that **cannot be measured on
+PicoDrive**, so it is not counted. The interface should take a job list, not a
+job.
+
+Where batching actually applies: the call sites interleave
+`DisplaySetup / decompress / VRAMBulkLoad` one block at a time, so they do not
+batch naturally. The place they cluster is the quarter-boundary stall, which
+is also the user-visible one. Target those sites, not all 92.
+
+**Blocked, deliberately, on emulator work.** The one number that decides the
+design -- how fast the SH2 decompresses -- is exactly what PicoDrive cannot
+say: no cache model, no SDRAM latency, no bus contention. Writing the SH2
+decompressor now would produce a benchmark that is fiction. See U-093.
 
 ### U-041 -- Port quarterly processing to the SH2 [OPEN, no measured benefit]
 ### U-042 -- Port the AI decision tree to the SH2 [OPEN, no measured benefit]

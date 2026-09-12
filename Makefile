@@ -67,7 +67,8 @@ BOOT_SRC     = $(DISASM_DIR)/ultimate_boot.asm
 BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
                $(DISASM_DIR)/32x/dma_stub.asm \
                $(DISASM_DIR)/32x/rv_probe.asm \
-               $(DISASM_DIR)/32x/sh2_probe.asm
+               $(DISASM_DIR)/32x/sh2_probe.asm \
+               $(DISASM_DIR)/32x/lz_probe.asm
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
 SH2_CSRCS    = $(DISASM_DIR)/sh2/master/rpc.c $(DISASM_DIR)/sh2/master/fb.c
@@ -75,7 +76,7 @@ SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -228,6 +229,17 @@ $(BUILD_DIR)/aerobiz-ultimate-sh2probe.32x: $(BUILD_DIR)/32x_boot_sh2probe.bin $
 $(BUILD_DIR)/32x_boot_sh2probe.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half, SH2 probe (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -DSH2PROBE=1 -o $@ $<
+
+32x-lzprobe: $(BUILD_DIR)/aerobiz-ultimate-lzprobe.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-lzprobe.32x: $(BUILD_DIR)/32x_boot_lzprobe.bin $(GAME_HALF)
+	@echo "==> Assembling LZ cost probe cartridge..."
+	@cat $(BUILD_DIR)/32x_boot_lzprobe.bin $(GAME_HALF) > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_boot_lzprobe.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, LZ probe (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DLZPROBE=1 -o $@ $<
 
 32x-rvprobe: $(BUILD_DIR)/aerobiz-ultimate-rvprobe.32x
 
