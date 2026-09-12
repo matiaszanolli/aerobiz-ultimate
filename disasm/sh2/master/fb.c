@@ -255,6 +255,9 @@ static void scale_row(const unsigned char *src, volatile unsigned short *dst,
 
 static void fb_draw_airports(unsigned long u0, unsigned long v0,
                              unsigned long step, unsigned int slots);
+void fb_draw_overlay(unsigned long u0, unsigned long v0, unsigned long step,
+                     unsigned int slots);
+#define PAL_ARC        252u
 #define PAL_MAJOR      250u
 #define PAL_MINOR      251u
 
@@ -339,6 +342,7 @@ void sh2_zoom_test(void)
     map_load();
     PALETTE[PAL_MAJOR] = 0x001Fu;       /* red   -- major airports */
     PALETTE[PAL_MINOR] = 0x03FFu;       /* yellow -- secondaries */
+    PALETTE[PAL_ARC]   = 0x7FFFu;       /* white  -- route arcs */
 
     /* 1:1 first, which is the worst case: it needs a distinct source row per
      * display line, so nothing the animation does afterwards costs more.
@@ -358,7 +362,7 @@ void sh2_zoom_test(void)
     for (;;) {
         fb_wait_vblank();
         (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, step);
-        fb_draw_airports(fb_u0, fb_v0, fb_step, fb_slots);
+        fb_draw_overlay(fb_u0, fb_v0, fb_step, fb_slots);
         VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
 
         step = (unsigned long)((long)step + dir);
@@ -627,4 +631,284 @@ void sh2_affine_test(void)
         VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
         angle++;
     }
+}
+
+/* ==========================================================================
+ * U-032: great-circle route arcs.
+ *
+ * A route between two cities is a great circle, and on the equirectangular
+ * map that is a curve, not the straight line the Genesis renderer draws.
+ *
+ * The projection had to be measured before any of this could be written. A
+ * least-squares fit of 34 cities whose real positions are known independently:
+ *
+ *     x = 0.5972 * longitude + 35.13     mean error 3.5 px, max 7.7
+ *     y = -0.7854 * latitude  + 92.25     mean error 4.4 px, max 11.2
+ *
+ * so the map is equirectangular -- Mercator fits no better, 4.1 px against
+ * 4.4 -- at about 215 px to a full turn, with a mid-Atlantic seam. The
+ * residual is hand-drawn art, not projection error, and it is why arcs are
+ * **anchored**: the endpoints are forced onto the table coordinates and the
+ * error distributed along the curve, so an arc always touches its cities even
+ * though the projection would miss them by up to 8 px.
+ *
+ * A quadratic Bezier through the endpoints and the true spherical midpoint was
+ * measured as a cheaper substitute and rejected: median deviation 1.8 px but
+ * 90th percentile 15.9 and worst case 87 (Baghdad to Los Angeles). Long routes
+ * need the real thing, so the arc is sampled by spherical interpolation and
+ * the inverse projection is done properly, which is what these tables are for.
+ *
+ * Angle unit throughout is 1/256 turn in Q8, so 90 degrees is 64*256 = 16384.
+ * ========================================================================== */
+
+static const short fb_atan[257] = {
+         0,     41,     81,    122,    163,    204,    244,    285,
+       326,    367,    407,    448,    489,    529,    570,    610,
+       651,    692,    732,    773,    813,    854,    894,    935,
+       975,   1015,   1056,   1096,   1136,   1177,   1217,   1257,
+      1297,   1337,   1377,   1417,   1457,   1497,   1537,   1577,
+      1617,   1656,   1696,   1736,   1775,   1815,   1854,   1894,
+      1933,   1973,   2012,   2051,   2090,   2129,   2168,   2207,
+      2246,   2285,   2324,   2363,   2401,   2440,   2478,   2517,
+      2555,   2594,   2632,   2670,   2708,   2746,   2784,   2822,
+      2860,   2897,   2935,   2973,   3010,   3047,   3085,   3122,
+      3159,   3196,   3233,   3270,   3307,   3344,   3380,   3417,
+      3453,   3490,   3526,   3562,   3599,   3635,   3670,   3706,
+      3742,   3778,   3813,   3849,   3884,   3920,   3955,   3990,
+      4025,   4060,   4095,   4129,   4164,   4199,   4233,   4267,
+      4302,   4336,   4370,   4404,   4438,   4471,   4505,   4539,
+      4572,   4605,   4639,   4672,   4705,   4738,   4771,   4803,
+      4836,   4869,   4901,   4933,   4966,   4998,   5030,   5062,
+      5094,   5125,   5157,   5188,   5220,   5251,   5282,   5313,
+      5344,   5375,   5406,   5437,   5467,   5498,   5528,   5559,
+      5589,   5619,   5649,   5679,   5708,   5738,   5768,   5797,
+      5826,   5856,   5885,   5914,   5943,   5972,   6000,   6029,
+      6058,   6086,   6114,   6142,   6171,   6199,   6227,   6254,
+      6282,   6310,   6337,   6365,   6392,   6419,   6446,   6473,
+      6500,   6527,   6554,   6580,   6607,   6633,   6660,   6686,
+      6712,   6738,   6764,   6790,   6815,   6841,   6867,   6892,
+      6917,   6943,   6968,   6993,   7018,   7043,   7068,   7092,
+      7117,   7141,   7166,   7190,   7214,   7238,   7262,   7286,
+      7310,   7334,   7358,   7381,   7405,   7428,   7451,   7475,
+      7498,   7521,   7544,   7566,   7589,   7612,   7635,   7657,
+      7679,   7702,   7724,   7746,   7768,   7790,   7812,   7834,
+      7856,   7877,   7899,   7920,   7942,   7963,   7984,   8005,
+      8026,   8047,   8068,   8089,   8110,   8131,   8151,   8172,
+      8192,
+};
+
+static const short fb_asin_t[257] = {
+    -16384, -15079, -14538, -14121, -13770, -13459, -13178, -12919,
+    -12677, -12449, -12234, -12028, -11831, -11642, -11460, -11284,
+    -11113, -10947, -10785, -10628, -10475, -10324, -10177, -10034,
+     -9892,  -9754,  -9618,  -9484,  -9353,  -9223,  -9095,  -8970,
+     -8846,  -8723,  -8602,  -8483,  -8365,  -8249,  -8133,  -8019,
+     -7907,  -7795,  -7684,  -7575,  -7466,  -7359,  -7252,  -7147,
+     -7042,  -6938,  -6835,  -6732,  -6631,  -6530,  -6430,  -6330,
+     -6231,  -6133,  -6035,  -5938,  -5842,  -5746,  -5651,  -5556,
+     -5461,  -5367,  -5274,  -5181,  -5089,  -4997,  -4905,  -4814,
+     -4723,  -4633,  -4543,  -4453,  -4364,  -4275,  -4186,  -4097,
+     -4009,  -3922,  -3834,  -3747,  -3660,  -3573,  -3487,  -3401,
+     -3315,  -3229,  -3144,  -3059,  -2974,  -2889,  -2804,  -2720,
+     -2636,  -2551,  -2468,  -2384,  -2300,  -2217,  -2134,  -2050,
+     -1967,  -1884,  -1802,  -1719,  -1636,  -1554,  -1472,  -1389,
+     -1307,  -1225,  -1143,  -1061,   -979,   -897,   -816,   -734,
+      -652,   -571,   -489,   -408,   -326,   -244,   -163,    -81,
+         0,     81,    163,    244,    326,    408,    489,    571,
+       652,    734,    816,    897,    979,   1061,   1143,   1225,
+      1307,   1389,   1472,   1554,   1636,   1719,   1802,   1884,
+      1967,   2050,   2134,   2217,   2300,   2384,   2468,   2551,
+      2636,   2720,   2804,   2889,   2974,   3059,   3144,   3229,
+      3315,   3401,   3487,   3573,   3660,   3747,   3834,   3922,
+      4009,   4097,   4186,   4275,   4364,   4453,   4543,   4633,
+      4723,   4814,   4905,   4997,   5089,   5181,   5274,   5367,
+      5461,   5556,   5651,   5746,   5842,   5938,   6035,   6133,
+      6231,   6330,   6430,   6530,   6631,   6732,   6835,   6938,
+      7042,   7147,   7252,   7359,   7466,   7575,   7684,   7795,
+      7907,   8019,   8133,   8249,   8365,   8483,   8602,   8723,
+      8846,   8970,   9095,   9223,   9353,   9484,   9618,   9754,
+      9892,  10034,  10177,  10324,  10475,  10628,  10785,  10947,
+     11113,  11284,  11460,  11642,  11831,  12028,  12234,  12449,
+     12677,  12919,  13178,  13459,  13770,  14121,  14538,  15079,
+     16384,
+};
+
+#define ANG_90   16384
+#define ANG_180  32768
+
+/* atan2 by octant, the standard reduction: the table covers |y| <= |x| and
+ * everything else is a reflection of it. */
+static int fb_atan2(int y, int x)
+{
+    int ax = (x < 0) ? -x : x, ay = (y < 0) ? -y : y, a;
+
+    if (ax == 0 && ay == 0) return 0;
+    if (ay <= ax) a = fb_atan[(int)(((long)ay << 8) / ax)];
+    else          a = ANG_90 - fb_atan[(int)(((long)ax << 8) / ay)];
+    if (x < 0) a = ANG_180 - a;
+    return (y < 0) ? -a : a;
+}
+
+/* d is Q15. The table is 257 entries over [-1,1] with linear interpolation;
+ * asin steepens without bound near the poles, but every city in the game is
+ * inside 37 degrees of latitude, so the ill-conditioned end is never used. */
+static int fb_asin(int d)
+{
+    int i, f;
+
+    if (d >  32767) d =  32767;
+    if (d < -32767) d = -32767;
+    i = (d + 32768) >> 8;                    /* 0..255 */
+    f = (d + 32768) & 255;
+    return fb_asin_t[i] + (((fb_asin_t[i + 1] - fb_asin_t[i]) * f) >> 8);
+}
+
+/* Interpolated sine: the raw table is 1/256 turn per step, which is 1.4
+ * degrees and visibly faceted on an arc. */
+static int fb_sin_i(int a)
+{
+    int i = (a >> 8) & 255, f = a & 255;
+    int s0 = fb_sin[i], s1 = fb_sin[(i + 1) & 255];
+    return s0 + (((s1 - s0) * f) >> 8);
+}
+static int fb_cos_i(int a) { return fb_sin_i(a + ANG_90); }
+
+/* The measured projection, as integers.  Q8 angle units per map pixel:
+ * 1 degree is 182.04 units, and the fit gives 0.5972 px/deg of longitude and
+ * 0.7854 px/deg of latitude, so 182.04/0.5972 = 305 and 182.04/0.7854 = 232.
+ * The rounding is far inside the 4 px of artistic scatter it sits on. */
+#define PROJ_X0   35
+#define PROJ_Y0   92
+#define PROJ_LON  305
+#define PROJ_LAT  232
+
+static void fb_city_vec(unsigned int px, unsigned int py, int *v)
+{
+    int lon = ((int)px - PROJ_X0) * PROJ_LON;
+    int lat = (PROJ_Y0 - (int)py) * PROJ_LAT;
+    int cl  = fb_cos_i(lat);
+
+    v[0] = (int)(((long)cl * fb_cos_i(lon)) >> 15);
+    v[1] = (int)(((long)cl * fb_sin_i(lon)) >> 15);
+    v[2] = fb_sin_i(lat);
+}
+
+#define ARC_STEPS  16
+
+/* Draws one great-circle arc between two cities, in source-map space, so it
+ * scales with the zoom exactly as the airport markers do (U-077).
+ *
+ * The endpoints are anchored: the projection misses the table coordinates by
+ * up to 8 px, so the raw curve is shifted to touch both cities and the
+ * discrepancy spread linearly along it.  Without that, arcs would visibly
+ * miss the pins they connect.
+ */
+static void fb_arc(unsigned int i0, unsigned int i1, unsigned long u0,
+                   unsigned long v0, unsigned long recip, unsigned int slots,
+                   unsigned int colour)
+{
+    const unsigned char *city = CITY_TABLE;
+    unsigned int x0 = city[i0 * 2u], y0 = city[i0 * 2u + 1u];
+    unsigned int x1 = city[i1 * 2u], y1 = city[i1 * 2u + 1u];
+    int a[3], b[3];
+    int dot, omega, sino, k;
+    int rx[ARC_STEPS + 1], ry[ARC_STEPS + 1];
+    /* Seeded from the start city's own map position, not zero: atan2 returns
+     * -180..180 and the map's seam is mid-Atlantic, so an unreferenced first
+     * sample can land a whole turn away and drag the arc across the world. */
+    int prev_lon;
+
+    fb_city_vec(x0, y0, a);
+    fb_city_vec(x1, y1, b);
+    prev_lon = ((int)x0 - PROJ_X0) * PROJ_LON;
+
+    dot = (int)(((long)a[0] * b[0] + (long)a[1] * b[1] + (long)a[2] * b[2]) >> 15);
+    omega = ANG_90 - fb_asin(dot);
+    sino = fb_sin_i(omega);
+
+    for (k = 0; k <= ARC_STEPS; k++) {
+        int t = (omega * k) / ARC_STEPS;
+        int vx, vy, vz, lon, lat;
+
+        if (sino < 64) {
+            /* Nearly coincident: the spherical form degenerates and linear
+             * interpolation is its limit anyway. */
+            rx[k] = (int)x0 + (((int)x1 - (int)x0) * k) / ARC_STEPS;
+            ry[k] = (int)y0 + (((int)y1 - (int)y0) * k) / ARC_STEPS;
+            continue;
+        }
+        {
+            /* w = sin(theta)/sin(omega) in Q15.  Written as a shift then a
+             * divide, not a reciprocal multiply: sin(omega) is small for short
+             * routes, so a Q15 reciprocal reaches ~16.7M and sin * recip
+             * overflows the SH2's 32-bit long.  That produced wild lines out
+             * of the London cluster, where the shortest arcs are. */
+            int w1 = (int)((((long)fb_sin_i(omega - t)) << 15) / sino);
+            int w2 = (int)((((long)fb_sin_i(t)) << 15) / sino);
+            vx = (int)((((long)w1 * a[0]) + ((long)w2 * b[0])) >> 15);
+            vy = (int)((((long)w1 * a[1]) + ((long)w2 * b[1])) >> 15);
+            vz = (int)((((long)w1 * a[2]) + ((long)w2 * b[2])) >> 15);
+        }
+        lat = fb_asin(vz);
+        lon = fb_atan2(vy, vx);
+        /* Unwrap against the previous sample -- and for k = 0 against the
+         * start city itself -- so a route crossing the seam stays continuous
+         * instead of jumping the width of the map. */
+        while (lon - prev_lon >  ANG_180) lon -= 2 * ANG_180;
+        while (lon - prev_lon < -ANG_180) lon += 2 * ANG_180;
+        prev_lon = lon;
+        rx[k] = PROJ_X0 + lon / PROJ_LON;
+        ry[k] = PROJ_Y0 - lat / PROJ_LAT;
+    }
+
+    /* Anchor both ends onto the table coordinates. */
+    {
+        int ex0 = (int)x0 - rx[0], ey0 = (int)y0 - ry[0];
+        int ex1 = (int)x1 - rx[ARC_STEPS], ey1 = (int)y1 - ry[ARC_STEPS];
+        for (k = 0; k <= ARC_STEPS; k++) {
+            rx[k] += ex0 + ((ex1 - ex0) * k) / ARC_STEPS;
+            ry[k] += ey0 + ((ey1 - ey0) * k) / ARC_STEPS;
+        }
+    }
+
+    /* Draw it, in the same slot/column space the markers use. */
+    for (k = 0; k < ARC_STEPS; k++) {
+        int sx = rx[k], sy = ry[k], ex = rx[k + 1], ey = ry[k + 1];
+        int dx = (ex > sx) ? ex - sx : sx - ex;
+        int dy = (ey > sy) ? ey - sy : sy - ey;
+        int n = (dx > dy ? dx : dy), s;
+
+        if (n == 0) n = 1;
+        for (s = 0; s <= n; s++) {
+            int px = sx + ((ex - sx) * s) / n;
+            int py = sy + ((ey - sy) * s) / n;
+            unsigned long ux;
+            unsigned int col, slot;
+
+            if (px < 0 || py < 0) continue;
+            ux = ((unsigned long)px << 16);
+            if (ux < u0 || ((unsigned long)py << 16) < v0) continue;
+            col  = (unsigned int)(((ux - u0) >> 8) * recip >> 16);
+            slot = (unsigned int)py - (unsigned int)(v0 >> 16);
+            if (col >= 320u || slot >= slots) continue;
+            fb_mark(slot, col, 1u, colour);
+        }
+    }
+}
+
+/* Airports plus a fan of routes from London, which is city 0.  Drawn after the
+ * map so the arcs sit on top of it, and in the same slot/column space, so the
+ * whole overlay scales with the zoom. */
+#define ARC_HUB    0u
+
+void fb_draw_overlay(unsigned long u0, unsigned long v0, unsigned long step,
+                     unsigned int slots)
+{
+    unsigned long recip = 0x01000000uL / step;
+    unsigned int i;
+
+    for (i = 1u; i < CITY_MAJOR; i++)
+        fb_arc(ARC_HUB, i, u0, v0, recip, slots, PAL_ARC);
+
+    fb_draw_airports(u0, v0, step, slots);
 }

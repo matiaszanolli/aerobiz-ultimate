@@ -685,7 +685,51 @@ contiguous in ROM, so it needs the same brute-force decompression hunt U-031
 used for the map. Until then the demo transforms the world map, which proves
 the path equally well and needs no new asset.
 
-### U-032 -- Great-circle route arcs [OPEN]
+### U-032 -- Great-circle route arcs [DONE, in 32x-zoomtest]
+
+A route is a great circle, and on this map that is a curve. The Genesis
+renderer draws straight tile-granular lines; the SH2 draws the real thing,
+per pixel, scaling with the zoom like U-077's markers.
+
+**The projection had to be measured first.** A least-squares fit over 34
+cities whose real positions are known independently:
+
+| | | |
+|---|---|---|
+| `x = 0.5972 * lon + 35.13` | mean 3.5 px | max 7.7 |
+| `y = -0.7854 * lat + 92.25` | mean 4.4 px | max 11.2 |
+
+So it is equirectangular -- Mercator fits no better, 4.1 px against 4.4 -- at
+about 215 px to a full turn, with a mid-Atlantic seam. The residual is
+hand-drawn art, not projection error.
+
+**Which is why arcs are anchored.** The projection alone would miss the city
+markers by up to 8 px, so the curve is shifted to touch both endpoints exactly
+and the discrepancy spread along it. Measured: **31 of 31 arcs terminate
+within 3 px** of their destination.
+
+**A cheap substitute was measured and rejected.** A quadratic Bezier through
+the endpoints and the true spherical midpoint costs no inverse trig at all,
+and its median deviation is only 1.8 px -- but the 90th percentile is 15.9 and
+the worst case 87 (Baghdad to Los Angeles). Long routes need real spherical
+interpolation, so the arc is a slerp with a table-driven `asin` and `atan2`.
+Every city is inside 37 degrees of latitude, so `asin`'s ill-conditioned end
+is never reached.
+
+Two bugs worth recording, both silent:
+
+- **Longitude unwrapping needs a seed.** `atan2` returns -180..180 and the
+  seam is mid-Atlantic, so the *first* sample has nothing to unwrap against
+  and could land a turn away, dragging the arc across the world. Seeded from
+  the start city's own map position.
+- **A Q15 reciprocal overflows.** `1/sin(omega)` reaches ~16.7M for short
+  routes and `sin * recip` exceeds the SH2's 32-bit long. It showed as wild
+  lines out of the London cluster -- which is exactly where the shortest arcs
+  are, and the clue that identified it. Written as a shift then a divide.
+
+Open: the demo fans from London to all 31 other majors. Wiring it to the
+player's actual routes is U-034's business, along with what happens to the
+Genesis renderer it replaces.
 ### U-033 -- Per-pixel aircraft animation [OPEN]
 
 ### U-038 -- Aircraft scale with the map as they fly [OPEN]
