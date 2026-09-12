@@ -231,25 +231,32 @@ Translating in `ConfigVDPDMA` -- the only code in the game that programs a
 memory-to-VRAM DMA source -- makes the question disappear. **U-010 is no longer
 gated.**
 
-### U-021 -- Full playthrough on 32X [OPEN]
+### U-021 -- Full playthrough on 32X [DONE]
 
-Scenario select through a completed game, save and load, against the Genesis
-build as the behavioural reference.
+Scenario select, a turn cycle, save, load and the end of the game all run on the
+32X. Evidence in [HISTORY.md](HISTORY.md); the short version:
 
-Started. The same 30,000-frame input script into both builds -- START on the
-title screen, A every 400 frames -- drives the 32X from the title through the
-NEW GAME menu into a running game, with no 68000 exception in either build and
-the route map rendering identically. At frame 20,000 work RAM differs in 79
-bytes of 65,536: 74 are dead stack below the pointer (the U-020 DMA thunk runs
-its window body there), four are stored ROM pointers holding exactly Genesis
-+ `$900000`, and one is a counter two ahead.
+| what | result |
+|---|---|
+| setup, turn cycle, save (90,000 frames) | 0 exceptions on either build |
+| complete 20-year DEMO game (900,000 frames) | 0 exceptions on either build; both reach the ending and return to attract |
+| save | 16,384 bytes written to cartridge SRAM `$200000-$203FFF` by both builds |
+| load | the 32X boots its own save, CONTINUE lists it and resumes the game |
+| no-input equivalence, 300,000 frames | work RAM differs in 64 of 65,536 bytes: 53 rebased pointers, 5 dead stack, 6 unexplained |
 
-Still to cover: a full turn cycle, save and load, and the end-of-game path.
+SRAM needs no port work. `docs/32x-technical-info.md:83` says the `RV` bit is
+irrelevant to SRAM, and `PackSaveState` builds the address as
+`addi.l #$00200003,d0` -- outside the ROM window, so the rebaser leaves it alone.
 
-Comparing the two builds frame by frame cannot be done on pixels: the Genesis
-build reports H32 as 256 wide and the 32X build composites at 320, so no
-screenshot hash will ever match across them. Compare 68000 work RAM instead --
-it is width-independent, and a real divergence shows up there first.
+**Do not compare two long AI games between the builds.** The outcome is
+chaotically sensitive to input timing: shifting the setup presses by one frame
+changes the *Genesis* build's own game length from 433,515 frames to 172,286, so
+the adapter's few frames of bring-up reseed the game by itself. Use a no-input
+run, or a short horizon with identical input.
+
+Frame hashes cannot be compared across builds either: the Genesis build reports
+H32 as 256 wide and the 32X composites at 320. Compare 68000 work RAM, which is
+width-independent.
 
 ---
 

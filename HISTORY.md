@@ -9,6 +9,92 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-11 (U-021)
+
+### A full game, a save and a load, on the 32X
+
+The 32X now plays Aerobiz Supersonic end to end. Both builds were driven from
+power-on by one input script and compared.
+
+**A turn cycle.** Scenario 1 (*The Dawn of the Jet Age*), skill level 1, one
+human airline based in Berlin plus three CPU airlines. The setup screens, the
+opening news events, the in-turn command bar and the system menu were all
+reached and worked. 90,000 frames, no 68000 exception on either build.
+
+**Save and load.** The system menu's *Save* writes 16,384 bytes to cartridge
+SRAM at `$200000-$203FFF` -- on the 32X exactly as on the Genesis. Booting the
+32X build again with that SRAM restored, the title screen's CONTINUE lists the
+save ("Berlin MAN Berlin ... 1955 APR") and resumes into the running game, with
+no exception. This is the 32X reading back a save the 32X itself wrote.
+
+`docs/32x-technical-info.md:83` is why this works unchanged: "The RV bit is
+irrelevant when reading and writing to the SRAM". The save address is built as
+`addi.l #$00200003,d0` in `PackSaveState`, which is outside the ROM window and
+so is correctly left alone by the rebaser.
+
+**The end of the game.** The player-count screen has a DEMO entry that gives all
+four airlines to the CPU, so a whole 20-year game runs with no input at all.
+Both builds played one to completion and returned to the attract loop -- the
+Genesis at frame 433,515, the 32X at 295,736 -- and the last 9,000 frames of
+each have the same structure (static runs of 246, 246, 246, 120, 129, 130
+frames). 900,000 frames each: **zero 68000 exceptions on both**.
+
+### The long AI game is not an equivalence test, and the control proves it
+
+The two DEMO games ran to different lengths, which looks damning until the
+control is run. Shifting the setup presses by a few frames and replaying:
+
+| input shift | Genesis ends at | 32X ends at |
+|---|---|---|
+| +0 | 433,515 | 295,736 |
+| +3 | 184,626 | 264,259 |
+| +4 | 172,286 | 306,457 |
+| +5 | 272,618 | 163,716 |
+| +6 | 310,546 | 268,080 |
+| +7 | 293,335 | 228,608 |
+
+**One frame** changes the Genesis build's own 20-year game by a factor of two
+and a half. The 32X spread is the same. The adapter's few frames of bring-up
+therefore reseed the game all by themselves, and no comparison of two long AI
+games between the builds can mean anything. This is worth stating plainly
+because the first reading of that table -- "the 32X ends 138,000 frames early"
+-- would have sent the next day into chasing a bug that is not there.
+
+### What the builds were actually compared on
+
+With **no input at all**, both builds run their own attract loop, so nothing can
+be reseeded. After 300,000 frames (about 83 minutes) the 68000 work RAM differs
+in **64 bytes of 65,536**:
+
+- 53 bytes are ROM pointers holding exactly Genesis + `$900000`, which is the
+  correct value on the 32X;
+- 5 bytes are dead stack below the pointer, where the U-020 DMA thunk runs its
+  window body;
+- 6 bytes remain: `$FF1401`, `$FFA785`, `$FFA789`, `$FFF08F`, `$FFF097` and
+  `$FFFBF3`, the last being a counter one ahead.
+
+That is 0.009% of work RAM unaccounted for, over a run in which the game
+executed its own code for an hour and a quarter of wall-clock gameplay.
+
+### Notes for the next session
+
+- **libretro button numbering is not Genesis button numbering.** START is id 3
+  (mask `8`); Genesis A, B and C are libretro Y, B and A -- masks `2`, `1` and
+  `256`. `retro_pico_map` in PicoDrive's `platform/libretro/libretro.c:3039`.
+- **The game's own encoding is different again**: the byte at `$FFFC08` uses
+  bit 5 (`$20`) for C, which is what `BrowseMapPages` tests when it confirms a
+  save slot. The disassembly comment there calls `$20` "Right d-pad"; that
+  annotation is wrong, and following it cost an hour of pressing the wrong
+  button at the save-slot browser.
+- **Screens ignore input until the previous message is dismissed**, and the
+  first press on a screen is usually consumed doing that. A single press
+  reading as "no response" usually means one press short, not a hang.
+- Frame hashes cannot be compared across the builds at all: the Genesis build
+  reports H32 as 256 pixels wide and the 32X composites at 320. Compare 68000
+  work RAM, which is width-independent.
+
+---
+
 ## 2026-09-11 (later)
 
 ### START crashed the 32X; 50 addresses hidden in untranslated dc.w blocks
