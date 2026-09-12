@@ -12,6 +12,7 @@
 
 ASM         = tools/vasmm68k_mot
 SH2_AS      = sh-elf-as
+SH2_CC      = sh-elf-gcc
 SH2_LD      = sh-elf-ld
 SH2_OBJCOPY = sh-elf-objcopy
 SH2_NM      = sh-elf-nm
@@ -45,6 +46,13 @@ SH2_ELF        = $(BUILD_DIR)/sh2/sh2.elf
 ASMFLAGS    = -Fbin -m68000 -no-opt -spaces -quiet
 SH2_ASFLAGS = --big -isa=sh2
 
+# SH2 C.  -m2 -mb is the big-endian SH2 multilib; freestanding because there is
+# no libc and no startup beyond master_start.  The division helpers the game
+# offload needs (__udivsi3) live in libgcc, so the link has to name it.
+SH2_CFLAGS  = -m2 -mb -O2 -ffreestanding -fno-builtin -fomit-frame-pointer \
+              -Wall -Wextra -Werror -std=c99
+SH2_LIBGCC := $(shell $(SH2_CC) -m2 -mb -print-libgcc-file-name)
+
 # Everything the two 68000 images include. Without these, editing a module or a
 # section does not rebuild either ROM -- and `make verify` then checks a stale
 # binary and passes for the wrong reason.
@@ -58,13 +66,16 @@ BOOT_SRC     = $(DISASM_DIR)/ultimate_boot.asm
 # or to MdMain would not trigger a rebuild.
 BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
                $(DISASM_DIR)/32x/dma_stub.asm \
-               $(DISASM_DIR)/32x/rv_probe.asm
+               $(DISASM_DIR)/32x/rv_probe.asm \
+               $(DISASM_DIR)/32x/sh2_probe.asm
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
-SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS))
+SH2_CSRCS    = $(DISASM_DIR)/sh2/master/rpc.c
+SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)) \
+               $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -134,6 +145,17 @@ $(BOOT_HALF): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IM
 
 # U-020 experiment cartridge: MdMain runs the RV probe from work RAM and parks.
 # Carries the real game half so the bank window has recognisable content.
+32x-sh2probe: $(BUILD_DIR)/aerobiz-ultimate-sh2probe.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-sh2probe.32x: $(BUILD_DIR)/32x_boot_sh2probe.bin $(GAME_HALF)
+	@echo "==> Assembling SH2 offload probe cartridge..."
+	@cat $(BUILD_DIR)/32x_boot_sh2probe.bin $(GAME_HALF) > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_boot_sh2probe.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, SH2 probe (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DSH2PROBE=1 -o $@ $<
+
 32x-rvprobe: $(BUILD_DIR)/aerobiz-ultimate-rvprobe.32x
 
 $(BUILD_DIR)/aerobiz-ultimate-rvprobe.32x: $(BOOT_HALF_PROBE) $(GAME_HALF)
@@ -187,8 +209,12 @@ $(BUILD_DIR)/sh2/%.o: $(DISASM_DIR)/sh2/%.s | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
 	$(SH2_AS) $(SH2_ASFLAGS) -o $@ $<
 
+$(BUILD_DIR)/sh2/%.o: $(DISASM_DIR)/sh2/%.c | $(BUILD_DIR)
+	@mkdir -p $(dir $@)
+	$(SH2_CC) $(SH2_CFLAGS) -c -o $@ $<
+
 $(SH2_ELF): $(SH2_OBJS) $(SH2_LDS)
-	$(SH2_LD) -T $(SH2_LDS) -o $@ $(SH2_OBJS)
+	$(SH2_LD) -T $(SH2_LDS) -o $@ $(SH2_OBJS) $(SH2_LIBGCC)
 
 $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC): $(SH2_ELF)
 	@$(SH2_OBJCOPY) -O binary $(SH2_ELF) $(SH2_IMAGE_BIN)

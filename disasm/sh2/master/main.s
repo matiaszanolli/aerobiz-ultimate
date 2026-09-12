@@ -62,10 +62,32 @@ master_start:
         mov     #0x60, r0                       ! SR I3-I0 = 6
         ldc     r0, sr
 
+        ! Zero .bss before any C runs.  objcopy -O binary drops NOBITS, so
+        ! the cartridge image carries no .bss and SDRAM holds whatever the
+        ! boot ROM left there.  Bounds come from sh2.lds.
+        mov.l   .L_bss_start, r1
+        mov.l   .L_bss_end, r2
+        mov     #0, r0
+.Lbss_clear:
+        cmp/hs  r2, r1                          ! T = (r1 >= r2), unsigned
+        bt      .Lbss_done
+        mov.l   r0, @r1
+        add     #4, r1
+        bra     .Lbss_clear
+        nop
+.Lbss_done:
+
 ! --------------------------------------------------------------------------
-! Idle loop.  Manual 5.3 forbids the SLEEP instruction in an application, so
-! this is a plain spin.  Real work arrives through cmd_handler.
+! Hand over to the C command dispatcher, which never returns.  Manual 5.3
+! forbids SLEEP in an application, so its idle path is a plain spin.
+!
+! sh-elf prefixes C symbols with an underscore.
 ! --------------------------------------------------------------------------
+        mov.l   .L_rpc_loop, r0
+        jsr     @r0
+        nop
+
+! Only reached if the dispatcher ever returns, which it does not.
 main_loop:
         bra     main_loop
         nop
@@ -117,6 +139,9 @@ halt:
 
         .align  4
 .L_stack:       .long   MASTER_STACK
+.L_bss_start:   .long   __bss_start
+.L_bss_end:     .long   __bss_end
+.L_rpc_loop:    .long   _sh2_rpc_loop
 .L_comm_mok:    .long   COMM_MOK
 .L_sysreg:      .long   SYSREG
 .L_vint_clr:    .long   VINT_CLR

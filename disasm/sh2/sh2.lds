@@ -38,7 +38,18 @@ SECTIONS
     } > sdram
 
     .data : { *(.data*) . = ALIGN(4); } > sdram
-    .bss  : { *(.bss*) *(COMMON) . = ALIGN(4); } > sdram
+
+    /* objcopy -O binary does not emit NOBITS, so .bss is absent from the
+     * cartridge image and SDRAM arrives holding whatever the boot ROM left.
+     * master_start zeroes the range between these two symbols before any C
+     * code runs. */
+    .bss  :
+    {
+        __bss_start = .;
+        *(.bss*) *(COMMON)
+        . = ALIGN(4);
+        __bss_end = .;
+    } > sdram
 
     /DISCARD/ : { *(.comment) *(.note*) }
 }

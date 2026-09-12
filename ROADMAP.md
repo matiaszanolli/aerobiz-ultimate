@@ -308,7 +308,67 @@ have measured budgets. Neither milestone should assume it owns both CPUs.
 
 ## M5 -- AI and economy on the SH2
 
+### U-039 -- Comm-port RPC and the break-even measurement [DONE]
+
+The first slice: a real 68000 -> SH2 -> 68000 round trip, wired end to end and
+diffed against the 68000's own answer. `make 32x-sh2probe` builds it; it parks
+instead of starting the game and leaves its results at `$FFFD00`.
+
+Subject: unsigned 32/32 division. It is the largest piece of genuinely pure
+arithmetic in the game -- two longwords in, two out, no work RAM, no ROM
+tables -- so it crosses the comm ports without needing any of the state
+transport U-040 still has to solve.
+
+**It works.** All 16 test vectors match Aerobiz's own `UnsignedDivide`
+(`$03E0C6`) exactly, covering all three of its paths: the `DIVU.W` fast path,
+the two-step path taken when the quotient exceeds 16 bits, and the
+shift-subtract path taken when the divisor reaches `$10000`. PING returns its
+sentinel, the dispatcher's own call counter reads 17 for 17 requests, zero
+timeouts, and the round trip is a steady 5 poll iterations.
+
+**The cost, measured rather than derived from timing tables.** Four batches of
+20,000 calls each, sampled every 10 frames from outside; the frame at which a
+counter saturates is the duration.
+
+| Work per call | 68000 in place | Over the comm ports |
+|---|---|---|
+| Shift-subtract path (divisor >= `$10000`) | 136.6 calls/frame | **228.2** |
+| `DIVU.W` fast path | **443.4 calls/frame** | 228.2 |
+
+The offload rate is *identical* in both rows. The division never costs the SH2
+anything measurable; the round trip is the entire price, and it is a flat
+ceiling of about 228 calls per frame -- roughly **560 68000 cycles per call**
+at ~128,000 cycles/frame.
+
+That single number is what M5 needs: **work smaller than ~560 cycles loses
+money over the comm ports; work larger than that wins.** A 32-bit divide sits
+right on the line, which is why it wins by 1.67x in its expensive form and
+loses by 1.94x in its cheap one. Per-call RPC is therefore not the mechanism
+for U-041 and U-042 -- batching is, which is exactly what U-040 is for.
+
+Three things this does *not* establish, and none should be quietly assumed:
+
+- It is PicoDrive, not hardware. The core detects the SH2's comm-port spin
+  (`poll_addr=0x20`) and may answer more promptly than a real SH2 would, so
+  228 calls/frame is an **upper bound** on the transport.
+- It is synchronous: the 68000 spins in a poll loop doing nothing. The real
+  M5 win is overlap -- hand off, keep working, collect later -- which this
+  measures nothing about.
+- It says nothing about SH2 compute speed, because compute never became the
+  bottleneck.
+
+Also established, and reusable: the SH2 C toolchain path. The dispatcher is C
+(`disasm/sh2/master/rpc.c`), compiled `-m2 -mb` and linked against libgcc for
+`__udivsi3`, with `.bss` bounds now exported from `sh2.lds` and cleared by
+`master_start` before any C runs. U-041 and U-042 are large enough that they
+were always going to be C; this proves the route before they depend on it.
+
 ### U-040 -- RAM snapshot transport over DREQ FIFO [OPEN]
+
+Now has a target to beat: it must move enough state per transfer that the
+per-call cost measured in U-039 is amortised well below 560 cycles per unit of
+work.
+
 ### U-041 -- Port quarterly processing to the SH2 [OPEN]
 ### U-042 -- Port the AI decision tree to the SH2 [OPEN]
 ### U-043 -- Split work across master and slave [OPEN]

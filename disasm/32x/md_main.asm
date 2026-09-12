@@ -81,6 +81,15 @@
         bra.s   .rv_idle
     endif
 
+    ifd SH2PROBE
+; M5 first slice. Runs after the bank switch, because it calls the game's own
+; UnsignedDivide in bank 1 as its reference; parks afterwards so $FFFD00 stays
+; intact. Read the results out of $FFFD00.
+        bsr.w   Sh2ProbeRun
+.sh2_idle:
+        bra.s   .sh2_idle
+    endif
+
     ifd MILESTONE1
 ; Milestone-1 cartridge: there is no game half to jump to (the image is
 ; $FF-filled from $100000 on), so idle here instead.  Everything the M1
@@ -92,7 +101,9 @@
 
     ifnd MILESTONE1
     ifnd RVPROBE
+    ifnd SH2PROBE
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
 
@@ -118,6 +129,10 @@ MarsSecurityFailed:
 
     ifd RVPROBE
         include "32x/rv_probe.asm"
+    endif
+
+    ifd SH2PROBE
+        include "32x/sh2_probe.asm"
     endif
 
 ; ===========================================================================
