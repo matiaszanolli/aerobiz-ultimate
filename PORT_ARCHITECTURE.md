@@ -508,7 +508,7 @@ and what a pass looks like.
 | M4 | World map on the 32X layer | Flagship visual |
 | M5 | SH2 offload of the measured hot path (decompression, graphics) | Throughput where it is actually spent |
 | M6 | PWM audio | Flagship audio |
-| M7 | High-colour art and transitions | Polish |
+| M7 | High-colour art, text and quality of life | Polish, and the turn loop |
 | M8 | More scenarios, events, aircraft and airports | The reason for the port |
 
 M3 is the gate. Everything after it is additive; everything before it is

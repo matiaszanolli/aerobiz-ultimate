@@ -1435,7 +1435,7 @@ Note manual 5.3: whichever SH2 drives PWM cannot use auto-request DMA.
 
 ---
 
-## M7 -- High-colour art and transitions
+## M7 -- High-colour art, text and quality of life
 
 ### U-060 -- Art conversion pipeline [OPEN]
 ### U-061 -- Title and city art on the 32X layer [OPEN]
@@ -1466,6 +1466,95 @@ consistent button placement, a default highlighted option, and cancel on B.
 Check first whether the dialogs share one routine or are open-coded per site.
 If they share one, this is a small change with broad effect; if they do not,
 it is a refactor first, and the count of sites decides whether it is worth it.
+
+### Turn-loop quality of life
+
+The roadmap covers capability well and player experience thinly. The friction
+in Aerobiz Supersonic is the turn loop -- the number of button presses between
+deciding something and having done it -- and none of the items below need the
+32X layer, the H40 switch, or U-034. They are 68000 work, which means they are
+size-constrained in shared code and belong in the boot half behind a
+size-neutral trampoline, the U-046 pattern.
+
+**Every one of these starts as a claim, not a measurement.** They are written
+from playing the game, not from the disassembly, and Ground Rule 2 applies with
+full force: U-045 has already punished one "this feels slow" intuition. The
+first task in each is the verification, and any of them may close as "already
+fine" or "not worth the bytes".
+
+### U-065 -- Menu cursor memory [OPEN, verify first]
+
+Claim: menus reset their selection to the top on every re-entry, so returning
+to a screen costs the same scrolling every time.
+
+Verify: pick two heavily re-entered screens and check whether the cursor index
+lives in a per-screen variable or a shared one that is cleared on entry. If it
+is shared and cleared, this is a handful of bytes of work RAM and the single
+largest reduction in button presses available. If each screen already keeps its
+own, close the item.
+
+### U-066 -- Accelerating repeat on held input [OPEN, verify first]
+
+Claim: numeric fields -- fares, frequencies, quantities -- step by one per
+press or at a flat repeat rate, so large adjustments are long presses.
+
+Verify: find the input repeat handling (`modules/68k/input/`) and establish
+whether repeat is flat or already ramps. If flat, a ramp after ~30 frames helps
+every numeric field at once, which is what makes it worth doing centrally
+rather than per screen.
+
+### U-067 -- Text speed and skippable animation [OPEN, partly measured]
+
+Two separate things, one item because they share a "let the player past it"
+motive.
+
+**Measured:** `RunWorldMapAnimation` (`$039EAA`) runs a **136-frame** display
+loop, and it plays on every route event. That is a little over two seconds,
+every time, for the rest of the game.
+
+**Claimed:** dialogue advances at a fixed rate with no fast-forward.
+
+Verify the second, then decide whether the control is a hold-to-hurry button or
+a setting. Prefer hold-to-hurry: no menu, no saved state, and it cannot be set
+wrong. Skipping the animation needs care -- U-034 is going to replace that
+routine, so do not build on its internals.
+
+### U-068 -- Route ledger [OPEN, verify first]
+
+Claim: the game computes per-route profitability and never shows it in one
+place, so network-level decisions are made from memory.
+
+Verify: find where route income and cost are accumulated -- U-045's profile and
+`analysis/RAM_MAP.md`'s financial accumulators (`$FF0290`, `$FF09A2`) are the
+starting points -- and establish whether a per-route figure exists or only a
+per-player total. If only the total exists, this item is much larger than it
+looks and should be re-scoped or dropped.
+
+This is the item that most changes how the game plays, and it is also the one
+that wants U-063 first: a useful ledger is a dense table, and dense tables are
+what the 8x8 single-cell font is worst at.
+
+### U-069 -- Surface the numbers the game already has [OPEN, verify first]
+
+Two cases where the information exists and the player is made to guess.
+
+**Passenger demand.** The subcontinent view already renders "Passenger Totals"
+per region (observed 2026-09-12), so the figures are computed and formatted.
+Whether a city-pair figure is available, or only a regional one, decides
+whether this is a display change or a calculation.
+
+**Negotiation memory.** Slot negotiations fail and the player is expected to
+remember which cities refused and when. If the outcome is already stored per
+city, annotating the map is cheap; if it is discarded after the dialog closes,
+storing it costs per-city RAM and collides with U-071.
+
+### Rejected: more save slots
+
+Considered and **declined 2026-09-12**: it adds a save-management UI to a game
+whose appeal is the turn loop, and the complexity lands on the player, not just
+the code. It also collides with U-072 -- the save already fills all 16,384
+bytes of SRAM, and M8 makes the world bigger, so slots would compete with
+content for the same space. Recorded here so it is not re-proposed.
 
 ---
 
