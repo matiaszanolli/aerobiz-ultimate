@@ -324,7 +324,7 @@ The map is on the layer and scaling (U-030, U-031, U-035). What remains is the
 screen it lives on (U-036), the things drawn over it (U-032, U-033), and
 retiring the Genesis renderer it replaces (U-034).
 
-### U-036 -- Switch the map screen to H40 [CAUSE FOUND, fix open]
+### U-036 -- Switch the map screen to H40 [NO BUG; scoped and ready]
 
 The gate U-003 landed on. The map screen has to run 40 tiles per line for its
 Genesis overlay to register against a 32X-drawn map; every other screen stays
@@ -509,15 +509,60 @@ does handle HSZ properly. What is missing is a clear of the widened plane.
 That is a much smaller job on the map screen alone, which is what U-003 already
 decided, than it would have been globally.
 
-Remaining work on this item:
+**There is no engine bug. Both artifacts were the experiment's own setup.**
 
-- Find what clears the plane at screen init and why it stops at 32 columns --
-  the audit line "anything else assuming 32 cells" is now pointed at a
-  specific routine rather than at the whole engine.
-- Apply the geometry change to the map screen only, with the extra columns
-  filled, and re-run the same controlled comparison.
-- Note the patch actually selects `$11` (64x64), not the `$01` (64x32)
-  recorded above; harmless, since only HSZ matters, but the note was wrong.
+The routine is `ClearScreen` (`$0053BA`), which fills both planes through
+GameCommand `$1A` with two hard-coded `pea ($0020).w` -- the fill width and
+height in cells, literal 32. That is the "anything else assuming 32 cells" the
+audit predicted, and it is why columns 32-63 are never written.
+
+But widening its fill to 64 changed the rendering **not at all**, because
+`$0000` and `$8000` are both **tile 0** -- and tile 0 is entirely blank, all 64
+pixels transparent. So those columns were never showing garbage. They were
+showing *through*.
+
+What was behind them is the answer to the whole mystery. `32x-h40map` links
+`32x_boot_h40.bin`, built with `-DH40PROBE=1`, which deliberately turns the 32X
+layer on and paints **U-002's test gradient** into the frame buffer. The
+32-cell plane wrapped an opaque backdrop tile over columns 256-319 and hid it;
+the 64-cell plane leaves them transparent, so the gradient appears. The
+coloured block is the test pattern, seen through the game.
+
+Blanking the layer in both builds and repeating the comparison:
+
+| | frames 400-660 |
+|---|---|
+| layer on (as before) | **0 of 261** identical |
+| layer blanked | **170 of 261** identical |
+
+and every remaining difference is confined to **columns 256-319 only**, where
+the 64-cell build shows the VDP backdrop colour (black) and the 32-cell build
+shows the wrapped backdrop tile (dark blue). A 64-pixel strip of the wrong
+colour, not corruption.
+
+Frames 2250-2400 and 4230-4360 were already pixel-identical with the layer on.
+So on every screen sampled, **the engine renders 64-cell planes correctly.**
+The "repeated glyphs tiled across the background, garbage in the lower half"
+on Regional Rankings fits the same explanation -- a screen whose planes are
+largely transparent, showing the gradient through.
+
+**The five eliminated hypotheses were all correct, and so was the sixth.** The
+engine was never at fault; the harness was. The lesson is the one U-092 was
+built for and this item still managed to trip over: a build that paints a test
+pattern into a layer is not a control for a change that alters what covers
+that layer.
+
+What this leaves for the real U-036, which is much less than it was:
+
+- The extra 64 pixels need *something* -- but on the map screen the answer may
+  be nothing at all. That is the screen where the 32X layer is meant to show
+  through, so transparent Genesis columns are the desired state, not a defect.
+  Decide it with U-034 when the map screen's framing is settled.
+- Apply the geometry change to the map screen alone, rather than globally in
+  `InitScrollModes` and `GameSetup2`, and re-run the controlled comparison
+  **with the layer blanked**.
+- Note the patch selects `$11` (64x64), not the `$01` (64x32) recorded above;
+  harmless, since only HSZ matters, but the note was wrong.
 
 **The useful conclusion is about scope, not the bug.** The screens that break
 are ranking and status screens; the map-bearing screens survive. This
