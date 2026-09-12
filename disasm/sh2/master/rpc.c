@@ -31,6 +31,9 @@
 /* Command numbers.  Keep in step with definitions_32x.asm. */
 #define SH2_CMD_PING    0x0001u
 #define SH2_CMD_UDIV32  0x0002u
+#define SH2_CMD_FBTEST  0x0003u
+
+void sh2_fb_test(void);
 
 /* Answered by PING.  An arbitrary constant that is unlikely to appear in a
  * comm register by accident, so the 68000 can prove the round trip happened
@@ -81,6 +84,10 @@ void sh2_rpc_loop(void)
             COMM_ARG1 = remainder;
             break;
         }
+
+        case SH2_CMD_FBTEST:
+            sh2_fb_test();
+            break;
 
         default:
             COMM_ARG0 = 0xDEAD0000uL | (unsigned long)cmd;

@@ -81,6 +81,20 @@
         bra.s   .rv_idle
     endif
 
+    ifd FBTEST
+; U-002. The bitmap mode register belongs to the 68000 only while FM = 0, so
+; set it before handing the frame buffer over. PRI = 1 puts the 32X layer in
+; front; there is no Genesis content on this cartridge to hide behind.
+        move.w  #MARS_MODE_PACKED|(1<<MARS_BM_PRI),(MARS_VDP_BITMAP).l
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l  ; FM = 1: the SH2 owns the VDP
+        move.w  #MARS_SH2_CMD_FBTEST,(MARS_RPC_CMD).l
+.fb_wait:
+        tst.w   (MARS_RPC_CMD).l
+        bne.s   .fb_wait
+.fb_idle:
+        bra.s   .fb_idle
+    endif
+
     ifd SH2PROBE
 ; M5 first slice. Runs after the bank switch, because it calls the game's own
 ; UnsignedDivide in bank 1 as its reference; parks afterwards so $FFFD00 stays
@@ -102,7 +116,9 @@
     ifnd MILESTONE1
     ifnd RVPROBE
     ifnd SH2PROBE
+    ifnd FBTEST
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
     endif

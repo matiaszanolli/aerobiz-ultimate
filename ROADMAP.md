@@ -64,12 +64,35 @@ an assembly source carrying it as `dc.w` data. marsdev's
 retail Virtua Racing Deluxe, and a full `make 32x-m1` built that way passes
 U-001 unchanged. The block is still not committed here.
 
-### U-002 -- Draw something on the 32X layer [OPEN]
+### U-002 -- Draw something on the 32X layer [DONE]
 
-Extend the SH2 master to fill the frame buffer and enable packed pixel mode, so
-the layer is visibly alive. Exercises the line table format (256 words at the
-page head -- manual 3.3), the palette, the `FM` handover and the frame buffer
-swap. Watch for the byte-write-zero trap in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
+`make 32x-fbtest` builds a cartridge whose 68000 sets packed-pixel mode, hands
+the VDP to the SH2 with `FM = 1`, asks it to paint, and parks. The SH2 fills
+the line table, the palette and 224 lines of pixels from C
+(`disasm/sh2/master/fb.c`). The layer comes up and holds a steady image --
+five consecutive captured frames hash identically.
+
+The test pattern is a two-axis gradient, red along X and green along Y,
+chosen so that a wrong line table or a wrong stride shows up as shear or noise
+rather than as something that merely looks odd. It also carries an accidental
+ruler: the X ramp is masked to 16 bands of 16 pixels, so it wraps at x = 256,
+and seeing that wrap confirms the VDP really is displaying a 320-pixel line.
+
+What this pins down for the rest of M4:
+
+- Line table is 256 words at the head of the buffer; in packed-pixel mode a
+  line is 160 words, so pixel data starts at word 256 and line *n* is at
+  `256 + n * 160` (manual 3.3).
+- Palette word is `through:1 B:5 G:5 R:5` (manual, "Color Palette").
+- `FM = 1` hands the frame buffer *and* the 32X VDP registers to the SH2, so
+  the bitmap mode register has to be written by the 68000 first, while it
+  still owns them.
+- An `FS` write only takes effect at the next V Blank (manual :1059), and only
+  the back buffer is writable -- so painting both buffers in turn is what
+  makes the image independent of which side the VDP happens to be showing.
+- Word writes throughout. A byte write to the frame buffer cannot store zero
+  ([KNOWN_ISSUES.md](KNOWN_ISSUES.md)), which would have punched holes in any
+  pattern containing palette index 0.
 
 ### U-003 -- Confirm Aerobiz's Genesis display mode [DONE, and it is a problem]
 
