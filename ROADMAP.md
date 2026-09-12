@@ -1493,6 +1493,73 @@ A new era needs a window start in `RegionAircraftIndex`, a per-scenario data
 block (the `$0164`-byte blocks at `$05F26A`+ are per-scenario variants), and
 the 0..3 bounds tests widened. Depends on U-073.
 
+### U-081 -- Retire the subcontinent views [OPEN, design decision first]
+
+The game divides the world into seven regions -- Europe, Africa, the Middle
+East, Southeast Asia, Oceania, North America, South America -- and scopes much
+of the UI to one at a time. The proposal is to drop that and let the player
+work with one continuous world, navigated by U-035's zoom and U-077's tiering
+rather than by choosing a region from a menu.
+
+**The argument that prompted it is worth keeping.** Rejecting an interactive
+globe (U-082) because "it hides half the world" is not a coherent objection
+from a design that already hides five sevenths of it. Either the whole world is
+visible and navigable, or the paging is fine and so is the globe. Choosing the
+first is a real decision, not a tidy-up.
+
+**But two premises need correcting before anyone plans around them.**
+
+*It was never a RAM constraint.* The per-city arrays already cover all 89
+cities at once in 68000 work RAM -- `city_data` at `$FFBA80` is 89 x 4 entries
+(712 bytes) and `char_stat_tab` at `$FF1298` is 89 x 4. The game holds
+whole-world state today and pages the *presentation*. So nothing has to be
+freed to do this; it is UI work.
+
+*And the 32X does not add RAM the 68000 can use.* The 256 KB of SDRAM sits on
+the SH2 bus and the 68000 cannot address it at all -- its map has the frame
+buffer at `$840000`, the cartridge windows, and the same 64 KB of work RAM as
+before. For anything the 68000 owns, the budget is unchanged. This matters far
+beyond this item: **M8's "more airports" depends on it**, which is exactly why
+U-071 and U-072 exist.
+
+There is a way round it, and it reopens an argument U-045 closed. U-045 killed
+the *performance* case for moving game state to the SH2 -- there is no queue to
+shorten. Capacity is a different case: state that lives in SDRAM is state that
+does not compete for the 64 KB. If M8 runs out of work RAM, U-041 and U-043
+come back for a reason that has nothing to do with speed.
+
+What actually has to be replaced:
+
+| Today | Notes |
+|---|---|
+| `RegionBitmaskTable` (`$05ECDC`) | 7 longwords, and they partition **exactly the 32 majors** -- 7+2+3+7+3+7+3. The 57 secondaries have no region at all, which is quiet evidence that the scheme was already straining |
+| `RegionNamePtrs` (`$05EC84`) | 14 strings, long and short forms of the seven |
+| `RegionAircraftIndex` (`$05ECF8`) | availability by era **and region** -- this one is game design, not UI, and has to survive in some form |
+
+Order of work: U-034 first, since retiring the Genesis map renderer is what
+makes zoom-and-pan the primary navigation; then the region-scoped screens one
+at a time, with U-092 confirming each still shows what it used to.
+
+### U-082 -- Interactive globe [OPEN, set-piece not primary]
+
+Measured as affordable rather than assumed. A globe with a vertical axis has a
+property that makes it much cheaper than per-pixel inverse trig suggests:
+**each screen row is a single line of latitude**, so latitude costs one `asin`
+per row, and along a row longitude is `asin(x / r_row)` with `r_row` constant
+-- a shared table indexed by a multiply. **Rotation is an additive offset to
+longitude**, so spinning costs nothing extra.
+
+That puts the inner loop near U-037's affine loop, measured at 5.75 frames
+full-screen, and a globe covers only a disc -- 55% of the frame at full height.
+Call it **~4 frames, 12-15 fps**, better for a smaller globe. Two things
+already favour it: the map is equirectangular, which is a globe texture, and it
+is **256 pixels wide, a power of two**, so longitude wrap is a mask.
+
+Against it: arcs need far-side occlusion, labels distort at the limb, and half
+the network is hidden -- which is only an objection if U-081 lands. Sequence it
+after U-081 either way: if the whole world becomes the navigation model, the
+globe is a set-piece within it, not a competitor to it.
+
 ### U-079 -- Bring scenario 4 in line with what actually happened [OPEN]
 
 Aerobiz Supersonic's last scenario was set in the game's own future, and that
