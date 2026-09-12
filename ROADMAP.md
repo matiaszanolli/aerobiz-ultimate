@@ -484,12 +484,29 @@ obvious suspect. Patching the literal to `$40` changed the rendered frame
 **not at all**: the before and after frames hash identically. Hypothesis dead,
 patch reverted.
 
-What is left is that some tilemap writers use the variable stride `$FFA77E`
-and others assume 32. That matches the symptom exactly -- content written at
-32 cells per row but read back at 64 lands at half the row and alternating
-column halves, which is what the tiled-glyph pattern looks like. A census
-finds 28 sites multiplying by 64 bytes and 118 by 32, so this is a search for
-the specific writers, not a one-line fix.
+**Five hypotheses tested and eliminated.** `make 32x-h40map` reproduces the
+corruption; the cause is still unfound, but the search space is much smaller.
+
+| Ruled out | How |
+|---|---|
+| H40 itself | H40 alone renders correctly; corruption appears with the plane change in H32 |
+| the `cmpi.w #$20` gate in `UpdateScrollDisplay` | patched the literal to `$40` so the routine runs again -- rendered frame **hashes identically**, before and after |
+| vertical plane size | 64x32 and 64x64 produce **byte-identical frames**; only HSZ matters |
+| horizontal scroll wrapping at 512 instead of 256 | hscroll is `(2,2)` in both stock and 64-cell builds, and reg 11 is `$00`, a single whole-screen value |
+| the central address path | `ComputeMapCoordOffset` (`$000816`) and `CmdDMABatchWrite` (`$000876`) both read the register-16 shadow at `$10(a5)`, mask HSZ and scale the row stride by 1x/2x/4x -- they even trap on the prohibited HSZ=2 |
+
+So the corruption tracks **HSZ = 64 alone**, and the engine's own central write
+path handles HSZ correctly. Something outside that path writes plane A: the
+corrupt frames show plane A's filler tile dropping from 79% of the visible
+area to 44%, with tiles `1501` and `1485` -- the ones that sit in the
+off-screen columns -- appearing 208 times where UI should be.
+
+Next step is a cell-by-cell diff of plane A between stock and the 64-cell
+build **on the same screen**. That is the piece missing so far: display-mode
+and geometry changes make the demo diverge, so the two builds are never on the
+same screen at the same frame, and every comparison to date has been between
+different screens. Match the screens by content first, then diff the
+nametable; the wrong cells will identify the writer.
 
 **The useful conclusion is about scope, not the bug.** The screens that break
 are ranking and status screens; the map-bearing screens survive. This

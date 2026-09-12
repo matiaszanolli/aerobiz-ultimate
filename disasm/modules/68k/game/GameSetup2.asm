@@ -77,8 +77,9 @@ l_3cb02:
     jsr SetDisplayMode
     jsr     (a4)
     ifd H40MAP
-    clr.l   -(a7)
-    pea     ($0001).w
+    moveq   #$1,d0
+    move.l  d0,-(a7)
+    move.l  d0,-(a7)
     else
     pea     ($0003).w
     clr.l   -(a7)

@@ -60,12 +60,14 @@ InitScrollModes:
     jsr     (a2)
     lea     $30(a7), a7
     ifd H40MAP
-; U-036 experiment: 64x32 instead of 32x128. Same six bytes -- the push order
-; is what selects the table entry, so swapping them gives d2=0/d3=1 -> $01.
-; 64 cells wide is what H40 needs; 32 rows still covers the 28 displayed, and
-; the plane halves to 4,096 bytes.
-    clr.l   -(a7)
-    pea     ($0001).w
+; U-036: 64x64 instead of 32x128 -- d2=1, d3=1 -> table entry $11.
+; 64 cells wide is what H40 needs, and 64 rows keeps the off-screen space the
+; game writes into (plane A reaches row 91 in stock); at 32 rows those writes
+; wrapped into the visible area. Same 8,192 bytes as 32x128, and still six
+; bytes of code: d0 is dead here and SetScrollQuadrant clobbers it regardless.
+    moveq   #$1,d0
+    move.l  d0,-(a7)
+    move.l  d0,-(a7)
     else
     pea     ($0003).w
     clr.l   -(a7)
