@@ -37,6 +37,21 @@ slave_start:
         mov     #0x60, r0
         ldc     r0, sr
 
+        ! Cache on, for the same reason as the master (main.s) and with more
+        ! at stake: this CPU's only job today is a spin loop, and with the
+        ! cache off every instruction fetch of it is an 8-word SDRAM burst
+        ! (32x-hardware-manual.md:897).  Measured with VRD_SH2_TIMING: 12.8M
+        ! uncached accesses and 139M wait cycles over 500 frames, seven times
+        ! the master's, for a CPU doing nothing at all.  On hardware that is
+        ! bus traffic competing with the master.
+        mov.l   .L_sccr, r1
+        mov     #0x00, r0
+        mov.b   r0, @r1                         ! CE = 0 before changing CCR
+        mov     #0x10, r0
+        mov.b   r0, @r1                         ! CP = 1: purge, valid + LRU
+        mov     #0x01, r0
+        mov.b   r0, @r1                         ! CE = 1
+
         mov.l   .L_comm_sok, r1
 .Lwait_release:
         mov.l   @r1, r0
@@ -48,9 +63,15 @@ slave_loop:
         nop
 
         .align  4
+! RTE restores PC and SR only, so the handler saves what it touches -- r1 is
+! a scratch register the compiler uses freely.  Same fix as the master's.
 slave_cmd_handler:
+        mov.l   r0, @-r15
+        mov.l   r1, @-r15
         mov.l   .L_scmd_clr, r1
         mov.w   r0, @r1
+        mov.l   @r15+, r1
+        mov.l   @r15+, r0
         rte
         nop
 
@@ -61,5 +82,6 @@ slave_halt:
 
         .align  4
 .L_sstack:      .long   SLAVE_STACK
+.L_sccr:        .long   0xFFFFFE92      ! sh7604 8.2
 .L_comm_sok:    .long   COMM_SOK
 .L_scmd_clr:    .long   CMD_CLR

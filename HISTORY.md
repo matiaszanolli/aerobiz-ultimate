@@ -59,6 +59,45 @@ pixels.
 
 ---
 
+## 2026-09-12 (an instrument, and what it found in the first minute)
+
+PicoDrive cannot measure SH2 work: no cache model, no SDRAM latency, no bus
+contention. U-046's decision turns entirely on how fast the SH2 decompresses,
+so building that decompressor first would have produced a benchmark made of
+nothing. Built the instrument instead -- see the 32x-playground commits
+`3e32edb` (timing model) and `65bbefe` (reproducible two-core build).
+
+The model is opt-in (`VRD_SH2_TIMING=1`) and refuses to run under the
+recompiler rather than silently ignoring every wait state, because the live
+cycle count is packed into SR around a memory call there. Control test: a
+pure-68000 workload gives **byte-identical** results with it on and off.
+
+**It found a real bug in our own code within minutes of working.** First run
+on the zoom test:
+
+| | accesses | cached | hit rate | wait cycles |
+|---|---|---|---|---|
+| master | 129.4M | 123.0M | 99.5% | 19.3M |
+| slave | 12.8M | **0** | -- | **139.4M** |
+
+The slave never enabled its cache -- `master_start` writes `CCR` and
+`slave_start` did not -- so every instruction fetch of its two-instruction idle
+spin was an 8-word SDRAM burst at 12 clocks
+(`docs/32x-hardware-manual.md:897`). Seven times the master's bus cost, for a
+CPU doing nothing. Enabling it collapsed the slave to **472,472 wait cycles, a
+295x reduction, 100.0% hit rate, three misses total.**
+
+Worth being precise about what this does and does not prove. The model does
+not simulate contention between the two CPUs, so the master's numbers did not
+move and the zoom benchmark did not change. On hardware that slave traffic was
+competing for the same bus, and it is gone now. The measured improvement is in
+bus cycles, not in a frame rate anyone has observed.
+
+The slave's `cmd` handler also had the same `r1`-clobber bug the master's five
+handlers had, fixed with it.
+
+---
+
 ## 2026-09-12 (map on the layer, and then from the ROM)
 
 U-030 and U-031. The world map now reaches the 32X layer from cartridge ROM,
