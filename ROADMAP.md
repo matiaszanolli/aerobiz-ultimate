@@ -523,11 +523,16 @@ corruption; the cause is still unfound, but the search space is much smaller.
 | horizontal scroll wrapping at 512 instead of 256 | hscroll is `(2,2)` in both stock and 64-cell builds, and reg 11 is `$00`, a single whole-screen value |
 | the central address path | `ComputeMapCoordOffset` (`$000816`) and `CmdDMABatchWrite` (`$000876`) both read the register-16 shadow at `$10(a5)`, mask HSZ and scale the row stride by 1x/2x/4x -- they even trap on the prohibited HSZ=2 |
 
-So the corruption tracks **HSZ = 64 alone**, and the engine's own central write
-path handles HSZ correctly. Something outside that path writes plane A: the
-corrupt frames show plane A's filler tile dropping from 79% of the visible
-area to 44%, with tiles `1501` and `1485` -- the ones that sit in the
-off-screen columns -- appearing 208 times where UI should be.
+So the corruption tracks **HSZ = 64 alone**, while the engine's own central
+write path handles HSZ correctly. Something outside that path is writing the
+tilemap wrongly.
+
+*Which plane is at fault is currently unestablished.* The attribution in an
+earlier revision came from nametable tile counts read in the wrong byte order
+(U-030 found PicoDrive stores VRAM and CRAM byte-swapped in savestates), so
+those figures were meaningless. Redo it with `tools/extract_map.py`, which
+renders a plane correctly and makes the answer visible rather than
+statistical.
 
 Next step is a cell-by-cell diff of plane A between stock and the 64-cell
 build **on the same screen**. That is the piece missing so far: display-mode
@@ -564,10 +569,13 @@ the layer on (U-003; item 3 in [HARDWARE_TESTS.md](HARDWARE_TESTS.md)).
 reasoning that the renderer's geometry assumptions depend on it. Two findings
 since say otherwise:
 
-- **Plane B is the world map; plane A is the UI.** Measured in-game: plane B
-  carries 34 distinct tiles with no dominant one, while plane A is 79% a single
-  filler tile. U-030 and U-031 replace *plane B*, and the H40 corruption is in
-  *plane A*.
+- **Plane B is the world map; plane A is the UI.** Established by rendering
+  each plane out of a savestate with `tools/extract_map.py`: plane B is the
+  world map plus the coloured panel frames, plane A is the report text and bar
+  graphs. U-030 and U-031 replace *plane B*.
+  *(An earlier revision cited tile-distribution counts here. Those were
+  computed with the wrong byte order -- see U-030 -- and meant nothing. The
+  conclusion survives because the rendered planes show it directly.)*
 - Once the map is on the 32X layer, plane B goes blank on the Genesis side and
   its geometry stops mattering at all.
 
@@ -575,7 +583,38 @@ So U-030 and U-031 can proceed now. U-036 is still needed before the layer
 goes live during play -- the plane A UI must fill 40 columns in H40 -- but it
 gates the *switch-on*, not the renderer.
 
-### U-030 -- Map data path to the SH2 [OPEN]
+### U-030 -- Map data path to the SH2 [IN PROGRESS]
+
+`tools/extract_map.py` pulls a Genesis plane out of a savestate -- nametable,
+4bpp tiles, CRAM -- and renders it, so the map can be checked by eye before
+any of it reaches the SH2. It also emits the plane as raw 8bpp indices
+(`--raw`), which is the form the 32X packed-pixel layer wants.
+
+The world map extracts cleanly: 256x224, **24 distinct palette indices**, well
+inside the 32X's 256-entry palette. At 8bpp that is 57,344 bytes, which the
+cartridge has room for many times over (~507 KB free in the fixed window).
+
+**The byte-order trap, worth knowing before anyone reads a savestate again.**
+PicoDrive stores VRAM and CRAM **byte-swapped**, exactly as it does 68K work
+RAM: a logical byte at address `a` is at index `a ^ 1`, and a logical word is a
+little-endian read. Read big-endian, the map renders as coloured noise --
+convincing enough to look like a decoding bug in the *game* rather than in the
+reader. The cheap check is the CRAM bit pattern: Genesis entries are
+`0000 bbb0 ggg0 rrr0`, and 16 of 16 match little-endian against 4 of 16
+big-endian.
+
+Two things this exposed and one design question it raises:
+
+- Several earlier plane analyses in this file used the wrong byte order and
+  have been corrected or withdrawn.
+- **Plane B carries the panel frames as well as the map**, so a snapshot of it
+  is screen-specific, not a reusable world map. For a first slice that is fine
+  -- blitting it proves the path -- but the real source should be the map's own
+  ROM data, not a screen grab.
+
+Next: convert the indices and palette to 32X packed-pixel form (Genesis CRAM
+is BGR333, the 32X palette BGR555), place the image in the cartridge, and have
+the SH2 blit it. That is U-031.
 ### U-031 -- Packed-pixel map renderer on the SH2 master [OPEN]
 ### U-032 -- Great-circle route arcs [OPEN]
 ### U-033 -- Per-pixel aircraft animation [OPEN]
