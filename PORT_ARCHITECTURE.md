@@ -459,6 +459,22 @@ and what a pass looks like.
    6. `master_start` now enables the cache explicitly rather than trusting the
    boot ROM to have done it, since the emulator cannot tell us either way.
 
+6. **Where the game's off-screen plane scratch can go.** Measured 2026-09-12:
+   the game keeps live data in the scroll planes past the 28 displayed rows --
+   plane A to row 91, plane B to row 78 -- at fixed VRAM **addresses**. Rows
+   and addresses coincide only for a given stride, so reshaping plane B from
+   32x128 to 64x64 does not move the scratch out of the way; it halves the row
+   stride and slides the *screen* onto it. `$EA80` is row 42 at 32 cells and
+   row 21 at 64, and at 64 that scratch is displayed. This is why U-036 and
+   U-034 stage 1 are blocked, and the reverted experiment is in HISTORY.
+
+   What is not yet known is **what writes it, what reads it, and whether it can
+   be relocated** -- into the `$F000-$F7FF` gap below the sprite table, or by
+   giving those writers a different base. Any fix lives in shared code, so it
+   must be size-neutral (§ "The 32X image must keep the Genesis layout"). Until
+   then, the map's route to the 32X layer is the frame buffer, which needs the
+   Genesis plane to be no wider than it already is.
+
 ---
 
 ## 6. Milestones

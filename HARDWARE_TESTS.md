@@ -77,7 +77,10 @@ a confirmation, not a question.
 - **Pass:** the game renders unstretched and 1:1 with the 32X layer, as it does
   under emulation (measured 100.00% pixel match against the Genesis build).
 - **Expected artefact:** the right 64 pixels repeat the left 64. That is the
-  32-cell plane wrapping and is what U-036 fixes; it is not a hardware fault.
+  32-cell plane wrapping, and it is not a hardware fault -- but it is no longer
+  something U-036 fixes by widening the plane. Widening it to 64 cells slides
+  the game's live off-screen scratch into the visible rows (HISTORY,
+  2026-09-12), so this test confirms H40 registration only; the wrap stays.
 
 ## 6. Map zoom cost with a real cache (U-035)
 
