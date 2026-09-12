@@ -32,8 +32,10 @@
 #define SH2_CMD_PING    0x0001u
 #define SH2_CMD_UDIV32  0x0002u
 #define SH2_CMD_FBTEST  0x0003u
+#define SH2_CMD_MAPTEST 0x0004u
 
 void sh2_fb_test(void);
+void sh2_map_test(void);
 
 /* Answered by PING.  An arbitrary constant that is unlikely to appear in a
  * comm register by accident, so the 68000 can prove the round trip happened
@@ -87,6 +89,10 @@ void sh2_rpc_loop(void)
 
         case SH2_CMD_FBTEST:
             sh2_fb_test();
+            break;
+
+        case SH2_CMD_MAPTEST:
+            sh2_map_test();
             break;
 
         default:

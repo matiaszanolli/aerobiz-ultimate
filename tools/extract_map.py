@@ -106,4 +106,5 @@ def main():
     used = sorted(set(px))
     print(f"distinct palette indices used: {len(used)} -> {used}")
 
-main()
+if __name__ == '__main__':
+    main()

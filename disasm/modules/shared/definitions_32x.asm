@@ -194,4 +194,5 @@ MARS_RPC_COUNT      equ MARS_COMM6  ; long: dispatcher's own call counter
 MARS_SH2_CMD_PING   equ $0001
 MARS_SH2_CMD_UDIV32 equ $0002
 MARS_SH2_CMD_FBTEST equ $0003
+MARS_SH2_CMD_MAPTEST equ $0004
 MARS_STOCK_TRIGGER  equ $00FFF000   ; the game's own 10-byte RAM trigger stub

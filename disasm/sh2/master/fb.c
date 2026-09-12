@@ -97,3 +97,69 @@ void sh2_fb_test(void)
         fb_wait_vblank();
     }
 }
+
+/* ==========================================================================
+ * U-031: draw the world map from cartridge ROM.
+ *
+ * The asset is built by tools/make_map_asset.py and lives at cartridge offset
+ * MAP_ROM_OFFSET, which the SH2 reaches through the cache-through cartridge
+ * window at 0x22000000. Its layout is exactly what we need to write, so this
+ * is a copy and not an unpack:
+ *
+ *     +0x0000  256 words  palette, already BGR555
+ *     +0x0200  224 * 320  packed pixels, one byte each, rows already padded
+ *                         to the full 320 the VDP displays (manual 3.3)
+ *
+ * The cartridge is unreadable while RV = 1 (manual 3.5). RV is 0 here -- the
+ * DMA thunk is the only thing that raises it, and only for the length of a
+ * transfer with interrupts masked -- but anything that starts doing SH2 work
+ * during a Genesis DMA will have to interlock.
+ * ========================================================================== */
+
+#define CART_ROM        ((volatile const unsigned char *)0x22000000)
+#define MAP_ROM_OFFSET  0x00020000u
+
+static void fb_paint_map(void)
+{
+    const volatile unsigned short *pal =
+        (const volatile unsigned short *)(CART_ROM + MAP_ROM_OFFSET);
+    const volatile unsigned short *src =
+        (const volatile unsigned short *)(CART_ROM + MAP_ROM_OFFSET + 512u);
+    unsigned int line, w, i;
+
+    for (i = 0u; i < 256u; i++)
+        PALETTE[i] = pal[i];
+
+    for (line = 0u; line < LINE_TABLE_WORDS; line++) {
+        unsigned int s = (line < VISIBLE_LINES) ? line : (VISIBLE_LINES - 1u);
+        FRAMEBUFFER[line] =
+            (unsigned short)(LINE_TABLE_WORDS + s * WORDS_PER_LINE);
+    }
+
+    /* Word writes only: a byte write to the frame buffer cannot store zero,
+     * and index 0 is exactly what the 64-pixel pad to the right of the map
+     * is made of. */
+    for (line = 0u; line < VISIBLE_LINES; line++) {
+        volatile unsigned short *dst =
+            FRAMEBUFFER + LINE_TABLE_WORDS + line * WORDS_PER_LINE;
+        const volatile unsigned short *row = src + line * WORDS_PER_LINE;
+        for (w = 0u; w < WORDS_PER_LINE; w++)
+            dst[w] = row[w];
+    }
+}
+
+void sh2_map_test(void)
+{
+    unsigned int pass;
+
+    /* Both buffers, for the same reason as sh2_fb_test: only the back buffer
+     * is writable and an FS write lands at the next V Blank, so painting once
+     * would leave the result depending on which side the VDP is showing. */
+    for (pass = 0u; pass < 2u; pass++) {
+        fb_wait_vblank();
+        fb_paint_map();
+        VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
+        fb_wait_vblank();
+    }
+}
+

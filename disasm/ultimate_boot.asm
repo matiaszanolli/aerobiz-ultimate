@@ -43,5 +43,18 @@ SH2_MASTER_START equ $06000280
     dcb.b   (CART_BASE+SH2_ROM_OFFSET)-*,$FF
     incbin  "build/sh2_image.bin"
 
+; ---------------------------------------------------------------------------
+; World map asset -- cartridge $020000 (U-031)
+;
+; Read by the SH2 through the cache-through cartridge window at $22020000, so
+; the offset is fixed and must match MAP_ROM_OFFSET in disasm/sh2/master/fb.c.
+; It costs nothing: this region is $FF padding in every other build.
+; ---------------------------------------------------------------------------
+    ifd MAPTEST
+MAP_ROM_OFFSET  equ $00020000
+    dcb.b   (CART_BASE+MAP_ROM_OFFSET)-*,$FF
+    incbin  "build/map_asset.bin"
+    endif
+
 ; --- Pad the boot half out to a full megabyte ------------------------------
     dcb.b   (CART_BASE+$100000)-*,$FF

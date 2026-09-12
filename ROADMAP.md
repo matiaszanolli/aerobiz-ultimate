@@ -615,7 +615,45 @@ Two things this exposed and one design question it raises:
 Next: convert the indices and palette to 32X packed-pixel form (Genesis CRAM
 is BGR333, the 32X palette BGR555), place the image in the cartridge, and have
 the SH2 blit it. That is U-031.
-### U-031 -- Packed-pixel map renderer on the SH2 master [OPEN]
+### U-031 -- Packed-pixel map renderer on the SH2 master [IN PROGRESS]
+
+`make 32x-maptest` puts the world map on the 32X layer, read from cartridge
+ROM by the SH2. Five consecutive frames hash identically.
+
+The asset (`tools/make_map_asset.py`) is laid out as exactly what the SH2 must
+write, so the renderer is a copy rather than an unpack:
+
+```
++$0000  256 words   palette, already BGR555
++$0200  224 x 320   packed pixels, one byte each
+```
+
+Rows are padded to the full 320 because manual 3.3 warns the VDP "mechanically
+displays 320 pixels worth of data from the address specified per the line
+table" -- a short row shows whatever follows it in DRAM. The map occupies the
+left 256; the remaining 64 are index 0.
+
+It lives at cartridge `$020000`, which the SH2 reaches at `$22020000` through
+the cache-through window. That region is `$FF` padding in every other build,
+so the 72,192 bytes cost nothing.
+
+**Verified structurally rather than by colour.** Comparing rendered output to
+the source indices, all **25 indices present map to exactly one output colour
+each, and none maps to two** -- so every pixel landed where it should;
+addressing, stride and line table are all correct. (22 distinct colours for 25
+indices: three pairs collapse in the BGR333 -> BGR555 -> RGB565 round trip.)
+An exact-colour comparison is *not* the right test here, because it would be
+testing PicoDrive's output conversion rather than the renderer.
+
+Still to do before this closes:
+
+- The source is a **screen grab of plane B**, so it carries the coloured panel
+  frames along with the map and is specific to one screen. The real source is
+  the map's own ROM data.
+- Nothing scrolls or zooms yet; this is a static blit. U-035 is where the
+  geometry gets interesting.
+- The map is 256 wide against the layer's 320. Filling the extra 64 needs
+  either map data that does not exist yet or a deliberate framing decision.
 ### U-032 -- Great-circle route arcs [OPEN]
 ### U-033 -- Per-pixel aircraft animation [OPEN]
 ### U-034 -- Retire the Genesis-side map renderer [OPEN]

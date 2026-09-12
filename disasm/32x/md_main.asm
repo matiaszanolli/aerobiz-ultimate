@@ -81,6 +81,20 @@
         bra.s   .rv_idle
     endif
 
+    ifd MAPTEST
+; U-031. Same handover as the U-002 layer test, but the SH2 blits the world map
+; out of cartridge ROM instead of a gradient. PRI = 1 so the layer is in front;
+; there is nothing on the Genesis planes worth seeing on this cartridge.
+        move.w  #MARS_MODE_PACKED|(1<<MARS_BM_PRI),(MARS_VDP_BITMAP).l
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l  ; FM = 1: the SH2 owns the VDP
+        move.w  #MARS_SH2_CMD_MAPTEST,(MARS_RPC_CMD).l
+.map_wait:
+        tst.w   (MARS_RPC_CMD).l
+        bne.s   .map_wait
+.map_idle:
+        bra.s   .map_idle
+    endif
+
     ifd H40PROBE
 ; U-036 experiment: force H40 and turn the layer on, to find out what actually
 ; breaks. Same setup as LAYERON below, plus the mode forcing in the V-Blank
@@ -146,7 +160,9 @@
     ifnd RVPROBE
     ifnd SH2PROBE
     ifnd FBTEST
+    ifnd MAPTEST
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
     endif
