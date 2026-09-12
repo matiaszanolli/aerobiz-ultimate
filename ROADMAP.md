@@ -453,12 +453,44 @@ That reduces the plane half of U-036 to selecting a different quadrant mode on
 the map screen, and makes the off-screen-row worry much smaller: 64 x 64 is a
 configuration the engine already knows how to produce.
 
-Still open: whether the map screen's tilemap content needs re-laying-out for
-the 64-cell stride (most addressing follows `$FFA77E` automatically, but not
-necessarily all of it), the literal `cmpi.w #$20` in `UpdateScrollDisplay`,
-and the backdrop going transparent while the layer is on (see U-003 -- that one
-is `/YS` behaviour PicoDrive itself calls unclear, and is item 3 in
-[HARDWARE_TESTS.md](HARDWARE_TESTS.md)).
+**Tried it: two thirds work.** `make 32x-h40map` selects 64x32 instead of
+32x128 and forces H40. The plane change is a **12-byte, size-neutral** edit at
+the only two sites that request 32x128 -- `InitScrollModes` and `GameSetup2` --
+because the push *order* is what picks the table entry:
+
+```
+    pea ($0003).w / clr.l -(a7)   ->  d2=3 d3=0  ->  $30  32x128   6 bytes
+    clr.l -(a7)   / pea ($0001).w ->  d2=0 d3=1  ->  $01  64x32    6 bytes
+```
+
+Diffing the two game halves confirms exactly 12 bytes changed, in two runs of
+six, and the Genesis ROM stays byte-identical. 64x32 is 4,096 bytes per plane
+-- it *halves* the VRAM the planes use rather than costing any.
+
+| Build | Result |
+|---|---|
+| 64x32 plane only | **Renders correctly.** Quarterly Report with the world map behind it, essentially indistinguishable from stock |
+| forced H40 only | **Renders correctly.** Clean, unstretched, full-width world map |
+| both together | **Partially corrupted** -- UI and map recognisable, but repeated glyphs tiled across the background and garbage in the lower right |
+
+The first row is the important one: the engine really does re-lay-out at the
+new stride by itself, which is what following `$FFA77E` predicted. The tilemap
+does *not* need hand-conversion.
+
+The third needs isolating, not concluding. The likely suspects are VRAM access
+timing under H40 -- the game DMAs during active display, and H40 changes the
+slot budget -- and something still assuming 32 columns that we have not found.
+
+**A methodological trap worth recording.** Changing the display mode makes the
+demo diverge: at frame 20,000 the H40 build was showing the world map while
+stock was on the Quarterly Report. Same input, different screen. This is the
+same class as the input-timing sensitivity in U-021, now with a second cause,
+and it means **frames from different builds cannot be compared at the same
+frame number.** Compare screens, or compare 68000 work RAM.
+
+Still open: what breaks in the H40 + 64x32 combination, the literal
+`cmpi.w #$20` in `UpdateScrollDisplay`, and the backdrop going transparent with
+the layer on (U-003; item 3 in [HARDWARE_TESTS.md](HARDWARE_TESTS.md)).
 
 Do this before U-030: the data path is shaped by what the renderer is allowed
 to assume about geometry.

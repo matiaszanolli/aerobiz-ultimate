@@ -76,8 +76,13 @@ l_3cb02:
     clr.l   -(a7)
     jsr SetDisplayMode
     jsr     (a4)
+    ifd H40MAP
+    clr.l   -(a7)
+    pea     ($0001).w
+    else
     pea     ($0003).w
     clr.l   -(a7)
+    endif
     jsr SetScrollQuadrant
     lea     $c(a7), a7
     movem.l (a7)+, d2/a2-a4

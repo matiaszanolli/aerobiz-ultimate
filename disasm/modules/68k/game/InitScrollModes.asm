@@ -59,8 +59,17 @@ InitScrollModes:
     pea     ($001D).w
     jsr     (a2)
     lea     $30(a7), a7
+    ifd H40MAP
+; U-036 experiment: 64x32 instead of 32x128. Same six bytes -- the push order
+; is what selects the table entry, so swapping them gives d2=0/d3=1 -> $01.
+; 64 cells wide is what H40 needs; 32 rows still covers the 28 displayed, and
+; the plane halves to 4,096 bytes.
+    clr.l   -(a7)
+    pea     ($0001).w
+    else
     pea     ($0003).w
     clr.l   -(a7)
+    endif
     bsr.w SetScrollQuadrant
     addq.l  #$8, a7
     movem.l (a7)+, a2-a3

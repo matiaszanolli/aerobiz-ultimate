@@ -75,7 +75,7 @@ SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -145,6 +145,17 @@ $(BOOT_HALF): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IM
 
 # U-020 experiment cartridge: MdMain runs the RV probe from work RAM and parks.
 # Carries the real game half so the bank window has recognisable content.
+32x-h40map: $(BUILD_DIR)/aerobiz-ultimate-h40map.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-h40map.32x: $(BUILD_DIR)/32x_boot_h40.bin $(BUILD_DIR)/32x_game_h40map.bin
+	@echo "==> Assembling H40 + 64x32 plane experiment cartridge..."
+	@cat $(BUILD_DIR)/32x_boot_h40.bin $(BUILD_DIR)/32x_game_h40map.bin > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_game_h40map.bin: $(GAME_SRC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X game half, 64x32 map plane (\$$900000)..."
+	$(ASM) $(ASMFLAGS) -DH40MAP=1 -o $@ $<
+
 32x-h40: $(BUILD_DIR)/aerobiz-ultimate-h40.32x
 
 $(BUILD_DIR)/aerobiz-ultimate-h40.32x: $(BUILD_DIR)/32x_boot_h40.bin $(GAME_HALF)
