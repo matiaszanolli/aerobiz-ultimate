@@ -109,6 +109,18 @@
         bra.s   .zoom_idle
     endif
 
+    ifd TIMINGTEST
+; Acceptance test for the SH2 timing model. The SH2 makes a known number of
+; accesses of one kind and halts; the harness reads the model's counters and
+; compares them with the manual's arithmetic. FM = 1 because phase 1 writes
+; the frame buffer.
+        move.w  #MARS_MODE_PACKED,(MARS_VDP_BITMAP).l
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l
+        move.w  #MARS_SH2_CMD_TIMING,(MARS_RPC_CMD).l
+.timing_idle:
+        bra.s   .timing_idle
+    endif
+
     ifd H40PROBE
 ; U-036 experiment: force H40 and turn the layer on, to find out what actually
 ; breaks. Same setup as LAYERON below, plus the mode forcing in the V-Blank
@@ -186,7 +198,9 @@
     ifnd MAPTEST
     ifnd ZOOMTEST
     ifnd LZPROBE
+    ifnd TIMINGTEST
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
     endif

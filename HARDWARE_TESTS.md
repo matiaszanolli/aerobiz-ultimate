@@ -97,6 +97,29 @@ PicoDrive models neither the SH2 cache nor SDRAM latency (KNOWN_ISSUES), so its
 - **Note:** `master_start` now purges and enables the cache itself, so this
   measures the cache-on case whether or not the boot ROM did it.
 
+## 7. Two questions the timing model had to leave open (U-093)
+
+The SH2 timing model in 32x-playground is validated against the manuals to the
+cycle, but two things the manuals do not state were deliberately left
+unmodelled rather than guessed. Both are cheap to settle on hardware and both
+change SH2 budgets if the guess would have been right.
+
+- **Is a longword access to a 16-bit port one bus cycle or two?** Manual 4.1
+  gives wait figures without reference to width. The model charges one access
+  regardless. If it is really two, longword-heavy SH2 code is more expensive
+  than every number we have. Test: a loop of N longword frame-buffer reads
+  against a loop of 2N word reads; equal time means one cycle each.
+- **Does the boot ROM actually leave the cache on?** Manual :1359 says the boot
+  flow ends with "Cache Clear / Cache ON", but nothing observable confirms it
+  and PicoDrive cannot: it models no cache. Both our SH2s now enable it
+  explicitly, so this is only a question about what *would* have happened.
+  Test: read `CCR` at `$FFFFFE92` before our own write.
+
+Also unmodelled, and not resolvable by a single reading: **contention between
+the two SH2s and the 68000 on the cartridge bus.** The model charges each CPU
+independently. This is why U-046's batching case rests on FM handover and the
+frame-buffer FIFO rather than on bus contention.
+
 ---
 
 ## Notes for the session

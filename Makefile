@@ -49,7 +49,7 @@ SH2_ASFLAGS = --big -isa=sh2
 # SH2 C.  -m2 -mb is the big-endian SH2 multilib; freestanding because there is
 # no libc and no startup beyond master_start.  The division helpers the game
 # offload needs (__udivsi3) live in libgcc, so the link has to name it.
-SH2_CFLAGS  = -m2 -mb -O2 -ffreestanding -fno-builtin -fomit-frame-pointer \
+SH2_CFLAGS  = -I$(BUILD_DIR) -m2 -mb -O2 -ffreestanding -fno-builtin -fomit-frame-pointer \
               -Wall -Wextra -Werror -std=c99
 SH2_LIBGCC := $(shell $(SH2_CC) -m2 -mb -print-libgcc-file-name)
 
@@ -71,12 +71,13 @@ BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
                $(DISASM_DIR)/32x/lz_probe.asm
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
-SH2_CSRCS    = $(DISASM_DIR)/sh2/master/rpc.c $(DISASM_DIR)/sh2/master/fb.c
+SH2_CSRCS    = $(DISASM_DIR)/sh2/master/rpc.c $(DISASM_DIR)/sh2/master/fb.c \
+               $(DISASM_DIR)/sh2/master/timing_test.c
 SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)) \
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -229,6 +230,38 @@ $(BUILD_DIR)/aerobiz-ultimate-sh2probe.32x: $(BUILD_DIR)/32x_boot_sh2probe.bin $
 $(BUILD_DIR)/32x_boot_sh2probe.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half, SH2 probe (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -DSH2PROBE=1 -o $@ $<
+
+# TIMING_PHASE selects which access kind the SH2 exercises; one kind per build
+# so a disagreement with the model names a term instead of a total.
+TIMING_PHASE ?= 0
+TIMING_ITERS ?= 200000
+
+# Generated so the object has a real dependency on the two values.  FORCE
+# makes the recipe run every time -- without it make sees an existing file
+# with no newer prerequisite and skips it, so the phase silently never
+# changes -- while the cmp keeps the file's timestamp stable when the values
+# have not moved, so it does not trigger a rebuild on every invocation.
+.PHONY: FORCE
+FORCE:
+
+$(BUILD_DIR)/timing_config.h: FORCE | $(BUILD_DIR)
+	@printf '#define TIMING_PHASE %s\n#define TIMING_ITERS %su\n' \
+		'$(TIMING_PHASE)' '$(TIMING_ITERS)' > $@.tmp
+	@cmp -s $@.tmp $@ 2>/dev/null || mv $@.tmp $@
+	@rm -f $@.tmp
+
+$(BUILD_DIR)/sh2/master/timing_test.o: $(BUILD_DIR)/timing_config.h
+
+32x-timingtest: $(BUILD_DIR)/aerobiz-ultimate-timingtest.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-timingtest.32x: $(BUILD_DIR)/32x_boot_timingtest.bin $(GAME_HALF)
+	@echo "==> Assembling timing acceptance cartridge (phase $(TIMING_PHASE))..."
+	@cat $(BUILD_DIR)/32x_boot_timingtest.bin $(GAME_HALF) > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_boot_timingtest.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, timing test (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DTIMINGTEST=1 -o $@ $<
 
 32x-lzprobe: $(BUILD_DIR)/aerobiz-ultimate-lzprobe.32x
 
