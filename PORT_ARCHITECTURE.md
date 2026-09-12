@@ -468,12 +468,32 @@ and what a pass looks like.
    row 21 at 64, and at 64 that scratch is displayed. This is why U-036 and
    U-034 stage 1 are blocked, and the reverted experiment is in HISTORY.
 
-   What is not yet known is **what writes it, what reads it, and whether it can
-   be relocated** -- into the `$F000-$F7FF` gap below the sprite table, or by
-   giving those writers a different base. Any fix lives in shared code, so it
-   must be size-neutral (§ "The 32X image must keep the Genesis layout"). Until
-   then, the map's route to the 32X layer is the frame buffer, which needs the
-   Genesis plane to be no wider than it already is.
+   **What writes it is now measured**, with a VRAM write trace added to
+   PicoDrive for the purpose (`VRD_VRAM_TRACE=<lo>:<hi>:<path>`). Three
+   GameCommands write `$EA80-$EBFF`, and they do not behave alike:
+
+   | Writer | Behaviour at 64 cells |
+   |---|---|
+   | `CmdDMABatchWrite` (`$000910`) | **follows the plane** -- row spacing goes 64 -> 128 bytes |
+   | `CmdDMARowWrite` (`$0009C4`) | follows the plane |
+   | **`CmdSetupDMA` (`$00047C`)** | **does not** -- same destination in both builds |
+
+   `CmdSetupDMA` takes the VRAM destination as a caller-supplied *absolute*
+   address (`move.l $1a(a6),d0`, built straight into the VDP command word), so
+   it cannot follow a plane it is never told about. The write that corrupts the
+   screen is a single one of these: **192 bytes to `$EA80` at frame 8201**,
+   byte-identical in the stock and 64-cell builds. `$EA80` is not a literal
+   anywhere in the ROM, so the caller computes it.
+
+   Still unknown: **which game-level routine passes that address**, and whether
+   it can be given a geometry-aware one or moved into the `$F000-$F7FF` gap
+   below the sprite table. The trace's stack walk reaches
+   `GameCommand -> CmdSetupDMA` reliably and the frames above that are stale,
+   so identifying the caller needs either a proper call-stack hook or the
+   GameCommand id decoded from the dispatcher table at `$000D64`. Any fix lives
+   in shared code, so it must be size-neutral (§ "The 32X image must keep the
+   Genesis layout"). Until then, the map's route to the 32X layer is the frame
+   buffer, which needs the Genesis plane no wider than it already is.
 
 ---
 

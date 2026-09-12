@@ -288,6 +288,24 @@ The corollary is a trap: enabling the cache under PicoDrive changes the measured
 time by exactly zero. That is evidence about the emulator, not evidence that
 the cache was already on.
 
+### A core-side trace produces nothing when the input script is the wrong length
+
+Already recorded below for the frontend's own preconditions, repeated here
+because the failure mode is worse than it looks from inside the core.
+`VRD_INPUT_SCRIPT` is parsed **before** the core is dlopen'd, so a row-count
+mismatch aborts the run with the core never loaded. Anything core-side --
+`VRD_VRAM_TRACE`, `VRD_SH2_TIMING` -- then writes no file and prints no error,
+which reads as "the feature is broken" rather than "the run never happened".
+Check the frontend's own output before debugging a core hook.
+
+### PicoDrive sources are CRLF
+
+`pico/videoport.c` and `pico/pico_int.h` (and others) use CRLF. A Python
+`open().read()` / `open('w').write()` round trip silently rewrites them as LF,
+which turns a small patch into a whole-file diff. Edit in binary mode, or
+convert back before committing, and check `git diff --stat` looks like the
+change you made.
+
 ### A savestate fixture scopes an equivalence test to what it can reach
 
 Resuming from a savestate is the fast way to compare two builds on a screen

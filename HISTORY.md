@@ -9,6 +9,59 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-12 (last) -- who writes the off-screen scratch
+
+The blocker found earlier today is now attributed, with a new instrument:
+PicoDrive gained an opt-in **VRAM write trace**
+(`VRD_VRAM_TRACE=<lo>:<hi>:<path>`), logging frame, address, value, 68000 PC,
+DMA source and a stack walk for ROM return addresses. The emulator could
+already show what VRAM holds and never what put it there, which is the only
+question a tilemap bug asks.
+
+### Three writers, and only one is the problem
+
+Tracing `$EA80-$EBFF` across a power-on replay:
+
+| Writer | At 64 cells |
+|---|---|
+| `CmdDMABatchWrite` (`$000910`) | follows the plane -- row spacing 64 -> 128 bytes |
+| `CmdDMARowWrite` (`$0009C4`) | follows the plane |
+| **`CmdSetupDMA` (`$00047C`)** | **does not** -- identical destination in both builds |
+
+`CmdSetupDMA` takes the destination as a caller-supplied absolute VRAM address
+(`move.l $1a(a6),d0`, folded straight into the VDP command), so it cannot
+follow a plane geometry it is never given. The corrupting write is one of
+these: **192 bytes to `$EA80` at frame 8201**, byte for byte the same in the
+stock and 64-cell builds. At 32 cells that is off-screen rows 42-44; at 64
+cells it is displayed rows 21-22.
+
+That is the whole defect, and it also explains why every *other* write in the
+region was fine: the engine's own tilemap commands are parameterised, and the
+one that is not is the one that hands the VDP a raw address.
+
+### Still open
+
+Which game-level routine passes `$EA80`. It is not a literal in the ROM, so it
+is computed. The stack walk reaches `GameCommand -> CmdSetupDMA` reliably and
+the entries above that are stale frames -- `CmdUpdateSprites` looked like a
+caller and is not; its DMA goes to the sprite table at `$F800` via
+`InitDisplayLayout`. Finishing this needs a real call-stack hook or the
+GameCommand id decoded from the dispatcher at `$000D64`.
+
+### Two harness lessons, both self-inflicted
+
+`VRD_INPUT_SCRIPT` must have **exactly** `max_frames` rows -- KNOWN_ISSUES says
+so, and a mismatched run still cost time here, because the frontend aborts
+before loading the core, so a core-side trace produces no file and no error and
+reads exactly like "the feature does not work".
+
+And editing PicoDrive sources with a Python `read()`/`write()` pair converted
+two CRLF files to LF, turning a 125-line addition into a whole-file rewrite in
+`git diff`. Caught before committing. Those files are CRLF; edit them in
+binary or restore the endings afterwards.
+
+---
+
 ## 2026-09-12 (latest) -- the 64-cell plane, measured and reverted
 
 U-034 stage 1 was scoped, built and measured. It does not work, and the two
