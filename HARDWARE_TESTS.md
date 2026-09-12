@@ -79,6 +79,24 @@ a confirmation, not a question.
 - **Expected artefact:** the right 64 pixels repeat the left 64. That is the
   32-cell plane wrapping and is what U-036 fixes; it is not a hardware fault.
 
+## 6. Map zoom cost with a real cache (U-035)
+
+The one measurement in the project that the emulator provably cannot make.
+PicoDrive models neither the SH2 cache nor SDRAM latency (KNOWN_ISSUES), so its
+2.13 frames per full-screen 1:1 blit is close to a raw instruction count.
+
+- **Build:** `make 32x-zoomtest`
+- **What to read:** `sh2_zoom_frames[3]` and `sh2_zoom_rows[3]` in SDRAM --
+  V-Blanks per 32 blits at 1x, 2x and 4x. Get their addresses from
+  `sh-elf-nm build/sh2/sh2.elf`; they do not move unless the image does.
+- **Pass:** the animation is smooth from 2x in. The numbers matter more than
+  the look: emulation says 68 / 34 / 17 frames per 32 blits.
+- **What would change the plan:** hardware materially worse than 2x at the 2x
+  level. That would push the renderer off the master alone and reopen the
+  master/slave split in U-043.
+- **Note:** `master_start` now purges and enables the cache itself, so this
+  measures the cache-on case whether or not the boot ROM did it.
+
 ---
 
 ## Notes for the session

@@ -95,6 +95,20 @@
         bra.s   .map_idle
     endif
 
+    ifd ZOOMTEST
+; U-035. The map again, but scaled: the SH2 rasterizes a zoom of the same asset
+; and animates it. Identical handover to MAPTEST -- PRI = 1, FM = 1 -- because
+; the only thing that changes is what the SH2 does with the frame buffer.
+;
+; The SH2 never releases the command, so there is no wait loop to write: the
+; zoom runs until reset. Benchmark results are in SDRAM, not the comm ports.
+        move.w  #MARS_MODE_PACKED|(1<<MARS_BM_PRI),(MARS_VDP_BITMAP).l
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l  ; FM = 1: the SH2 owns the VDP
+        move.w  #MARS_SH2_CMD_ZOOM,(MARS_RPC_CMD).l
+.zoom_idle:
+        bra.s   .zoom_idle
+    endif
+
     ifd H40PROBE
 ; U-036 experiment: force H40 and turn the layer on, to find out what actually
 ; breaks. Same setup as LAYERON below, plus the mode forcing in the V-Blank
@@ -161,7 +175,9 @@
     ifnd SH2PROBE
     ifnd FBTEST
     ifnd MAPTEST
+    ifnd ZOOMTEST
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
     endif

@@ -9,6 +9,56 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-12 (later) -- the flagship effect runs
+
+U-035. `make 32x-zoomtest` scales the world map on the SH2 and animates
+1x -> 4x -> 1x. The manual's line table pays off exactly as read: a source row
+is rasterized once and every display line landing on it points another
+line-table entry at the same slot, so vertical magnification is free and a
+frame costs (distinct source rows) x 320 dots. `sh2_zoom_rows` reads 224 / 112
+/ 56 at 1x / 2x / 4x, and the time is linear in it -- 68 / 34 / 17 V-Blanks per
+32 blits, i.e. 2.13, 1.06 and 0.53 frames per blit.
+
+So the open question answers itself in a useful direction: a full-screen 1:1
+scale does **not** fit in one frame, but 1:1 is the one factor where scaling is
+the identity and the map can just be copied. From 2x in it fits on the master
+alone.
+
+Correctness is not by eye. At scale 1.0 the output is **100.00%
+pixel-identical** to U-031's straight blit; the source is deliberately the full
+320x224 asset rather than the 256x176 world inside it so that 1.0 *is* the
+identity and can be diffed. The zoom extremes are bounded by minimum run length
+-- source detail can lengthen a run but never shorten it below the
+magnification factor -- reading 1 at the 1:1 frame and exactly 4 at the
+deepest.
+
+**Believed wrong:** that the SH2 cache was on. `docs/32x-hardware-manual.md:1359`
+has the boot ROM ending with "Cache Clear / Cache ON" and `sh2.lds` says "code
+runs cached", so nothing in the project had ever checked. Nothing observable
+confirms it, and it turns out nothing observable *can*: PicoDrive models no
+cache and no SDRAM latency -- `CCR` appears in `pico/32x/sh2soc.c:16` only as a
+comment. Enabling the cache changed the measurement by exactly zero, which is a
+fact about the emulator. `master_start` now purges and enables `CCR` itself
+(`sh7604-hardware-manual.md` 8.2) because it is idempotent and the downside of
+being wrong is severe: SDRAM reads are 8-word-burst-fixed (manual:897), so a
+cache-through fetch of one word pays for eight. Every SH2 timing figure in this
+project is therefore an emulator number; HARDWARE_TESTS item 6 exists to
+correct them.
+
+**Bug found on the way.** The five SH2 interrupt handlers clobbered `r1`
+without saving it. `RTE` restores PC and SR and nothing else, and `r1` is a
+scratch register gcc uses freely, so with V interrupts enabled this was a rare
+timing-dependent corruption of whatever C was running -- latent since M1 and
+invisible until U-035 needed the V handler as a clock.
+
+**And the honest disappointment:** at 4x each source pixel is a 4x4 block. The
+map has no more detail to give. Zooming reveals that there is nothing to
+reveal, which is the strongest argument so far that the payoff is U-077's
+tiering -- airports and routes appearing as you go in -- and not more map
+pixels.
+
+---
+
 ## 2026-09-12
 
 Nine commits, and the useful output was mostly negative results. Recorded here

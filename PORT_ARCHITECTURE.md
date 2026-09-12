@@ -396,6 +396,20 @@ and what a pass looks like.
    `/mnt/data/src/marsdev` and carries `sh-elf-gcc` 15.1.0 at
    `mars/sh-elf/bin/sh-elf-gcc`. Nothing needs building; the SH2 side can move
    to C whenever it is worth doing.
+5. **What SH2 code actually costs.** Every SH2 timing figure in this project
+   came from PicoDrive, which models **neither the SH2 cache nor SDRAM
+   latency** -- `CCR` exists in `pico/32x/sh2soc.c:16` only as a line in an
+   address-map comment. Those figures are close to raw instruction counts.
+   Hardware charges 12 clocks per 8-word SDRAM burst
+   (`docs/32x-hardware-manual.md:897`), paid in full even for a single
+   cache-through word, so the real cost depends on the access pattern in a way
+   nothing here can currently see.
+
+   This is not a reason to distrust the *shape* of a result -- U-035's cost
+   being exactly linear in rasterized rows is a structural fact, not a timing
+   one -- but absolute frame budgets are provisional until HARDWARE_TESTS item
+   6. `master_start` now enables the cache explicitly rather than trusting the
+   boot ROM to have done it, since the emulator cannot tell us either way.
 
 ---
 

@@ -49,8 +49,11 @@ SH2_MASTER_START equ $06000280
 ; Read by the SH2 through the cache-through cartridge window at $22020000, so
 ; the offset is fixed and must match MAP_ROM_OFFSET in disasm/sh2/master/fb.c.
 ; It costs nothing: this region is $FF padding in every other build.
+;
+; MAPASSET rather than MAPTEST: U-035's zoom build reads the same asset, and
+; which of the two is being built is md_main.asm's business, not the layout's.
 ; ---------------------------------------------------------------------------
-    ifd MAPTEST
+    ifd MAPASSET
 MAP_ROM_OFFSET  equ $00020000
     dcb.b   (CART_BASE+MAP_ROM_OFFSET)-*,$FF
     incbin  "build/map_asset.bin"

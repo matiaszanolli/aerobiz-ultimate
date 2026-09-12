@@ -62,6 +62,23 @@ master_start:
         mov     #0x60, r0                       ! SR I3-I0 = 6
         ldc     r0, sr
 
+        ! Cache on.  The boot ROM flow in 32x-hardware-manual.md:1359 ends with
+        ! "Cache Clear / Cache ON", but nothing observable confirms it ran, and
+        ! the cost of it not having run is severe: SDRAM reads are 8-word-burst
+        ! fixed (manual:897), so a cache-through fetch of a single word pays for
+        ! eight.  Doing it ourselves is idempotent -- a purge and a re-enable.
+        !
+        ! sh7604-hardware-manual.md 8.2: CP purges and self-clears, CE enables.
+        ! Manual 8.2 also requires CCR only be changed while the cache is
+        ! disabled, hence the explicit 0 first.
+        mov.l   .L_ccr, r1
+        mov     #0x00, r0
+        mov.b   r0, @r1                         ! CE = 0 before changing CCR
+        mov     #0x10, r0
+        mov.b   r0, @r1                         ! CP = 1: purge, valid + LRU
+        mov     #0x01, r0
+        mov.b   r0, @r1                         ! CE = 1
+
         ! Zero .bss before any C runs.  objcopy -O binary drops NOBITS, so
         ! the cartridge image carries no .bss and SDRAM holds whatever the
         ! boot ROM left there.  Bounds come from sh2.lds.
@@ -95,39 +112,70 @@ main_loop:
 ! --------------------------------------------------------------------------
 ! Interrupt handlers.  Each interrupt except CMD keeps asserting until its
 ! clear register is written -- manual 3.2.2 -- so every handler clears first.
+!
+! RTE restores PC and SR and nothing else, so every register a handler touches
+! has to be saved by hand.  These originally clobbered r1, which is a caller-
+! saved scratch register gcc uses freely: with V interrupts enabled that is a
+! rare, timing-dependent corruption of whatever C code was running.
 ! --------------------------------------------------------------------------
         .align  4
 vint_handler:
+        mov.l   r0, @-r15
+        mov.l   r1, @-r15
         mov.l   .L_vint_clr, r1
         mov.w   r0, @r1                         ! any write clears
+        ! Frame tally.  U-035 uses V-Blanks as its clock because manual 5.3
+        ! puts the free-running timer off limits.
+        mov.l   .L_vint_cnt, r1
+        mov.l   @r1, r0
+        add     #1, r0
+        mov.l   r0, @r1
+        mov.l   @r15+, r1
+        mov.l   @r15+, r0
         rte
         nop
 
         .align  4
 hint_handler:
+        mov.l   r0, @-r15
+        mov.l   r1, @-r15
         mov.l   .L_hint_clr, r1
         mov.w   r0, @r1
+        mov.l   @r15+, r1
+        mov.l   @r15+, r0
         rte
         nop
 
         .align  4
 cmd_handler:
+        mov.l   r0, @-r15
+        mov.l   r1, @-r15
         mov.l   .L_cmd_clr, r1
         mov.w   r0, @r1
+        mov.l   @r15+, r1
+        mov.l   @r15+, r0
         rte
         nop
 
         .align  4
 pwm_handler:
+        mov.l   r0, @-r15
+        mov.l   r1, @-r15
         mov.l   .L_pwm_clr, r1
         mov.w   r0, @r1
+        mov.l   @r15+, r1
+        mov.l   @r15+, r0
         rte
         nop
 
         .align  4
 vres_handler:
+        mov.l   r0, @-r15
+        mov.l   r1, @-r15
         mov.l   .L_vres_clr, r1
         mov.w   r0, @r1
+        mov.l   @r15+, r1
+        mov.l   @r15+, r0
         rte
         nop
 
@@ -139,12 +187,14 @@ halt:
 
         .align  4
 .L_stack:       .long   MASTER_STACK
+.L_ccr:         .long   0xFFFFFE92      ! sh7604 8.2
 .L_bss_start:   .long   __bss_start
 .L_bss_end:     .long   __bss_end
 .L_rpc_loop:    .long   _sh2_rpc_loop
 .L_comm_mok:    .long   COMM_MOK
 .L_sysreg:      .long   SYSREG
 .L_vint_clr:    .long   VINT_CLR
+.L_vint_cnt:    .long   _sh2_vint_count
 .L_hint_clr:    .long   HINT_CLR
 .L_cmd_clr:     .long   CMD_CLR
 .L_pwm_clr:     .long   PWM_CLR

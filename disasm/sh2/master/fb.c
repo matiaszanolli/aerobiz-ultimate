@@ -163,3 +163,197 @@ void sh2_map_test(void)
     }
 }
 
+/* ==========================================================================
+ * U-035: map scaling (zoom).
+ *
+ * The 32X has no hardware scaler, so this is SH2 software rasterization --
+ * but only on one axis.  The frame buffer opens with a 256-word line table
+ * whose entries are the word address of each display line's pixel data
+ * (docs/32x-hardware-manual.md:1204).  Nothing says two display lines may not
+ * name the *same* address, and that is the whole trick:
+ *
+ *   - Vertical scale costs 256 word writes per frame, whatever the factor.
+ *     A source row that covers several display lines is rasterized once and
+ *     pointed at repeatedly.
+ *   - Horizontal scale is a genuine per-pixel inner loop, because line-table
+ *     addresses are word units -- 2-dot granularity -- and SFT only recovers
+ *     1-dot *panning*, not scaling (manual:1238).
+ *
+ * So the cost of a frame is (distinct source rows) x 160 word writes, and the
+ * worst case is exactly zoom = 1.0, where every display line needs its own
+ * source row.  That is what sh2_zoom_test measures before it animates.
+ *
+ * Two things are deliberately arranged to make the result checkable:
+ *
+ *   - Source is the whole 320x224 asset, not the 256x176 world inside it, so
+ *     zoom = 1.0 is pixel-identical to U-031's straight blit and can be
+ *     diffed against it frame for frame.
+ *   - The window is clamped to stay inside the source, so no sample is ever
+ *     out of bounds and the inner loop needs no per-pixel test.  Because a
+ *     step of 1.0 makes the window exactly the source, this costs no reach:
+ *     it only forbids zooming *out* past the full map, which has nothing to
+ *     show anyway.
+ *
+ * Only word writes touch the frame buffer: a byte write there cannot store
+ * zero (manual:1162) and index 0 is most of the border.
+ * ========================================================================== */
+
+#define SRC_W        320u
+#define SRC_H        224u
+#define FP_ONE       0x10000uL          /* 16.16 -- one source pixel per dot */
+
+/* The map is pulled out of the cartridge once and rasterized from SDRAM.
+ * Reading source pixels straight from the 0x22000000 window would put a slow
+ * cartridge access in the inner loop, and horizontal magnification reads the
+ * same source pixel several times over. */
+static unsigned char map_ram[SRC_H * SRC_W];
+
+/* Incremented by vint_handler in main.s.  The SH7604 free-running timer is off
+ * limits (manual 5.3), so V-Blanks are the clock: they are the unit the answer
+ * is wanted in anyway -- "does a full-screen scale fit in one frame". */
+extern volatile unsigned long sh2_vint_count;
+
+/* Results, in SDRAM so `read master <addr>` can sample them; a value left only
+ * in a comm register reads back as zero from outside (see rpc.c).
+ *
+ * One number per zoom level, because the cost is not flat: magnification cuts
+ * the number of source rows and so the number of rasterized rows, while the
+ * per-row cost stays at 320 dots whatever the factor. */
+volatile unsigned long sh2_zoom_blits;
+volatile unsigned long sh2_zoom_frames[3];
+volatile unsigned long sh2_zoom_rows[3];
+
+static void map_load(void)
+{
+    const volatile unsigned short *pal =
+        (const volatile unsigned short *)(CART_ROM + MAP_ROM_OFFSET);
+    const volatile unsigned short *src =
+        (const volatile unsigned short *)(CART_ROM + MAP_ROM_OFFSET + 512u);
+    unsigned short *dst = (unsigned short *)map_ram;
+    unsigned int i;
+
+    for (i = 0u; i < 256u; i++)
+        PALETTE[i] = pal[i];
+
+    for (i = 0u; i < (SRC_H * SRC_W) / 2u; i++)
+        dst[i] = src[i];
+}
+
+/* One display row.  Two source samples per word, because packed-pixel mode
+ * puts two dots in a word and the frame buffer wants word writes. */
+static void scale_row(const unsigned char *src, volatile unsigned short *dst,
+                      unsigned long u, unsigned long ustep)
+{
+    unsigned int w;
+
+    for (w = 0u; w < WORDS_PER_LINE; w++) {
+        unsigned int hi = src[u >> 16]; u += ustep;
+        unsigned int lo = src[u >> 16]; u += ustep;
+        dst[w] = (unsigned short)((hi << 8) | lo);
+    }
+}
+
+/* step is 16.16 source pixels per display dot: FP_ONE is 1:1, FP_ONE/2 is 2x
+ * magnification.  (cx, cy) is the source pixel held at the centre of the
+ * screen, clamped so the window stays inside the source.
+ *
+ * Returns the number of source rows actually rasterized, which is the cost. */
+static unsigned int fb_blit_scaled(unsigned int cx, unsigned int cy,
+                                   unsigned long step)
+{
+    unsigned long span_x = step * 320uL;         /* window size, 16.16 */
+    unsigned long span_y = step * VISIBLE_LINES;
+    unsigned long u0, v0;
+    unsigned int y, slots = 0u, prev = 0xFFFFu;
+
+    /* Clamp rather than test per pixel.  step <= FP_ONE keeps both spans no
+     * larger than the source, so a valid placement always exists. */
+    u0 = ((unsigned long)cx << 16) - (span_x >> 1);
+    if ((long)u0 < 0L)
+        u0 = 0uL;
+    else if (u0 + span_x > ((unsigned long)SRC_W << 16))
+        u0 = ((unsigned long)SRC_W << 16) - span_x;
+
+    v0 = ((unsigned long)cy << 16) - (span_y >> 1);
+    if ((long)v0 < 0L)
+        v0 = 0uL;
+    else if (v0 + span_y > ((unsigned long)SRC_H << 16))
+        v0 = ((unsigned long)SRC_H << 16) - span_y;
+
+    for (y = 0u; y < VISIBLE_LINES; y++) {
+        unsigned int sy = (unsigned int)((v0 + step * y) >> 16);
+
+        /* A new source row gets rasterized into the next free slot; a repeat
+         * of the previous one just aims another line-table entry at the slot
+         * already holding it.  This is where vertical magnification becomes
+         * free. */
+        if (sy != prev) {
+            scale_row(map_ram + sy * SRC_W,
+                      FRAMEBUFFER + LINE_TABLE_WORDS + slots * WORDS_PER_LINE,
+                      u0, step);
+            prev = sy;
+            slots++;
+        }
+        FRAMEBUFFER[y] = (unsigned short)(LINE_TABLE_WORDS
+                                          + (slots - 1u) * WORDS_PER_LINE);
+    }
+
+    /* Lines 224-255 are not displayed, but the table is 256 entries and a
+     * stale entry could aim one at memory we never wrote. */
+    for (y = VISIBLE_LINES; y < LINE_TABLE_WORDS; y++)
+        FRAMEBUFFER[y] = FRAMEBUFFER[VISIBLE_LINES - 1u];
+
+    return slots;
+}
+
+/* Centre of the world map proper -- the asset is 256 wide inside a 320 frame,
+ * so this is not the centre of the screen. */
+#define ZOOM_CX      128u
+#define ZOOM_CY       88u
+
+#define ZOOM_MIN     (FP_ONE / 4uL)     /* 4x magnification */
+#define ZOOM_STEP    0x400uL
+
+/* How many worst-case blits the benchmark runs.  Enough that the V-Blank
+ * quantisation is a rounding error rather than the measurement. */
+#define BENCH_BLITS  32u
+
+void sh2_zoom_test(void)
+{
+    unsigned long step = FP_ONE;
+    long dir = -(long)ZOOM_STEP;
+    unsigned long t0;
+    unsigned int i;
+
+    map_load();
+
+    /* 1:1 first, which is the worst case: it needs a distinct source row per
+     * display line, so nothing the animation does afterwards costs more.
+     * No buffer flip and no V-Blank wait -- the point is the raw blit rate. */
+    for (i = 0u; i < 3u; i++) {
+        unsigned long s = FP_ONE >> i;          /* 1x, 2x, 4x */
+        unsigned int j, rows = 0u;
+
+        t0 = sh2_vint_count;
+        for (j = 0u; j < BENCH_BLITS; j++)
+            rows = fb_blit_scaled(ZOOM_CX, ZOOM_CY, s);
+        sh2_zoom_frames[i] = sh2_vint_count - t0;
+        sh2_zoom_rows[i]   = rows;
+    }
+    sh2_zoom_blits = BENCH_BLITS;
+
+    for (;;) {
+        fb_wait_vblank();
+        (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, step);
+        VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
+
+        step = (unsigned long)((long)step + dir);
+        if (step <= ZOOM_MIN) {
+            step = ZOOM_MIN;
+            dir = (long)ZOOM_STEP;
+        } else if (step >= FP_ONE) {
+            step = FP_ONE;
+            dir = -(long)ZOOM_STEP;
+        }
+    }
+}

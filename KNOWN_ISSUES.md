@@ -264,6 +264,23 @@ captured frames across builds by frame number.
 practice it is cleared and sits at 1 for an entire game. `GAME_PHASE_FLOW.md`
 even notes a `clr.w $FF0006` described as dead code. Do not use it as a clock.
 
+### PicoDrive models no SH2 cache and no SDRAM latency
+
+`CCR` (`$FFFFFE92`) appears in `pico/32x/sh2soc.c:16` only as a line in the
+address-map comment; nothing reads or acts on it, and there is no memory
+latency accounting for SDRAM. So an SH2 timing figure measured under PicoDrive
+is close to a raw instruction count.
+
+Real hardware is not: SDRAM reads are 8-word-burst-fixed at 12 clocks per burst
+(`docs/32x-hardware-manual.md:897`), and a cache-through read of a single word
+pays the whole burst. **Emulated SH2 timings are therefore optimistic, and by an
+amount that depends on the access pattern.** Quote them as emulator numbers and
+put a hardware item behind anything that matters.
+
+The corollary is a trap: enabling the cache under PicoDrive changes the measured
+time by exactly zero. That is evidence about the emulator, not evidence that
+the cache was already on.
+
 ### Harness preconditions fail loudly but early
 
 `VRD_INPUT_SCRIPT` must have **exactly** `max_frames` rows, and

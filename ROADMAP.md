@@ -699,7 +699,7 @@ Still to do before this closes:
 ### U-033 -- Per-pixel aircraft animation [OPEN]
 ### U-034 -- Retire the Genesis-side map renderer [OPEN]
 
-### U-035 -- Map scaling (zoom) [OPEN]
+### U-035 -- Map scaling (zoom) [DONE, emulator; hardware pending]
 
 The flagship effect, and the reason M8's content density matters: a world map
 the player can zoom into, with U-077 revealing the 57 secondary airports as it
@@ -724,16 +724,83 @@ the frame buffer cannot write zero (`docs/32x-hardware-manual.md:1162`), and
 `SFT` is ignored when the low byte of the line-table base address is `$FF`
 (`docs/32x-technical-info.md:156`).
 
-Unverified: whether a full-screen X scale fits in one frame on one SH2. That is
-a measurement to make early, because the answer decides the master/slave split
-below.
+`make 32x-zoomtest` builds it: the SH2 rasterizes the U-031 asset at a scale
+factor and animates 1x -> 4x -> 1x until reset. Both predictions above held,
+and the free axis is worth more than expected.
+
+**The line-table trick works exactly as the manual implies.** A source row is
+rasterized *once*, into the next free frame-buffer slot, and every display line
+that lands on it just points another line-table entry at that slot. So the cost
+of a frame is (distinct source rows) x 320 dots, and vertical magnification is
+genuinely free. `sh2_zoom_rows` confirms it: 224, 112 and 56 rows rasterized at
+1x, 2x and 4x.
+
+**The measurement, 32 blits per level, V-Blanks as the clock:**
+
+| Zoom | Source rows | Frames per blit | Effective rate |
+|---|---|---|---|
+| 1x | 224 | 2.13 | 28 fps |
+| 2x | 112 | 1.06 | 56 fps |
+| 4x | 56 | 0.53 | 60 fps (capped) |
+
+Exactly linear in rows. So the answer to the open question is **no, a
+full-screen 1:1 scale does not fit in one frame on one SH2** -- but that is the
+one factor where scaling is the identity and the map can simply be copied, or
+left alone. From 2x in, the effect is inside budget on the master alone, which
+leaves U-043's slave assumption intact.
+
+**Correctness.** At scale 1.0 the rasterizer's output is **100.00%
+pixel-identical** to U-031's straight blit, compared frame against frame. The
+zoom extremes are bounded by minimum run length -- source detail can lengthen a
+run but never shorten it below the magnification factor -- which reads 1 at the
+1:1 frame and exactly 4 at the deepest, so the clamps place the window where
+they claim to.
+
+**The clamp is the reason there are no per-pixel bounds tests.** The window is
+placed so it always lies inside the source, which costs nothing because a step
+of 1.0 makes the window exactly the source: it only forbids zooming *out* past
+the whole map, which has nothing to show. Source is the full 320x224 asset
+rather than the 256x176 world inside it, precisely so that 1.0 is the identity
+and can be diffed against U-031.
+
+**These are emulator numbers.** PicoDrive has no SH2 cache model -- `CCR` at
+`$FFFFFE92` appears only in a comment in `pico/32x/sh2soc.c:16` -- and no SDRAM
+latency model, so the figures are close to raw instruction counts. Real
+hardware reads SDRAM 8-word-burst-fixed at 12 clocks per burst
+(`docs/32x-hardware-manual.md:897`), which a cache-through fetch pays in full
+for a single word. Enabling the cache ourselves changed the measurement by
+literally zero, which is evidence about PicoDrive and not about the 32X. See
+HARDWARE_TESTS.md item 6.
+
+**Cache-on is now explicit anyway.** `docs/32x-hardware-manual.md:1359` has the
+boot ROM ending with "Cache Clear / Cache ON", but nothing observable confirms
+it ran and the downside of it not having run is severe, so `master_start` now
+purges and enables `CCR` itself (`sh7604-hardware-manual.md` 8.2). It is
+idempotent.
+
+**A bug found on the way.** The SH2 interrupt handlers clobbered `r1` without
+saving it. `RTE` restores only PC and SR, and `r1` is a scratch register gcc
+uses freely, so with V interrupts enabled that was a rare timing-dependent
+corruption of whatever C code was running -- invisible until something started
+depending on the V handler. All five handlers now save what they touch.
+
+Still open on this item:
+
+- Panning. The centre is a compile-time constant; nothing drives it yet.
+- The zoom is continuous here (`ZOOM_STEP` per frame). Whether the game should
+  use continuous or a few discrete stops is still the U-077 question below.
+- **Zooming in reveals that there is nothing to reveal.** At 4x each source
+  pixel is a 4x4 block; the map has no more detail to give. This is the
+  clearest argument yet that the payoff comes from U-077's tiering -- airports
+  and routes appearing as you go in -- rather than from more map pixels.
 
 Gated on U-003 (display mode) and M3.
 
 **Contention with M5.** M4 and M5 both want SH2 time, and this is the real
 scheduling question of the whole port. The natural split is master = renderer,
-slave = AI and economy (U-043), but it is an assumption until U-035 and U-041
-have measured budgets. Neither milestone should assume it owns both CPUs.
+slave = AI and economy (U-043). U-035 has now measured its half: at 2x and in,
+the renderer fits on the master with room to spare, so the split survives its
+first test. U-041 still has to measure the other half.
 
 ---
 
