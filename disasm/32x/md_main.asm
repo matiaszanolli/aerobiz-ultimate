@@ -81,6 +81,23 @@
         bra.s   .rv_idle
     endif
 
+    ifd LAYERON
+; U-003 experiment: what actually happens when the 32X layer is live while the
+; game is in H32?  Manual 3.3 requires the Genesis VDP to be in a 320-wide mode
+; whenever the layer is not blanked, but does not say what fails if it is not.
+; This build answers that by measurement instead of by reading.
+;
+; PRI = 0 leaves the Genesis planes in front, which is exactly the section 4.1
+; arrangement being evaluated: the 32X layer shows through wherever the Genesis
+; pixel is transparent. The game then runs unmodified on top of it.
+        move.w  #MARS_MODE_PACKED,(MARS_VDP_BITMAP).l
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l  ; FM = 1: the SH2 owns the VDP
+        move.w  #MARS_SH2_CMD_FBTEST,(MARS_RPC_CMD).l
+.layer_wait:
+        tst.w   (MARS_RPC_CMD).l
+        bne.s   .layer_wait
+    endif
+
     ifd FBTEST
 ; U-002. The bitmap mode register belongs to the 68000 only while FM = 0, so
 ; set it before handing the frame buffer over. PRI = 1 puts the 32X layer in

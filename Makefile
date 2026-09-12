@@ -75,7 +75,7 @@ SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -145,6 +145,17 @@ $(BOOT_HALF): $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IM
 
 # U-020 experiment cartridge: MdMain runs the RV probe from work RAM and parks.
 # Carries the real game half so the bank window has recognisable content.
+32x-layeron: $(BUILD_DIR)/aerobiz-ultimate-layeron.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-layeron.32x: $(BUILD_DIR)/32x_boot_layeron.bin $(GAME_HALF)
+	@echo "==> Assembling 32X layer-during-H32 experiment cartridge..."
+	@cat $(BUILD_DIR)/32x_boot_layeron.bin $(GAME_HALF) > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_boot_layeron.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, layer on (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DLAYERON=1 -o $@ $<
+
 32x-fbtest: $(BUILD_DIR)/aerobiz-ultimate-fbtest.32x
 
 $(BUILD_DIR)/aerobiz-ultimate-fbtest.32x: $(BUILD_DIR)/32x_boot_fbtest.bin $(GAME_HALF)

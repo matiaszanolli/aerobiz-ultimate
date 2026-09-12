@@ -113,6 +113,52 @@ H40 -- which is 40 tiles per line against the 32 every screen is laid out for,
 so not a flag flip -- or the 32X layer is used only on screens converted to H40.
 Resolve this before U-030 starts; it is a design decision, not a bug.
 
+#### Resolved by measurement, 2026-09-12: convert the map screen only
+
+`make 32x-layeron` builds the real game with the 32X layer live behind it
+(packed pixel, `PRI = 0`, the §4.1 arrangement) and the U-002 gradient painted
+underneath. What happens is not a catastrophe and not usable either.
+
+**Nothing breaks.** The game runs, stays legible, and composites the way §4.1
+wants -- Genesis planes in front, the 32X layer showing through wherever the
+Genesis pixel is transparent.
+
+**But the two layers are at different scales.** With the 32X active the
+compositor always emits 320, and PicoDrive fills it by stretching the H32
+output 1.25x. Measured on frame 1799 against the Genesis build's own 256-wide
+frame:
+
+| Hypothesis | Pixel match |
+|---|---|
+| nearest-neighbour stretch 256 -> 320 | **95.6%** |
+| centred with 32-pixel borders | 85.0% |
+| left-aligned, no scaling | 83.4% |
+
+and the content spans confirm it: columns 8-230 in the Genesis frame, 10-288
+in the composite, which is 8 and 230 multiplied by exactly 1.25.
+
+So while the game is in H32, **one Genesis pixel is 1.25 32X pixels** and the
+two layers cannot be registered against each other. A 32X-drawn map with
+Genesis-drawn pins, labels or route lines on top of it would not line up, and
+no amount of care in the renderer fixes that. In H40 they are 1:1 -- visible
+in the frame-250 capture, where the SEGA logo sits unstretched over the
+gradient.
+
+Also observed, and a reason not to enable the layer globally: with the layer
+on, the Genesis backdrop reads as transparent, so **every screen loses its
+background colour** to the 32X layer.
+
+**Decision: option (b), and specifically the map screen alone.** That is the
+screen whose Genesis content M4 is replacing anyway, so it has the least to
+re-lay-out from 32 tiles to 40, and it confines the H40 switch -- and the
+backdrop change -- to one place. The rest of the game stays H32 with the layer
+blanked, exactly as it is today.
+
+*This settles the design question, not the hardware one.* PicoDrive's stretch
+is emulator behaviour; manual 3.3's requirement remains unverified on real
+hardware, and so does what a real 32X does with an H32 input. Both go on the
+§5 list rather than being treated as answered.
+
 ---
 
 ## M2 -- Rebase the game to $900000
@@ -284,6 +330,17 @@ width-independent.
 ---
 
 ## M4 -- World map on the 32X layer
+
+### U-036 -- Switch the map screen to H40 [OPEN]
+
+The gate U-003 landed on. The map screen has to run 40 tiles per line for its
+Genesis overlay to register against a 32X-drawn map; every other screen stays
+H32 with the layer blanked. Includes the mode switch itself, re-laying out
+that screen's tilemap, and handling the backdrop going transparent while the
+layer is on.
+
+Do this before U-030: the data path is shaped by what the renderer is allowed
+to assume about geometry.
 
 ### U-030 -- Map data path to the SH2 [OPEN]
 ### U-031 -- Packed-pixel map renderer on the SH2 master [OPEN]
