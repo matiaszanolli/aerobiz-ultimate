@@ -1,61 +1,82 @@
 #!/usr/bin/env python3
-"""Build the 32X map asset from a Genesis savestate.  U-031.
+"""Build the 32X world-map asset from the ROM.  U-031.
 
-Emits one blob laid out exactly as the SH2 wants to consume it, so the blit is
-a straight copy with no unpacking:
+No savestate. The map is reproducible from `build/aerobiz.bin` alone:
 
-    +$0000  256 words  32X palette, BGR555 (through:1 B:5 G:5 R:5)
-    +$0200  224 * 320  packed-pixel rows, one byte per pixel
+  * Tiles live compressed at **$088CF8** and decompress to exactly 22,528
+    bytes -- 704 tiles, verified byte-for-byte against VRAM.
+  * The nametable needs no data. Plane B rows 0-21 are tiles 1..704 laid out
+    **in sequence**, attribute $2000, so the map is a linear 256x176 bitmap.
+    Rows 22-27 are a single repeated tile ($21E1 = tile 481), the ocean band
+    under it.
 
-Rows are padded to the full 320 the VDP displays. Manual 3.3: "VDP mechanically
-displays 320 pixels worth of data from the address specified per the line
-table", so a short row would show whatever follows it in DRAM.
+The one thing still pinned rather than derived is the 16-colour palette. It is
+not stored raw in the ROM in either byte order, nor inside any of the 1,289
+compressed blocks reachable from the sources, so it is built at runtime by
+something we have not traced. Sixteen words, captured once and recorded below.
 
-Usage: make_map_asset.py <state> <out.bin> [--plane a|b]
+Output layout, which is exactly what the SH2 writes:
+
+    +$0000  256 words  32X palette, BGR555
+    +$0200  224 * 320  packed pixels, one byte each
+
+Usage: make_map_asset.py <rom> <out.bin>
 """
 import struct, sys
 
 sys.path.insert(0, __file__.rsplit('/', 1)[0])
-from extract_map import chunks, vb, vw, CHUNK_VRAM, CHUNK_CRAM, CHUNK_VIDEO
+from lz_decompress import decompress
 
-SRC_W, SRC_H = 256, 224
-DST_W = 320
+MAP_TILES_ADDR = 0x088CF8
+MAP_TILE_COUNT = 704
+MAP_COLS, MAP_ROWS = 32, 22          # the linear region, tiles 1..704
+FILL_TILE = 481                      # $21E1, the band under it
+PAL_LINE = 1                         # attribute $2000
+SRC_W, SRC_H, DST_W = 256, 224, 320
+
+# Genesis CRAM line 1, BGR333. See the note above on why this is a constant.
+MAP_PALETTE = [
+    0x0000, 0x0000, 0x000C, 0x0642, 0x0AAA, 0x0200, 0x0400, 0x0600,
+    0x0800, 0x0022, 0x0042, 0x0484, 0x0A66, 0x0246, 0x0468, 0x088A,
+]
+
 
 def main():
-    state, out = sys.argv[1], sys.argv[2]
-    plane = sys.argv[sys.argv.index('--plane') + 1].lower() if '--plane' in sys.argv else 'b'
+    rom = open(sys.argv[1], 'rb').read()
+    out = sys.argv[2]
 
-    c = chunks(state)
-    vram, cram, reg = c[CHUNK_VRAM], c[CHUNK_CRAM], c[CHUNK_VIDEO]
-    base = (reg[4] & 0x07) << 13 if plane == 'b' else (reg[2] & 0x38) << 10
-    stride = {0: 32, 1: 64, 3: 128}[reg[16] & 3] * 2
+    tiles = decompress(rom, MAP_TILES_ADDR)
+    if len(tiles) != MAP_TILE_COUNT * 32:
+        raise SystemExit(f"expected {MAP_TILE_COUNT*32} bytes of tiles, got {len(tiles)}")
 
-    # Genesis CRAM is BGR333, three bits per channel; the 32X palette is BGR555.
-    # (v << 2) | (v >> 1) spreads 0-7 across 0-31 hitting both endpoints.
+    # 32X palette: BGR333 -> BGR555, (v << 2) | (v >> 1) hits both endpoints.
     pal = bytearray(512)
-    for i in range(64):
-        w = struct.unpack('<H', cram[i*2:i*2+2])[0]
+    for i, w in enumerate(MAP_PALETTE):
         r3, g3, b3 = (w >> 1) & 7, (w >> 5) & 7, (w >> 9) & 7
-        r5, g5, b5 = ((r3 << 2) | (r3 >> 1)), ((g3 << 2) | (g3 >> 1)), ((b3 << 2) | (b3 >> 1))
-        struct.pack_into('>H', pal, i*2, (b5 << 10) | (g5 << 5) | r5)
+        r5, g5, b5 = (r3 << 2) | (r3 >> 1), (g3 << 2) | (g3 >> 1), (b3 << 2) | (b3 >> 1)
+        struct.pack_into('>H', pal, (PAL_LINE * 16 + i) * 2, (b5 << 10) | (g5 << 5) | r5)
 
-    px = bytearray(DST_W * SRC_H)          # zero-filled: index 0 in the pad
-    for cy in range(SRC_H // 8):
-        for cx in range(SRC_W // 8):
-            e = vw(vram, base + cy*stride + cx*2)
-            tile, hflip, vflip, palsel = e & 0x7FF, (e >> 11) & 1, (e >> 12) & 1, (e >> 13) & 3
-            src = tile * 32
-            for y in range(8):
-                sy = 7 - y if vflip else y
-                row = (cy*8 + y) * DST_W + cx*8
-                for x in range(8):
-                    sx = 7 - x if hflip else x
-                    byte = vb(vram, src + sy*4 + (sx >> 1))
-                    idx = (byte >> 4) if (sx & 1) == 0 else (byte & 0x0F)
-                    px[row + x] = palsel*16 + idx
+    def blit(tile_index, cx, cy, px):
+        src = (tile_index - 1) * 32
+        for y in range(8):
+            row = (cy * 8 + y) * DST_W + cx * 8
+            for x in range(8):
+                b = tiles[src + y * 4 + (x >> 1)]
+                idx = (b >> 4) if (x & 1) == 0 else (b & 0x0F)
+                px[row + x] = PAL_LINE * 16 + idx
+
+    px = bytearray(DST_W * SRC_H)            # index 0 in the pad to the right
+    for cy in range(MAP_ROWS):
+        for cx in range(MAP_COLS):
+            blit(cy * MAP_COLS + cx + 1, cx, cy, px)
+    for cy in range(MAP_ROWS, SRC_H // 8):
+        for cx in range(MAP_COLS):
+            blit(FILL_TILE, cx, cy, px)
 
     open(out, 'wb').write(bytes(pal) + bytes(px))
-    print(f"wrote {out}: {512 + len(px)} bytes "
-          f"(512 palette + {SRC_H}x{DST_W} pixels, map {SRC_W} wide, rest index 0)")
+    print(f"wrote {out}: {512 + len(px)} bytes, from ROM ${MAP_TILES_ADDR:06X} "
+          f"({MAP_TILE_COUNT} tiles, {SRC_W}x{SRC_H}, {DST_W}-wide rows)")
 
-main()
+
+if __name__ == '__main__':
+    main()

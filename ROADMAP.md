@@ -651,30 +651,46 @@ game for one where plane A is *entirely* index 0 finds a screen showing the
 bare world map: 256x224 in **14 palette indices, all from a single Genesis
 palette row**. That is the asset now.
 
-**Where the real source lives.** `LoadMapTiles` (`$01DE92`) builds the map by
-decompressing five ROM blocks through the routine at `$3FEC`:
+**Now built from the ROM.** `tools/lz_decompress.py` reimplements the game's
+LZ decompressor (`$003FEC`, named `LZ_Decompress`, 123 static call sites) from
+the disassembly, and `tools/make_map_asset.py` uses it. `make 32x-maptest`
+regenerates the asset from `build/aerobiz.bin` -- no savestate.
 
-| Block | Then |
+Finding the map took a brute-force scan. The obvious lead was wrong:
+`LoadMapTiles` (`$01DE92`) decompresses `$04943A`, `$04959E`, `$04E1D8`,
+`$04E1EC` and `$04E230`, but those are 640- and 32-byte icon sets, not the
+world. Nor is the map raw in the ROM. Decompressing at **every even offset**
+with an early abort against the expected first three tiles found exactly one
+hit.
+
+| | |
 |---|---|
-| `$04943A` | `DrawTileGrid($0740, $000A, $0002, buf)` |
-| `$04959E` | `ProcessTextControl($0760, $0014, buf)` |
-| `$04E1D8` | helper at `$01D568`, target `$077D` |
-| `$04E1EC` | helper at `$01D568`, target `$077F` |
-| `$04E230` | helper at `$01D568`, target `$077E` |
+| Tiles | compressed at **`$088CF8`**, 22,528 bytes out = 704 tiles |
+| Verification | **100.00% byte-identical** to VRAM across all 22,528 |
+| Nametable | **none needed** -- plane B rows 0-21 are tiles 1..704 *in sequence*, attribute `$2000`, so the map is a linear 256x176 bitmap |
+| Rows 22-27 | one repeated tile, `$21E1` = tile 481, the ocean band |
 
-Reading those directly means reimplementing that decompressor. **That work pays
-twice**: it is the same routine U-046 wants to move to the SH2 -- 11.93% of
-gameplay frames -- so understanding it well enough to reimplement in Python for
-build-time extraction is the specification for the SH2 port. Do it once, use it
-for both.
+That 22,528-byte exact match is what validates the decompressor: a
+reimplementation that were subtly wrong would not reproduce 22 KB.
+
+**This pays twice, as predicted.** The same routine is U-046's subject at
+11.93% of gameplay frames, and the Python is now the specification for the SH2
+port -- transcribed literally from the 68000 rather than tidied, so the two can
+be diffed. Worth noting its odd consumption rule: `read_bits(n)` shifts n bits
+out and the caller then clears the new top bit with `ANDI #$7FFF`, so a token
+actually consumes n+1 bits.
 
 Still to do before this closes:
 
-- **The build is not hermetic.** `build/map_asset.bin` comes from a savestate
-  that is not in the repository, so the asset cannot be regenerated from a
-  clean checkout. The Makefile now fails with an explanation rather than
-  make's "no rule to make target", but the real fix is the ROM-data path
-  above.
+- **The palette is still pinned, not derived.** Sixteen words. It is not in the
+  ROM raw in either byte order, nor inside any of the 1,289 compressed blocks
+  reachable from the sources, so something builds it at runtime that we have
+  not traced. Recorded as a constant in `make_map_asset.py`. Everything else --
+  all 71,680 pixel bytes -- is derived, and matches the savestate-built asset
+  exactly.
+- Rendering difference from the old asset: the 64-pixel pad right of the map is
+  now black rather than dark blue, because ROM palette entry 0 is 0 where the
+  captured CRAM had a colour. Arguably better, but it is a change.
 - Nothing scrolls or zooms yet; this is a static blit. U-035 is where the
   geometry gets interesting.
 - The map is 256 wide against the layer's 320. Filling the extra 64 needs
