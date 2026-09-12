@@ -651,6 +651,40 @@ recoloured, and worth ignoring otherwise.
 extra 64 needs either map data that does not exist yet or a deliberate framing
 decision -- see U-035, where the zoom makes the question concrete.
 
+### U-037 -- Affine transform (rotate and scale) [DONE, in 32x-affine]
+
+Prompted by the observation that many 32X games open with a transformed SEGA
+logo, and worth having as a capability check in its own right: U-035's scaler
+is axis-aligned, so nothing had ever exercised rotation.
+
+**Rotation forfeits the line-table trick, and that is not a detail.** U-035 is
+cheap because display lines share line-table slots, so the vertical axis costs
+nothing. Once the source Y varies *along* a scanline, no two display lines hold
+the same pixels; every one needs its own row. An affine frame is therefore
+always the worst case, and worse than U-035's worst case because the inner loop
+carries two bounds tests and a row multiply per pixel:
+
+| | full screen |
+|---|---|
+| U-035, 1:1 axis-aligned | 2.13 frames |
+| U-037, affine | **5.75 frames** |
+
+That is ~10 fps full-screen, so affine is a *region* effect, not a screen
+effect. A 128x128 area is 23% of the frame and lands near one frame; a masked
+power-of-two source would cut the inner loop further by removing the bounds
+tests and the multiply.
+
+**Correct by construction, not by eye.** With the identity matrix the affine
+path must reproduce the 1:1 blit exactly, and it does -- checksum `$8040EA91`
+from both, and the 1:1 blit is itself already known identical to U-031's
+straight copy. The rotation demo then runs from a 256-step Q15 sine table.
+
+Open: the SEGA logo the idea came from is on screen as 48 tiles at plane A
+rows 12-15, cols 14-25 (96x32 pixels), but its tiles are neither raw nor
+contiguous in ROM, so it needs the same brute-force decompression hunt U-031
+used for the map. Until then the demo transforms the world map, which proves
+the path equally well and needs no new asset.
+
 ### U-032 -- Great-circle route arcs [OPEN]
 ### U-033 -- Per-pixel aircraft animation [OPEN]
 ### U-034 -- Retire the Genesis-side map renderer [OPEN]

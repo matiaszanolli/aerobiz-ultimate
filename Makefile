@@ -79,7 +79,7 @@ SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest 32x-lztest verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest 32x-lztest 32x-affine verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -277,6 +277,17 @@ $(BUILD_DIR)/aerobiz-ultimate-lztest.32x: $(BUILD_DIR)/32x_boot_lztest.bin $(GAM
 $(BUILD_DIR)/32x_boot_lztest.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half, SH2 decompressor (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -DLZTEST=1 -o $@ $<
+
+32x-affine: $(BUILD_DIR)/aerobiz-ultimate-affine.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-affine.32x: $(BUILD_DIR)/32x_boot_affine.bin $(GAME_HALF)
+	@echo "==> Assembling affine transform cartridge..."
+	@cat $(BUILD_DIR)/32x_boot_affine.bin $(GAME_HALF) > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_boot_affine.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) $(BUILD_DIR)/map_asset.bin | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, affine (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DAFFINE=1 -DMAPASSET=1 -o $@ $<
 
 32x-lzprobe: $(BUILD_DIR)/aerobiz-ultimate-lzprobe.32x
 

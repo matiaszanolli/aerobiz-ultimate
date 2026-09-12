@@ -457,3 +457,174 @@ static void fb_draw_airports(unsigned long u0, unsigned long v0,
         fb_mark(slot, col, major ? 3u : 2u, major ? PAL_MAJOR : PAL_MINOR);
     }
 }
+/* ==========================================================================
+ * U-037: affine transform (rotate + scale) on the SH2.
+ *
+ * U-035's scaler is axis-aligned, and cheap because of it: the vertical axis
+ * costs nothing because display lines share line-table slots. Rotation breaks
+ * that. Once the source Y varies *along* a scanline, no two display lines hold
+ * the same pixels, so every one needs its own row and the vertical axis costs
+ * full price. An affine frame is therefore always the 1:1 worst case U-035
+ * measured -- 2.13 frames full-screen -- and the way to afford it is to
+ * transform a region rather than the screen.
+ *
+ * The mapping is the standard one, everything 16.16:
+ *
+ *     u = u0 + x*dudx + y*dudy
+ *     v = v0 + x*dvdx + y*dvdy
+ *
+ * so a rotation by t at scale s is dudx = cos(t)/s, dvdx = sin(t)/s,
+ * dudy = -sin(t)/s, dvdy = cos(t)/s.
+ *
+ * Correctness is checkable rather than a matter of opinion: with dudx = dvdy =
+ * 1.0 and the cross terms zero, the output must be pixel-identical to the 1:1
+ * blit -- which is itself already known identical to U-031's straight copy.
+ * That is what sh2_affine_test asserts before anything is rotated.
+ * ========================================================================== */
+
+/* Per display line, rather than per source row: no slot sharing is possible. */
+static void fb_affine_line(volatile unsigned short *dst,
+                           const unsigned char *src,
+                           long u, long v, long dudx, long dvdx)
+{
+    unsigned int w;
+
+    for (w = 0u; w < WORDS_PER_LINE; w++) {
+        unsigned int hi, lo, su, sv;
+
+        su = (unsigned int)(u >> 16); sv = (unsigned int)(v >> 16);
+        hi = (su < SRC_W && sv < SRC_H) ? src[sv * SRC_W + su] : 0u;
+        u += dudx; v += dvdx;
+
+        su = (unsigned int)(u >> 16); sv = (unsigned int)(v >> 16);
+        lo = (su < SRC_W && sv < SRC_H) ? src[sv * SRC_W + su] : 0u;
+        u += dudx; v += dvdx;
+
+        dst[w] = (unsigned short)((hi << 8) | lo);
+    }
+}
+
+static void fb_blit_affine(long u0, long v0,
+                           long dudx, long dudy, long dvdx, long dvdy)
+{
+    unsigned int y;
+
+    /* Identity line table: one frame-buffer row per display line. */
+    for (y = 0u; y < LINE_TABLE_WORDS; y++) {
+        unsigned int s = (y < VISIBLE_LINES) ? y : (VISIBLE_LINES - 1u);
+        FRAMEBUFFER[y] =
+            (unsigned short)(LINE_TABLE_WORDS + s * WORDS_PER_LINE);
+    }
+
+    for (y = 0u; y < VISIBLE_LINES; y++)
+        fb_affine_line(FRAMEBUFFER + LINE_TABLE_WORDS + y * WORDS_PER_LINE,
+                       map_ram,
+                       u0 + (long)y * dudy, v0 + (long)y * dvdy, dudx, dvdx);
+}
+
+/* Q15 sine, 256 steps to the turn.  Generated, not derived at runtime: the
+ * SH2 has no FPU and a table this small costs 512 bytes of an image that is
+ * currently 4 KB. */
+static const short fb_sin[256] = {
+         0,    804,   1608,   2410,   3212,   4011,   4808,   5602,
+      6393,   7179,   7962,   8739,   9512,  10278,  11039,  11793,
+     12539,  13279,  14010,  14732,  15446,  16151,  16846,  17530,
+     18204,  18868,  19519,  20159,  20787,  21403,  22005,  22594,
+     23170,  23731,  24279,  24811,  25329,  25832,  26319,  26790,
+     27245,  27683,  28105,  28510,  28898,  29268,  29621,  29956,
+     30273,  30571,  30852,  31113,  31356,  31580,  31785,  31971,
+     32137,  32285,  32412,  32521,  32609,  32678,  32728,  32757,
+     32767,  32757,  32728,  32678,  32609,  32521,  32412,  32285,
+     32137,  31971,  31785,  31580,  31356,  31113,  30852,  30571,
+     30273,  29956,  29621,  29268,  28898,  28510,  28105,  27683,
+     27245,  26790,  26319,  25832,  25329,  24811,  24279,  23731,
+     23170,  22594,  22005,  21403,  20787,  20159,  19519,  18868,
+     18204,  17530,  16846,  16151,  15446,  14732,  14010,  13279,
+     12539,  11793,  11039,  10278,   9512,   8739,   7962,   7179,
+      6393,   5602,   4808,   4011,   3212,   2410,   1608,    804,
+         0,   -804,  -1608,  -2410,  -3212,  -4011,  -4808,  -5602,
+     -6393,  -7179,  -7962,  -8739,  -9512, -10278, -11039, -11793,
+    -12539, -13279, -14010, -14732, -15446, -16151, -16846, -17530,
+    -18204, -18868, -19519, -20159, -20787, -21403, -22005, -22594,
+    -23170, -23731, -24279, -24811, -25329, -25832, -26319, -26790,
+    -27245, -27683, -28105, -28510, -28898, -29268, -29621, -29956,
+    -30273, -30571, -30852, -31113, -31356, -31580, -31785, -31971,
+    -32137, -32285, -32412, -32521, -32609, -32678, -32728, -32757,
+    -32767, -32757, -32728, -32678, -32609, -32521, -32412, -32285,
+    -32137, -31971, -31785, -31580, -31356, -31113, -30852, -30571,
+    -30273, -29956, -29621, -29268, -28898, -28510, -28105, -27683,
+    -27245, -26790, -26319, -25832, -25329, -24811, -24279, -23731,
+    -23170, -22594, -22005, -21403, -20787, -20159, -19519, -18868,
+    -18204, -17530, -16846, -16151, -15446, -14732, -14010, -13279,
+    -12539, -11793, -11039, -10278,  -9512,  -8739,  -7962,  -7179,
+     -6393,  -5602,  -4808,  -4011,  -3212,  -2410,  -1608,   -804,
+};
+
+#define FB_COS(a)  fb_sin[((a) + 64u) & 255u]
+#define FB_SIN(a)  fb_sin[(a) & 255u]
+
+extern volatile unsigned long sh2_vint_count;
+
+volatile unsigned long sh2_aff_sum_scaled;   /* 1:1 blit, for comparison */
+volatile unsigned long sh2_aff_sum_identity; /* affine with the identity matrix */
+volatile unsigned long sh2_aff_frames;
+volatile unsigned long sh2_aff_blits;
+volatile unsigned long sh2_aff_done;
+
+/* FNV-1a over the visible frame buffer.  Reading it back is slow -- 5-12 wait
+ * states per access (manual 4.1) -- but this runs twice, not per frame. */
+static unsigned long fb_checksum(void)
+{
+    const volatile unsigned short *p = FRAMEBUFFER + LINE_TABLE_WORDS;
+    unsigned long h = 2166136261uL;
+    unsigned int i, n = VISIBLE_LINES * WORDS_PER_LINE;
+
+    for (i = 0u; i < n; i++) {
+        unsigned short w = p[i];
+        h ^= (unsigned char)(w >> 8); h *= 16777619uL;
+        h ^= (unsigned char)w;        h *= 16777619uL;
+    }
+    return h;
+}
+
+#define AFF_BLITS  8u
+
+void sh2_affine_test(void)
+{
+    unsigned long t0;
+    unsigned int i;
+    unsigned char angle = 0u;
+
+    map_load();
+
+    /* The identity assertion, before anything is rotated. */
+    (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, FP_ONE);
+    sh2_aff_sum_scaled = fb_checksum();
+
+    fb_blit_affine(0L, 0L, 0x10000L, 0L, 0L, 0x10000L);
+    sh2_aff_sum_identity = fb_checksum();
+
+    /* Cost of a full-screen affine frame, which is the worst case by
+     * construction -- there is no slot sharing to reduce it. */
+    t0 = sh2_vint_count;
+    for (i = 0u; i < AFF_BLITS; i++)
+        fb_blit_affine(0L, 0L, 0x10000L, 0L, 0L, 0x10000L);
+    sh2_aff_frames = sh2_vint_count - t0;
+    sh2_aff_blits = AFF_BLITS;
+    sh2_aff_done = 0x7D07E;
+
+    /* Then rotate about the centre of the map, forever. */
+    for (;;) {
+        long c = FB_COS(angle), s = FB_SIN(angle);
+        long dudx =  (c << 1), dvdx =  (s << 1);   /* Q15 -> 16.16 */
+        long dudy = -(s << 1), dvdy =  (c << 1);
+        long cx = (long)ZOOM_CX << 16, cy = (long)ZOOM_CY << 16;
+
+        fb_wait_vblank();
+        fb_blit_affine(cx - 160L * dudx - 112L * dudy,
+                       cy - 160L * dvdx - 112L * dvdy,
+                       dudx, dudy, dvdx, dvdy);
+        VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
+        angle++;
+    }
+}

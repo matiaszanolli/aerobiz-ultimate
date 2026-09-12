@@ -37,10 +37,12 @@
 #define SH2_CMD_TIMING  0x0006u
 #define SH2_CMD_LZ      0x0007u
 #define SH2_CMD_LZ_JOB  0x0008u
+#define SH2_CMD_AFFINE  0x0009u
 
 void sh2_fb_test(void);
 void sh2_map_test(void);
 void sh2_zoom_test(void);
+void sh2_affine_test(void);
 void sh2_timing_test(void);
 void sh2_lz_test(void);
 unsigned long sh2_lz_job(unsigned long src, unsigned long fb_byte_offset);
@@ -106,6 +108,10 @@ void sh2_rpc_loop(void)
 
         case SH2_CMD_MAPTEST:
             sh2_map_test();
+            break;
+
+        case SH2_CMD_AFFINE:
+            sh2_affine_test();         /* animates; does not return */
             break;
 
         case SH2_CMD_ZOOM:

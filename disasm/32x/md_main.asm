@@ -121,6 +121,16 @@
         bra.s   .timing_idle
     endif
 
+    ifd AFFINE
+; U-037. The SH2 rotates and scales the world map. FM = 1 and PRI = 1: the
+; layer is the only thing on this cartridge worth showing.
+        move.w  #MARS_MODE_PACKED|(1<<MARS_BM_PRI),(MARS_VDP_BITMAP).l
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l
+        move.w  #MARS_SH2_CMD_AFFINE,(MARS_RPC_CMD).l
+.aff_idle:
+        bra.s   .aff_idle
+    endif
+
     ifd LZTEST
 ; U-046. The SH2 decompresses the world map's tiles out of cartridge ROM and
 ; halts; the harness reads the length, checksum and frame count from SDRAM.
@@ -209,7 +219,9 @@
     ifnd LZPROBE
     ifnd TIMINGTEST
     ifnd LZTEST
+    ifnd AFFINE
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
     endif
