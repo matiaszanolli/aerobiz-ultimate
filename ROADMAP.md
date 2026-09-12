@@ -1003,12 +1003,19 @@ the time, so a faster decompressor does not raise the frame rate. It only
 shortens the stalls. That is the whole of the user-visible effect and it is
 what M5 was for.
 
-One caveat recorded rather than smoothed over: at 12,000 frames the matcher
-reports the shared screens visited in different orders. With 98.9% shared and
-every matched frame identical, that is most likely the first-occurrence
-heuristic tripping on a revisited screen rather than real divergence -- but it
-has not been chased down, and it is the kind of thing that has been wrong
-before in this project.
+**The caveat from the first write-up of this item is closed, and it was the
+tool.** The matcher reported the shared screens visited in different orders at
+12,000 frames. Chasing it: its order test compared the two full run sequences
+elementwise, which can never succeed, because screens recur constantly -- 1,050
+of them over 12,000 frames -- and a single extra transient run in either build
+shifts everything after it.
+
+Replaced with an inversion count on first occurrences, which gives **7
+inversions in 2,247 shared screens**, all among states held for fewer than 20
+frames. Filtered to screens a player would call a screen (`--min-run=20`):
+**zero inversions**. Both builds visit every stable screen in the same order,
+and the residual inversions are transitions reached at different sub-frame
+points, which is what a timing change does.
 
 Still open:
 

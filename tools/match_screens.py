@@ -16,6 +16,7 @@ Usage:
     match_screens.py a.csv b.csv                    # summary of shared screens
     match_screens.py a.csv b.csv --pairs            # one frame pair per screen
     match_screens.py a.csv b.csv --key=cram         # match on palette alone
+    match_screens.py a.csv b.csv --min-run=20       # ignore transient states
 
 The key deliberately excludes the PC and VSRAM: the PC differs by construction
 between builds, and VSRAM changes with scroll position within a screen.
@@ -30,6 +31,13 @@ Choosing the key matters, and the default is not always right:
                   "these builds never show the same screen", which is true and
                   useless.  Palettes survive such changes.
   vram            tile set only.  Use when the palette is what changed.
+
+--min-run=N keeps only screens displayed for at least N consecutive frames.
+Without it the comparison is dominated by transients: over 12,000 frames of the
+demo, 1,050 screens recur as more than one run and most last a handful of
+frames, so two builds that differ in timing will reach them at different
+sub-frame points and appear to disagree. Screens a player would call a screen
+last far longer. 20 is a good starting value.
 """
 import csv
 import sys
@@ -67,9 +75,12 @@ def main(argv):
     opts = argv[3:]
     show_pairs = "--pairs" in opts
     key_name = "both"
+    min_run = 1
     for o in opts:
         if o.startswith("--key="):
             key_name = o.split("=", 1)[1]
+        elif o.startswith("--min-run="):
+            min_run = int(o.split("=", 1)[1])
     if key_name not in KEYS:
         print("unknown --key=%s; expected one of %s"
               % (key_name, ", ".join(sorted(KEYS))))
@@ -82,13 +93,16 @@ def main(argv):
     # silently match the wrong visit.
     first_a, first_b = {}, {}
     for key, lo, hi, n in ra:
-        first_a.setdefault(key, (lo, hi, n))
+        if n >= min_run:
+            first_a.setdefault(key, (lo, hi, n))
     for key, lo, hi, n in rb:
-        first_b.setdefault(key, (lo, hi, n))
+        if n >= min_run:
+            first_b.setdefault(key, (lo, hi, n))
 
     shared = [k for k in first_a if k in first_b]
-    print("%s: %d frames, %d distinct screens" % (argv[1], len(a), len(first_a)))
-    print("%s: %d frames, %d distinct screens" % (argv[2], len(b), len(first_b)))
+    what = "screens" if min_run <= 1 else "screens held >= %d frames" % min_run
+    print("%s: %d frames, %d distinct %s" % (argv[1], len(a), len(first_a), what))
+    print("%s: %d frames, %d distinct %s" % (argv[2], len(b), len(first_b), what))
     print("shared screens: %d  (key: %s)" % (len(shared), key_name))
 
     if not shared:
@@ -96,12 +110,26 @@ def main(argv):
               "the first shared screen, or one of them never got going.")
         return 2
 
-    # Ordering tells you whether the runs stay in step or drift.
-    order_a = [k for k, _, _, _ in ra if k in first_b]
-    order_b = [k for k, _, _, _ in rb if k in first_a]
-    in_step = order_a[:len(order_b)] == order_b[:len(order_a)]
-    print("screen order agrees: %s" % ("yes" if in_step else "NO -- the runs "
-                                       "visit shared screens in different orders"))
+    # Ordering.  Sort the shared screens by where they first appear in A; if
+    # the runs agree, their positions in B are then also increasing.  Count
+    # inversions rather than answering yes/no, because a handful among
+    # thousands means transient states, and hundreds means real divergence.
+    #
+    # An earlier version compared the two full run sequences elementwise. That
+    # can never succeed: screens recur constantly (1,050 of them over 12,000
+    # frames of the demo) and one extra transient run in either build shifts
+    # everything after it. It reported disagreement on builds that agreed.
+    ordered = sorted((first_a[k][0], first_b[k][0]) for k in shared)
+    inversions = sum(1 for i in range(1, len(ordered))
+                     if ordered[i][1] < ordered[i - 1][1])
+    if inversions == 0:
+        print("screen order agrees: yes, no inversions in %d shared screens"
+              % len(ordered))
+    else:
+        print("screen order: %d inversions in %d shared screens (%.2f%%)"
+              % (inversions, len(ordered), 100.0 * inversions / len(ordered)))
+        print("  Re-run with --min-run=20 before believing this means "
+              "divergence; short-lived states invert on timing alone.")
 
     if show_pairs:
         print("\n%-10s %-10s %-8s %-8s %s" %
