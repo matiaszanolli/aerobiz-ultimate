@@ -71,7 +71,7 @@ These are the most frequently called subroutines -- high-priority translation ta
 | $005060 | InitTileBuffer | Copy ROM $472CE to tile buffer $FF14BC, clear $FFA7DC |
 | $005092 | DisplaySetup | Display/title screen setup (101 calls) |
 | $0053BA | ClearScreen | Clear both scroll planes via GameCommand #$1A ×2 (7 calls) |
-| $005518 | SetScrollQuadrant | Tile grid lookup + scroll offset calculation (7 calls) |
+| $005518 | SetScrollQuadrant | Plane geometry: table at $04737E -> VDP register 16, plus plane width/height in cells to $FFA77E/$FFA77C (**8** call sites -- `InitScrollModes` reaches it by `bsr.w`) |
 | $005736 | PreGameInit | Pre-game initialization |
 | $0058FC | PlaceIconPair | Tile icon setup variant (8 calls) |
 | $005A04 | DrawBox | Draw bordered dialog box: corners + edges via tile sequence (42 calls) |
@@ -426,7 +426,7 @@ These are the most frequently called subroutines -- high-priority translation ta
 | $005170 | DisplayTileSetup | display | -- | translated |
 | $00538E | CmdSetBackground | graphics | 46 | translated |
 | $0053BA | ClearScreen | display | 7 | translated |
-| $005518 | SetScrollQuadrant | display | 7 | translated |
+| $005518 | SetScrollQuadrant | display | 8 | translated |
 | $005736 | PreGameInit | game | -- | named |
 | $0058EE | ErrorDisplay | exception | -- | named |
 | $0058FC | PlaceIconPair | game | 8 | translated |

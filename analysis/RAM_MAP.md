@@ -36,7 +36,7 @@ order with explicit sizes — the definitive layout reference.
 | `$FF99DE`       | word       | char_width           | Character advance width (1 or 2)                  |
 | `$FFA6A0`       | —          | bitfield_tab         | Entity bitfield array (longwords × entity)        |
 | `$FFA77A`       | word       | cursor_advance       | Text cursor advance per character                 |
-| `$FFA77E`       | word       | display_param2       | Tile-row multiply factor (BAT addressing)         |
+| `$FFA77E`       | word       | plane_width_cells    | Plane width in cells = tile-row multiply factor   |
 | `$FFA78C`       | byte       | lz_ctrl_byte         | LZ_Decompress bitstream control byte              |
 | `$FFA790`       | word       | input_mask           | Joypad button filter                              |
 | `$FFA7DC`       | word       | display_flag         | Display init guard (0 = unloaded, 1 = loaded)     |
@@ -333,8 +333,8 @@ $FFA920   Player 3: slots 0–39  ($500 bytes, ends $FFAE1F)
 | Address   | Size | Name           | Description                                                     |
 |-----------|------|----------------|-----------------------------------------------------------------|
 | `$FFA77A` | word | cursor_advance | Horizontal cursor advance per character. 1 = narrow, 2 = wide. Set by SetFontMode. |
-| `$FFA77C` | word | display_param1 | Display/scroll parameter. Set by GameCommand handler.           |
-| `$FFA77E` | word | display_param2 | Tile-row address multiply factor. `mulu.w ($FFA77E).l,d0` computes BAT row byte offset. |
+| `$FFA77C` | word | plane_height_cells | Scroll plane **height** in cells. Written by `SetScrollQuadrant` as `d2 * 32 + 32`, matching the VSZ it programs into VDP register 16 (32 / 64 / 128). |
+| `$FFA77E` | word | plane_width_cells | Scroll plane **width** in cells, and so the tile-row address multiply factor: `mulu.w ($FFA77E).l,d0` computes the BAT row byte offset. Written by `SetScrollQuadrant` as `d3 * 32 + 32`, matching HSZ in register 16. `$0020` (32) on every gameplay screen. |
 | `$FFA78C` | byte | lz_ctrl_byte   | LZ_Decompress bitstream state. Loaded from stream; `add.b d0,($FFA78C).l` doubles it each iteration. |
 | `$FFA790` | word | input_mask     | Joypad button filter. ReadInput ANDs raw button word with this before returning. |
 

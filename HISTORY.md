@@ -51,11 +51,22 @@ from power-on.
 ### What actually breaks
 
 Plane B rows 21 and 22, and nothing else -- plane A clean, CRAM identical,
-sprite attribute table and hscroll table untouched. The panel content for those
-rows is in VRAM at rows 19, 20, 23 and 24; rows 21-22 hold `$AAAA` / `$BBBB`
-style values, which are 4bpp pixel patterns rather than tile indices. A tile
-pattern upload is addressed off the plane geometry, and at 64 cells -- rows
-twice as far apart -- it lands on the nametable.
+sprite attribute table and hscroll table untouched.
+
+**Nothing is written to the wrong place. The window moved.** Rows 21-22 of a
+64-cell plane are VRAM `$EA80-$EBFF`. At 32 cells those same addresses are rows
+**42-47**, which are off-screen: 224 lines is 28 rows and the vertical scroll is
+zero. The stock build holds the same bytes there -- the first eight words match
+exactly, 64 of 384 differ -- it just never displays them. Reshaping 32x128 into
+64x64 halves the row stride, so an address that used to be row 42 becomes row
+21, and the game's off-screen scratch area slides into the visible screen.
+
+That answers a question this file's companion raised and left open: *"Before
+changing register 16, find out whether the game stages tilemaps in those rows
+-- the VDP's VRAM-copy DMA makes it plausible -- or whether they are simply
+stale."* **They are live, and at 64 cells they are on-screen.** The measured
+extent was already recorded there too: plane A carries content to row 91 and
+plane B to row 78, against 28 displayed.
 
 It is *not* a stride assumption in the drawing code. `SetScrollQuadrant` writes
 the plane width to `$FFA77E`, the tile-row multiply factor behind every BAT

@@ -258,6 +258,13 @@ looking at a single frame.
 Compare 68000 work RAM, or match screens by content first. Never compare
 captured frames across builds by frame number.
 
+One qualified exception: the **first** frame at which two builds disagree is
+meaningful even by frame number, because up to that point they are in lockstep
+by definition. Use it to find where to look, then stop -- everything after it
+may be divergence rather than defect. That is how U-034 stage 1's failure was
+located at frame 8250, and it is also why the 432 differing frames after it
+were not all evidence of the same fault.
+
 ### `$FF0006` is not a usable frame counter
 
 `analysis/RAM_MAP.md` calls it "incremented each MainLoop iteration". In
@@ -280,6 +287,40 @@ put a hardware item behind anything that matters.
 The corollary is a trap: enabling the cache under PicoDrive changes the measured
 time by exactly zero. That is evidence about the emulator, not evidence that
 the cache was already on.
+
+### A savestate fixture scopes an equivalence test to what it can reach
+
+Resuming from a savestate is the fast way to compare two builds on a screen
+deep in the game, and it silently limits the comparison to the states reachable
+*from that point*. A change that breaks an earlier screen then passes, and
+passes convincingly: the 64-cell plane experiment (U-034 stage 1) was
+**pixel-identical over 30,000 consecutive frames and over 3,001 frames sampled
+across a whole 20-year game**, both resumed from a pre-game savestate, and
+**differed on 432 of 600 frames** when the same builds were driven from
+power-on. The defect was on a setup screen the fixture skipped.
+
+Drive at least one comparison from power-on with `VRD_INPUT_SCRIPT` before
+believing an equivalence result. A run that agrees everywhere is the case to
+distrust, not the case to report.
+
+### The capture path used to demand 320x224, and Aerobiz is 256x224
+
+Fixed 2026-09-12 in `../32x-playground/tools/libretro-profiling/profiling_frontend.c`,
+recorded because it cost this project two measurements a month apart. The video
+callback compared `width != 320 || height != 224 || pitch != 640` and counted
+anything else as an error with no message. The game runs **H32, 256x224**, so
+every Genesis frame was dropped and a capture came back with an empty manifest
+and `errors=N` in `video-session.csv`.
+
+Geometry now comes from the core, bounded and with the pitch checked. Two
+habits are still worth keeping: **read `video-session.csv` and check `errors`
+is 0** before trusting a capture, and remember that a 32X cartridge composites
+at **320x224 even when the Genesis build of the same game reports 256x224**, so
+32X-versus-Genesis frames cannot be compared pixel for pixel at all. Compare a
+32X build against a 32X build.
+
+Use `VRD_VIDEO_DUMP_EVERY` for long runs: a whole-game comparison at every
+frame is tens of gigabytes, at every 50th a few hundred megabytes.
 
 ### Harness preconditions fail loudly but early
 

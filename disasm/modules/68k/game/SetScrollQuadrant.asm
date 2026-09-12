@@ -1,6 +1,17 @@
 ; ============================================================================
-; SetScrollQuadrant -- Select scroll quadrant via lookup table, set palette register and scroll offsets
-; Called: ?? times.
+; SetScrollQuadrant -- Select scroll plane geometry via lookup table
+;
+; (d2,d3) index the byte table at $04737E; the byte is issued as $9000|value
+; through GameCommand, which is a write to VDP register 16 -- plane size, not a
+; palette register as this comment said until 2026-09-12.  d2 selects VSZ and
+; d3 HSZ.  It then stores the matching cell dimensions: $FFA77E = d3*32+32, the
+; plane width and the tile-row multiply factor every BAT address goes through,
+; and $FFA77C = d2*32+32, the height.
+;
+; Called from 8 sites.  Note InitScrollModes reaches it by bsr.w, so a grep for
+; `jsr SetScrollQuadrant` finds only 7 and misses the one that runs at startup.
+; Nothing reaches it indirectly: $005518 appears in the ROM as no jsr target
+; and no longword.
 ; 114 bytes | $005518-$005589
 ; ============================================================================
 SetScrollQuadrant:                                                  ; $005518

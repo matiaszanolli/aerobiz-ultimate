@@ -33,10 +33,13 @@ one contradicted something this roadmap previously asserted:
 | U-046: decompression output goes to a **work-RAM scratch buffer**, not VRAM, and the 68000 costs **285 cycles per output byte** | Both of that item's stated premises. Transport is 2-3% of decompression, so the offload wins by a wide margin |
 | U-093: the emulator modelled no SH2 cache and no memory latency at all | The idea that any SH2 timing here was a measurement. They were instruction counts |
 
-**Critical path.** M4, and nothing on it is blocked any more. U-036's bug has
-survived five hypotheses, but U-092 now matches frames by screen so the
-plane-by-plane diff that should find it can actually be taken. Then the content
-questions -- U-032, U-033, U-077.
+**Critical path.** M4. **U-036's bug is found**: the game keeps live scratch in
+the plane's off-screen rows at fixed VRAM addresses, and reshaping 32x128 to
+64x64 halves the row stride so that scratch lands inside the 28 displayed rows.
+Six hypotheses eliminated before it, and the one that found it was driving the
+comparison from power-on instead of from a savestate. U-036 and U-034 stage 1
+are blocked on relocating that scratch; the 32X-frame-buffer route is not.
+Then the content questions -- U-032, U-033, U-077.
 
 **The result that reframes M8.** At 4x each map pixel is a 4x4 block: zooming
 in reveals that there is nothing to reveal. The payoff has to come from
@@ -324,7 +327,7 @@ The map is on the layer and scaling (U-030, U-031, U-035). What remains is the
 screen it lives on (U-036), the things drawn over it (U-032, U-033), and
 retiring the Genesis renderer it replaces (U-034).
 
-### U-036 -- Switch the map screen to H40 [NO BUG; scoped and ready]
+### U-036 -- Switch the map screen to H40 [BLOCKED: the off-screen rows are live]
 
 The gate U-003 landed on. The map screen has to run 40 tiles per line for its
 Genesis overlay to register against a 32X-drawn map; every other screen stays
@@ -343,8 +346,16 @@ stretch and no offset. Nothing else about the game's rendering breaks.
 columns 0-63. VDP register 16 reads `$10`: VSZ = 64 cells, HSZ = **32** cells,
 so the plane is 256 pixels wide and H40 simply shows it twice.
 
-**Widening it is far cheaper than "re-lay-out the screen".** The engine already
-treats the BAT row stride as a variable, not a constant: `$FFA77E` holds it
+> Frame 1799 is an **attract-mode screen**, and `$10` is that screen's geometry,
+> not the map's. The gameplay map runs `$30`, 32 x 128 -- measured over 30,000
+> frames of a DEMO game with screenshots. The wrap result stands for any
+> 32-cell-wide plane; only the register value is screen-specific. One
+> intermediate note in this file read `$10` here as the map's and was wrong.
+
+**Widening it is far cheaper than "re-lay-out the screen" -- true of the
+addressing, and not sufficient.** Every step in the table below was confirmed,
+and the change still fails, because none of them is the off-screen scratch. The
+engine really does treat the BAT row stride as a variable, not a constant: `$FFA77E` holds it
 (`$0020` = 32 cells at runtime), `SetScrollQuadrant` writes it, and
 `UpdateScrollRegisters`, `CalcScrollBarPos` and `DrawCharInfoPanel` all
 multiply by it rather than by a literal. So the change is:
@@ -379,14 +390,24 @@ and the vertical scroll is **zero in every state sampled** -- the game does not
 scroll these planes vertically at all -- so 64 rows is more than twice what is
 ever shown.
 
-**The real risk is the off-screen rows.** Plane A holds real tilemap data out
-to row 91 and plane B to row 78, far past the 28 that are displayed; on the
-sampled screens plane A rows 0-28 are a uniform filler tile while rows 40+
-carry varied content with tile indices up to `$7FA`. Something is being kept
-there. Reshaping to 64 x 64 cuts that off-screen area from rows 28-127 down to
-rows 28-63, so 100 spare rows become 36. Before changing register 16, find out
-whether the game stages tilemaps in those rows -- the VDP's VRAM-copy DMA makes
-it plausible -- or whether they are simply stale.
+**The real risk was the off-screen rows, and it is now measured: they are
+live.** Plane A holds real tilemap data out to row 91 and plane B to row 78,
+far past the 28 that are displayed; on the sampled screens plane A rows 0-28
+are a uniform filler tile while rows 40+ carry varied content with tile indices
+up to `$7FA`. Something is being kept there.
+
+It is kept at a **VRAM address**, not at a row, and that is what breaks the
+reshape. Rows and addresses are the same thing only for a given stride: at 32
+cells `$EA80` is row 42, at 64 cells it is row 21. Reshaping does not move the
+scratch out of the way -- it moves the *screen* onto it. Measured on the
+scenario-confirmation screen: plane B rows 21-22 display the bytes the stock
+build keeps at rows 42-47, and the two builds hold the same content at those
+addresses. See the U-034 section above for the full comparison.
+
+So the concern this paragraph raised was correct and the mitigation it assumed
+-- that 36 spare rows would be enough -- was not, because the spare rows are
+not where the data is. Widening the plane needs the scratch relocated first,
+and it lives in shared code where any change must be size-neutral.
 
 Worth noting plane B's nominal 128 rows already run into the sprite table at
 `$F800`, so only 96 of them are usable today. The declared plane size is
@@ -815,25 +836,34 @@ The first two runs agree because they resume from a savestate that skips the
 setup screens. Driven from power-on the divergence starts at frame 8250, on the
 scenario-confirmation screen, and never fully recovers.
 
-*What breaks, exactly.* Two tile rows -- 21 and 22, and only those -- of plane
-B. Plane A is clean, CRAM is identical, the sprite attribute table and the
-hscroll table are untouched. The panel content that belongs on those rows is
-present in VRAM at rows 19, 20, 23 and 24; rows 21 and 22 instead hold values
-like `$AAAA` and `$BBBB`, which are 4bpp *pixel* patterns, not tile indices. So
-something uploads tile pattern data to an address derived from the plane
-geometry, and at 64 cells -- where each row is twice as far from the next -- it
-lands on top of the nametable instead of clear of it.
+*What breaks, exactly -- and it is the off-screen rows.* Two tile rows, 21 and
+22, and only those, of plane B. Plane A is clean, CRAM is identical, the sprite
+attribute table and the hscroll table are untouched.
 
-This is not a stride bug in the drawing routines. The engine really is
-parameterised by the plane: `SetScrollQuadrant` writes the width in cells to
-`$FFA77E`, the tile-row multiply factor that every BAT address computation goes
-through (`mulu.w ($FFA77E).l,d0`), and the height to `$FFA77C`;
-`CalcScrollBarPos` scales its wrap modulus by it; `DrawCharInfoPanel` computes
-its rows through it. `UpdateScrollDisplay` is the one routine that compares the
-width against a hard-coded 32, and it is dead code -- no `jsr`, no longword
-pointer to `$0057A0` anywhere in the ROM. The failure is narrower and more
-awkward than a stride assumption: one VRAM upload address that the plane
-geometry moves.
+**Nothing is written to the wrong place; the visible window moved onto it.**
+Rows 21-22 of a 64-cell plane are VRAM `$EA80-$EBFF`. At 32 cells those same
+addresses are rows **42-47** -- off-screen, since 224 lines is 28 rows and the
+vertical scroll is zero on these screens. The stock build holds the same bytes
+there (first eight words identical, 64 of 384 differing) and simply never shows
+them. Halving the row stride turns address-row 42 into address-row 21.
+
+This resolves the open question left below in this section: *whether the game
+stages tilemaps in the off-screen rows or whether they are simply stale.*
+**They are live, and at 64 cells they are displayed.** The extent was already
+measured there -- plane A carries content to row 91 and plane B to row 78,
+against 28 rows displayed -- so 64 rows was never the safe margin that note
+hoped for; it is less than either.
+
+It is emphatically *not* a stride bug in the drawing routines. The engine
+really is parameterised by the plane: `SetScrollQuadrant` writes the width in
+cells to `$FFA77E`, the tile-row multiply factor that every BAT address
+computation goes through (`mulu.w ($FFA77E).l,d0`), and the height to
+`$FFA77C`; `CalcScrollBarPos` scales its wrap modulus by it;
+`DrawCharInfoPanel` computes its rows through it. `UpdateScrollDisplay` is the
+one routine comparing the width against a hard-coded 32, and it is dead code --
+no `jsr` and no longword pointer to `$0057A0` anywhere in the ROM. Every
+address computation adapts correctly. The screen just gets bigger than the
+space the game reserved behind it.
 
 *And only one of the two sites matters.* Patching `GameSetup2` alone produces
 output identical to patching both, over all 600 sampled frames.
