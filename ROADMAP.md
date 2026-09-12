@@ -268,7 +268,40 @@ width-independent.
 ### U-033 -- Per-pixel aircraft animation [OPEN]
 ### U-034 -- Retire the Genesis-side map renderer [OPEN]
 
+### U-035 -- Map scaling (zoom) [OPEN]
+
+The flagship effect, and the reason M8's content density matters: a world map
+the player can zoom into. The 32X has **no hardware scaler** -- the "enhanced
+scaling and rotation" in `docs/32x-introduction-and-system-features.md:45` is
+overview prose, not a register. Scaling is SH2 software rasterization into the
+frame buffer, with one large exception in our favour.
+
+**Vertical scale is nearly free.** The frame buffer begins with a 256-word line
+table; each word holds the address of that display line's pixel data
+(`docs/32x-hardware-manual.md:1204`). Repeating or skipping line-table entries
+repeats or drops source lines at no pixel cost, so the Y axis scales by
+rewriting 256 words per frame.
+
+**Horizontal scale is not.** Line-table addresses are word units, which in
+packed-pixel mode means 2-dot granularity; the `SFT` bit recovers 1-dot
+positioning (`docs/32x-hardware-manual.md:1238`) -- but that is *panning*, not
+scaling. X scaling has to be a per-pixel SH2 inner loop.
+
+Two constraints to design against, both already in KNOWN_ISSUES: byte writes to
+the frame buffer cannot write zero (`docs/32x-hardware-manual.md:1162`), and
+`SFT` is ignored when the low byte of the line-table base address is `$FF`
+(`docs/32x-technical-info.md:156`).
+
+Unverified: whether a full-screen X scale fits in one frame on one SH2. That is
+a measurement to make early, because the answer decides the master/slave split
+below.
+
 Gated on U-003 (display mode) and M3.
+
+**Contention with M5.** M4 and M5 both want SH2 time, and this is the real
+scheduling question of the whole port. The natural split is master = renderer,
+slave = AI and economy (U-043), but it is an assumption until U-035 and U-041
+have measured budgets. Neither milestone should assume it owns both CPUs.
 
 ---
 
@@ -312,7 +345,9 @@ Note manual 5.3: whichever SH2 drives PWM cannot use auto-request DMA.
 The project goal, stated 2026-09-11: **Aerobiz Ultimate should be the successor
 the series never received** -- more scenarios, more events, more aircraft and
 more airports. Not an unbounded amount; enough that scaling the map is worth
-doing.
+doing -- "scaling" meaning the zoom effect of U-035, not a bigger world. The
+causality runs that way round: the map zoom is the flagship visual, and the
+content has to be dense enough that zooming into it shows the player something.
 
 M8 is sequenced **after M5**, deliberately. The turn cycle already spends its
 time in 68000 AI and economy code that iterates per-city and per-route arrays;
@@ -415,8 +450,9 @@ the aircraft tables just received before this item can be estimated.
 ### U-076 -- More airports [OPEN]
 
 The headline item, and last on purpose. Depends on U-070, U-071, U-072, and on
-M4 -- the current map is a Genesis tilemap at H32, and there is no room on it
-for more pins. "Scaling the map" is M4's renderer, not a data change.
+M4: at H32 on a Genesis tilemap there is nowhere to put more pins legibly, and
+the answer to that is U-035's zoom rather than a smaller pin. More airports and
+the map zoom justify each other, so neither is worth shipping alone.
 
 ### Corrections found while measuring this
 

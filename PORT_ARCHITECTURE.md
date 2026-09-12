@@ -416,6 +416,9 @@ M8 is the project goal -- Aerobiz Ultimate as the successor the series never
 received -- and it is sequenced last on purpose. Every content axis multiplies
 the per-city and per-route loop counts the turn cycle already spends its time
 in, so M5 moves that work to the SH2 first rather than porting it twice. M8's
-airport work additionally depends on M4: the current map is a Genesis tilemap
-with no room for more pins, so "scaling the map" is a renderer change before it
-is a data change. See ROADMAP.md M8 for the measured format ceilings.
+airport work additionally depends on M4, and specifically on U-035, the map
+zoom: at H32 on a Genesis tilemap there is nowhere to put more pins legibly.
+The two justify each other -- the zoom is the flagship visual, and the content
+is what makes zooming into it worth doing -- so neither ships alone. See
+ROADMAP.md M8 for the measured format ceilings and U-035 for what the 32X does
+and does not give us for scaling.
