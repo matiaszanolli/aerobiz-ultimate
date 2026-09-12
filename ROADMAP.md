@@ -687,6 +687,26 @@ the path equally well and needs no new asset.
 
 ### U-032 -- Great-circle route arcs [OPEN]
 ### U-033 -- Per-pixel aircraft animation [OPEN]
+
+### U-038 -- Aircraft scale with the map as they fly [OPEN]
+
+Aircraft in flight should grow and shrink with the zoom rather than staying a
+fixed size, so a plane reads as a thing at a place rather than a cursor over a
+picture.
+
+**U-077 found this is closer to free than it looks, and in fact hard to avoid.**
+Overlays drawn into the frame buffer inherit the zoom automatically, because
+display lines share line-table slots: anything written into a slot is repeated
+by every line pointing at it. The airport markers already scale this way, and
+it was not a feature that had to be built -- it was the behaviour that could
+not be prevented without unsharing the slots and paying full price for the
+vertical axis.
+
+So the work is not "make them scale" but "make them scale *well*": a single
+source sprite magnified 4x is a 4x4-blocky plane. Either accept that, matching
+the map's own pixels, or carry two or three sprite sizes and switch on the
+same threshold U-077 uses for the airport tiers. Decide it with U-033, since
+both want the same sprite pipeline.
 ### U-034 -- Retire the Genesis-side map renderer [OPEN]
 
 ### U-035 -- Map scaling (zoom) [DONE, emulator; hardware pending]
@@ -1151,6 +1171,29 @@ Still open:
 - The scratch region assumes the 32X layer stays blanked. M4 turns it on, and
   the two uses of the frame buffer will have to be reconciled.
 
+### U-047 -- Fluidity in the complex UI screens [OPEN, measure before building]
+
+Reported symptom: screens with a lot of moving parts -- the aircraft dealer is
+the example -- feel sluggish in a way the simpler screens do not.
+
+**This may already be fixed, and that has to be checked before anything is
+built.** U-045 found the 68000 idle 69.5% of gameplay with no AI or economy
+routine in the top 25, so sluggishness is unlikely to be computation. What is
+hot is graphics, over half of it the LZ decompressor -- and U-046 has just made
+that 14x faster, cutting screen-load stalls from ~70 frames to ~5. A screen
+that felt slow because it was reloading tiles may simply not any more.
+
+Method, in order:
+1. Reproduce it. Drive the demo to the dealer screen and use the U-092
+   fingerprint to find the frames; a stall shows as a run of frames where the
+   screen hash does not change.
+2. Compare against the pre-U-046 baseline at the same screen.
+3. Only if a stall survives, profile it with the PC sampler and find out what
+   it is actually doing.
+
+The trap to avoid is the one M5 already fell into once: assuming the slow thing
+is the thing that looks expensive.
+
 ### U-041 -- Port quarterly processing to the SH2 [OPEN, no measured benefit]
 ### U-042 -- Port the AI decision tree to the SH2 [OPEN, no measured benefit]
 ### U-043 -- Split work across master and slave [OPEN]
@@ -1183,6 +1226,32 @@ Note manual 5.3: whichever SH2 drives PWM cannot use auto-request DMA.
 ### U-060 -- Art conversion pipeline [OPEN]
 ### U-061 -- Title and city art on the 32X layer [OPEN]
 ### U-062 -- Fades and wipes as 32X palette operations [OPEN]
+
+### U-063 -- Better text and fonts [OPEN]
+
+The game's text is Genesis 4bpp tiles at one cell per character, which caps
+the font at 8x8 in 15 colours and makes proportional spacing impossible. On
+the 32X layer a glyph is just pixels, so a proportional font, anti-aliasing
+against the panel colour, and mixed sizes all become available.
+
+The catch is where text lives. U-003 decided the 32X layer is for the map
+screen alone, and every other screen keeps its Genesis planes -- so text drawn
+on the layer only helps screens that have been converted. Sequencing question
+for U-034, not a free win.
+
+Worth measuring first: how many distinct glyph cells the UI actually uses, and
+whether the win is legibility (a better font at the same size) or density
+(more text per screen). Those pull in different directions on a 320x224 display.
+
+### U-064 -- Better dialogs [OPEN]
+
+The yes/no and confirmation dialogs are the most-touched UI in the game and
+the least considered. Cheap improvements that do not need the 32X layer:
+consistent button placement, a default highlighted option, and cancel on B.
+
+Check first whether the dialogs share one routine or are open-coded per site.
+If they share one, this is a small change with broad effect; if they do not,
+it is a refactor first, and the count of sites decides whether it is worth it.
 
 ---
 
@@ -1379,6 +1448,37 @@ U-070, which is airports.
 A new era needs a window start in `RegionAircraftIndex`, a per-scenario data
 block (the `$0164`-byte blocks at `$05F26A`+ are per-scenario variants), and
 the 0..3 bounds tests widened. Depends on U-073.
+
+### U-079 -- Bring scenario 4 in line with what actually happened [OPEN]
+
+Aerobiz Supersonic's last scenario was set in the game's own future, and that
+future is now thirty years of recorded history. Its assumptions about which
+cities matter, which routes open and which political events fire can be
+replaced with what happened, which costs no new engine capability -- it is data
+in the per-scenario blocks at `$05F26A`+ and the event tables U-075 covers.
+
+The judgement call to make explicitly rather than drift into: how much realism
+serves the game. Aerobiz is a boardgame about competition, not a simulator, so
+an event that is historically right but strategically inert is worse than the
+invented one it replaces. Prefer changes that alter the map of opportunity.
+
+Depends on U-075 for the event format.
+
+### U-080 -- Scenario 5, starting fifteen years on [OPEN]
+
+A fifth scenario picking up where the fourth leaves off. The natural shape for
+the successor this project is trying to be: the existing four are a historical
+sweep that stops short of the present, and one more closes the gap.
+
+Mechanically this is U-074 -- a window start in `RegionAircraftIndex`, a
+per-scenario data block, and the 0..3 bounds tests widened -- so the engine
+work is shared and only the content is new. It is also the scenario that most
+wants M8's other items: a later start implies the aircraft of that era
+(U-073, U-078) and airports that did not matter in 1955 (U-076).
+
+Sequence it last among the content items. It is the one that best demonstrates
+the point of the project, which also makes it the one with the most to gain
+from everything else landing first.
 
 ### U-075 -- Additional events [OPEN]
 
