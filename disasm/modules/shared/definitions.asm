@@ -95,3 +95,21 @@ STACK_TOP           equ $00000000      ; Placeholder -- set from vector table
 ; VSRAM write: move.l #$40000010 | (addr << 16) | (addr >> 14), VDP_CTRL
 ; VRAM read:   move.l #$00000000 | (addr << 16) | (addr >> 14), VDP_CTRL
 ; DMA:         Set regs 19-23, then write VRAM/CRAM/VSRAM address with DMA bit
+
+; ============================================================================
+; SH2 LZ offload (U-046)
+; ============================================================================
+; On the 32X, LZ_Decompress hands the whole job to the SH2 -- eight bytes for
+; eight at $003FEC, so both targets stay the same size.  NOSH2LZ builds the 32X
+; cartridge with the stock 68000 routine instead, which is the control for any
+; "is this the decompressor?" question: the two ROMs differ in those eight bytes
+; and nothing else.  Slower, and it should look identical.
+    ifne ROM_BASE
+    ifd NOSH2LZ
+SH2_LZ_OFFLOAD      equ 0
+    else
+SH2_LZ_OFFLOAD      equ 1
+    endif
+    else
+SH2_LZ_OFFLOAD      equ 0
+    endif

@@ -307,7 +307,7 @@ LZ_Decompress:
 ; against 59.7 on the SH2, 14x in wall clock; the largest block in the game
 ; costs the 68000 62 frames and the SH2 4.4.  The thunk falls back to the code
 ; below if the SH2 does not answer.  See disasm/32x/sh2_lz.asm.
-    ifne ROM_BASE
+    ifne SH2_LZ_OFFLOAD
     jmp     (MARS_SH2_LZ).l                                ; 32X: hand it over
     nop                                                    ; pad; never reached
     else
