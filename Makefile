@@ -152,7 +152,7 @@ $(BUILD_DIR)/aerobiz-ultimate-h40map.32x: $(BUILD_DIR)/32x_boot_h40.bin $(BUILD_
 	@cat $(BUILD_DIR)/32x_boot_h40.bin $(BUILD_DIR)/32x_game_h40map.bin > $@
 	@echo "==> Build complete: $@"
 
-$(BUILD_DIR)/32x_game_h40map.bin: $(GAME_SRC) | $(BUILD_DIR)
+$(BUILD_DIR)/32x_game_h40map.bin: $(GAME_SRC) $(SHARED_SRCS) | $(BUILD_DIR)
 	@echo "==> Assembling 32X game half, 64x32 map plane (\$$900000)..."
 	$(ASM) $(ASMFLAGS) -DH40MAP=1 -o $@ $<
 

@@ -469,17 +469,40 @@ six, and the Genesis ROM stays byte-identical. 64x32 is 4,096 bytes per plane
 
 | Build | Result |
 |---|---|
-| 64x32 plane only | **Renders correctly.** Quarterly Report with the world map behind it, essentially indistinguishable from stock |
 | forced H40 only | **Renders correctly.** Clean, unstretched, full-width world map |
-| both together | **Partially corrupted** -- UI and map recognisable, but repeated glyphs tiled across the background and garbage in the lower right |
+| 64x32 plane only | **Depends on the screen.** Quarterly Report is indistinguishable from stock; Regional Rankings is corrupted -- repeated glyphs tiled across the background, garbage in the lower half |
+| both together | Same corruption as the plane change alone |
 
-The first row is the important one: the engine really does re-lay-out at the
-new stride by itself, which is what following `$FFA77E` predicted. The tilemap
-does *not* need hand-conversion.
+So **H40 is innocent** and the plane geometry is the whole problem. An earlier
+revision of this section said the plane change rendered correctly; that came
+from looking at one lucky screen, and is wrong. Cropping the corrupt frame
+shows the damage is inside columns 0-255, not in the eight columns H40 adds.
 
-The third needs isolating, not concluding. The likely suspects are VRAM access
-timing under H40 -- the game DMAs during active display, and H40 changes the
-slot budget -- and something still assuming 32 columns that we have not found.
+**The `cmpi.w #$20` gate is not the cause.** `UpdateScrollDisplay` only applies
+scroll offsets when `$FFA77E` is 32, so at 64 it silently does nothing -- an
+obvious suspect. Patching the literal to `$40` changed the rendered frame
+**not at all**: the before and after frames hash identically. Hypothesis dead,
+patch reverted.
+
+What is left is that some tilemap writers use the variable stride `$FFA77E`
+and others assume 32. That matches the symptom exactly -- content written at
+32 cells per row but read back at 64 lands at half the row and alternating
+column halves, which is what the tiled-glyph pattern looks like. A census
+finds 28 sites multiplying by 64 bytes and 118 by 32, so this is a search for
+the specific writers, not a one-line fix.
+
+**The useful conclusion is about scope, not the bug.** The screens that break
+are ranking and status screens; the map-bearing screens survive. This
+experiment changed the geometry **globally**, in `InitScrollModes` and
+`GameSetup2`, which was never the plan -- U-003 already decided the map screen
+alone should go H40. The result confirms that decision is not merely
+preferable but **required**: the engine does not handle 64-cell planes
+everywhere.
+
+Next step is therefore not to hunt all 28 sites. It is to set the geometry on
+entry to the map screen and restore it on exit -- the pattern
+`RunWorldMapAnimation` already uses around its own animation -- so only that
+screen ever sees 64 cells, and only the writers it uses need to be correct.
 
 **A methodological trap worth recording.** Changing the display mode makes the
 demo diverge: at frame 20,000 the H40 build was showing the world map while
