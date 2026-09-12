@@ -310,34 +310,73 @@ layer. Today it is Genesis tiles, so routes are drawn at tile granularity and
 aircraft animate in tile-sized steps (`AnimateFlightPaths`, `DrawRouteLines`,
 `DrawRoutePair` in `disasm/modules/68k/graphics/`).
 
-Target design:
+Design, with the parts that are built marked as such:
 
-- Map rendered into the 32X framebuffer in **packed-pixel mode** (8 bpp, 256
-  colours from a 32,768-colour palette). Packed pixel is chosen over direct
-  colour because 320x224 direct colour needs 143,360 bytes and the framebuffer is
-  only 128 KB (1 Mbit) per page -- packed pixel fits at 71,680 bytes and leaves
-  room for double buffering.
+- **[built]** Map rendered into the 32X framebuffer in **packed-pixel mode**
+  (8 bpp, 256 colours from a 32,768-colour palette). Packed pixel is chosen
+  over direct colour because 320x224 direct colour needs 143,360 bytes and the
+  framebuffer is only 128 KB (1 Mbit) per page -- packed pixel fits at 71,680
+  bytes and leaves room for double buffering.
+- **[built]** Map scaling. There is no hardware scaler; it is SH2 software
+  rasterization, and it costs (distinct source rows) x 320 dots per frame
+  because the line table makes the vertical axis free. See the frame-buffer
+  facts below and ROADMAP U-035 for the measured budget.
 - SH2 master draws great-circle route arcs and per-pixel aircraft positions.
 - Genesis planes keep all UI chrome, panels and text **in front** of the 32X layer
   via the palette priority bit.
 - Hardware horizontal scroll (Screen Shift Control) for map panning.
 
-### 4.2 AI and economy on the SH2
+#### Frame buffer, as measured
 
-The between-turn pause is the least "fluid" part of the game. `GameLogic1`
-(`$0213B6`) and `GameLogic2` (`$02947A`) run turn/route processing and the AI
-decision tree on a 7.67 MHz 68000. Moving that to a 23 MHz SH2 -- ideally
-split across master and slave -- is the largest real responsiveness win.
+Established by U-002 and relied on by every later M4 item. Manual references
+are to `docs/32x-hardware-manual.md`.
 
-Approach: the 68K ships a snapshot of the relevant RAM tables to SDRAM via DREQ
-FIFO, raises a command interrupt, and polls a communication port while continuing
-to render. The SH2 writes results back and the 68K applies them. The existing
-documentation in `analysis/DATA_STRUCTURES.md` and `analysis/RAM_MAP.md` gives
-the exact table layouts this needs.
+| | |
+|---|---|
+| Line table | 256 words at the head of the buffer; entry *n* is the **word address** of display line *n*'s pixel data (manual 3.3, :1204) |
+| Line length | 160 words = 320 pixels in packed-pixel mode, so line *n* sits at `256 + n * 160` |
+| Short rows | forbidden in practice: the VDP "mechanically displays 320 pixels worth of data from the address specified per the line table", so a short row shows whatever follows it in DRAM |
+| Palette word | `through:1 B:5 G:5 R:5` |
+| `FM = 1` | hands the frame buffer **and** the 32X VDP registers to the SH2, so the bitmap mode register must be written by the 68000 first, while it still owns them |
+| `FS` write | takes effect only at the next V-Blank (:1059), and only the back buffer is writable -- paint both buffers in turn, or the image depends on which side the VDP is showing |
+| Writes | words only. A byte write to the frame buffer cannot write zero (:1162, KNOWN_ISSUES) |
 
-This is deliberately *incremental*: each offloaded routine keeps its 68K
-implementation, selectable at assembly time, so results can be diffed against
-the original for correctness.
+Two consequences worth stating outright, because both were surprises:
+
+- **Nothing forbids two line-table entries naming the same address.** That is
+  what makes vertical scaling free -- rasterize a source row once, point every
+  display line that lands on it at the same slot (U-035).
+- **`SFT` is panning, not scaling.** Line-table addresses are word units, so
+  2-dot granularity; `SFT` (:1238) recovers 1-dot positioning but cannot scale.
+  The X axis is a genuine per-pixel loop.
+
+### 4.2 SH2 offload of the measured hot path
+
+**Rescoped by U-045; the original premise was false.** This section used to
+read "AI and economy on the SH2", on the grounds that the between-turn pause is
+the least fluid part of the game and that moving `GameLogic1` (`$0213B6`) and
+`GameLogic2` (`$02947A`) to a 23 MHz SH2 was the largest available
+responsiveness win. Profiling a full 20-year demo game says otherwise: the
+68000 is **idle 69.5% of the time** and **no AI or economy routine appears in
+the top 25**. There is no queue to shorten.
+
+What is actually hot is graphics -- 20.4% of gameplay frames, over half of it
+in the LZ decompressor at `$003F70-$004220`. So the target is the profile, not
+the intuition. ROADMAP M5 carries the items.
+
+Approach, unchanged and still right: the 68K ships a snapshot of the relevant
+RAM tables to SDRAM via DREQ FIFO, raises a command interrupt, and polls a
+communication port while continuing to render. The SH2 writes results back and
+the 68K applies them. `analysis/DATA_STRUCTURES.md` and `analysis/RAM_MAP.md`
+give the exact table layouts.
+
+Two constraints the measurements added:
+
+- **Batch, do not call.** A comm-port round trip costs ~560 68000 cycles flat
+  (U-039), which is more than most individual routines save. Per-call offload
+  is not the mechanism; shipping a batch of work is.
+- Each offloaded routine keeps its 68K implementation, selectable at assembly
+  time, so results can be diffed against the original for correctness.
 
 ### 4.3 PWM audio
 

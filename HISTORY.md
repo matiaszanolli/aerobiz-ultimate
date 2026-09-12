@@ -59,6 +59,77 @@ pixels.
 
 ---
 
+## 2026-09-12 (map on the layer, and then from the ROM)
+
+U-030 and U-031. The world map now reaches the 32X layer from cartridge ROM,
+with no savestate anywhere in the build.
+
+### The savestate route worked, and was the wrong source
+
+`tools/extract_map.py` pulls a Genesis plane out of a PicoDrive savestate --
+nametable, 4bpp tiles, CRAM -- and renders it. The map extracts cleanly at
+256x224 in 24 palette indices, comfortably inside the 32X's 256.
+
+Two corrections came out of it. **PicoDrive stores VRAM and CRAM byte-swapped**,
+as it does 68K work RAM: logical byte `a` sits at index `a ^ 1`. Read
+big-endian the map renders as coloured noise convincing enough to look like a
+bug in the *game*. The cheap check is the CRAM bit pattern -- Genesis entries
+are `0000 bbb0 ggg0 rrr0`, and 16 of 16 match little-endian against 4 of 16
+big-endian. Several earlier plane analyses in ROADMAP.md used the wrong order
+and were corrected or withdrawn.
+
+And **plane B carries the panel frames as well as the map**, so any snapshot of
+it is screen-specific. The first asset came off the Quarterly Report and
+carried its coloured borders. Sampling demo states for one where plane A is
+*entirely* index 0 found the bare world map -- 14 indices, one Genesis palette
+row -- which is what shipped next. Good enough to prove the path, still a
+screen grab.
+
+### The map is in the ROM, at $088CF8, and finding it validated the decompressor
+
+The obvious lead was wrong. `LoadMapTiles` (`$01DE92`) decompresses five
+blocks, but they are 640- and 32-byte icon sets, not the world. Nor is the map
+raw in the ROM.
+
+`tools/lz_decompress.py` reimplements the game's LZ decompressor (`$003FEC`,
+123 static call sites) transcribed literally from the disassembly rather than
+tidied. Running it at **every even ROM offset** with an early abort against the
+expected first three tiles found exactly one hit:
+
+| | |
+|---|---|
+| Tiles | compressed at **`$088CF8`**, 22,528 bytes out = 704 tiles |
+| Verification | **100.00% byte-identical** to VRAM across all 22,528 |
+| Nametable | **none needed** -- plane B rows 0-21 are tiles 1..704 *in sequence*, attribute `$2000`, so the map is a linear 256x176 bitmap |
+| Rows 22-27 | one repeated tile, `$21E1` = tile 481, the ocean band |
+
+That 22 KB exact match is the point: a subtly wrong reimplementation would not
+reproduce 22 kilobytes. The decompressor's one genuinely odd feature is worth
+carrying to U-046 -- `read_bits(n)` shifts n bits out and the *caller* clears
+the new top bit with `ANDI #$7FFF`, so a token consumes n+1 bits.
+
+### What stayed unsolved
+
+**The 16-word map palette is not in the ROM.** Searched raw in both byte orders
+and inside all 1,289 compressed blocks reachable from the sources. Something
+builds it at runtime that has not been traced. It is a documented constant in
+`make_map_asset.py`; every other byte of the asset -- all 71,680 pixels -- is
+derived, and matches the savestate-built version exactly.
+
+**A verification method that was wrong before it was right.** Comparing
+rendered output to source indices by exact colour measured 0% -- the RGB565
+model was wrong about green's 5-to-6-bit expansion. The right test is
+structural: each of the 25 indices maps to exactly one output colour and none
+maps to two, which proves addressing, stride and line table without testing
+PicoDrive's output conversion. (22 colours for 25 indices; three pairs collapse
+in the BGR333 -> BGR555 -> RGB565 round trip.)
+
+**One rendering change:** the 64-pixel pad right of the map is now black rather
+than dark blue, because ROM palette entry 0 is 0 where the captured CRAM had a
+colour.
+
+---
+
 ## 2026-09-12
 
 Nine commits, and the useful output was mostly negative results. Recorded here

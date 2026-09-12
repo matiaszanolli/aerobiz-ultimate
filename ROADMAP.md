@@ -16,29 +16,42 @@ work is complete.
 
 ## State of play, 2026-09-12
 
-**Done and shipping.** The game runs on the 32X (`m3-full-game-32x`), the
-Genesis ROM is still byte-identical, the 32X layer works, and the SH2 runs C
-that is part of the shipping cartridge.
+**Done and shipping.** The game runs on the 32X, the Genesis ROM is still
+byte-identical, and the SH2 runs C that is part of the shipping cartridge. The
+world map is on the 32X layer, built from the ROM rather than a savestate, and
+**it scales** -- U-035, the flagship effect, is measured and working.
 
-**What the measurements changed.** Three findings redirected the plan, and all
-three contradicted something this roadmap previously asserted:
+**What the measurements changed.** Four findings redirected the plan, and every
+one contradicted something this roadmap previously asserted:
 
 | Finding | What it overturned |
 |---|---|
 | U-045: the 68000 is idle **69.5%** of gameplay; no AI or economy routine in the top 25; the LZ decompressor alone is **11.93%** | M5's premise. It was "AI and economy on the SH2, for responsiveness"; there is no queue to shorten. Rescoped to the hot path, and M8 no longer waits on it |
 | U-003: H32 puts the Genesis and 32X layers at **1.25x different scales**, for a hardware reason (EDCLK is always the H40 clock) | §4.1 as written. The map screen must run H40, and only that screen |
 | U-039/U-044: a comm-port round trip costs **~560 68000 cycles** flat, and the one offload that looked ideal is **never called** | The idea that per-call offload is the mechanism. Batching is |
+| U-035: the zoom costs (source rows) x 320 dots, so vertical scale is free and the budget is **2.13 / 1.06 / 0.53** frames per blit at 1x / 2x / 4x | The worry that scaling might not fit at all. It fits from 2x in, on the master alone |
 
-**Critical path.** M4. U-030 and U-031 (map onto the 32X layer) are unblocked
-and are the next real work. U-036 is blocked on a bug whose cause has survived
-five hypotheses, and which needs U-092 before it can be found.
+**Critical path.** Still M4, but the flagship is no longer the risk. What is
+left there is U-036, blocked on a bug whose cause has survived five hypotheses
+and which needs U-092 first, and the content questions -- U-032, U-033, U-077.
+
+**The result that reframes M8.** At 4x each map pixel is a 4x4 block: zooming
+in reveals that there is nothing to reveal. The payoff has to come from
+U-077's tiering -- airports and routes appearing as the map goes in -- and not
+from more map pixels. That is the clearest evidence yet for the content
+milestone, arrived at from the rendering side.
 
 **Honest state of the evidence.** Everything is PicoDrive; nothing has run on
-real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the five
-questions only a console can answer. And any change that perturbs timing makes
-the demo diverge, so frames from two builds cannot be compared at the same
-frame number; that has produced two wrong conclusions already and is why U-092
-exists.
+real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the six
+questions only a console can answer. Two standing caveats:
+
+- **SH2 timings are optimistic.** PicoDrive models neither the SH2 cache nor
+  SDRAM latency, so every SH2 figure here is close to a raw instruction count.
+  Hardware charges 12 clocks per 8-word SDRAM burst even for a single
+  cache-through word.
+- **Any timing change makes the demo diverge**, so frames from two builds
+  cannot be compared at the same frame number. That has produced two wrong
+  conclusions already and is why U-092 exists.
 
 ---
 
@@ -46,43 +59,15 @@ exists.
 
 ### U-001 -- Verify the milestone-1 cartridge actually boots [DONE]
 
-Run under the instrumented PicoDrive libretro core in
-`../32x-playground/tools/libretro-profiling` (`profiling_frontend
---debug-script`), 600 frames. All five acceptance criteria pass:
+All five acceptance criteria pass under the instrumented PicoDrive core: the
+boot ROM accepts the security block, both SH2s hand-shake and leave the release
+spin, MdMain runs, and bank 1 is selected.
 
-| # | Criterion | Observed |
-|---|---|---|
-| 1 | Boot ROM accepts the security block | `$A15101` = `$83`, `ADEN = 1`, no lock-out, comm0 clean |
-| 2 | Master `M_OK` / slave `S_OK` | seen at `$A15120` and `$A15124`, then cleared |
-| 3 | Our 68K entry runs | both comm words cleared by MdMain |
-| 4 | Both SH2s leave the release spin | master PC `$0600029C` = `main_loop`, slave PC `$06000332` = `slave_loop` |
-| 5 | Bank 1 selected | `$A15104` = `$0001` |
-
-It did not boot at first. Three real defects, all now fixed:
-
-1. **The security block was truncated to 228 bytes.** It is 1040 (`$3F0-$7FF`).
-   `extract_mars_init.py` stopped at the `jmp (a0)` near `$4C0`, taking that for
-   the application hand-off. It is not -- it is the block relocating itself into
-   the fixed window after setting `ADEN = 1`. Everything past `$4D4` was `$FF`
-   in our cartridge, so the block called into padding and the 68000 died inside
-   the first frame.
-2. **MdMain was placed at `$8806BC`, inside the block**, on top of its work-RAM
-   clear loop. The real entry is `$800`, where the block falls through with its
-   verdict in the carry flag -- hence the `bcs` that the manual's sample listing
-   puts as the first application instruction. MdMain now starts with it.
-3. **The boot handshake used the wrong comm slot.** Manual 5.1's "comm 0, 4, 8"
-   are byte offsets, not comm-register indices: the slave's `S_OK` lands at
-   `$A15124`, not `$A15128`. The 68000 waited forever on a word nothing writes.
-   `MARS_COMM_MOK` / `MARS_COMM_SOK` now name the two slots explicitly on both
-   the 68000 and SH2 sides.
-
-Two build defects found on the way: the M1 cartridge inherited MdMain's
-`jmp (GameEntryPoint).l` into a game half it does not carry (there is now a
-`MILESTONE1` idle), and the boot half did not depend on its own includes, so
-edits to `md_main.asm` or `mars_header.asm` did not trigger a rebuild.
-
-**Resolves PORT_ARCHITECTURE.md §5.1**, and not the way it was framed -- see
-that entry.
+It did not boot at first, and the three defects were all misreadings of the
+manual rather than coding errors -- a truncated security block, MdMain placed
+inside it, and the boot handshake on the wrong comm slot. HISTORY.md
+(2026-09-08, M1 half reached) has each one; **PORT_ARCHITECTURE.md §5.1** has
+the corrected conclusion, which is not the way the question was framed.
 
 ### U-004 -- Drop the retail donor requirement [DONE]
 
@@ -94,127 +79,55 @@ U-001 unchanged. The block is still not committed here.
 
 ### U-002 -- Draw something on the 32X layer [DONE]
 
-`make 32x-fbtest` builds a cartridge whose 68000 sets packed-pixel mode, hands
-the VDP to the SH2 with `FM = 1`, asks it to paint, and parks. The SH2 fills
-the line table, the palette and 224 lines of pixels from C
-(`disasm/sh2/master/fb.c`). The layer comes up and holds a steady image --
-five consecutive captured frames hash identically.
+`make 32x-fbtest`: the 68000 sets packed-pixel mode, hands the VDP over with
+`FM = 1`, and the SH2 paints the line table, palette and 224 lines from C
+(`disasm/sh2/master/fb.c`). Five consecutive captured frames hash identically.
 
-The test pattern is a two-axis gradient, red along X and green along Y,
-chosen so that a wrong line table or a wrong stride shows up as shear or noise
-rather than as something that merely looks odd. It also carries an accidental
-ruler: the X ramp is masked to 16 bands of 16 pixels, so it wraps at x = 256,
-and seeing that wrap confirms the VDP really is displaying a 320-pixel line.
+The test pattern is a two-axis gradient chosen so a wrong line table or stride
+shows as shear rather than as something that merely looks odd, plus an
+accidental ruler: the X ramp wraps at x = 256, which confirms the VDP really is
+displaying a 320-pixel line.
 
-What this pins down for the rest of M4:
+**The frame-buffer facts this pinned down are now in PORT_ARCHITECTURE.md
+§4.1**, where the rest of M4 can find them, rather than buried in a closed
+roadmap item.
 
-- Line table is 256 words at the head of the buffer; in packed-pixel mode a
-  line is 160 words, so pixel data starts at word 256 and line *n* is at
-  `256 + n * 160` (manual 3.3).
-- Palette word is `through:1 B:5 G:5 R:5` (manual, "Color Palette").
-- `FM = 1` hands the frame buffer *and* the 32X VDP registers to the SH2, so
-  the bitmap mode register has to be written by the 68000 first, while it
-  still owns them.
-- An `FS` write only takes effect at the next V Blank (manual :1059), and only
-  the back buffer is writable -- so painting both buffers in turn is what
-  makes the image independent of which side the VDP happens to be showing.
-- Word writes throughout. A byte write to the frame buffer cannot store zero
-  ([KNOWN_ISSUES.md](KNOWN_ISSUES.md)), which would have punched holes in any
-  pattern containing palette index 0.
+### U-003 -- Confirm Aerobiz's Genesis display mode [DONE, and resolved]
 
-### U-003 -- Confirm Aerobiz's Genesis display mode [DONE, and it is a problem]
+**Aerobiz runs H32** -- measured from the emulator's frame geometry, not read
+out of a register table: H40 for the first 320 frames of TMSS and boot screens,
+then 256x224 for the KOEI intro, the title and everything after. Manual 3.3
+requires a 320-wide Genesis mode whenever the 32X layer is not blanked, so §4.1
+as originally written could not work.
 
-**Aerobiz runs H32.** Measured, not read out of the register table: the
-emulator's own frame geometry over 3,000 frames of the Genesis build.
+**Why it cannot be papered over.** In H32 the two layers sit at **1.25x
+different scales** -- measured 95.6% pixel match for a nearest-neighbour
+256->320 stretch, against 85.0% centred and 83.4% left-aligned. This is
+hardware, not emulation: the cartridge slot carries EDCLK, always the H40
+clock, which the 32X uses as its video clock, so H32 and H40 fill the same
+on-screen width with different pixel counts (`pico/32x/draw.c:11-19`). In H40
+the layers are **100.00% identical**. Full working in HISTORY.md (2026-09-12).
 
-| Frames | Mode |
-|---|---|
-| 0-320 | H40, 320x224 -- TMSS and boot screens |
-| 321 onward | **H32, 256x224** -- the KOEI intro, title and everything after |
+**Decision: convert the map screen alone to H40.** It is the screen whose
+Genesis content M4 is replacing anyway, so it has the least to re-lay-out from
+32 cells to 40, and it confines both the H40 switch and the backdrop change to
+one place. Everything else stays H32 with the layer blanked. U-036 implements
+it.
 
-Manual 3.3 requires the Genesis VDP to be in a 320-wide mode whenever the 32X
-layer is not blanked. The game spends essentially all of its time at 256.
+Two things stay open, both narrower than the original doubt and both on the
+hardware list:
 
-So §4.1 as written does not work: the world map cannot go on the 32X layer with
-the Genesis planes in front while the game is in H32. Either the game moves to
-H40 -- which is 40 tiles per line against the 32 every screen is laid out for,
-so not a flag flip -- or the 32X layer is used only on screens converted to H40.
-Resolve this before U-030 starts; it is a design decision, not a bug.
+- **The backdrop.** With the layer on, the Genesis backdrop reads as
+  transparent and every screen loses its background colour. `draw.c` flags the
+  `/YS` signal -- which is what signals display of the background colour -- as
+  "unclear" in H32, with possible "race conditions by the different video
+  clocks". So this observation is the one to distrust, not the geometry.
+- **The 4-pixel offset.** `draw.c` applies `H32_OFFSET 4` between the layers in
+  H32. Scanning offsets against captured frames, the best match is at 0, so it
+  is already inside the composite -- worth re-checking only if H32 compositing
+  is ever relied on.
 
-#### Resolved by measurement, 2026-09-12: convert the map screen only
-
-`make 32x-layeron` builds the real game with the 32X layer live behind it
-(packed pixel, `PRI = 0`, the §4.1 arrangement) and the U-002 gradient painted
-underneath. What happens is not a catastrophe and not usable either.
-
-**Nothing breaks.** The game runs, stays legible, and composites the way §4.1
-wants -- Genesis planes in front, the 32X layer showing through wherever the
-Genesis pixel is transparent.
-
-**But the two layers are at different scales.** With the 32X active the
-compositor always emits 320, and PicoDrive fills it by stretching the H32
-output 1.25x. Measured on frame 1799 against the Genesis build's own 256-wide
-frame:
-
-| Hypothesis | Pixel match |
-|---|---|
-| nearest-neighbour stretch 256 -> 320 | **95.6%** |
-| centred with 32-pixel borders | 85.0% |
-| left-aligned, no scaling | 83.4% |
-
-and the content spans confirm it: columns 8-230 in the Genesis frame, 10-288
-in the composite, which is 8 and 230 multiplied by exactly 1.25.
-
-So while the game is in H32, **one Genesis pixel is 1.25 32X pixels** and the
-two layers cannot be registered against each other. A 32X-drawn map with
-Genesis-drawn pins, labels or route lines on top of it would not line up, and
-no amount of care in the renderer fixes that. In H40 they are 1:1 -- visible
-in the frame-250 capture, where the SEGA logo sits unstretched over the
-gradient.
-
-Also observed, and a reason not to enable the layer globally: with the layer
-on, the Genesis backdrop reads as transparent, so **every screen loses its
-background colour** to the 32X layer.
-
-**Decision: option (b), and specifically the map screen alone.** That is the
-screen whose Genesis content M4 is replacing anyway, so it has the least to
-re-lay-out from 32 tiles to 40, and it confines the H40 switch -- and the
-backdrop change -- to one place. The rest of the game stays H32 with the layer
-blanked, exactly as it is today.
-
-**How far to trust this.** The stretch is not an emulator shortcut. PicoDrive
-models a specific hardware mechanism, and says so in `pico/32x/draw.c:11-19`:
-
-> 32X officially doesn't support H32 mode. However, it does work since the
-> cartridge slot carries the EDCLK signal which is always H40 clock and is
-> used as video clock by the 32X. The H32 MD image is overlaid with the 320 px
-> 32X image which has the same on-screen width.
-
-That is the whole explanation. H32 and H40 fill the same visible width; H32
-just uses fewer, wider pixels; the 32X always clocks video at H40 off EDCLK.
-So 256 MD pixels landing on 320 32X pixels is physics, not emulation, and the
-1.25x scale mismatch would be there on a real console. Manual 3.3's "must be
-320-wide" turns out to mean *officially unsupported*, not *broken*.
-
-Worth noting the core is FAME/C here (`fm68k_emulate`), not Musashi -- but the
-68000 core is irrelevant to this question either way; the compositing is
-PicoDrive's own 32X code.
-
-Two things are still genuinely open, both narrower than the original doubt:
-
-- **The backdrop.** The same comment says the `/YS` signal, which is what
-  signals display of the background colour, is of "unclear" handling in H32
-  and "might lead to glitches due to race conditions by the different video
-  clocks". Our observation that the Genesis backdrop goes transparent is
-  exactly that path, so it is the finding to distrust -- not the geometry.
-- **The 4-pixel offset.** `draw.c` applies `H32_OFFSET 4` between the MD and
-  32X layers in H32. Scanning offsets against the captured frames, the best
-  match is at 0, so it is already inside the composite rather than a residual
-  shift -- but it is a hardware detail worth re-checking if H32 compositing is
-  ever relied on.
-
-Neither affects the decision: the map screen goes H40, where none of this
-applies.
+Neither affects the decision: the map screen goes H40, where neither applies.
 
 ---
 
@@ -387,6 +300,10 @@ width-independent.
 ---
 
 ## M4 -- World map on the 32X layer
+
+The map is on the layer and scaling (U-030, U-031, U-035). What remains is the
+screen it lives on (U-036), the things drawn over it (U-032, U-033), and
+retiring the Genesis renderer it replaces (U-034).
 
 ### U-036 -- Switch the map screen to H40 [SCOPED]
 
@@ -583,45 +500,28 @@ So U-030 and U-031 can proceed now. U-036 is still needed before the layer
 goes live during play -- the plane A UI must fill 40 columns in H40 -- but it
 gates the *switch-on*, not the renderer.
 
-### U-030 -- Map data path to the SH2 [IN PROGRESS]
+### U-030 -- Map data path to the SH2 [DONE]
 
-`tools/extract_map.py` pulls a Genesis plane out of a savestate -- nametable,
-4bpp tiles, CRAM -- and renders it, so the map can be checked by eye before
-any of it reaches the SH2. It also emits the plane as raw 8bpp indices
-(`--raw`), which is the form the 32X packed-pixel layer wants.
+`tools/extract_map.py` renders a Genesis plane out of a savestate and emits it
+as raw 8bpp indices. It served its purpose -- proving the path and sizing the
+asset -- and is superseded as a *source* by U-031's ROM extraction. Kept
+because it is still the only way to see what the Genesis actually put on a
+plane.
 
-The world map extracts cleanly: 256x224, **24 distinct palette indices**, well
-inside the 32X's 256-entry palette. At 8bpp that is 57,344 bytes, which the
-cartridge has room for many times over (~507 KB free in the fixed window).
+Findings, including the PicoDrive byte-swap trap, are in HISTORY.md
+(2026-09-12, map on the layer).
 
-**The byte-order trap, worth knowing before anyone reads a savestate again.**
-PicoDrive stores VRAM and CRAM **byte-swapped**, exactly as it does 68K work
-RAM: a logical byte at address `a` is at index `a ^ 1`, and a logical word is a
-little-endian read. Read big-endian, the map renders as coloured noise --
-convincing enough to look like a decoding bug in the *game* rather than in the
-reader. The cheap check is the CRAM bit pattern: Genesis entries are
-`0000 bbb0 ggg0 rrr0`, and 16 of 16 match little-endian against 4 of 16
-big-endian.
-
-Two things this exposed and one design question it raises:
-
-- Several earlier plane analyses in this file used the wrong byte order and
-  have been corrected or withdrawn.
-- **Plane B carries the panel frames as well as the map**, so a snapshot of it
-  is screen-specific, not a reusable world map. For a first slice that is fine
-  -- blitting it proves the path -- but the real source should be the map's own
-  ROM data, not a screen grab.
-
-Next: convert the indices and palette to 32X packed-pixel form (Genesis CRAM
-is BGR333, the 32X palette BGR555), place the image in the cartridge, and have
-the SH2 blit it. That is U-031.
-### U-031 -- Packed-pixel map renderer on the SH2 master [IN PROGRESS]
+### U-031 -- Packed-pixel map renderer on the SH2 master [DONE, one gap]
 
 `make 32x-maptest` puts the world map on the 32X layer, read from cartridge
-ROM by the SH2. Five consecutive frames hash identically.
+ROM by the SH2. The asset is built from `build/aerobiz.bin` by
+`tools/make_map_asset.py` -- tiles decompress from **`$088CF8`** and the
+nametable is implicit -- so a clean checkout reproduces it with no savestate.
+`tools/lz_decompress.py` is a literal transcription of the game's decompressor
+and is the specification for U-046.
 
-The asset (`tools/make_map_asset.py`) is laid out as exactly what the SH2 must
-write, so the renderer is a copy rather than an unpack:
+Layout, at cartridge `$020000` (`$FF` padding in every other build, so it costs
+nothing):
 
 ```
 +$0000  256 words   palette, already BGR555
@@ -633,68 +533,18 @@ displays 320 pixels worth of data from the address specified per the line
 table" -- a short row shows whatever follows it in DRAM. The map occupies the
 left 256; the remaining 64 are index 0.
 
-It lives at cartridge `$020000`, which the SH2 reaches at `$22020000` through
-the cache-through window. That region is `$FF` padding in every other build,
-so the 72,192 bytes cost nothing.
+Full findings in HISTORY.md (2026-09-12, map on the layer).
 
-**Verified structurally rather than by colour.** Comparing rendered output to
-the source indices, all **25 indices present map to exactly one output colour
-each, and none maps to two** -- so every pixel landed where it should;
-addressing, stride and line table are all correct. (22 distinct colours for 25
-indices: three pairs collapse in the BGR333 -> BGR555 -> RGB565 round trip.)
-An exact-colour comparison is *not* the right test here, because it would be
-testing PicoDrive's output conversion rather than the renderer.
+**The one gap.** The 16-word map palette is a pinned constant, not derived: it
+is not in the ROM raw in either byte order, nor inside any of the 1,289
+compressed blocks reachable from the sources, so something builds it at
+runtime that has not been traced. Worth closing if the map screen is ever
+recoloured, and worth ignoring otherwise.
 
-**Now sourced from a clean screen.** The first asset came off the Quarterly
-Report, so it carried the coloured panel frames. Sampling states across a demo
-game for one where plane A is *entirely* index 0 finds a screen showing the
-bare world map: 256x224 in **14 palette indices, all from a single Genesis
-palette row**. That is the asset now.
+**Still to decide.** The map is 256 wide against the layer's 320. Filling the
+extra 64 needs either map data that does not exist yet or a deliberate framing
+decision -- see U-035, where the zoom makes the question concrete.
 
-**Now built from the ROM.** `tools/lz_decompress.py` reimplements the game's
-LZ decompressor (`$003FEC`, named `LZ_Decompress`, 123 static call sites) from
-the disassembly, and `tools/make_map_asset.py` uses it. `make 32x-maptest`
-regenerates the asset from `build/aerobiz.bin` -- no savestate.
-
-Finding the map took a brute-force scan. The obvious lead was wrong:
-`LoadMapTiles` (`$01DE92`) decompresses `$04943A`, `$04959E`, `$04E1D8`,
-`$04E1EC` and `$04E230`, but those are 640- and 32-byte icon sets, not the
-world. Nor is the map raw in the ROM. Decompressing at **every even offset**
-with an early abort against the expected first three tiles found exactly one
-hit.
-
-| | |
-|---|---|
-| Tiles | compressed at **`$088CF8`**, 22,528 bytes out = 704 tiles |
-| Verification | **100.00% byte-identical** to VRAM across all 22,528 |
-| Nametable | **none needed** -- plane B rows 0-21 are tiles 1..704 *in sequence*, attribute `$2000`, so the map is a linear 256x176 bitmap |
-| Rows 22-27 | one repeated tile, `$21E1` = tile 481, the ocean band |
-
-That 22,528-byte exact match is what validates the decompressor: a
-reimplementation that were subtly wrong would not reproduce 22 KB.
-
-**This pays twice, as predicted.** The same routine is U-046's subject at
-11.93% of gameplay frames, and the Python is now the specification for the SH2
-port -- transcribed literally from the 68000 rather than tidied, so the two can
-be diffed. Worth noting its odd consumption rule: `read_bits(n)` shifts n bits
-out and the caller then clears the new top bit with `ANDI #$7FFF`, so a token
-actually consumes n+1 bits.
-
-Still to do before this closes:
-
-- **The palette is still pinned, not derived.** Sixteen words. It is not in the
-  ROM raw in either byte order, nor inside any of the 1,289 compressed blocks
-  reachable from the sources, so something builds it at runtime that we have
-  not traced. Recorded as a constant in `make_map_asset.py`. Everything else --
-  all 71,680 pixel bytes -- is derived, and matches the savestate-built asset
-  exactly.
-- Rendering difference from the old asset: the 64-pixel pad right of the map is
-  now black rather than dark blue, because ROM palette entry 0 is 0 where the
-  captured CRAM had a colour. Arguably better, but it is a change.
-- Nothing scrolls or zooms yet; this is a static blit. U-035 is where the
-  geometry gets interesting.
-- The map is 256 wide against the layer's 320. Filling the extra 64 needs
-  either map data that does not exist yet or a deliberate framing decision.
 ### U-032 -- Great-circle route arcs [OPEN]
 ### U-033 -- Per-pixel aircraft animation [OPEN]
 ### U-034 -- Retire the Genesis-side map renderer [OPEN]
@@ -789,12 +639,18 @@ Still open on this item:
 - Panning. The centre is a compile-time constant; nothing drives it yet.
 - The zoom is continuous here (`ZOOM_STEP` per frame). Whether the game should
   use continuous or a few discrete stops is still the U-077 question below.
+- **The 256-vs-320 framing, now concrete.** At scale 1.0 the map leaves a
+  64-pixel black pad on the right; zooming in past ~1.25x makes it disappear.
+  So the options are visible rather than theoretical: frame the map at the
+  scale where it fills the width, extend the source, or accept the pad as
+  letterboxing. A decision for U-034, when the Genesis renderer retires and the
+  map screen's layout is settled.
 - **Zooming in reveals that there is nothing to reveal.** At 4x each source
   pixel is a 4x4 block; the map has no more detail to give. This is the
   clearest argument yet that the payoff comes from U-077's tiering -- airports
   and routes appearing as you go in -- rather than from more map pixels.
 
-Gated on U-003 (display mode) and M3.
+Was gated on U-003 (display mode) and M3; both are resolved.
 
 **Contention with M5.** M4 and M5 both want SH2 time, and this is the real
 scheduling question of the whole port. The natural split is master = renderer,
