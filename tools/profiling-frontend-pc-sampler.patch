@@ -1,0 +1,129 @@
+--- profiling_frontend.c	(upstream, ../32x-playground/tools/libretro-profiling)
++++ profiling_frontend.c	(with the U-045 PC sampler and RAM trace)
+@@ -272,6 +272,52 @@
+ static fn_retro_unserialize core_unserialize;
+ static fn_vrd_debug_get_sh2_regs core_debug_get_sh2_regs;
+ static fn_vrd_debug_read core_debug_read;
++
++/* ---- U-045 per-frame RAM trace ------------------------------------------
++ * Sampling $FF0006 (the game's MainLoop iteration counter) once per emulated
++ * frame is how a turn boundary becomes visible: normally it advances once per
++ * frame, and a long computation shows up as a run of frames where it does not
++ * move at all.  Doing this through the debugger REPL costs two commands per
++ * frame, which is unusable over the ~30,000 frames needed to span several
++ * quarters, so it is a direct hook on the frame loop instead. */
++/* ---- U-045 per-frame 68000 PC sampler -----------------------------------
++ * The only route to the 68000's PC from outside the core is the savestate:
++ * CHUNK_M68K (id 1) carries it as a little-endian longword at offset 0x40.
++ * Serialising once per frame into a reusable buffer is cheap enough for the
++ * ~426,000 frames a full demo game takes, and it is what turns "the game
++ * stalled" into "the game stalled inside this routine". */
++static FILE *aero_pc_file;
++static unsigned char *aero_pc_buf;
++static size_t aero_pc_bufsz;
++static unsigned aero_pc_every = 1;
++
++static int aero_pc_extract(uint32_t *pc_out) {
++    size_t i = 12;                      /* past "PicoSEXT" + version */
++    if (!aero_pc_buf || aero_pc_bufsz < 17) return 0;
++    while (i + 5 <= aero_pc_bufsz) {
++        unsigned char id = aero_pc_buf[i];
++        uint32_t len = (uint32_t)aero_pc_buf[i+1]
++                     | ((uint32_t)aero_pc_buf[i+2] << 8)
++                     | ((uint32_t)aero_pc_buf[i+3] << 16)
++                     | ((uint32_t)aero_pc_buf[i+4] << 24);
++        i += 5;
++        if (id == 1) {
++            const unsigned char *b;
++            if (len < 0x44 || i + len > aero_pc_bufsz) return 0;
++            b = aero_pc_buf + i + 0x40;
++            *pc_out = (uint32_t)b[0] | ((uint32_t)b[1] << 8)
++                    | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
++            return 1;
++        }
++        if (len > aero_pc_bufsz - i) return 0;
++        i += len;
++    }
++    return 0;
++}
++
++static FILE *aero_trace_file;
++static uint32_t aero_trace_addr;
++static uint32_t aero_trace_len = 2;
+ static fn_vrd_debug_abi_version core_debug_abi_version;
+ static fn_vrd_debug_sh2_regs_size core_debug_sh2_regs_size;
+ 
+@@ -643,6 +689,20 @@
+         video_dump_errors++;
+         return false;
+     }
++    if (aero_pc_file && aero_pc_buf && (current_frame % aero_pc_every) == 0) {
++        uint32_t pc = 0;
++        if (core_serialize(aero_pc_buf, aero_pc_bufsz) && aero_pc_extract(&pc))
++            fprintf(aero_pc_file, "%u,%u\n", current_frame, pc);
++    }
++    if (aero_trace_file && core_debug_read) {
++        unsigned char buf[8];
++        unsigned long v = 0;
++        if (core_debug_read(0, aero_trace_addr, buf, aero_trace_len)) {
++            uint32_t i;
++            for (i = 0; i < aero_trace_len; i++) v = (v << 8) | buf[i];
++            fprintf(aero_trace_file, "%u,%lu\n", current_frame, v);
++        }
++    }
+     current_frame++;
+     return input_record_current_frame();
+ }
+@@ -1056,6 +1116,11 @@
+     core_serialize_size = (fn_retro_serialize_size)load_symbol(handle, "retro_serialize_size");
+     core_serialize = (fn_retro_serialize)load_symbol(handle, "retro_serialize");
+     core_unserialize = (fn_retro_unserialize)load_symbol(handle, "retro_unserialize");
++    /* The U-045 trace needs vrd_debug_read even when the debugger is not in
++     * use, so resolve it unconditionally.  It stays NULL on a core that does
++     * not export it, and the trace hook checks for that. */
++    core_debug_read = (fn_vrd_debug_read)load_symbol(handle, "vrd_debug_read");
++
+     if (debug_enabled) {
+         core_debug_get_sh2_regs = (fn_vrd_debug_get_sh2_regs)
+             load_symbol(handle, "vrd_debug_get_sh2_regs");
+@@ -1185,6 +1250,40 @@
+      * Free Run, see VR60_DISPATCHER_ROUTING.md). The state file is whatever
+      * bytes retro_serialize() produced; format is core/version-specific,
+      * not game-ROM data. */
++    {
++        const char *ta = getenv("AERO_TRACE_ADDR");
++        const char *tl = getenv("AERO_TRACE_LEN");
++        const char *tc = getenv("AERO_TRACE_CSV");
++        if (ta && tc) {
++            aero_trace_addr = (uint32_t)strtoul(ta, 0, 0);
++            if (tl) aero_trace_len = (uint32_t)strtoul(tl, 0, 0);
++            if (aero_trace_len < 1 || aero_trace_len > 8) aero_trace_len = 2;
++            aero_trace_file = fopen(tc, "w");
++            if (!aero_trace_file) {
++                fprintf(stderr, "Cannot open AERO_TRACE_CSV %s\n", tc);
++                return 1;
++            }
++            fprintf(aero_trace_file, "frame,value\n");
++        }
++    }
++
++    {
++        const char *pc_csv = getenv("AERO_PC_CSV");
++        const char *pc_every = getenv("AERO_PC_EVERY");
++        if (pc_csv) {
++            if (pc_every) aero_pc_every = (unsigned)strtoul(pc_every, 0, 0);
++            if (aero_pc_every < 1) aero_pc_every = 1;
++            aero_pc_bufsz = core_serialize_size();
++            aero_pc_buf = malloc(aero_pc_bufsz);
++            aero_pc_file = fopen(pc_csv, "w");
++            if (!aero_pc_buf || !aero_pc_file) {
++                fprintf(stderr, "Cannot set up AERO_PC_CSV %s\n", pc_csv);
++                return 1;
++            }
++            fprintf(aero_pc_file, "frame,pc\n");
++        }
++    }
++
+     const char *load_state_path = getenv("VRD_LOAD_STATE");
+     if (load_state_path) {
+         if (!debug_load_state(load_state_path)) {

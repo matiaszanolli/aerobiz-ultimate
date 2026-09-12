@@ -403,17 +403,64 @@ Kept rather than reverted: it costs nothing on a branch that is never taken,
 it is the only validated instance of the mechanism, and M8's larger economies
 may yet reach it.
 
-### U-045 -- Profile what the game actually computes [OPEN]
+### U-045 -- Profile what the game actually computes [DONE]
 
-The prerequisite U-044 proved we need. Rank the math and economy routines by
-*measured* dynamic cost -- call count times cycles -- across a real DEMO game,
-not by inspection. Only then choose what U-041 and U-042 move.
+**Aerobiz is not CPU-bound on game logic, and M5 as scoped would buy nothing.**
 
-Note that the obvious instrument is unavailable: PicoDrive's debug read serves
-RAM but returns zero for the `$A151xx` I/O range, so a counter parked in a
-comm register reads as zero and is indistinguishable from "never called".
-U-044's counter had to live in SDRAM and be read as `read master <addr>`.
-Anything that profiles from outside needs the same care.
+Method: sample the 68000 PC once per emulated frame and attribute it to a
+function. The PC is reachable from outside only through the savestate --
+`CHUNK_M68K` (id 1) carries it as a **little-endian** longword at offset
+`$40` -- so the frontend serialises into a reusable buffer each frame and
+reads that field. 426,000 frames cost 70 seconds. The addition is kept as
+`tools/profiling-frontend-pc-sampler.patch` against the upstream
+`profiling_frontend.c`; nothing in `../32x-playground` was modified.
+
+Symbol attribution comes from the `N bytes | $xxxxxx-$yyyyyy` header line each
+module carries -- 752 of them have one.
+
+Result over a complete 20-year DEMO game, 418,549 gameplay frames:
+
+| | frames | share |
+|---|---|---|
+| Idle in `CmdWaitFrames` | 290,959 | 69.5% |
+| Graphics and decompression | 85,473 | 20.4% |
+| Everything else | 42,117 | 10.1% |
+
+and the ranking inside that:
+
+| share | routine |
+|---|---|
+| 11.93% | the LZ decompressor at `$003F70-$004220` |
+| 3.50% | `CmdSetupSprite` |
+| 2.88% | `FadePalette` |
+| 2.36% | `$00268E` -- the Z80 sound driver region |
+| 1.34% | `$FFF008` -- the boot-copied VDP register stub |
+| 1.16% | `BulkCopyVDP` |
+
+**Not one AI or economy routine appears anywhere in the top 25.** The nearest
+candidates are `$01E226/$01E22E/$01E232`, inside the `MulDiv`/`WeightedAverage`
+cluster, at about 0.5% between them.
+
+The user-visible stalls are real but they are not what M5 targets: bursts of
+non-idle frames recur roughly every 4,000 frames -- the quarter boundary --
+and the longest run 74-76 frames, about 1.25 seconds. Their content is
+decompression plus VDP traffic. They are **screen loading**, not thinking.
+
+Two limits on this, stated rather than buried:
+
+- The sample is always taken at the same point in the frame, immediately
+  after `retro_run` returns. A frame-synced main loop that finishes its work
+  and then waits will be caught waiting, so the 69.5% idle figure is
+  **biased high** and should be read as "there is a lot of headroom", not as
+  a precise duty cycle. The *ranking among working routines* does not depend
+  on the sampling phase, and that is what the conclusion rests on.
+- PicoDrive timing, not hardware.
+
+The instrument trap worth remembering: PicoDrive's debug read serves RAM but
+returns zero for the `$A151xx` I/O range, so a counter parked in a comm
+register is indistinguishable from "never called" -- and `$FF0006`, which
+`analysis/RAM_MAP.md` calls a per-iteration frame counter, is cleared in
+practice and sits at 1 for the whole game. Both cost a false start here.
 
 ### U-040 -- RAM snapshot transport over DREQ FIFO [OPEN]
 
