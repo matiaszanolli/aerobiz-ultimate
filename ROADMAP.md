@@ -360,13 +360,42 @@ width-independent.
 
 ## M4 -- World map on the 32X layer
 
-### U-036 -- Switch the map screen to H40 [OPEN]
+### U-036 -- Switch the map screen to H40 [SCOPED]
 
 The gate U-003 landed on. The map screen has to run 40 tiles per line for its
 Genesis overlay to register against a 32X-drawn map; every other screen stays
-H32 with the layer blanked. Includes the mode switch itself, re-laying out
-that screen's tilemap, and handling the backdrop going transparent while the
-layer is on.
+H32 with the layer blanked.
+
+`make 32x-h40` forces H40 once per frame from the V-Blank trampoline in the
+boot half -- no shared-code change -- with the layer on underneath. It answers
+both questions.
+
+**H40 gives exact registration.** Comparing the composite against the Genesis
+build's own 256-wide frame 1799, over the 5,077 non-backdrop pixels in columns
+0-255: **100.00% identical**. Not approximately 1:1 -- pixel for pixel, no
+stretch and no offset. Nothing else about the game's rendering breaks.
+
+**The extra 64 pixels wrap.** Columns 256-319 are **100.00%** identical to
+columns 0-63. VDP register 16 reads `$10`: VSZ = 64 cells, HSZ = **32** cells,
+so the plane is 256 pixels wide and H40 simply shows it twice.
+
+**Widening it is far cheaper than "re-lay-out the screen".** The engine already
+treats the BAT row stride as a variable, not a constant: `$FFA77E` holds it
+(`$0020` = 32 cells at runtime), `SetScrollQuadrant` writes it, and
+`UpdateScrollRegisters`, `CalcScrollBarPos` and `DrawCharInfoPanel` all
+multiply by it rather than by a literal. So the change is:
+
+| Step | Detail |
+|---|---|
+| VDP register 16 | `$10` -> `$11` (HSZ 32 -> 64 cells) |
+| `$FFA77E` | 32 -> 64, for the screen that runs H40 |
+| VRAM | nametable per plane 4,096 -> 8,192 bytes; needs a budget check |
+| `UpdateScrollDisplay` | has a literal `cmpi.w #$20` against the stride |
+| audit | anything else assuming 32 cells |
+
+Still open: the VRAM budget for the doubled nametables, whether any other code
+hard-codes 32, and the backdrop going transparent while the layer is on (see
+U-003 -- that one is `/YS` behaviour PicoDrive itself calls unclear).
 
 Do this before U-030: the data path is shaped by what the renderer is allowed
 to assume about geometry.

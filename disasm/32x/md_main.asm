@@ -81,6 +81,18 @@
         bra.s   .rv_idle
     endif
 
+    ifd H40PROBE
+; U-036 experiment: force H40 and turn the layer on, to find out what actually
+; breaks. Same setup as LAYERON below, plus the mode forcing in the V-Blank
+; trampoline at the bottom of this file.
+        move.w  #MARS_MODE_PACKED,(MARS_VDP_BITMAP).l
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l
+        move.w  #MARS_SH2_CMD_FBTEST,(MARS_RPC_CMD).l
+.h40_wait:
+        tst.w   (MARS_RPC_CMD).l
+        bne.s   .h40_wait
+    endif
+
     ifd LAYERON
 ; U-003 experiment: what actually happens when the 32X layer is live while the
 ; game is in H32?  Manual 3.3 requires the Genesis VDP to be in a 320-wide mode
@@ -200,4 +212,20 @@ GameUninitialized:      jmp     (GAME_BASE+$000FD2).l
 
 GameExtInt:             jmp     (GAME_BASE+$001480).l   ; level 2, stub in stock game
 GameHBlankInt:          jmp     (GAME_BASE+$001484).l   ; level 4, raster scroll
-GameVBlankInt:          jmp     (GAME_BASE+$0014E6).l   ; level 6, per-frame handler
+    ifd H40PROBE
+; Force H40 once per frame, preserving whatever else the game has put in
+; register 12. CmdSetVDPReg shadows every register at A5+reg, so $FFF01C holds
+; the game's own idea of register 12 and only RS1|RS0 need adding.
+; d0 must survive: this is an interrupt trampoline, not a call.
+GameVBlankInt:
+        move.l  d0,-(sp)
+        moveq   #0,d0
+        move.b  ($00FFF01C).l,d0
+        ori.b   #$81,d0                         ; RS1 | RS0 = H40
+        ori.w   #$8C00,d0                       ; VDP register 12 write
+        move.w  d0,($00C00004).l
+        move.l  (sp)+,d0
+        jmp     (GAME_BASE+$0014E6).l
+    else
+GameVBlankInt:          jmp     (GAME_BASE+$0014E6).l
+    endif   ; level 6, per-frame handler
