@@ -121,6 +121,15 @@
         bra.s   .timing_idle
     endif
 
+    ifd LZTEST
+; U-046. The SH2 decompresses the world map's tiles out of cartridge ROM and
+; halts; the harness reads the length, checksum and frame count from SDRAM.
+; FM stays 0 -- nothing here touches the frame buffer.
+        move.w  #MARS_SH2_CMD_LZ,(MARS_RPC_CMD).l
+.lz_idle:
+        bra.s   .lz_idle
+    endif
+
     ifd H40PROBE
 ; U-036 experiment: force H40 and turn the layer on, to find out what actually
 ; breaks. Same setup as LAYERON below, plus the mode forcing in the V-Blank
@@ -199,7 +208,9 @@
     ifnd ZOOMTEST
     ifnd LZPROBE
     ifnd TIMINGTEST
+    ifnd LZTEST
         jmp     (GameEntryPoint).l
+    endif
     endif
     endif
     endif

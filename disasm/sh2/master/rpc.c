@@ -35,11 +35,13 @@
 #define SH2_CMD_MAPTEST 0x0004u
 #define SH2_CMD_ZOOM    0x0005u
 #define SH2_CMD_TIMING  0x0006u
+#define SH2_CMD_LZ      0x0007u
 
 void sh2_fb_test(void);
 void sh2_map_test(void);
 void sh2_zoom_test(void);
 void sh2_timing_test(void);
+void sh2_lz_test(void);
 
 /* V-Blank tally, incremented by vint_handler in main.s.  Defined here rather
  * than in assembly so the C side gets the type right; U-035 uses it as its
@@ -110,6 +112,10 @@ void sh2_rpc_loop(void)
 
         case SH2_CMD_TIMING:
             sh2_timing_test();         /* halts when done; does not return */
+            break;
+
+        case SH2_CMD_LZ:
+            sh2_lz_test();             /* halts when done; does not return */
             break;
 
         default:

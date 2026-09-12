@@ -72,12 +72,13 @@ BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
 SH2_CSRCS    = $(DISASM_DIR)/sh2/master/rpc.c $(DISASM_DIR)/sh2/master/fb.c \
-               $(DISASM_DIR)/sh2/master/timing_test.c
+               $(DISASM_DIR)/sh2/master/timing_test.c \
+               $(DISASM_DIR)/sh2/master/lz.c
 SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)) \
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest 32x-lztest verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -235,6 +236,7 @@ $(BUILD_DIR)/32x_boot_sh2probe.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(M
 # so a disagreement with the model names a term instead of a total.
 TIMING_PHASE ?= 0
 TIMING_ITERS ?= 200000
+LZ_ITERS ?= 16
 
 # Generated so the object has a real dependency on the two values.  FORCE
 # makes the recipe run every time -- without it make sees an existing file
@@ -245,12 +247,13 @@ TIMING_ITERS ?= 200000
 FORCE:
 
 $(BUILD_DIR)/timing_config.h: FORCE | $(BUILD_DIR)
-	@printf '#define TIMING_PHASE %s\n#define TIMING_ITERS %su\n' \
-		'$(TIMING_PHASE)' '$(TIMING_ITERS)' > $@.tmp
+	@printf '#define TIMING_PHASE %s\n#define TIMING_ITERS %su\n#define LZ_ITERS %su\n' \
+		'$(TIMING_PHASE)' '$(TIMING_ITERS)' '$(LZ_ITERS)' > $@.tmp
 	@cmp -s $@.tmp $@ 2>/dev/null || mv $@.tmp $@
 	@rm -f $@.tmp
 
 $(BUILD_DIR)/sh2/master/timing_test.o: $(BUILD_DIR)/timing_config.h
+$(BUILD_DIR)/sh2/master/lz.o: $(BUILD_DIR)/timing_config.h
 
 32x-timingtest: $(BUILD_DIR)/aerobiz-ultimate-timingtest.32x
 
@@ -262,6 +265,17 @@ $(BUILD_DIR)/aerobiz-ultimate-timingtest.32x: $(BUILD_DIR)/32x_boot_timingtest.b
 $(BUILD_DIR)/32x_boot_timingtest.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half, timing test (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -DTIMINGTEST=1 -o $@ $<
+
+32x-lztest: $(BUILD_DIR)/aerobiz-ultimate-lztest.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-lztest.32x: $(BUILD_DIR)/32x_boot_lztest.bin $(GAME_HALF)
+	@echo "==> Assembling SH2 decompressor cartridge..."
+	@cat $(BUILD_DIR)/32x_boot_lztest.bin $(GAME_HALF) > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_boot_lztest.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, SH2 decompressor (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DLZTEST=1 -o $@ $<
 
 32x-lzprobe: $(BUILD_DIR)/aerobiz-ultimate-lzprobe.32x
 

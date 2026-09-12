@@ -861,7 +861,7 @@ Now has a target to beat: it must move enough state per transfer that the
 per-call cost measured in U-039 is amortised well below 560 cycles per unit of
 work.
 
-### U-046 -- Offload LZ decompression to the SH2 [ANALYSED, ready to build]
+### U-046 -- Offload LZ decompression to the SH2 [DECOMPRESSOR DONE, integration open]
 
 The measured hot spot: **11.93% of all gameplay frames**, 3.4x the next item,
 and the bulk of the 74-76 frame stalls at each quarter boundary. Those stalls
@@ -934,13 +934,55 @@ Where batching actually applies: the call sites interleave
 batch naturally. The place they cluster is the quarter-boundary stall, which
 is also the user-visible one. Target those sites, not all 92.
 
-**Was blocked on emulator work; U-093 has now landed.** The one number that
-decides the design -- how fast the SH2 decompresses -- is one PicoDrive could
-not produce. It can now: `VRD_SH2_TIMING=1` on the interpreter core models the
-cache and the wait states, validated to the cycle against the manuals. The
-decompressor can be written and measured against the 285 cycles/byte the 68000
-costs. Bus contention is still not modelled, which is why the batching case
-rests on FM handover and the frame-buffer FIFO instead.
+**The decompressor is built and measured.** `disasm/sh2/master/lz.c`,
+transcribed from `tools/lz_decompress.py` and so at one remove from the 68000
+itself, kept in that shape so the three can be diffed. `make 32x-lztest` runs
+it on the world map's tiles.
+
+**Correct, by checksum rather than by eye.** A wrong decompressor produces
+plausible bytes, so "22,528 bytes came out" proves nothing. The SH2's FNV-1a
+over its whole output is **`0x3640A33D`**, which is what the Python reference
+computes independently.
+
+**And it is fast.** Measured on the U-093 timing core with the cache and wait
+states modelled, 16 decompressions bracketed by the V-Blank counter:
+
+| | 68000 | SH2 (wait=min) | SH2 (wait=max) |
+|---|---|---|---|
+| Cycles per output byte | 285.5 | **59.7** | 60.7 |
+| Bytes per frame | 448 | **6,437** | 6,324 |
+| Largest block (27,872 B) | 62.2 frames | **4.4** | 4.4 |
+| Median block (1,952 B) | 4.4 frames | **0.3** | 0.3 |
+
+**14.1-14.4x faster in wall clock**, 4.7-4.8x fewer cycles on a CPU running 3x
+the clock. The min/max wait spread is only 2%, because the workload is
+cache-resident at a 99.99% hit rate -- so for once the unmodelled parts of the
+timing barely matter. Turning the timing model off entirely moves it by 10%,
+which is the honest bound on how much this depends on U-093's model at all.
+
+Two things make the comparison conservative rather than flattering: the 68000
+figure does not include modelled cartridge wait states (0-5 per manual 4.1),
+which would make it slower, and the benchmark's misses sit close to the
+compulsory minimum (2,335 per iteration against ~1,920 unavoidable), so
+repeating the same block is not warming the cache in a way real use would not.
+
+**So the 74-76 frame quarter-boundary stall becomes about 5 frames.** That is
+the whole of M5's value, and it is now a measured number rather than a hope.
+
+Still to build, and none of it is the hard part any more:
+
+- **Transport.** SDRAM -> frame buffer in words, then the 68000 to `$FF1804`
+  or straight to VRAM by DMA. Decided by the two constraints above; the copy
+  is noise against 285 cycles/byte.
+- **Batching**, per the interface note above: a job list, not a job.
+- **The 68000 side**: a size-neutral patch at the call sites under
+  `ifne ROM_BASE`, keeping the 68000 implementation selectable so the two can
+  be diffed -- M5's own rule, and the reason U-039 exists.
+- **RV interlock.** The SH2 reads the compressed stream through the *cached*
+  cartridge alias, and the 68000 raises `RV` to DMA from ROM. While `RV = 1`
+  an SH2 cartridge access stalls until it clears
+  (`docs/32x-hardware-manual.md:281`). U-093 counts those; the count is zero
+  today only because the SH2 does no cartridge work in the shipping build.
 
 ### U-041 -- Port quarterly processing to the SH2 [OPEN, no measured benefit]
 ### U-042 -- Port the AI decision tree to the SH2 [OPEN, no measured benefit]
