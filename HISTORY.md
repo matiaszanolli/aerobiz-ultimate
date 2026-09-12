@@ -9,6 +9,97 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-12 (latest) -- the 64-cell plane, measured and reverted
+
+U-034 stage 1 was scoped, built and measured. It does not work, and the two
+findings recorded against it earlier the same day were both wrong. Nothing in
+`disasm/` changed in the end: `make verify` matches and the 32X game half is
+byte-for-byte what it was before the experiment.
+
+### Three claims, each correcting the last
+
+**The gameplay map screen is 32x128, as originally recorded.** Earlier today
+this file's companion was changed to say 32x64 on the strength of one savestate
+reading `reg16 = $10`. Rendered to a picture, that savestate is the
+attract-mode cloud background. Measured properly -- 300 savestates over 30,000
+frames of a DEMO game, screenshots at seven of them -- the map reads `$30` at
+every sample, with no transition in the run.
+
+**So the H40MAP experiment did test the map screen.** The claim that it had not
+followed from the `$10` reading and falls with it.
+
+**A 64-cell plane is invisible on the map and corrupts the panels.** A Genesis
+ROM differing from stock only in the two `(3,0)` call sites -- 12 bytes, same
+length:
+
+| Run | Frames | Differ |
+|---|---|---|
+| From the pre-game savestate, consecutive | 30,000 | 0 |
+| From the pre-game savestate, every 100th over a full 20-year game | 3,001 | 0 |
+| From power-on through the setup screens, every 50th | 600 | **432** |
+
+### The lesson is about the fixture, not the plane
+
+The first two runs are the ones that would have been reported if the third had
+not been run, and they are wrong in the most convincing way available: 33,001
+frames of perfect agreement, across a whole game. They agree because they
+resume from a savestate that skips the setup screens, and the defect is on a
+setup screen. **A savestate fixture silently scopes an equivalence test to the
+states reachable from it.** The cheap guard is to drive at least one comparison
+from power-on.
+
+### What actually breaks
+
+Plane B rows 21 and 22, and nothing else -- plane A clean, CRAM identical,
+sprite attribute table and hscroll table untouched. The panel content for those
+rows is in VRAM at rows 19, 20, 23 and 24; rows 21-22 hold `$AAAA` / `$BBBB`
+style values, which are 4bpp pixel patterns rather than tile indices. A tile
+pattern upload is addressed off the plane geometry, and at 64 cells -- rows
+twice as far apart -- it lands on the nametable.
+
+It is *not* a stride assumption in the drawing code. `SetScrollQuadrant` writes
+the plane width to `$FFA77E`, the tile-row multiply factor behind every BAT
+address (`mulu.w ($FFA77E).l,d0`), and the height to `$FFA77C`;
+`CalcScrollBarPos` and `DrawCharInfoPanel` both scale through it.
+`UpdateScrollDisplay` is the only routine that compares the width against a
+hard-coded `#$20`, and it is dead code -- `$0057A0` appears in the ROM as no
+`jsr` target and no longword.
+
+Also measured: patching `GameSetup2`:87 alone gives output identical to
+patching both sites, over all 600 sampled frames. `InitScrollModes`' quadrant
+is overwritten before anything is drawn. So the map and the panels share one
+call site and cannot be given different widths there -- which is exactly what
+"U-036 at one call site" assumed.
+
+`RenderEndingCredits` really does ship `(1,1)`, 64x64, and that is why the map
+renders correctly at 64 cells. It just does not extend to the screens sharing
+the plane.
+
+### The harness was hiding the evidence
+
+None of this was visible before, because the capture path demanded exactly
+320x224 and counted anything else as an error. Aerobiz runs H32, 256x224, so
+**every Genesis frame had been silently dropped** -- the same failure this file
+records for 2026-09-08, still in the source. Fixed in
+`../32x-playground/tools/libretro-profiling/profiling_frontend.c`: geometry now
+comes from the core, bounded and with the pitch checked, and the manifest
+records the real byte count instead of a hard-coded 143360. `VRD_VIDEO_DUMP_EVERY`
+was added alongside it, so a whole-game visual comparison is a few hundred
+megabytes instead of tens of gigabytes.
+
+Two smaller corrections to the record: there are **eight** `SetScrollQuadrant`
+call sites, not seven -- `InitScrollModes` reaches it by `bsr.w` -- and nothing
+reaches it indirectly.
+
+### Where U-034 goes
+
+H40 needs 64 cells to fill 320 pixels without repeating, so U-036 cannot be had
+by widening the shared plane. But if the map is drawn on the 32X frame buffer
+and the Genesis plane carries only chrome, it never needs to be. Stage 1 is
+dropped rather than deferred, and stage 2 is not blocked by it.
+
+---
+
 ## 2026-09-12 (later) -- the flagship effect runs
 
 U-035. `make 32x-zoomtest` scales the world map on the SH2 and animates

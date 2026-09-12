@@ -784,50 +784,105 @@ under it without the 1.25x mismatch U-003 measured. The good news is that
 at one call site, not a global one, which is exactly the scope U-003 asked for
 and the global experiment was never meant to be.
 
-**Three findings from scoping stage 1, one of which corrects this file.**
+**Stage 1 was scoped, built, measured -- and does not work.** The findings
+below replace an earlier set in this file that were wrong, and they are kept in
+the order they were established because each one corrects the previous.
 
-*The gameplay map screen is 32x64, not 32x128.* Measured directly: a savestate
-at the world map in the demo reads **`reg16 = $10`**, `reg12 = $00`, plane B
-carrying the map and plane A nearly blank. U-036 recorded "the game runs
-`(3,0)` -> `$30`, 32 x 128", which was measured on other screens -- the KOEI
-logo reads `$30` -- and does not describe the map.
+*The gameplay map screen is 32x128 (`reg16 = $30`), as this file originally
+said.* An intermediate note here claimed it was `$10`, 32x64, on the strength of
+a single savestate. That savestate was the **attract-mode title screen**, not
+the map: rendered to a picture, it is the scrolling cloud background. The map
+itself was measured properly afterwards -- 300 savestates spanning 30,000 frames
+of a DEMO game, screenshots at seven of them -- and `reg16` reads `$30` at every
+one, with no transition anywhere in the run. `$10` belongs to the attract
+sequence.
 
-*So the H40MAP experiment never tested the map screen.* It patched the `(3,0)`
-site in `GameSetup2`, which governs those other screens. That is why the
-map-bearing screens "survived" while ranking screens broke: the patch changed
-everything **except** the thing U-036 exists to change.
+*So the H40MAP experiment did test the map screen after all.* The intermediate
+note said it had not. It patches the two `(3,0)` sites, and those are exactly
+the sites that govern the map.
 
-*And the engine already ships a 64-cell plane.* `RenderEndingCredits`
-(`$05ECBC` region, call site line 123) passes `(1,1)`, which is table entry
-**`$11` -- 64 x 64**. The original game runs a 64-cell horizontal plane for its
-own ending credits. That is independent corroboration of U-036's conclusion,
-arrived at from a completely different direction than the pixel comparison:
-the engine handles HSZ = 64 because it has always had to.
+*A 64-cell plane is invisible on the map and breaks the panels.* Built as a
+Genesis ROM differing from stock only at those two call sites -- 12 bytes, same
+length -- and compared frame by frame:
 
-Quadrant usage across all seven call sites:
+| Run | Frames compared | Differ |
+|---|---|---|
+| From the pre-game state, consecutive | 30,000 | **0** |
+| From the pre-game state, every 100th over a whole 20-year game | 3,001 | **0** |
+| **From power-on through the setup screens, every 50th** | 600 | **432** |
+
+The first two runs agree because they resume from a savestate that skips the
+setup screens. Driven from power-on the divergence starts at frame 8250, on the
+scenario-confirmation screen, and never fully recovers.
+
+*What breaks, exactly.* Two tile rows -- 21 and 22, and only those -- of plane
+B. Plane A is clean, CRAM is identical, the sprite attribute table and the
+hscroll table are untouched. The panel content that belongs on those rows is
+present in VRAM at rows 19, 20, 23 and 24; rows 21 and 22 instead hold values
+like `$AAAA` and `$BBBB`, which are 4bpp *pixel* patterns, not tile indices. So
+something uploads tile pattern data to an address derived from the plane
+geometry, and at 64 cells -- where each row is twice as far from the next -- it
+lands on top of the nametable instead of clear of it.
+
+This is not a stride bug in the drawing routines. The engine really is
+parameterised by the plane: `SetScrollQuadrant` writes the width in cells to
+`$FFA77E`, the tile-row multiply factor that every BAT address computation goes
+through (`mulu.w ($FFA77E).l,d0`), and the height to `$FFA77C`;
+`CalcScrollBarPos` scales its wrap modulus by it; `DrawCharInfoPanel` computes
+its rows through it. `UpdateScrollDisplay` is the one routine that compares the
+width against a hard-coded 32, and it is dead code -- no `jsr`, no longword
+pointer to `$0057A0` anywhere in the ROM. The failure is narrower and more
+awkward than a stride assumption: one VRAM upload address that the plane
+geometry moves.
+
+*And only one of the two sites matters.* Patching `GameSetup2` alone produces
+output identical to patching both, over all 600 sampled frames.
+`InitScrollModes`' quadrant is set and then overwritten before anything is
+drawn. The map screen and the panel screens share the plane that
+`GameSetup2`:87 sets, so they cannot be given different widths at that call
+site -- which is what "U-036 applied to the map screen alone is a change at one
+call site" assumed, and it is not true.
+
+*The engine does still ship a 64-cell plane.* `RenderEndingCredits` passes
+`(1,1)` -> `$11`, 64x64. That remains real, and it is why the map renders
+correctly at 64 cells. It just does not extend to the screens that share the
+plane with it.
+
+Quadrant usage across all eight call sites. The earlier table in this file
+listed seven and missed `InitScrollModes`, which reaches `SetScrollQuadrant` by
+`bsr.w` rather than `jsr`:
 
 | Site | quadrant | reg 16 |
 |---|---|---|
-| `RunWorldMapAnimation`:23 | (1,0) | `$10` 32x64 |
-| `GameSetup2`:13 | (1,0) | `$10` 32x64 |
-| `InitStatusScreenGfx`:17 | (1,0) | `$10` 32x64 |
-| `GameSetup2`:84 | (3,0) | `$30` 32x128 |
-| `RenderEndingCredits`:123 | **(1,1)** | **`$11` 64x64** |
-| `RunWorldMapAnimation`:593, `RenderPlayerStatusUI`:14 | (0,0) | restore |
+| `RunWorldMapAnimation`:25 | (1,0) | `$10` 32x64 |
+| `GameSetup2`:15 | (1,0) | `$10` 32x64 |
+| `InitStatusScreenGfx`:19 | (1,0) | `$10` 32x64 |
+| `InitScrollModes`:75 (`bsr.w`) | (3,0) | `$30` 32x128 |
+| **`GameSetup2`:87** | **(3,0)** | **`$30` 32x128 -- the live one** |
+| `RenderEndingCredits`:125 | (1,1) | `$11` 64x64 |
+| `RunWorldMapAnimation`:595, `RenderPlayerStatusUI`:16 | (0,0) | restore |
 
-Open before stage 1 can be written: **which of the three `(1,0)` sites is live
-for the gameplay map.** `InitStatusScreenGfx` is plainly not it, but
-`GameSetup2` and `RunWorldMapAnimation` both set the same quadrant and the
-savestate cannot say which ran last. Trace it rather than guess -- the
-size-neutral form is known (`moveq #1,d0 / move.l d0,-(a7)` twice, six bytes
-for six, which is what the H40MAP experiment used), so the only missing piece
-is where to put it.
+Nothing reaches `SetScrollQuadrant` indirectly: `$005518` appears in the ROM as
+no longword and no `jsr` target.
+
+**What this costs, and what it does not.** H40 needs at least 64 cells to fill
+320 pixels without the plane repeating, so U-036 cannot be had by widening the
+shared plane, and the "U-036 before U-034" ordering above is blocked rather
+than merely re-ordered. What it does *not* block is the route U-034 actually
+wants: if the map is drawn on the **32X frame buffer** and the Genesis plane
+carries only chrome, the map never needs the Genesis plane to be 64 cells wide
+at all. The negative result argues for going straight at stage 2 rather than
+treating stage 1 as its prerequisite.
+
+The reverted experiment is reproducible: `H40MAP` still builds both targets
+with quadrant `(1,1)`, and `make 32x-h40map` still exists.
 
 Staged plan:
 
-1. **U-036, map screen only.** One `SetScrollQuadrant` call site, once the
-   three above are told apart. Verify with U-092 and the layer blanked, which
-   is the control the global experiment lacked.
+1. ~~**U-036, map screen only.**~~ **Dropped -- measured not to work.** The
+   map screen and the panel screens share `GameSetup2`:87's plane, so there is
+   no per-screen call site to change, and at 64 cells a tile upload lands on
+   plane B rows 21-22. Stage 2 does not depend on it.
 2. **Turn the layer on for that screen**, `PRI = 0`, Genesis chrome in front,
    and blank the Genesis map tiles so the SH2 map shows through. This is where
    the two deferred decisions land: the 64 transparent columns from U-036 stop
