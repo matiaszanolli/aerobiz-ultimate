@@ -2141,6 +2141,12 @@ identical** to the baseline -- so the U-020 DMA thunk works against the
 documented model. The transition counter exists because "no change" and "never
 fired" look identical otherwise.
 
+That first model was incomplete. It left `$000100-$00FFFF`, PicoDrive's BIOS
+bank, holding the cartridge at `RV = 0`, and Ares then stopped the game at its
+region lockout on a header read there (HISTORY, 2026-09-15). With the bank
+switched too, the fixed build runs **6,489 frames from power-on through 485
+mapping changes, every frame identical** to the unenforced run.
+
 What is still out of reach, and stated so it is not forgotten: whether hardware
 really unmaps `$880000` while `RV` is set, whether a longword access to a
 16-bit port is one bus cycle or two, and contention between the two SH2s and

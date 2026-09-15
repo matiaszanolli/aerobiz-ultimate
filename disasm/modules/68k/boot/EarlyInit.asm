@@ -22,7 +22,16 @@ EarlyInit:
 ; additionally confirms the region character is present in those bytes. If found,
 ; the beq jumps to the real game entry point ($003F70), skipping the TMSS screen.
 ; If not found after 16 comparisons, execution falls through to render the TMSS text.
+    ifne GAME_REBASED
+; 32X: nothing is at $0001F0 while RV = 0 -- only RV = 1 maps the cartridge at
+; 100h-3FFFFFh (docs/32x-hardware-manual.md:237) -- so read the region field
+; from the game half's own copy of the header. PC-relative, four bytes for
+; four. Ares enforces the map and showed the lockout screen; PicoDrive left the
+; cartridge mapped low and hid it.
+    lea     (ROM_BASE+$01F0,pc), a0
+    else
     lea     ($01F0).w, a0         ; a0 -> ROM security string at $01F0 (16 bytes, "SEGA MEGA DRIVE...")
+    endif
     move.w  #$f, d1               ; d1 = 15 (loop counter for 16 bytes)
 l_03c0c:
     cmp.b   (a0), d0              ; does this byte match the region character?
@@ -95,7 +104,12 @@ l_03c6a:
 ; When matched: optionally write the separator string "&", then write the region
 ; system name string (e.g. "NTSC MEGA DRIVE", "NTSC GENESIS", "PAL AND FRENCH...").
 ; When the security string ends (space char), write "SYSTEMS." on the final row.
+    ifne GAME_REBASED
+; 32X: the game half's header copy, as for the region search above.
+    lea     (ROM_BASE+$01F0,pc), a1
+    else
     lea     ($01F0).w, a1         ; a1 -> ROM security string at $01F0 (e.g. "SEGA MEGA DRIVE  J")
+    endif
 l_03c8a:
     cmpi.b  #$20, (a1)            ; is current byte a space (end of meaningful content)?
     beq.b   l_03cd2               ; yes: fall through to write final "SYSTEMS." row
@@ -109,7 +123,7 @@ l_03c94:
 ; Found a match: check if next byte is a space (word boundary) to avoid matching mid-word
     cmpi.b  #$20, $1(a1)         ; is the following byte a space (end of a word token)?
     bne.b   l_03cba               ; no: skip the separator "&" -- match is part of a longer word
-    cmpa.l  #$1f0, a1             ; are we at the very start of the security string ($01F0)?
+    cmpa.l  #ROM_BASE+$1f0, a1    ; are we at the very start of the security string ($01F0)?
     beq.b   l_03cba               ; yes: skip separator (no preceding word to separate)
 ; Write the "&" separator on a new tile row (between first and second lines of license text)
     lea     (ROM_BASE+$3d4b,pc), a0 ; a0 -> TMSSSpaceStr: [col=$12] "&\0"

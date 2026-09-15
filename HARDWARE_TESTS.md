@@ -39,6 +39,11 @@ Facts that apply to every item:
 | 7 | No SH2 bus timing, no bus contention | Longword question: no. Boot-ROM cache question: **answered from the BIOS itself** -- see item 7 |
 | 8 | Colour: Mega Drive through a nonlinear DAC table (`0, 52, 87, 116, 144, 172, 206, 255`), 32X linearly; priority never alters a colour | Smoothness and a clean layer-on: **yes**. Frame rate: optimistic, as item 6. Hand-off colour: see item 8 |
 
+Ares has already paid for itself once. Its first run stopped at the game's
+region lockout: `EarlyInit` read the cartridge header at `$0001F0`, which only
+`RV = 1` maps. PicoDrive had left that range readable even with
+`VRD_RV_EMULATION=1`. Fixed in both the game and the harness.
+
 Ares enforces FM on both CPUs, waits for the palette access window rather than
 corrupting the write, and skips zero bytes in the overwrite image. It does not
 model the frame buffer's zero-byte rule; our code writes words, so that does not
@@ -141,7 +146,10 @@ PicoDrive models neither the SH2 cache nor SDRAM latency (KNOWN_ISSUES), so its
 
 The emulator now implements the SH2 timing model and the `RV` bit, both
 validated against the manuals -- the timing model to the cycle, `RV` by running
-3,000 frames through 233 mapping changes with no visible change. That makes
+6,489 frames from power-on through 485 mapping changes with no visible change.
+(The first validation, 3,000 frames and 233 changes, left `$000100-$00FFFF`
+mapped and missed a real bug that Ares showed at once; see HISTORY,
+2026-09-15.) That makes
 these behaviours *documented and self-consistent*, which is not the same as
 *confirmed*. Three questions need a console.
 

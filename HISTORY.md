@@ -9,6 +9,48 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-15 (latest) -- Ares stops at the region lockout, and PicoDrive now does too
+
+The first run on Ares showed a black screen reading "DEVELOPED FOR USE ONLY
+WITH" -- the game's own region lockout, not a 32X fault. `EarlyInit` finds the
+region field by reading the cartridge header at absolute `$0001F0`. On the
+Genesis that is ROM. On the 32X, with `RV = 0`, nothing is there: the cartridge
+appears at `$000100-$3FFFFF` only while `RV = 1`
+(`docs/32x-hardware-manual.md:237`). Ares's `mega-32x.cpp` implements exactly
+that, so the region search found no match.
+
+**Fix:** under `GAME_REBASED`, both reads take the game half's own copy of the
+header, `lea (ROM_BASE+$01F0,pc)`, and the end-of-string compare is rebased to
+match. Four bytes for four; the game half differs from the previous build in 7
+bytes, both `lea` targets resolve to `$9001F0`, which holds `U`. Genesis
+byte-identical.
+
+### Believed wrong
+
+**That `VRD_RV_EMULATION` enforced the documented map.** It switched
+`$010000-$3FFFFF` and `$880000-$9FFFFF`, but left `$000100-$00FFFF` alone: in
+PicoDrive that range is the 32X BIOS bank, filled with a copy of the cartridge
+and mapped as one 64 KB block with the vectors. So the header stayed readable at
+`RV = 0`, and U-093's "100 of 100 frames identical" validation ran straight past
+this bug. The bank's contents now switch with the bit -- zero at `RV = 0`, which
+is what PicoDrive's unmapped reads return below `$400000`, and the cartridge
+again at `RV = 1`.
+
+### Measured
+
+- **The harness reproduces Ares.** The pre-fix cartridge with
+  `VRD_RV_EMULATION=1` shows the same lockout screen, static at frames 400, 800
+  and 1200.
+- **The fixed build is unaffected by enforcement.** Driven from power-on by the
+  6,490-row Start-C-C script, 6,489 of 6,489 captured frames are identical with
+  `RV` enforced and without, through 485 mapping changes and 0 capture errors.
+- **No other code reads the low window.** A source search for absolute memory
+  operands below `$8000` finds only the two `EarlyInit` sites; every other hit is
+  a constant. `tools/scan_rom_refs.py` could not have found them, since it
+  ignores values below `$200`.
+
+---
+
 ## 2026-09-15 -- Ares as the hardware stand-in, and the boot ROM answers a question
 
 No real 32X is available, so Ares v148 stands in for the eight questions in
@@ -53,7 +95,7 @@ touching the PicoDrive hand-off proof.
 
 ---
 
-## 2026-09-14 (latest) -- the SEGA logo spins in on the 32X
+## 2026-09-14 -- the SEGA logo spins in on the 32X
 
 The 32X boot now opens with the SEGA logo drawn by the SH2: a speck that
 unwinds two turns while it zooms in, easing onto the exact position of the

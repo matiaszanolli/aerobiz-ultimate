@@ -300,7 +300,8 @@ Check the frontend's own output before debugging a core hook.
 
 ### PicoDrive sources are CRLF
 
-`pico/videoport.c` and `pico/pico_int.h` (and others) use CRLF. A Python
+Some of them. `pico/videoport.c`, `pico/memory.c` and `pico/pico_int.h` use
+CRLF; `pico/32x/memory.c` is LF. Check with `file` before editing. A Python
 `open().read()` / `open('w').write()` round trip silently rewrites them as LF,
 which turns a small patch into a whole-file diff. Edit in binary mode, or
 convert back before committing, and check `git diff --stat` looks like the
@@ -390,6 +391,22 @@ the read -- the table is still being indexed.
 **The fix.** Restore the two words as `dc.w` with a comment naming the reading
 code, then check that the 32X game half differs from the previous build in one
 byte per longword and equals the Genesis ROM at every restored run.
+
+### Nothing is at `$000100-$3FFFFF` while RV = 0
+
+The Genesis game can reach its own cartridge at low absolute addresses; the 32X
+build cannot. With `RV = 0` the cartridge is only at `$880000-$9FFFFF`, and the
+low window holds it only while `RV = 1` (`docs/32x-hardware-manual.md:237`). A
+read there is not a rebased pointer, so no rebasing pass touched it, and
+`tools/scan_rom_refs.py` does not report it: values below `ROM_LO = $200` are
+ignored as too small to tell from constants. `EarlyInit`'s header read at
+`$0001F0` was exactly this, and it put the game on its region lockout screen on
+Ares (HISTORY, 2026-09-15).
+
+Test with `VRD_RV_EMULATION=1`. Before 2026-09-15 that flag left
+`$000100-$00FFFF` readable, so an older passing run does not clear this class.
+Fix a read by taking the game half's copy, `(ROM_BASE+$xxxx,pc)`, under
+`GAME_REBASED`.
 
 ### The default 32X boot is about 1,600 frames shorter than the original
 
