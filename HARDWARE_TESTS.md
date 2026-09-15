@@ -105,6 +105,12 @@ unmapped.
 - **Also check:** save to SRAM, power cycle, and confirm CONTINUE lists the save.
   The save path is exercised under emulation (U-021) but battery-backed SRAM on
   a real cartridge is a different thing.
+- **Ares result (2026-09-15, `a3d3b33`):** passes. The 1985 scenario was played
+  from Dallas with one slot there and one in New Jersey: route opened, aircraft
+  in flight, date advanced past the scenario's start. Opening a route goes
+  through the plane selection screen, which is the screen U-014 found corrupted,
+  so that screen draws correctly on a second emulator. SRAM across a power cycle
+  is still untested anywhere but PicoDrive.
 
 ## 3. Is the H32 backdrop really transparent with the layer on? (U-003)
 

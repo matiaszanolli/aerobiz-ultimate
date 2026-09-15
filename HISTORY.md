@@ -48,6 +48,11 @@ again at `RV = 1`.
   operands below `$8000` finds only the two `EarlyInit` sites; every other hit is
   a constant. `tools/scan_rom_refs.py` could not have found them, since it
   ignores values below `$200`.
+- **The game plays on Ares.** The 1985 scenario, started from Dallas: a route
+  opened to New Jersey, an aircraft flying it, the date past the scenario's
+  start. Opening a route runs the plane selection screen, so U-014's restored
+  route index tables hold up on a second emulator. HARDWARE_TESTS item 2 passes
+  except for SRAM across a power cycle.
 - **The SEGA intro on Ares:** with the fix, the game boots past the region check
   and the logo spin plays smoothly -- judged by eye, "the smoothest spin ever
   seen in a 32X". It is the first run of U-037's affine renderer outside
