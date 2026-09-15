@@ -55,8 +55,9 @@ one contradicted something this roadmap previously asserted:
 
 1. **U-014.** 1,817 rebased data values are still unaudited, and every wrong
    one is a corruption on some screen that the byte-identical check cannot see.
-   Start by confirming the plane-selection corruption reported 2026-09-12 is
-   gone: two of the 41 were index tables behind the route screens.
+   The plane-selection corruption reported 2026-09-12 is gone -- a route opened
+   and flown on Ares, 2026-09-15 -- so the two index tables behind the route
+   screens are confirmed. The rest of the audit stands.
 2. **M4 through the 32X frame buffer** -- U-034 stage 2. Widening the Genesis
    plane (U-036) is blocked: `CmdSetupDMA` writes live scratch to fixed VRAM
    addresses that a 64-cell plane displays, and the routine passing those
@@ -323,10 +324,12 @@ signature and the evidence rule.
    past a table's end; the `dc.w`-table rule must reject pairs whose low words
    are pixel- or colour-shaped.
 
-**First check:** whether the plane-selection corruption from 2026-09-12 is
-gone. `$04797C` and `$05F6F2` -- word index tables behind `RenderRouteSlotScreen`
-and `InitializeRouteDisplay` -- were among the 41, and a bad index there sends a
-garbage source to the decompressor, which is what that screen looked like.
+**First check, done 2026-09-15:** the plane-selection corruption from
+2026-09-12 is gone. `$04797C` and `$05F6F2` -- word index tables behind
+`RenderRouteSlotScreen` and `InitializeRouteDisplay` -- were among the 41, and a
+bad index there sends a garbage source to the decompressor, which is what that
+screen looked like. A route was opened and flown on Ares, which draws that
+screen, so those two are settled and the remaining 1,817 are not.
 
 ---
 
