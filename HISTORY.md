@@ -9,6 +9,69 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-14 -- the licensing screens are gone from the 32X boot
+
+Six screens removed from the 32X build, to return later as a two-screen credits
+sequence (U-061). The motive is debugging: every run paid for them before the
+title, and an idle machine paid again on every attract cycle.
+
+| Removed | Where | Patch |
+|---|---|---|
+| "KOEI PRESENTS", "A KOU SHIBUSAWA PRODUCTION", "from its Executive Series" | `GameSetup1`'s intro path | `$03B49E`: the banner `pea` becomes `bra.w` + `nop` to the `jsr ClearScreen` ending that path -- 6 bytes for 6 |
+| The 20 aircraft trademark notices, in three 4-second pages | `InitGameScreen` | `$03BCA0`: `clr.w d2` becomes `bra.b` past the page loop -- 2 bytes for 2, a 120-byte branch |
+
+Kept: the SEGA logo, the intro animation and the title. One switch,
+`SKIP_LICENSING`, is on for the 32X and off for the Genesis;
+`make 32x-licensing` builds the 32X cartridge with the screens intact.
+
+### Measured, not assumed
+
+- Genesis ROM byte-identical. The 32X game half is the same length and differs
+  from the previous build in exactly those 8 bytes, and both branch targets
+  decode to the addresses read off the ROM beforehand (`$03B742`, `$03BD1A`).
+  The `KEEPLICENSING` game half equals the previous build byte for byte.
+- The title arrives **1,607 frames (26.8 s) sooner** on first boot: frame
+  6,847 in the control, 5,240 patched, by every-frame capture.
+- Over a 9,000-frame boot, the static screens present only in the control are
+  exactly the six removed, and none is new in the patched build.
+- The intro animation is unchanged, not merely similar: three every-frame
+  windows across `RunIntroLoop`, offset by 1,607, are **903 of 903 frames
+  identical** (205, 202 and 89 distinct frames per window).
+- State after the title is equivalent: Start then C twice gives **900 of 900
+  frames identical** through to the scenario list, with the presses 3 frames
+  off the exact shift.
+- Later cycles stay clean. Left idle, the control re-runs the whole sequence
+  from the SEGA logo -- banners appearing at frames 9,180, 9,350 and 9,560,
+  trademark pages at 10,010, 10,310 and 10,600 -- while the patched build goes
+  SEGA to title with neither, through frame 14,000.
+
+The skipped code was not purely cosmetic: it ran `ResourceLoad`/`Unload`
+pairs, plane clears, text-cursor setup and `DelayWithInputCheck`, which sets
+the Start flag at `$FFA78E`. The animation and input comparisons are what show
+none of it reaches anything later.
+
+### Believed wrong along the way
+
+That the trademark pages repeat because `InitGameScreen` sits in `GameSetup2`'s
+loop. They do repeat, but not for that reason: the loop's back-edge is
+`clr.w d2 / tst.w d2 / bne.b l_3ca68`, which is never taken. After about 30
+seconds idle on the title the game returns to the SEGA logo and re-runs the
+entire boot sequence. The wrong mechanism reached a source comment and was
+corrected before commit, by measuring the second cycle instead of reasoning
+from the loop.
+
+### Also found
+
+- About 75 seconds of intro animation still precede the title. It is not
+  licensing, so it stayed; Start already skips it.
+- **The 32X build shows the SEGA logo on green; the Genesis build shows it on
+  black.** It is in the control too, so it predates this change, and the 32X
+  frame is identical at boot and on the attract cycle. Not investigated.
+- `GameSetup1`'s other callers, `EvaluateEventCond` and `ManagePlayerInvoice`,
+  pass 0 and take the title path, which the patch does not touch.
+
+---
+
 ## 2026-09-12 (last) -- who writes the off-screen scratch
 
 The blocker found earlier today is now attributed, with a new instrument:

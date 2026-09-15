@@ -340,6 +340,21 @@ at **320x224 even when the Genesis build of the same game reports 256x224**, so
 Use `VRD_VIDEO_DUMP_EVERY` for long runs: a whole-game comparison at every
 frame is tens of gigabytes, at every 50th a few hundred megabytes.
 
+### The default 32X boot is about 1,600 frames shorter than the original
+
+Since 2026-09-14 the 32X build skips the KOEI banners and the aircraft
+trademark pages (`SKIP_LICENSING`). Its title screen arrives 1,607 frames
+(26.8 s) earlier than on the 32X build with them intact, and so by about the
+same amount earlier than on the Genesis build. Anything timed against the
+original boot desynchronises by that much: a recorded `VRD_INPUT_SCRIPT`, or a
+frame-numbered comparison with the Genesis build -- including the
+first-divergence method above.
+
+Use `make 32x-licensing` for those. It builds the 32X cartridge with the
+screens intact and is byte-identical to the build before the change, so the
+32X-versus-Genesis lockstep comparison works exactly as it did. Screen-matched
+comparison (U-092) is unaffected either way, since it matches by content.
+
 ### Harness preconditions fail loudly but early
 
 `VRD_INPUT_SCRIPT` must have **exactly** `max_frames` rows, and

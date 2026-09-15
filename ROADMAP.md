@@ -1036,6 +1036,15 @@ first test. U-041 still has to measure the other half.
 
 ## M5 -- SH2 offload of the measured hot path
 
+**Target the engine, not the game** (direction set 2026-09-14). Aerobiz runs
+on a generic engine KOEI reused across many titles, and the offload that paid
+off here was engine code: U-046's LZ decompressor is shared by every screen, so
+one change sped up all of them. U-045 still stands -- the 68000 is idle 69.5%
+and no AI or economy routine reaches the top 25 -- but that argues against
+moving *game* logic, not against moving the engine. The leverage is in the
+engine layer: `GameCommand` dispatch, tile placement, text rendering
+(`RenderTextBlock`), DMA batching. Measurement still picks the routine.
+
 **Rescoped 2026-09-12 by U-045.** This milestone was "AI and economy on the
 SH2", justified as flagship responsiveness. The profile says that premise is
 false: over a full 20-year demo game the 68000 is **idle 69.5% of the time**,
@@ -1439,6 +1448,15 @@ Note manual 5.3: whichever SH2 drives PWM cannot use auto-request DMA.
 
 ### U-060 -- Art conversion pipeline [OPEN]
 ### U-061 -- Title and city art on the 32X layer [OPEN]
+
+Also owns the **two-screen credits sequence** that replaces the licensing
+screens removed from the 32X boot on 2026-09-14: the KOEI banners ("KOEI
+PRESENTS", "A KOU SHIBUSAWA PRODUCTION", "from its Executive Series") and the
+20 aircraft trademark notices. They are skipped behind `SKIP_LICENSING`, and
+`make 32x-licensing` still builds the original boot. The text of all 20 notices
+sits behind the ROM pointer table at `$048DB0`, so the replacement does not
+need to re-derive it -- only to decide what still has to be shown.
+
 ### U-062 -- Fades and wipes as 32X palette operations [OPEN]
 
 ### U-063 -- Better text and fonts [OPEN]

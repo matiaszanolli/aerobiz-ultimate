@@ -113,3 +113,38 @@ SH2_LZ_OFFLOAD      equ 1
     else
 SH2_LZ_OFFLOAD      equ 0
     endif
+
+; ============================================================================
+; Licensing and branding screens
+; ============================================================================
+; Two stretches of the boot sequence are obsolete, and every debugging run pays
+; for them before the title appears:
+;
+;   - GameSetup1's intro path: the KOEI banners ("KOEI PRESENTS", "A KOU
+;     SHIBUSAWA PRODUCTION", "from its Executive Series") with their fades.
+;   - InitGameScreen's 20 aircraft trademark notices -- Boeing, McDonnell
+;     Douglas, Lockheed, Vickers, Sud Aviation, BAe/Aerospatiale, Airbus,
+;     Tupolev, Ilyushin -- in three 4-second pages.
+;
+; Neither is boot-only in practice.  Left idle on the title for about 30
+; seconds, the game returns to the SEGA logo and re-runs the whole sequence,
+; banners and notices included -- measured on the 32X control, second cycle at
+; frames 8,750-10,600.  GameSetup2's own loop is not what repeats it: its
+; back-edge is `clr.w d2 / tst.w d2 / bne.b`, which is never taken.
+;
+; The 32X build skips both.  They are to return as a two-screen credits
+; sequence.  The SEGA logo and the title screen are not touched.
+;
+; KEEPLICENSING builds the 32X cartridge with them intact.  That is the control
+; for any frame-for-frame comparison with the Genesis build, which a shorter
+; boot would otherwise desynchronise, and for any input script timed against
+; the original boot.
+    ifne ROM_BASE
+    ifd KEEPLICENSING
+SKIP_LICENSING      equ 0
+    else
+SKIP_LICENSING      equ 1
+    endif
+    else
+SKIP_LICENSING      equ 0
+    endif

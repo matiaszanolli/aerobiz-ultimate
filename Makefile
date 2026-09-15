@@ -79,7 +79,7 @@ SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest 32x-lztest 32x-nolz 32x-affine verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest 32x-lztest 32x-nolz 32x-licensing 32x-affine verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -266,6 +266,20 @@ $(BUILD_DIR)/aerobiz-ultimate-timingtest.32x: $(BUILD_DIR)/32x_boot_timingtest.b
 $(BUILD_DIR)/32x_boot_timingtest.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) | $(BUILD_DIR)
 	@echo "==> Assembling 32X boot half, timing test (\$$880000)..."
 	$(ASM) $(ASMFLAGS) -DTIMINGTEST=1 -o $@ $<
+
+# Control build with the original boot: the KOEI banners and the aircraft
+# trademark pages intact. Use it for frame-for-frame comparison against the
+# Genesis build or for input scripts timed against the original boot.
+32x-licensing: $(BUILD_DIR)/aerobiz-ultimate-licensing.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-licensing.32x: $(BOOT_HALF) $(BUILD_DIR)/32x_game_licensing.bin
+	@echo "==> Assembling 32X cartridge, original licensing screens..."
+	@cat $(BOOT_HALF) $(BUILD_DIR)/32x_game_licensing.bin > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_game_licensing.bin: $(GAME_SRC) $(SHARED_SRCS) | $(BUILD_DIR)
+	@echo "==> Assembling 32X game half, original licensing screens (\$$900000)..."
+	$(ASM) $(ASMFLAGS) -DKEEPLICENSING=1 -o $@ $<
 
 # Control build for "is the SH2 decompressor to blame?": the shipping cartridge
 # with LZ_Decompress left on the 68000. Differs from `make 32x` in eight bytes.

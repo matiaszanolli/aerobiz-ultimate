@@ -25,7 +25,15 @@ InitGameScreen:
     pea     ($0001).w
     jsr SetTextCursor
     lea     $24(a7), a7
+    ifne SKIP_LICENSING
+; 32X: skip the 20 aircraft trademark notices, three 4-second pages.  Two bytes
+; for two; $03BCA2 -> $03BD1A is 120 bytes, inside bra.b's reach.  The graphics,
+; state and text-window setup above still run, and d2 is restored below just as
+; the loop would leave it.  See SKIP_LICENSING in definitions.asm.
+    bra.b   l_trademarks_done
+    else
     clr.w   d2
+    endif
 l_3bca2:
     move.w  d2, d0
     lsl.w   #$2, d0
@@ -65,5 +73,6 @@ l_3bd12:
     addq.w  #$1, d2
     cmpi.w  #$14, d2
     bcs.b   l_3bca2
+l_trademarks_done:
     move.l  (a7)+, d2
     rts

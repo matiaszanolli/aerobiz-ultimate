@@ -55,7 +55,16 @@ GameSetup1:
     lea     $1c(a7), a7
 ; GameCommand #$1B: set up layer/palette entry -- source=$734F8, count=7, y=$C, x=$A, attr=$B
 ; loads the company-name intro banner tile data
+    ifne SKIP_LICENSING
+; 32X: go straight to the ClearScreen that ends the intro path, skipping the
+; KOEI banners and their fades.  Six bytes for six.  Everything above still runs
+; -- resources, display enable, text colours, sound reset, music -- and the
+; stack is balanced at both ends.  See SKIP_LICENSING in definitions.asm.
+    bra.w   l_licensing_done
+    nop
+    else
     pea     (ROM_BASE+$000734F8).l
+    endif
     pea     ($0007).w
     pea     ($000C).w
     pea     ($000A).w
@@ -316,6 +325,7 @@ l_3b60c:
     move.l  (a5), -(a7)
     bsr.w FadeOutAndWait
     lea     $10(a7), a7
+l_licensing_done:
     jsr ClearScreen
 ; jump to function epilogue -- intro path done, skip attract loop
     bra.w   l_3b8e4
