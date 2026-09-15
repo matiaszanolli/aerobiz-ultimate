@@ -10,8 +10,15 @@ InitGameGraphicsMode:
     move.l  #$8c81, -(a7)
     clr.l   -(a7)
     jsr     (a2)
+    ifne SEGA_INTRO
+; 32X: cover the screen with the SH2's black layer before the SEGA screen is
+; drawn, then enable the display as these two instructions did.  Six bytes for
+; six.  See disasm/32x/sega_intro.asm.
+    jsr     (MARS_SEGA_COVER).l
+    else
     pea     ($000C).w
     jsr     (a2)
+    endif
     clr.l   -(a7)
     jsr CmdSetBackground
     pea     ($0001).w
@@ -50,8 +57,8 @@ InitGameGraphicsMode:
     pea     (ROM_BASE+$000476FC).l
     jsr DisplaySetup
     ifne SEGA_INTRO
-; 32X: animate the SEGA logo on the 32X layer while GameCommand #4 fades the
-; Genesis logo in and holds it.  Six bytes for six: the thunk runs the same
+; 32X: animate the SEGA logo on the 32X layer while GameCommand #4 shimmers
+; the Genesis logo and holds it.  Six bytes for six: the thunk runs the same
 ; call, leaves the $4 argument on the stack and the result in d0, as these two
 ; instructions did.  See disasm/32x/sega_intro.asm.
     jsr     (MARS_SEGA_INTRO).l

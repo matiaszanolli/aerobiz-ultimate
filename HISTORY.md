@@ -53,6 +53,47 @@ again at `RV = 1`.
   seen in a 32X". It is the first run of U-037's affine renderer outside
   PicoDrive. HARDWARE_TESTS item 8 records what this does and does not settle.
 
+### The finished logo flashed before the spin
+
+Ares showed the full-size logo for one frame before the spin began. PicoDrive
+had shown it for four frames all along (27-30 on the timing core). The
+2026-09-14 check compared the hand-off at the end, not the start. The Genesis
+logo does not fade in: `InitGameGraphicsMode` places its tiles, name table and
+palette before `GameCommand #4`, so it is on screen at full size at once. The
+Genesis ROM shows the same, at frame 20. The SH2 took four frames to clear its
+buffers before showing the layer, and the logo was visible until it did.
+
+**Fix:** covering is now a command of its own, `SH2_CMD_SEGA_COVER`, issued by a
+second 6-byte hook in place of `EnableDisplay`, before any of the SEGA screen is
+drawn. The SH2 clears both buffers, shows an opaque black layer and returns.
+The spin still starts with `GameCommand #4`. Covering returns, rather than
+running straight on into the spin, so the SH2 is idle while the 68000 draws: an
+LZ job handed over meanwhile would otherwise wait out its timeout with
+interrupts masked, then take FM from the SH2 as it gave up. The thunk file has
+two fixed entries, `$880C00` and `$880C04`, checked against
+`definitions_32x.asm` at assembly time.
+
+**Measured**, over frames 0-899 on both cores:
+
+- The logo is never visible uncovered. The layer comes on at frame 25 on the
+  default core (27 on the timing core), four frames before the first spin frame.
+- The hand-off and the blank change 0 pixels, as before: none from the last
+  frame with PRI set through the next 40 frames.
+- After the intro, every frame matches the old build five frames later (four on
+  the timing core). The boot is that much longer, and the spin now starts four
+  frames earlier in the Genesis hold.
+- The game half differs from before only at the two hooks. The licensing build,
+  which has no intro, keeps both original call sites.
+
+### Believed wrong
+
+- **That the Genesis SEGA logo fades in over frames 19-69** (2026-09-14). It
+  appears at full size at once; what follows is `InitAnimTable`'s palette
+  shimmer.
+- **That the intro left the boot exactly as long as it was** (2026-09-14). It
+  did then. It is now five frames longer, the time the SH2 takes to cover the
+  screen.
+
 ---
 
 ## 2026-09-15 -- Ares as the hardware stand-in, and the boot ROM answers a question

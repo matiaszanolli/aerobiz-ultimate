@@ -39,6 +39,7 @@
 #define SH2_CMD_LZ_JOB  0x0008u
 #define SH2_CMD_AFFINE  0x0009u
 #define SH2_CMD_SEGA    0x000Au
+#define SH2_CMD_SEGA_COVER 0x000Bu
 
 void sh2_fb_test(void);
 void sh2_map_test(void);
@@ -47,7 +48,8 @@ void sh2_affine_test(void);
 void sh2_timing_test(void);
 void sh2_lz_test(void);
 unsigned long sh2_lz_job(unsigned long src, unsigned long fb_byte_offset);
-void sh2_sega_intro(void);
+void sh2_sega_cover(void);
+void sh2_sega_spin(void);
 
 /* V-Blank tally, incremented by vint_handler in main.s.  Defined here rather
  * than in assembly so the C side gets the type right; U-035 uses it as its
@@ -117,7 +119,11 @@ void sh2_rpc_loop(void)
             break;
 
         case SH2_CMD_SEGA:
-            sh2_sega_intro();          /* returns with the layer blank again */
+            sh2_sega_spin();           /* returns with the layer blank again */
+            break;
+
+        case SH2_CMD_SEGA_COVER:
+            sh2_sega_cover();          /* returns with the layer up, black */
             break;
 
         case SH2_CMD_ZOOM:

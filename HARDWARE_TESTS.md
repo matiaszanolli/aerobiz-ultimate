@@ -220,8 +220,12 @@ emulator cannot answer.
   smoothest spin ever seen in a 32X". That passes smoothness on an independent
   SH2 and VDP running the real BIOS. It does not settle the frame rate on
   hardware, since Ares charges no wait states for frame-buffer writes (Ares
-  table, row 6). The layer-on and the hand-off colour step were not reported
-  separately.
+  table, row 6). It also showed the finished logo for one frame before the spin,
+  which PicoDrive had shown for four. Fixed by covering the screen before the
+  SEGA screen is drawn (HISTORY, 2026-09-15). The hand-off colour step was not
+  reported.
+- **Also check the first frames:** after the fix nothing but black should come
+  before the speck appears.
 
 ---
 

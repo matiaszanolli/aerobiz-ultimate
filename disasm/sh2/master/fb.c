@@ -918,9 +918,13 @@ void fb_draw_overlay(unsigned long u0, unsigned long v0, unsigned long step,
  *
  * Runs on the SEGA screen, which is the one screen at boot already in H40, so
  * the 32X layer can be shown under manual 3.3 without the H32 scale mismatch.
- * The 68000 starts this and then runs the Genesis fade-in and hold behind it
- * (disasm/32x/sega_intro.asm); the layer is opaque and in front, so only the
- * animation is seen.
+ * Two commands (disasm/32x/sega_intro.asm). sh2_sega_cover() puts an opaque
+ * black layer in front and returns; only then does the 68000 draw the Genesis
+ * SEGA screen, because its logo appears at full size at once -- it is not
+ * faded in -- and anything seen before the layer is up is the finished logo.
+ * Returning leaves the SH2 free for work the 68000 hands it while drawing.
+ * sh2_sega_spin() starts with the Genesis hold and runs the animation, and
+ * only that is seen.
  *
  * Everything that is arithmetic happens at build time: tools/make_sega_logo.py
  * decodes the logo from the ROM and stores, for every frame, the inverse affine
@@ -1005,11 +1009,11 @@ static void sega_draw(unsigned int f)
     }
 }
 
-void sh2_sega_intro(void)
+/* Returns with the layer set to show black, in front, from the next frame:
+ * mode changes apply from the next line. */
+void sh2_sega_cover(void)
 {
-    unsigned short last[2][4] = { { 0u, 0u, 0u, 0u }, { 0u, 0u, 0u, 0u } };
-    unsigned long t0, el, prev = ~0uL;
-    unsigned int i, buf = 0u, identity = 0u, handed = 0u;
+    unsigned int i;
 
     sh2_sega_drawn = 0uL;
     sh2_sega_skipped = 0uL;
@@ -1033,6 +1037,15 @@ void sh2_sega_intro(void)
 
     fb_wait_vblank();
     VDP_BITMAP = MODE_PACKED | BM_PRI;
+}
+
+/* Runs over the layer sh2_sega_cover() left up. */
+void sh2_sega_spin(void)
+{
+    unsigned short last[2][4] = { { 0u, 0u, 0u, 0u }, { 0u, 0u, 0u, 0u } };
+    unsigned long t0, el, prev = ~0uL;
+    unsigned int i, buf = 0u, identity = 0u, handed = 0u;
+
     t0 = sh2_vint_count;
 
     for (;;) {
@@ -1071,7 +1084,7 @@ void sh2_sega_intro(void)
     }
 
     /* The last frames were the identity: the logo sits exactly on the Genesis
-     * one, which has long finished fading in. Mode changes apply from the next
+     * one, which has been there since the layer went up. Mode changes apply from the next
      * line, so blank in V Blank rather than mid-picture. */
     fb_wait_vblank();
     VDP_BITMAP = MODE_BLANK;
