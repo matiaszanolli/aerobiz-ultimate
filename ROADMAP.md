@@ -14,14 +14,30 @@ work is complete.
 
 ---
 
-## State of play, 2026-09-12
+## State of play, 2026-09-15
 
 **Done and shipping.** The game runs on the 32X, the Genesis ROM is still
 byte-identical, and the SH2 runs C that is part of the shipping cartridge. The
 world map is on the 32X layer, built from the ROM rather than a savestate, and
 **it scales** -- U-035, the flagship effect, is measured and working.
 
-**What the measurements changed.** Six findings redirected the plan, and every
+**New since 2026-09-12, all in the shipping cartridge:**
+
+- **The boot has a 32X face.** The SEGA logo spins and zooms in on the 32X
+  layer and lands on the Genesis logo with a pixel-identical hand-off -- the
+  first shipping use of the layer and of U-037's affine renderer.
+- **The obsolete licensing screens are gone** from the 32X boot -- the KOEI
+  banners and the 20 aircraft trademark notices -- and the title arrives 26.8 s
+  sooner. They return later as a two-screen credits sequence under U-061.
+- **41 data values that rebasing had mistaken for pointers are restored**:
+  among them the green SEGA background, the damaged SEGA logo, the intro
+  palette, the new-game defaults and two route-screen index tables. U-014
+  audits the rest.
+- **Two control builds** for isolating a suspect: `make 32x-nolz`
+  (decompression left on the 68000) and `make 32x-licensing` (the original
+  boot, for lockstep comparison with the Genesis).
+
+**What the measurements changed.** Eight findings redirected the plan, and every
 one contradicted something this roadmap previously asserted:
 
 | Finding | What it overturned |
@@ -32,14 +48,22 @@ one contradicted something this roadmap previously asserted:
 | U-035: the zoom costs (source rows) x 320 dots, so vertical scale is free and the budget is **2.13 / 1.06 / 0.53** frames per blit at 1x / 2x / 4x | The worry that scaling might not fit at all. It fits from 2x in, on the master alone |
 | U-046: decompression output goes to a **work-RAM scratch buffer**, not VRAM, and the 68000 costs **285 cycles per output byte** | Both of that item's stated premises. Transport is 2-3% of decompression, so the offload wins by a wide margin |
 | U-093: the emulator modelled no SH2 cache and no memory latency at all | The idea that any SH2 timing here was a measurement. They were instruction counts |
+| U-034/U-036: the map and the panel screens share one 32x128 plane, and the game keeps **live scratch in its off-screen rows** at fixed VRAM addresses, written through `CmdSetupDMA` with an absolute destination | That the map screen could be widened to 64 cells at one call site. U-036 is blocked, and M4 goes through the 32X frame buffer instead |
+| U-014: U-010's and U-013's rebasing passes rewrote **41 data values** as pointers -- palettes, index tables, tile pixels -- invisibly to the byte-identical check | That "the 32X build matches the Genesis" (U-013) meant rebasing was finished. It matched on the screens compared |
 
-**Critical path.** M4. **U-036's bug is found**: the game keeps live scratch in
-the plane's off-screen rows at fixed VRAM addresses, and reshaping 32x128 to
-64x64 halves the row stride so that scratch lands inside the 28 displayed rows.
-Six hypotheses eliminated before it, and the one that found it was driving the
-comparison from power-on instead of from a savestate. U-036 and U-034 stage 1
-are blocked on relocating that scratch; the 32X-frame-buffer route is not.
-Then the content questions -- U-032, U-033, U-077.
+**Critical path.** Correctness first, then M4.
+
+1. **U-014.** 1,817 rebased data values are still unaudited, and every wrong
+   one is a corruption on some screen that the byte-identical check cannot see.
+   Start by confirming the plane-selection corruption reported 2026-09-12 is
+   gone: two of the 41 were index tables behind the route screens.
+2. **M4 through the 32X frame buffer** -- U-034 stage 2. Widening the Genesis
+   plane (U-036) is blocked: `CmdSetupDMA` writes live scratch to fixed VRAM
+   addresses that a 64-cell plane displays, and the routine passing those
+   addresses is still unidentified. The frame-buffer route needs none of that,
+   and the SEGA intro has now shown the layer turned on and handed back in the
+   shipping build.
+3. Then the content questions -- U-032, U-033, U-077.
 
 **The result that reframes M8.** At 4x each map pixel is a 4x4 block: zooming
 in reveals that there is nothing to reveal. The payoff has to come from
@@ -55,8 +79,15 @@ what every existing measurement depends on. It paid for itself immediately --
 the SH2 slave had never enabled its cache, and every fetch of its idle spin was
 an 8-word SDRAM burst.
 
+Since then it has gained a **VRAM write trace** (`VRD_VRAM_TRACE`: address,
+value, 68000 PC, DMA source and callers), which named the U-036 scratch writer,
+and video capture that works at H32 and can sample every Nth frame -- before
+that fix, every Genesis-geometry frame had been silently dropped. One lesson
+came with them: **a savestate fixture scopes an equivalence test to the states
+it can reach** (KNOWN_ISSUES). Drive at least one comparison from power-on.
+
 **Honest state of the evidence.** Everything is PicoDrive; nothing has run on
-real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the seven
+real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the eight
 questions only a console can answer. What that caveat means has changed, so it
 is worth restating precisely:
 
@@ -157,6 +188,10 @@ Neither affects the decision: the map screen goes H40, where neither applies.
 
 ### U-010 -- Rewrite the safe ROM literals [DONE]
 
+**Revisited 2026-09-14.** The `dc.w`-table pass here (1,290 rewrites) also
+caught tile pixel data -- 20 values in five lines, now restored. U-014 audits
+the rest.
+
 3,001 rebased as `ROM_BASE+$xxxxxx`, in five batches, each verified
 byte-identical. `scan_rom_refs.py --rewrite` did the work, so the tool that
 finds a site is the tool that fixes it.
@@ -220,6 +255,11 @@ shifted -- which is the property the whole rebasing scheme depends on. Roughly
 `org ROM_BASE` moved on their own.
 
 ### U-013 -- Reach the title screen [DONE]
+
+**Revisited 2026-09-14.** The match held on the screens compared, not
+everywhere. The table passes here rewrote 21 data values as pointers --
+palettes, integer and index tables, and data past the end of genuine pointer
+tables -- now restored. U-014 audits the rest.
 
 **The 32X build renders identically to the Genesis build.** At frame 2550, and
 frame-for-frame through 4,500 frames driven by the same recorded input:
@@ -437,6 +477,12 @@ So the concern this paragraph raised was correct and the mitigation it assumed
 -- that 36 spare rows would be enough -- was not, because the spare rows are
 not where the data is. Widening the plane needs the scratch relocated first,
 and it lives in shared code where any change must be size-neutral.
+
+**Attributed 2026-09-12** with a VRAM write trace: the scratch that shows up is
+a single 192-byte DMA to `$EA80` issued through `CmdSetupDMA`, which takes an
+absolute VRAM destination and so cannot follow the plane. The geometry-aware
+commands (`CmdDMABatchWrite`, `CmdDMARowWrite`) move correctly. Still unknown:
+the game routine that passes `$EA80`.
 
 Worth noting plane B's nominal 128 rows already run into the sprite table at
 `$F800`, so only 96 of them are usable today. The declared plane size is
@@ -701,7 +747,7 @@ recoloured, and worth ignoring otherwise.
 extra 64 needs either map data that does not exist yet or a deliberate framing
 decision -- see U-035, where the zoom makes the question concrete.
 
-### U-037 -- Affine transform (rotate and scale) [DONE, in 32x-affine]
+### U-037 -- Affine transform (rotate and scale) [DONE, shipping in the SEGA intro]
 
 **First shipping use, 2026-09-14: the SEGA logo intro.** The logo spins and
 zooms in on the 32X layer during the boot and lands on the Genesis logo. Its
@@ -897,7 +943,8 @@ computation goes through (`mulu.w ($FFA77E).l,d0`), and the height to
 one routine comparing the width against a hard-coded 32, and it is dead code --
 no `jsr` and no longword pointer to `$0057A0` anywhere in the ROM. Every
 address computation adapts correctly. The screen just gets bigger than the
-space the game reserved behind it.
+space the game reserved behind it. The write responsible is identified under
+U-036: `CmdSetupDMA`, with an absolute destination.
 
 *And only one of the two sites matters.* Patching `GameSetup2` alone produces
 output identical to patching both, over all 600 sampled frames.
@@ -1425,8 +1472,14 @@ Still open:
   access while `RV = 1` stalls until it clears
   (`docs/32x-hardware-manual.md:281`). U-093 counts those. **This is a real
   interaction now, not a hypothetical**, and it is the next thing to measure.
-- The scratch region assumes the 32X layer stays blanked. M4 turns it on, and
-  the two uses of the frame buffer will have to be reconciled.
+- The scratch region assumes the 32X layer stays blanked. The SEGA intro now
+  turns the layer on in the shipping build and stays out of the way by
+  sequencing: it clears both buffers first, and its thunk waits for the SH2
+  before the boot reaches its first decompression. M4's map screen will need a
+  real reconciliation.
+- **Control build:** `make 32x-nolz` is the shipping cartridge with
+  `LZ_Decompress` left on the 68000, eight bytes different, for any "is it the
+  decompressor?" question.
 
 ### U-047 -- Fluidity in the complex UI screens [OPEN, measure before building]
 
