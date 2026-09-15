@@ -44,6 +44,26 @@ region lockout: `EarlyInit` read the cartridge header at `$0001F0`, which only
 `RV = 1` maps. PicoDrive had left that range readable even with
 `VRD_RV_EMULATION=1`. Fixed in both the game and the harness.
 
+**Its console log is not a fault report for this game.** A run prints four
+`[unusual]` lines, and retail Virtua Racing Deluxe prints the same four, word
+for word (checked 2026-09-15):
+
+- `write(0xffff8446)` / `(0xffff8447)`: the master boot ROM's SDRAM mode
+  register write at `$186`, CAS latency 2 (`docs/sh7604-hardware-manual.md`
+  :3253). Ares has no handler for the address.
+- `illegal slot instruction: 0xaffe`: a `bra` to itself, run while Ares
+  believed a branch was pending. It is not our code. The line stayed after every
+  self-branch the port can reach was rewritten as `nop; bra` (`0xAFFD`). Both
+  boot ROMs hold that instruction (master `$13C`/`$1A6`, slave `$13C`/`$18E`).
+  The exact path through Ares's recompiler was not traced.
+- `Cartridge::Banked::writeIO lower=0`: Ares logs any byte write to an even
+  address that reaches the cartridge I/O hook, and the 32X adapter forwards
+  its register writes there first. The write itself still happens.
+
+Ares prints each distinct notice once, so one line says nothing about how often
+it happened. A new line, or one that a retail game does not print, is worth
+chasing.
+
 Ares enforces FM on both CPUs, waits for the palette access window rather than
 corrupting the write, and skips zero bytes in the overwrite image. It does not
 model the frame buffer's zero-byte rule; our code writes words, so that does not
