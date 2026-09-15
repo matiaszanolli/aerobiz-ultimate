@@ -340,6 +340,27 @@ at **320x224 even when the Genesis build of the same game reports 256x224**, so
 Use `VRD_VIDEO_DUMP_EVERY` for long runs: a whole-game comparison at every
 frame is tens of gigabytes, at every 50th a few hundred megabytes.
 
+### PicoDrive shifts every 32X colour one green step while PRI is set
+
+`pico/32x/draw.c` folds the priority bit into bit 5 of its RGB565 output --
+green's lowest bit. With `PRI` = 1 every displayed 32X pixel carries it, so
+black renders as `$0020` and no 32X colour can equal a Genesis colour. Measured
+on the SEGA intro: all 71,680 pixels of an identity frame, each exactly one
+green step high and otherwise exact. Invisible to the eye; fatal to a pixel
+comparison. Where the 32X must match the Genesis exactly, clear `PRI` so the
+Genesis image is in front -- the intro does, for its hold. This is emulator
+behaviour, not a claim about hardware.
+
+### Shared definitions reach the boot half, which has no ROM_BASE
+
+`disasm/ultimate_boot.asm` includes `modules/shared/definitions.asm` without
+defining `ROM_BASE`, and vasm rejects `ifne` on an undefined symbol. A switch
+written `ifne ROM_BASE` assembles both game halves and breaks the boot half --
+and did, for three commits, because the boot half's rule did not depend on the
+file and was never rebuilt. Test `GAME_REBASED` instead: `ROM_BASE` where it is
+defined, 0 in the boot half. Verify a switch with `make clean && make all`, not
+an incremental build.
+
 ### Rebased "pointers" in ROM data that are really data
 
 Two rebasing passes (U-010's `dc.w`-table rule, U-013's table-run rule) rewrote

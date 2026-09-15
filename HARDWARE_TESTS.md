@@ -134,6 +134,28 @@ frame-buffer FIFO rather than on bus contention.
 
 ---
 
+## 8. The SEGA intro on real hardware (U-037)
+
+The one screen where the shipping build shows the 32X layer. Two questions the
+emulator cannot answer.
+
+- **Build:** `make 32x`. For comparison, `make 32x-licensing` boots without the
+  intro.
+- **Frame rate.** Under PicoDrive the SH2 drew all 127 frames and skipped none,
+  but PicoDrive models neither the SH2 cache nor SDRAM latency (item 6). Read
+  `sh2_sega_drawn` and `sh2_sega_skipped` in SDRAM after the intro; get the
+  addresses from `nm build/sh2/sh2.elf`. Skipped frames shorten the motion but
+  cannot overrun the Genesis hold.
+- **The hand-off.** When the spin stops, the Genesis logo takes the front; about
+  a quarter of a second later the layer blanks. Under emulation both steps are
+  pixel-identical. On hardware the Genesis and 32X DACs differ, so any colour
+  shift should appear at the first step -- the moment the logo stops -- and
+  nothing at the second.
+- **Pass:** smooth motion, no garbage when the layer comes on (both frame
+  buffers are cleared first), and no visible change when it blanks.
+
+---
+
 ## Notes for the session
 
 - Bring a way to read work RAM. Items 1 and 2 both want it. Without one, item 1

@@ -912,3 +912,168 @@ void fb_draw_overlay(unsigned long u0, unsigned long v0, unsigned long step,
 
     fb_draw_airports(u0, v0, step, slots);
 }
+
+/* ==========================================================================
+ * The SEGA logo intro.
+ *
+ * Runs on the SEGA screen, which is the one screen at boot already in H40, so
+ * the 32X layer can be shown under manual 3.3 without the H32 scale mismatch.
+ * The 68000 starts this and then runs the Genesis fade-in and hold behind it
+ * (disasm/32x/sega_intro.asm); the layer is opaque and in front, so only the
+ * animation is seen.
+ *
+ * Everything that is arithmetic happens at build time: tools/make_sega_logo.py
+ * decodes the logo from the ROM and stores, for every frame, the inverse affine
+ * matrix and the box it can touch. The last frames are the identity, which that
+ * script checks lands on the Genesis logo pixel for pixel. Once both buffers
+ * hold it, PRI is cleared so the Genesis logo -- the same shape in the same
+ * place -- is in front and the 32X supplies only the black around it; blanking
+ * the layer afterwards then changes nothing.
+ *
+ * Frames are chosen by V-Blank count, not by how many have been drawn: if a
+ * frame takes too long to rasterise, the intro drops frames instead of running
+ * long, and cannot overrun the Genesis hold it sits inside.
+ * ========================================================================== */
+#include "sega_logo.h"
+
+#define MODE_BLANK   0x0000u
+#define MODE_PACKED  0x0001u
+#define BM_PRI       0x0080u          /* 32X in front (manual, Bitmap Mode) */
+
+volatile unsigned long sh2_sega_drawn;
+volatile unsigned long sh2_sega_skipped;
+volatile unsigned long sh2_sega_done;
+
+static void fb_wait_display(void)
+{
+    while ((VDP_FBCTL & FBCTL_VBLK) != 0u) { }
+}
+
+/* Identity line table and every pixel index 0, in words: a byte write cannot
+ * store zero (KNOWN_ISSUES). */
+static void sega_clear_buffer(void)
+{
+    unsigned int y, w;
+
+    for (y = 0u; y < LINE_TABLE_WORDS; y++) {
+        unsigned int s = (y < VISIBLE_LINES) ? y : (VISIBLE_LINES - 1u);
+        FRAMEBUFFER[y] = (unsigned short)(LINE_TABLE_WORDS + s * WORDS_PER_LINE);
+    }
+    for (y = 0u; y < VISIBLE_LINES; y++) {
+        volatile unsigned short *row = FRAMEBUFFER + LINE_TABLE_WORDS + y * WORDS_PER_LINE;
+        for (w = 0u; w < WORDS_PER_LINE; w++)
+            row[w] = 0u;
+    }
+}
+
+static void sega_clear_box(const unsigned short *b)
+{
+    unsigned int y, w;
+
+    for (y = b[1]; y < b[3]; y++) {
+        volatile unsigned short *row = FRAMEBUFFER + LINE_TABLE_WORDS + y * WORDS_PER_LINE;
+        for (w = b[0] >> 1; w < (unsigned int)(b[2] >> 1); w++)
+            row[w] = 0u;
+    }
+}
+
+static void sega_draw(unsigned int f)
+{
+    const unsigned short *b = sega_box[f];
+    const long *m = sega_anim[f];
+    long ul = m[0], vl = m[1];
+    unsigned int y, w;
+
+    for (y = b[1]; y < b[3]; y++) {
+        volatile unsigned short *row = FRAMEBUFFER + LINE_TABLE_WORDS + y * WORDS_PER_LINE;
+        long u = ul, v = vl;
+
+        for (w = b[0] >> 1; w < (unsigned int)(b[2] >> 1); w++) {
+            unsigned int hi, lo, su, sv;
+
+            su = (unsigned int)(u >> 16); sv = (unsigned int)(v >> 16);
+            hi = (su < SEGA_W && sv < SEGA_H) ? sega_logo[sv * SEGA_W + su] : 0u;
+            u += m[2]; v += m[3];
+
+            su = (unsigned int)(u >> 16); sv = (unsigned int)(v >> 16);
+            lo = (su < SEGA_W && sv < SEGA_H) ? sega_logo[sv * SEGA_W + su] : 0u;
+            u += m[2]; v += m[3];
+
+            row[w] = (unsigned short)((hi << 8) | lo);
+        }
+        ul += m[4]; vl += m[5];
+    }
+}
+
+void sh2_sega_intro(void)
+{
+    unsigned short last[2][4] = { { 0u, 0u, 0u, 0u }, { 0u, 0u, 0u, 0u } };
+    unsigned long t0, el, prev = ~0uL;
+    unsigned int i, buf = 0u, identity = 0u, handed = 0u;
+
+    sh2_sega_drawn = 0uL;
+    sh2_sega_skipped = 0uL;
+    sh2_sega_done = 0uL;
+
+    /* The palette is always accessible while the layer is blank (manual :1067),
+     * so load it before any mode that restricts it to the blanking periods. */
+    VDP_BITMAP = MODE_BLANK;
+    for (i = 0u; i < 16u; i++)
+        PALETTE[i] = sega_pal[i];
+
+    /* Both buffers black before the layer is shown, so nothing stale -- the LZ
+     * offload uses the frame buffer as scratch -- can flash up. */
+    for (i = 0u; i < 2u; i++) {
+        fb_wait_vblank();
+        sega_clear_buffer();
+        VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
+        fb_wait_vblank();
+        fb_wait_display();
+    }
+
+    fb_wait_vblank();
+    VDP_BITMAP = MODE_PACKED | BM_PRI;
+    t0 = sh2_vint_count;
+
+    for (;;) {
+        el = sh2_vint_count - t0;
+        if (el >= SEGA_FRAMES)
+            break;
+        if (prev != ~0uL && el > prev + 1uL)
+            sh2_sega_skipped += el - prev - 1uL;
+        prev = el;
+
+        sega_clear_box(last[buf]);
+        sega_draw((unsigned int)el);
+        for (i = 0u; i < 4u; i++)
+            last[buf][i] = sega_box[el][i];
+        sh2_sega_drawn++;
+        if (el >= SEGA_IDENTITY)
+            identity++;
+
+        /* Written during display, FS takes effect at the next V Blank; touch
+         * the frame buffer again only after it has (manual :1059-1061). */
+        VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
+        fb_wait_vblank();
+
+        /* Both buffers now hold the identity frame: hand the front to the
+         * Genesis logo, in V Blank.  Measured reason: with PRI set, PicoDrive
+         * carries the priority bit in the green LSB of every 32X pixel, so no
+         * 32X colour can equal a Genesis one while the 32X is in front.  On
+         * hardware it also moves the logo to the Genesis DAC before the layer
+         * goes, so any DAC difference is not what the eye sees at the switch. */
+        if (identity >= 2u && !handed) {
+            VDP_BITMAP = MODE_PACKED;
+            handed = 1u;
+        }
+        fb_wait_display();
+        buf ^= 1u;
+    }
+
+    /* The last frames were the identity: the logo sits exactly on the Genesis
+     * one, which has long finished fading in. Mode changes apply from the next
+     * line, so blank in V Blank rather than mid-picture. */
+    fb_wait_vblank();
+    VDP_BITMAP = MODE_BLANK;
+    sh2_sega_done = 1uL;
+}

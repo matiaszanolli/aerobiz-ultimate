@@ -63,13 +63,17 @@ SHARED_SRCS  = $(wildcard $(DISASM_DIR)/sections/*.asm) \
 GENESIS_SRC  = $(DISASM_DIR)/aerobiz.asm
 BOOT_SRC     = $(DISASM_DIR)/ultimate_boot.asm
 # ultimate_boot.asm pulls these in; without listing them a change to the header
-# or to MdMain would not trigger a rebuild.
+# or to MdMain would not trigger a rebuild.  That includes the shared
+# definitions: missing them left a boot half that no longer assembled
+# undetected for three commits.
 BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
                $(DISASM_DIR)/32x/dma_stub.asm \
                $(DISASM_DIR)/32x/rv_probe.asm \
                $(DISASM_DIR)/32x/sh2_probe.asm \
                $(DISASM_DIR)/32x/lz_probe.asm \
-               $(DISASM_DIR)/32x/sh2_lz.asm
+               $(DISASM_DIR)/32x/sh2_lz.asm \
+               $(DISASM_DIR)/32x/sega_intro.asm \
+               $(wildcard $(DISASM_DIR)/modules/shared/*.asm)
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
 SH2_CSRCS    = $(DISASM_DIR)/sh2/master/rpc.c $(DISASM_DIR)/sh2/master/fb.c \
@@ -255,6 +259,14 @@ $(BUILD_DIR)/timing_config.h: FORCE | $(BUILD_DIR)
 
 $(BUILD_DIR)/sh2/master/timing_test.o: $(BUILD_DIR)/timing_config.h
 $(BUILD_DIR)/sh2/master/lz.o: $(BUILD_DIR)/timing_config.h
+
+# The SEGA intro asset: the logo, its palette and every frame's affine matrix,
+# decoded and precomputed from the ROM -- no capture involved. The generator
+# also checks that the final frame lands on the Genesis logo pixel for pixel.
+$(BUILD_DIR)/sega_logo.h: $(GENESIS_ROM) tools/make_sega_logo.py | $(BUILD_DIR)
+	@$(PYTHON) tools/make_sega_logo.py $(GENESIS_ROM) $@
+
+$(BUILD_DIR)/sh2/master/fb.o: $(BUILD_DIR)/sega_logo.h
 
 32x-timingtest: $(BUILD_DIR)/aerobiz-ultimate-timingtest.32x
 

@@ -183,6 +183,7 @@ MARS_DMA_THUNK      equ $00880900   ; cartridge $000900 via the fixed window
 ; fixed address.  Keep in step with the pad in md_main.asm.
 MARS_SH2_UDIV       equ $00880A00   ; cartridge $000A00 via the fixed window
 MARS_SH2_LZ         equ $00880B00   ; cartridge $000B00 via the fixed window
+MARS_SEGA_INTRO     equ $00880C00   ; cartridge $000C00 via the fixed window
 
 ; Scratch region of the 32X frame buffer used to hand decompressed bytes back
 ; to the 68000.  Past the 256-word line table plus 224 lines of 320 pixels
@@ -208,4 +209,5 @@ MARS_SH2_CMD_TIMING equ $0006
 MARS_SH2_CMD_LZ     equ $0007
 MARS_SH2_CMD_LZ_JOB equ $0008
 MARS_SH2_CMD_AFFINE equ $0009
+MARS_SH2_CMD_SEGA   equ $000A
 MARS_STOCK_TRIGGER  equ $00FFF000   ; the game's own 10-byte RAM trigger stub

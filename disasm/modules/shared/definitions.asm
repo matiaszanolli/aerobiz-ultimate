@@ -97,6 +97,20 @@ STACK_TOP           equ $00000000      ; Placeholder -- set from vector table
 ; DMA:         Set regs 19-23, then write VRAM/CRAM/VSRAM address with DMA bit
 
 ; ============================================================================
+; Build switches
+; ============================================================================
+; The switches below describe the game half.  Both game targets define ROM_BASE
+; before including this file -- 0 for the Genesis, $900000 for the 32X -- but
+; the 32X boot half includes it too and does not, and vasm refuses `ifne` on an
+; undefined symbol.  GAME_REBASED is ROM_BASE where it exists and 0 where it
+; does not, so every switch is simply off in the boot half.
+    ifd ROM_BASE
+GAME_REBASED        equ ROM_BASE
+    else
+GAME_REBASED        equ 0
+    endif
+
+; ============================================================================
 ; SH2 LZ offload (U-046)
 ; ============================================================================
 ; On the 32X, LZ_Decompress hands the whole job to the SH2 -- eight bytes for
@@ -104,7 +118,7 @@ STACK_TOP           equ $00000000      ; Placeholder -- set from vector table
 ; cartridge with the stock 68000 routine instead, which is the control for any
 ; "is this the decompressor?" question: the two ROMs differ in those eight bytes
 ; and nothing else.  Slower, and it should look identical.
-    ifne ROM_BASE
+    ifne GAME_REBASED
     ifd NOSH2LZ
 SH2_LZ_OFFLOAD      equ 0
     else
@@ -139,7 +153,7 @@ SH2_LZ_OFFLOAD      equ 0
 ; for any frame-for-frame comparison with the Genesis build, which a shorter
 ; boot would otherwise desynchronise, and for any input script timed against
 ; the original boot.
-    ifne ROM_BASE
+    ifne GAME_REBASED
     ifd KEEPLICENSING
 SKIP_LICENSING      equ 0
     else
@@ -147,4 +161,28 @@ SKIP_LICENSING      equ 1
     endif
     else
 SKIP_LICENSING      equ 0
+    endif
+
+; ============================================================================
+; SEGA logo intro (32X)
+; ============================================================================
+; The 32X animates the SEGA logo on its own layer during the Genesis fade-in
+; and hold, landing exactly on the Genesis logo before handing back.  The hook
+; is InitGameGraphicsMode's GameCommand #4; the thunk and the renderer are in
+; disasm/32x/sega_intro.asm and disasm/sh2/master/fb.c.
+;
+; Off under KEEPLICENSING, whose purpose is the original boot for comparison
+; with the Genesis build, and under NOSEGAINTRO, to isolate the effect.
+    ifne GAME_REBASED
+    ifd KEEPLICENSING
+SEGA_INTRO          equ 0
+    else
+    ifd NOSEGAINTRO
+SEGA_INTRO          equ 0
+    else
+SEGA_INTRO          equ 1
+    endif
+    endif
+    else
+SEGA_INTRO          equ 0
     endif

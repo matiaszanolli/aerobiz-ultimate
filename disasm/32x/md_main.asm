@@ -269,6 +269,14 @@ MarsSecurityFailed:
         dcb.b   (CART_BASE+$000B00)-*,$FF
         include "32x/sh2_lz.asm"
 
+; ---------------------------------------------------------------------------
+; The SEGA intro thunk sits at a FIXED cartridge offset ($000C00) for the same
+; reason: InitGameGraphicsMode in the game half reaches it by address.
+; MARS_SEGA_INTRO in definitions_32x.asm must match this pad.
+; ---------------------------------------------------------------------------
+        dcb.b   (CART_BASE+$000C00)-*,$FF
+        include "32x/sega_intro.asm"
+
     ifd RVPROBE
         include "32x/rv_probe.asm"
     endif

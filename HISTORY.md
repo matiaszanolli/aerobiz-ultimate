@@ -9,6 +9,79 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-14 (latest) -- the SEGA logo spins in on the 32X
+
+The 32X boot now opens with the SEGA logo drawn by the SH2: a speck that
+unwinds two turns while it zooms in, easing onto the exact position of the
+Genesis logo, then hands over without a visible change. It is the first
+shipping use of U-037's affine renderer. The Genesis ROM is byte-identical,
+and the 32X game half differs from before in one 6-byte hook.
+
+### Fitting into a screen the game owns
+
+- The SEGA screen belongs to `InitGameGraphicsMode`, and it is the one boot
+  screen already in H40, so showing the 32X layer over it is legal (manual 3.3)
+  with no H32 scale mismatch.
+- Measured timeline, from the 68000 PC every frame: a palette fade-in over
+  frames 19-69, a hold to 318, a cut to black at 320. Both run inside
+  `GameCommand #4`, where `InitAnimTable` busy-waits on `$36(a5)`.
+- The hook replaces that call's `pea ($0004).w / jsr (a2)` with `jsr $880C00`,
+  six bytes for six. The thunk hands FM to the SH2 and starts it, runs
+  `GameCommand #4` itself -- same stack effect, same `d0` -- then waits for the
+  SH2 before taking FM back. The boot takes exactly as long as it did.
+
+### Nothing at runtime that a script can compute first
+
+`tools/make_sega_logo.py` decodes the logo from the ROM (tiles `$001D88`, name
+table `$04771C`, palette `$0476FC`), converts the palette, and precomputes each
+frame's inverse matrix and screen box. It rasterises the final frame the way
+the SH2 does and fails the build unless that lands on the Genesis logo pixel
+for pixel. The SH2 only replays the table, indexed by V-Blank count, so slow
+rendering drops frames instead of running past the hold.
+
+### Measured
+
+- Layer on for frames 28-154: 28-138 animating with PRI set, 139-154 on the
+  identity frame with PRI clear, blank from 155.
+- The SH2 drew 127 frames and skipped none. That is PicoDrive, which is
+  optimistic about SH2 speed; HARDWARE_TESTS item 8 is the real answer.
+- Only frames 28-138 differ from the boot without the intro. Frames 139-154
+  are **pixel-identical to it with the layer still on**, and frame 154 equals
+  frame 155 across the blank.
+- Against `NOSEGAINTRO`: the title window 360/360 frames and Start, C, C 899/899
+  frames identical, and work RAM at frame 341 byte-identical.
+- The `NOSEGAINTRO` and `KEEPLICENSING` game halves equal the previous commit
+  byte for byte.
+
+### Found on the way
+
+**PicoDrive folds the priority bit into green.** With PRI set, every 32X pixel
+rendered one green step high -- black as `$0020`, white as `$EF7D` -- across all
+71,680 pixels of an identity frame, with everything else exact. No palette can
+match the Genesis while the 32X is in front, so the hold clears PRI: the
+Genesis logo goes in front and the 32X supplies only the black around it. On
+hardware that also hands the logo to the Genesis DAC before the layer goes.
+
+**The boot half had not assembled for three commits.** `SH2_LZ_OFFLOAD`
+(`c59e378`) and `SKIP_LICENSING` (`1463784`) tested `ifne ROM_BASE` in shared
+definitions that the boot half includes without defining `ROM_BASE`. Nothing
+failed because the boot half's Makefile rule did not depend on those files and
+was never rebuilt, until this change touched `md_main.asm`. The switches now
+test `GAME_REBASED`, the boot half depends on the shared definitions, and this
+change was verified from `make clean && make all` -- which ground rule 6 asks
+for, and which those commits skipped.
+
+### Believed wrong along the way
+
+- That the SEGA hold came after `InitGameGraphicsMode`. The function switches
+  back to H32 itself, so the hold had to be inside one of its calls; the PC
+  trace put it in `GameCommand #4`.
+- That matching colours would make the hand-off invisible. Under emulation
+  that is impossible while the 32X is in front; the measurement said so before
+  any palette tuning was tried.
+
+---
+
 ## 2026-09-14 (later) -- the green SEGA screen was data rebased as a pointer
 
 The intro corruption on the 32X was not the renderer, the palette code or the

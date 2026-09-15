@@ -703,6 +703,11 @@ decision -- see U-035, where the zoom makes the question concrete.
 
 ### U-037 -- Affine transform (rotate and scale) [DONE, in 32x-affine]
 
+**First shipping use, 2026-09-14: the SEGA logo intro.** The logo spins and
+zooms in on the 32X layer during the boot and lands on the Genesis logo. Its
+matrices are precomputed by `tools/make_sega_logo.py`, so the shipping renderer
+does no trigonometry; see HISTORY 2026-09-14 (latest) and HARDWARE_TESTS item 8.
+
 Prompted by the observation that many 32X games open with a transformed SEGA
 logo, and worth having as a capability check in its own right: U-035's scaler
 is axis-aligned, so nothing had ever exercised rotation.
