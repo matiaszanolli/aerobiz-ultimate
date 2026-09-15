@@ -48,6 +48,10 @@ again at `RV = 1`.
   operands below `$8000` finds only the two `EarlyInit` sites; every other hit is
   a constant. `tools/scan_rom_refs.py` could not have found them, since it
   ignores values below `$200`.
+- **The SEGA intro on Ares:** with the fix, the game boots past the region check
+  and the logo spin plays smoothly -- judged by eye, "the smoothest spin ever
+  seen in a 32X". It is the first run of U-037's affine renderer outside
+  PicoDrive. HARDWARE_TESTS item 8 records what this does and does not settle.
 
 ---
 

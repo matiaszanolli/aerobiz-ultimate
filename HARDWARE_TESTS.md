@@ -216,6 +216,12 @@ emulator cannot answer.
   derived from that DAC table would shrink the step; under PicoDrive the hold
   frames would stay pixel-identical either way, because they show the Genesis
   logo.
+- **Ares result (2026-09-15, by eye, `d9716bf`):** smooth motion -- "the
+  smoothest spin ever seen in a 32X". That passes smoothness on an independent
+  SH2 and VDP running the real BIOS. It does not settle the frame rate on
+  hardware, since Ares charges no wait states for frame-buffer writes (Ares
+  table, row 6). The layer-on and the hand-off colour step were not reported
+  separately.
 
 ---
 
