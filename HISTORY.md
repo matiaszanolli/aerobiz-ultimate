@@ -9,6 +9,50 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-15 -- Ares as the hardware stand-in, and the boot ROM answers a question
+
+No real 32X is available, so Ares v148 stands in for the eight questions in
+HARDWARE_TESTS. Before trusting it, its source was read question by question.
+The result is in HARDWARE_TESTS; the short version:
+
+- **What Ares can close:** whether the game boots and plays (2), H40 layer
+  registration (5), and the SEGA intro's smoothness (8). It runs the real BIOS
+  -- its bundled boot ROMs are byte-identical to our dumps.
+- **What it only seconds:** `RV` (1) is the manual's model again. The H32
+  backdrop (3) and offset (4) are its authors' models -- it applies 13/4 pixels
+  where PicoDrive applies 4.
+- **What it cannot do:** SH2 bus timing (it models the cache and charges 12
+  clocks per miss, but no wait states for the cartridge, frame buffer or
+  palette), bus contention, and anything scripted -- its GDB server serves only
+  the N64.
+
+### The boot ROM answers one question outright
+
+Both SH2 boot ROMs write `0` to `SBYCR` and then `$11` to `CCR` -- purge and
+enable -- at master `$1B4-$1BE` and slave `$198-$1A2`, with one reference to
+`CCR` each. So the boot ROM does leave the cache on, on both CPUs.
+
+### Believed wrong
+
+**That the SH2 slave had never enabled its cache.** U-093 measured zero cached
+slave accesses until `slave_start` wrote `CCR`, and recorded it as the slave's
+idle spin paying an 8-word SDRAM burst per fetch, a 295x bus saving once fixed.
+The real boot ROM had already enabled it. The observation holds for the
+emulated boot -- PicoDrive has an HLE path for when no BIOS is loaded, which
+skips that write -- but which path the run took is not yet confirmed, and the
+saving is not a hardware result. Enabling the cache explicitly is still
+correct.
+
+### On Ares, expect a colour step at the intro hand-off
+
+Ares converts Genesis colour through a nonlinear DAC table and 32X colour
+linearly. The intro's palette matches PicoDrive's Genesis levels, so on Ares
+the white and brightest blue should brighten by about 17/255 as the Genesis logo
+takes the front. A palette derived from that table would shrink it without
+touching the PicoDrive hand-off proof.
+
+---
+
 ## 2026-09-14 (latest) -- the SEGA logo spins in on the 32X
 
 The 32X boot now opens with the SEGA logo drawn by the SH2: a speck that

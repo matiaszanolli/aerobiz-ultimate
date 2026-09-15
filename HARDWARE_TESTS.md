@@ -9,6 +9,43 @@ confirmations.
 
 ---
 
+## Ares as the stand-in (2026-09-15)
+
+No real 32X is available for these tests. **Ares v148** (flatpak `dev.ares.ares`)
+stands in for it, so its source was read for each question below to establish
+what it can actually settle. An emulator agreeing with PicoDrive is a second,
+independent implementation; it is evidence about hardware only where it models
+something from its own research rather than from the same manuals.
+
+Facts that apply to every item:
+
+- **It runs Sega's real boot code.** Ares's bundled `sh2.boot.mrom`,
+  `sh2.boot.srom` and `vector.rom` are byte-identical to the BIOS dumps in
+  `../32x-playground/32X BIOS/` (MD5).
+- **Tests are by eye.** v148 has no input scripting or frame capture from the
+  command line, and its GDB server is wired to the N64 only. Our automated
+  comparisons stay on PicoDrive.
+- **Use `General/ForceInterpreter` for anything about timing.** The default SH2
+  recompiler bypasses the cache simulation.
+
+| # | What Ares models | Can it close the item? |
+|---|---|---|
+| 1 | The manual's model: with `RV` set the 68000 gets open bus at `$880000-$9FFFFF`, and SH2 cartridge reads stall | No -- same reading of the manual as ours. The game running on Ares validates the DMA thunk against that model |
+| 2 | An independent 68000, SH2 and VDP, on the real BIOS | **Yes** |
+| 3 | The Mega Drive backdrop is transparent to the 32X layer in H32 and H40 alike | Second opinion only |
+| 4 | A 13-subpixel offset in H32 -- "approx 3 and 1/4 pixel offset in H40 pixels" -- where PicoDrive applies 4 | Second opinion, and the two emulators disagree |
+| 5 | No offset in H40; the 32X layer always spans 320 pixels | **Yes**, as far as emulation can |
+| 6 | The SH7604 cache for real (4 ways, 64 entries, LRU; **12 clocks per miss**), but **no wait states** for cache-through regions -- cartridge, frame buffer, palette | Partly. More realistic than PicoDrive for SDRAM work, still optimistic for frame-buffer work; our `VRD_SH2_TIMING` model charges every region |
+| 7 | No SH2 bus timing, no bus contention | Longword question: no. Boot-ROM cache question: **answered from the BIOS itself** -- see item 7 |
+| 8 | Colour: Mega Drive through a nonlinear DAC table (`0, 52, 87, 116, 144, 172, 206, 255`), 32X linearly; priority never alters a colour | Smoothness and a clean layer-on: **yes**. Frame rate: optimistic, as item 6. Hand-off colour: see item 8 |
+
+Ares enforces FM on both CPUs, waits for the palette access window rather than
+corrupting the write, and skips zero bytes in the overwrite image. It does not
+model the frame buffer's zero-byte rule; our code writes words, so that does not
+matter here.
+
+---
+
 ## 1. Does `$880000-$9FFFFF` survive `RV = 1`? (PORT_ARCHITECTURE §5.3)
 
 The one that matters. The DMA thunk is built around the answer, and PicoDrive
@@ -113,11 +150,21 @@ these behaviours *documented and self-consistent*, which is not the same as
   regardless. If it is really two, longword-heavy SH2 code is more expensive
   than every number we have. Test: a loop of N longword frame-buffer reads
   against a loop of 2N word reads; equal time means one cycle each.
-- **Does the boot ROM actually leave the cache on?** Manual :1359 says the boot
-  flow ends with "Cache Clear / Cache ON", but nothing observable confirms it
-  and PicoDrive cannot: it models no cache. Both our SH2s now enable it
-  explicitly, so this is only a question about what *would* have happened.
-  Test: read `CCR` at `$FFFFFE92` before our own write.
+- ~~**Does the boot ROM actually leave the cache on?**~~ **Answered 2026-09-15,
+  from the BIOS dumps themselves.** Both SH2 boot ROMs run the same sequence:
+  master at `$1B4-$1BE`, slave at `$198-$1A2`, write `0` to `SBYCR`
+  (`$FFFFFE91`) and then **`$11` to `CCR`** (`$FFFFFE92`) -- `CP`, purge, and
+  `CE`, enable (`docs/sh7604-hardware-manual.md:3563`, `:6089`). The `CCR`
+  literal is referenced once in each ROM, so nothing later turns it off. Yes,
+  on both CPUs.
+
+  That puts U-093's finding in doubt. The timing model saw **zero** cached
+  accesses on the slave until our `slave_start` wrote `CCR`, and HISTORY reads
+  that as the slave never having enabled its cache. With the real BIOS it had.
+  PicoDrive has an HLE boot path for when no BIOS is loaded (`pico/32x/32x.c`),
+  which would skip the write; which path that run took is not yet confirmed.
+  Our code enables the cache explicitly either way, so the shipping build is
+  unaffected -- the claimed bus saving on hardware is what is in doubt.
 - **Does `$880000-$9FFFFF` really stop responding while `RV = 1`?** This is
   PORT_ARCHITECTURE §5.3, open since U-020. The manual implies it
   (`docs/32x-hardware-manual.md:237-238` presents the two windows as
@@ -153,6 +200,14 @@ emulator cannot answer.
   nothing at the second.
 - **Pass:** smooth motion, no garbage when the layer comes on (both frame
   buffers are cleared first), and no visible change when it blanks.
+- **On Ares, expect a small colour step at the hand-off.** The intro's palette
+  matches PicoDrive's Genesis levels. Ares converts Genesis colour through a
+  nonlinear DAC table and 32X colour linearly, so level 7 is 255 on the Genesis
+  and about 238 from the 32X palette: the white and brightest blue should
+  brighten by roughly 17/255 as the Genesis logo takes the front. A palette
+  derived from that DAC table would shrink the step; under PicoDrive the hold
+  frames would stay pixel-identical either way, because they show the Genesis
+  logo.
 
 ---
 

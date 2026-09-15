@@ -456,8 +456,10 @@ and what a pass looks like.
    This is not a reason to distrust the *shape* of a result -- U-035's cost
    being exactly linear in rasterized rows is a structural fact, not a timing
    one -- but absolute frame budgets are provisional until HARDWARE_TESTS item
-   6. `master_start` now enables the cache explicitly rather than trusting the
-   boot ROM to have done it, since the emulator cannot tell us either way.
+   6. `master_start` and `slave_start` enable the cache explicitly. The boot
+   ROM does too -- both SH2 boot ROMs write `CCR = $11`, purge and enable,
+   as read from the BIOS dumps on 2026-09-15 (HARDWARE_TESTS item 7) -- so the
+   explicit write is a belt-and-braces measure, not a correction.
 
 6. **Where the game's off-screen plane scratch can go.** Measured 2026-09-12:
    the game keeps live data in the scroll planes past the 28 displayed rows --

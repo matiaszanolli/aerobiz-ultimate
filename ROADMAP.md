@@ -77,7 +77,9 @@ the manuals, the `RV` bit actually switching cartridge windows, and per-frame
 screen fingerprints. All of it opt-in, because the permissive behaviours are
 what every existing measurement depends on. It paid for itself immediately --
 the SH2 slave had never enabled its cache, and every fetch of its idle spin was
-an 8-word SDRAM burst.
+an 8-word SDRAM burst. (Under PicoDrive's boot, at least: the real boot ROM
+writes `CCR = $11` on both CPUs, so that saving is not a hardware result --
+HARDWARE_TESTS item 7.)
 
 Since then it has gained a **VRAM write trace** (`VRD_VRAM_TRACE`: address,
 value, 68000 PC, DMA source and callers), which named the U-036 scratch writer,
@@ -88,7 +90,11 @@ it can reach** (KNOWN_ISSUES). Drive at least one comparison from power-on.
 
 **Honest state of the evidence.** Everything is PicoDrive; nothing has run on
 real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the eight
-questions only a console can answer. What that caveat means has changed, so it
+questions only a console can answer. No console is available, so **Ares v148
+stands in**: its source was audited per question, and it can close three of
+them (boot and play, H40 registration, the intro's smoothness), second two more,
+and not reach the timing questions. The real boot ROM, which Ares runs, has
+already answered whether the cache is left on. What that caveat means has changed, so it
 is worth restating precisely:
 
 - **SH2 timings are now modelled and validated against the manuals** --
