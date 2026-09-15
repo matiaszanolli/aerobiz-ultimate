@@ -1761,7 +1761,9 @@
     dc.l    ROM_BASE+$076C9E    ; $076D2A
     dc.l    ROM_BASE+$076CBE    ; $076D2E
     dc.l    ROM_BASE+$076CDE    ; $076D32
-    dc.l    ROM_BASE+$000200    ; $076D36
+; Words, not a pointer: $077016 points here and RunIntroLoop passes it to DisplaySetup
+; as a 16-colour palette. U-013's table pass mis-rebased this pair.
+    dc.w    $0000,$0200    ; $076D36
     dc.w    $0200,$0400,$0400    ; $076D3A
     dc.w    $0620,$0622,$0822,$0400,$0200,$0200,$0400,$0400; $076D40
     dc.w    $0420,$0420,$0400,$0000,$0400,$0622,$0620,$0822; $076D50

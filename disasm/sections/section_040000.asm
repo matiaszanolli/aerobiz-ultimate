@@ -1929,7 +1929,9 @@ ScenarioStrPtrs:                                        ; $0475DC
     dc.l    ROM_BASE+$03E2C8    ; $0475DC
     dc.l    ROM_BASE+$03E2C6,ROM_BASE+$03E2B2,ROM_BASE+$03E28A,ROM_BASE+$03E246 ; $0475E0
     dc.l    ROM_BASE+$03E23C,ROM_BASE+$03E226,ROM_BASE+$03E1F8,ROM_BASE+$03E1AC ; $0475F0
-    dc.l    ROM_BASE+$010006    ; $047600
+; Words, not a pointer: ScenarioStrPtrs ends at $0475FF, and InitDefaultScenario copies
+; the table at $047600 with MemMove. U-013's table pass ran past the pointers into it.
+    dc.w    $0001,$0006    ; $047600
     dc.w    $0002,$0001,$0005,$0003,$0010,$0007    ; $047604
     dc.w    $0010,$0007,$0011,$0003,$0011,$0003,$0015,$0005; $047610
     dc.w    $001A,$0003,$001C,$0006,$001B,$0001,$0009,$0001; $047620
@@ -1954,14 +1956,18 @@ ScenarioDescPtrs:                                       ; $047630
     dc.w    $0012,$0013    ; $0476F0
     dc.l    ROM_BASE+$03E61C    ; $0476F4
     dc.l    ROM_BASE+$03E616    ; $0476F8
-    dc.l    ROM_BASE+$000EEE    ; $0476FC
+; Words, not a pointer: InitGameGraphicsMode passes $0476FC to DisplaySetup as a
+; 16-colour palette ($0000 black, $0EEE white). U-013's table pass mis-rebased this pair.
+    dc.w    $0000,$0EEE    ; $0476FC
     dc.w    $0EC0,$0EA0,$0E80,$0E60,$0E40,$0E20,$0E00,$0C00; $047700
     dc.w    $0A00,$0800,$0600,$0800,$0A00,$0C00    ; $047710
-    dc.l    ROM_BASE+$010002    ; $04771C
-    dc.l    ROM_BASE+$030004    ; $047720
-    dc.l    ROM_BASE+$050006    ; $047724
-    dc.l    ROM_BASE+$070008    ; $047728
-    dc.l    ROM_BASE+$09000A    ; $04772C
+; Words, not pointers: InitGameGraphicsMode reads $04771C as a 48-entry word table
+; (move.w (a0,d0.w)) of SEGA-logo tile indices. U-013's table pass mis-rebased these.
+    dc.w    $0001,$0002    ; $04771C
+    dc.w    $0003,$0004    ; $047720
+    dc.w    $0005,$0006    ; $047724
+    dc.w    $0007,$0008    ; $047728
+    dc.w    $0009,$000A    ; $04772C
     dc.w    $0030,$0031,$000C,$000D,$000E,$000F,$0010,$0011; $047730
     dc.w    $0012,$0013,$0014,$0015,$0016,$0017,$0018,$0019; $047740
     dc.w    $001A,$001B,$001C,$001D,$001E,$001F,$0020,$0021; $047750
@@ -2007,7 +2013,9 @@ DialoguePtrs:                                           ; $04777C
     dc.l    ROM_BASE+$03EDDC    ; $047970
     dc.l    ROM_BASE+$03EDCE    ; $047974
     dc.l    ROM_BASE+$03EDC4    ; $047978
-    dc.l    ROM_BASE+$010002    ; $04797C
+; Words, not a pointer: RenderRouteSlotScreen reads $04797C as a word index table
+; (move.w (a0,d0.w)) into the portrait pointers at $0A1B14. U-013's table pass mis-rebased this pair.
+    dc.w    $0001,$0002    ; $04797C
     dc.w    $0000    ; $047980
     dc.l    ROM_BASE+$03F1A0    ; $047982
     dc.l    ROM_BASE+$03F182    ; $047986
@@ -2224,7 +2232,9 @@ EventNamePtrs:                                          ; $047D7C
     dc.w    $0002,$0003,$0004,$0005,$0006,$0007,$0008,$0009; $0482B0
     dc.w    $000A,$000B,$000B,$000B,$000C,$000D,$000E,$000F; $0482C0
     dc.w    $0010,$0011    ; $0482D0
-    dc.l    ROM_BASE+$001000    ; $0482D4
+; Words, not a pointer: TogglePageDisplay reads $0482D4 as a word table
+; (move.w (a0,d0.l)). U-013's table pass mis-rebased this pair.
+    dc.w    $0000,$1000    ; $0482D4
 ; ============================================================================
 ; StatusMsgPtrs -- Victory/status message pointers (100 entries)
 ; 100 longword pointers | $0482D8-$048467
@@ -2416,13 +2426,15 @@ CityRouteConnections:                                   ; $048660
 ; ============================================================================
 CharBaseStats:                                          ; $048860
     dc.w    $00FF,$00FF,$00FF,$00FF    ; $048860
-    dc.l    ROM_BASE+$040004    ; $048868
-    dc.l    ROM_BASE+$080000    ; $04886C
-    dc.l    ROM_BASE+$030002    ; $048870
-    dc.l    ROM_BASE+$030002    ; $048874
-    dc.l    ROM_BASE+$020002    ; $048878
-    dc.l    ROM_BASE+$060000    ; $04887C
-    dc.l    ROM_BASE+$020002    ; $048880
+; Words, not pointers: LoadGraphicLine reads 8-byte records of four words here
+; (move.w (a0), $2/$4/$6(a2)). U-013's table pass mis-rebased these.
+    dc.w    $0004,$0004    ; $048868
+    dc.w    $0008,$0000    ; $04886C
+    dc.w    $0003,$0002    ; $048870
+    dc.w    $0003,$0002    ; $048874
+    dc.w    $0002,$0002    ; $048878
+    dc.w    $0006,$0000    ; $04887C
+    dc.w    $0002,$0002    ; $048880
     dc.w    $0007,$0005,$0002,$0002,$0006,$0000    ; $048884
     dc.w    $0002,$0002,$0007,$0005,$0004,$0004,$0008,$0000; $048890
     dc.w    $0003,$0002,$0005,$0002,$0002,$0002,$0006,$0000; $0488A0
@@ -2763,7 +2775,9 @@ FontTilemapTable:                                       ; $048F80
     dc.w    $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000; $049B20
     dc.w    $000D,$0000,$00CC,$0000,$0077,$0000,$0F77,$000C; $049B30
     dc.w    $0F77,$000D,$DF77,$0000,$0000,$0000,$0000,$0000; $049B40
-    dc.l    ROM_BASE+$00C000,ROM_BASE+$007000,ROM_BASE+$007F00,ROM_BASE+$007F0C ; $049B50
+; Tile pixels, not pointers: 4bpp data inside a graphics block, read by no code as
+; longwords. U-010's dc.w-table pass mistook the $0000,$xxxx word pairs for addresses.
+    dc.w    $0000,$C000,$0000,$7000,$0000,$7F00,$0000,$7F0C; $049B50
     dc.w    $0000,$7FDD,$0000,$0000,$0000,$0000,$0000,$0000; $049B60
     dc.w    $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000; $049B70
     dc.w    $00CB,$0DCC,$777C,$0000,$0000,$0000,$0000,$0000; $049B80
@@ -2771,7 +2785,9 @@ FontTilemapTable:                                       ; $048F80
     dc.w    $FD00,$77FF,$D000,$0000,$0000,$0000,$0000,$0000; $049BA0
     dc.w    $0000,$F700,$00DC,$FF70,$000C,$0FF7,$000D,$DCFF; $049BB0
     dc.w    $7777,$0C7C,$FFFF,$0000,$0000,$0000,$0000,$0000; $049BC0
-    dc.l    ROM_BASE+$00D000,ROM_BASE+$00CD00,ROM_BASE+$00CCD0,ROM_BASE+$007777 ; $049BD0
+; Tile pixels, not pointers: 4bpp data inside a graphics block, read by no code as
+; longwords. U-010's dc.w-table pass mistook the $0000,$xxxx word pairs for addresses.
+    dc.w    $0000,$D000,$0000,$CD00,$0000,$CCD0,$0000,$7777; $049BD0
     dc.w    $7700,$FFFF,$F77C,$0000,$0000,$0000,$FC00,$0000; $049BE0
     dc.w    $F7BD,$0BBB,$FF7C,$00CC,$7F70,$0000,$0F7C,$0000; $049BF0
     dc.w    $0DF7,$0000,$0BFF,$0000,$0000,$0000,$0000,$D000; $049C00
@@ -2779,7 +2795,9 @@ FontTilemapTable:                                       ; $048F80
     dc.w    $C700,$7CDC,$7C00,$0000,$0000,$0000,$0007,$000D; $049C20
     dc.w    $00B7,$000C,$7DD7,$0000,$DCC7,$0000,$0BCD,$CDBB; $049C30
     dc.w    $0BC7,$CC77,$CFC7,$0000,$0000,$0000,$0000,$B00D; $049C40
-    dc.l    ROM_BASE+$00DD7C,ROM_BASE+$00CCD0,ROM_BASE+$00CB00,ROM_BASE+$00CB0B ; $049C50
+; Tile pixels, not pointers: 4bpp data inside a graphics block, read by no code as
+; longwords. U-010's dc.w-table pass mistook the $0000,$xxxx word pairs for addresses.
+    dc.w    $0000,$DD7C,$0000,$CCD0,$0000,$CB00,$0000,$CB0B; $049C50
     dc.w    $BDC0,$CFC7,$7CC0,$0DDC,$7F7C,$CC77,$CF7C,$CDBB; $049C60
     dc.w    $0B7F,$0000,$0B7F,$0000,$DC7F,$000C,$7DCD,$000D; $049C70
     dc.w    $00BC,$0000,$0000,$7F7C,$DD00,$7FC7,$7CC0,$7B0B; $049C80

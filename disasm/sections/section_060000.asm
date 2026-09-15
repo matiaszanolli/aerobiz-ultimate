@@ -1412,7 +1412,9 @@
     dc.w    $0000,$A000,$0000,$FA00,$0000,$FA00,$0000,$FA00; $0657E0
     dc.w    $0000,$FA00,$0000,$2A00,$0000,$7A00,$0000,$7A00; $0657F0
     dc.w    $0000,$2900,$0000,$1000,$0000,$A000,$0000,$A000; $065800
-    dc.l    ROM_BASE+$00A000,ROM_BASE+$00FF6A,ROM_BASE+$00A889,ROM_BASE+$0081D0 ; $065810
+; Tile pixels, not pointers: 4bpp data inside a graphics block, read by no code as
+; longwords. U-010's dc.w-table pass mistook the $0000,$xxxx word pairs for addresses.
+    dc.w    $0000,$A000,$0000,$FF6A,$0000,$A889,$0000,$81D0; $065810
     dc.w    $0000,$1100,$0000,$0000,$0000,$0000,$0000,$0000; $065820
     dc.w    $0000,$0000,$0000,$0000,$0000,$0000,$0000    ; $065830
     dc.l    ROM_BASE+$04656A    ; $06583E

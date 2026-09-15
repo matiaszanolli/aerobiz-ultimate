@@ -253,6 +253,35 @@ read the code:
 
 567 pointers rebased in total, every batch byte-identical on the Genesis side.
 
+### U-014 -- Audit rebased data longwords for data mistaken as pointers [OPEN]
+
+The inverse of U-011. U-011 is constants that might be addresses; this is
+"addresses" that were really constants. U-010's `dc.w`-table pass (1,290
+rewrites) and U-013's table passes (567) produced 1,858 `dc.l ROM_BASE+$xxxxxx`
+in ROM data. On 2026-09-14, 41 of them turned out to be palettes, integer and
+index tables and tile pixels, and restoring them fixed the green SEGA screen,
+the damaged SEGA logo, the intro palette and the new-game defaults. The rest
+are unaudited. See HISTORY 2026-09-14 (later) and KNOWN_ISSUES for the
+signature and the evidence rule.
+
+1. **For each rewrite, find the code that reads it and its access width.**
+   Word or byte reads mean data. Track `lea (aN,dN),aN` and `movea.l aN,aM`
+   between the load and the read -- a first classifier that did not missed
+   real cases. Entries with no reading code need the surrounding data and the
+   upstream `../aerobiz-disasm` line to decide.
+2. **Corroborate on reachable screens.** Diff work RAM, CRAM and VRAM between
+   Genesis and `make 32x-licensing` for bytes at odd addresses carrying the
+   `+$90` signature that are not return addresses or pushed pointers.
+3. **Fix the rules in `tools/scan_rom_refs.py`**, so a re-run cannot bring
+   these back. `table_targets` must require longword access and must not walk
+   past a table's end; the `dc.w`-table rule must reject pairs whose low words
+   are pixel- or colour-shaped.
+
+**First check:** whether the plane-selection corruption from 2026-09-12 is
+gone. `$04797C` and `$05F6F2` -- word index tables behind `RenderRouteSlotScreen`
+and `InitializeRouteDisplay` -- were among the 41, and a bad index there sends a
+garbage source to the decompressor, which is what that screen looked like.
+
 ---
 
 ## M3 -- Full game on 32X, layer blank

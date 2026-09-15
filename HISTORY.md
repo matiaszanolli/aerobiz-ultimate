@@ -9,6 +9,80 @@ manual section or the tool output that backs it.
 
 ---
 
+## 2026-09-14 (later) -- the green SEGA screen was data rebased as a pointer
+
+The intro corruption on the 32X was not the renderer, the palette code or the
+emulator. A palette and a tile-index table had been rebased as if they held ROM
+addresses, and the same mistake turned up 39 more times across the ROM. All 41
+longwords are restored; the Genesis ROM is still byte-identical.
+
+### From a green pixel to a line of source
+
+- Only CRAM entry 0 differed from Genesis -- `$0000` against `$0080` -- and the
+  32X layer was blanked (bitmap mode `$8000`), so the 32X side was not involved.
+- The work-RAM palette buffers held `$0090`. The VDP keeps `0x0EEE` of a colour,
+  and `$0090 & $0EEE` is the `$0080` in CRAM.
+- Every work-RAM byte that differed was the Genesis value with its high nibble
+  set to 9, at an odd address. That is rebasing's signature: `$000Xxxxx`
+  becomes `$009Xxxxx`, and only the second byte changes.
+- The palette at `$0476FC` read `dc.l ROM_BASE+$000EEE` -- the words
+  `$0000,$0EEE`. The five damaged SEGA-logo tiles, tile row 12, every other
+  column from 14 to 22, came from the tile-index table at `$04771C`, whose
+  first five longwords were the integers 1 to 10.
+
+### Two rules misfired
+
+| Pass | Rule | Wrong here |
+|---|---|---|
+| U-010, `b1eadb5` (1,290 rewrites) | on one line: at least two pairs, every pair a ROM address, one high word, no repeated low word | 20 longwords of 4bpp tile pixels in five lines -- `$0000,$C000,$0000,$7000,...` passes every clause |
+| U-013 (567 rewrites) | a base the code loads, followed by a run of at least three even ROM-range longwords, walked forwards and backwards | 21 longwords: two palettes, integer and index tables, and data the run reached after the end of a genuine pointer table |
+
+Neither rule asks how the code reads the table, and that is the only evidence
+that separates the cases: `move.w` means data, `move.l` means a pointer.
+
+### Measured after the fix
+
+- The SEGA screen at frame 200 is **pixel-identical** to Genesis; intro CRAM at
+  frames 2400 and 3000 and the title's tile VRAM are identical too.
+- Work RAM at frame 200: 22 bytes differ, down from 29. The seven that went are
+  exactly the fixed entries. Twenty-one of the remaining 22 carry the rebase
+  signature in the stack and A5 work area, where rebased return addresses and
+  pushed ROM pointers belong.
+- A new game, driven to the skill-level screen: the first scenario-default word
+  at `$FF1480` is `$0001` on Genesis, **`$0091` on the 32X before the fix**, and
+  `$0001` after. `InitDefaultScenario` copies it from `$047600`, so every new
+  game on the 32X had started from corrupted defaults.
+- The 32X game half differs from the pre-fix build in exactly 41 bytes, one per
+  longword, and every restored run equals the Genesis ROM.
+
+### Why it matters beyond the intro
+
+- `$04797C` (`RenderRouteSlotScreen`) and `$05F6F2` (`InitializeRouteDisplay`)
+  are word index tables into pointer tables. With entry 0 at `$0091` or
+  `$0092`, the lookup reads far past the end of the pointer table and hands a
+  garbage source to the decompressor. Both are route screens -- the prime
+  suspect for the plane-selection corruption reported 2026-09-12.
+- `CharBaseStats` at `$048868` and the stat value table at `$05FDD8` feed the
+  character and stat screens.
+
+### Believed wrong along the way
+
+- That the palette came from `InitTileBuffer`'s table at `$0472CE`. It is all
+  zeros; a sweep of every rebased literal found the real one.
+- That checking `$0A1B14` cleared `RenderRouteSlotScreen` on 2026-09-12. Its
+  pointers are correctly rebased; the index table feeding them was not.
+- That shape can find these. Two neighbour heuristics and a first classifier
+  together missed 4 of the 25 candidates -- an `lea` reusing the register, and
+  the first entry of a run. Access width in the reading code found all of them.
+
+### Not done
+
+1,858 data longwords came out of those passes. 41 are now known to have been
+data; the rest are unaudited, and the scanner still accepts every shape above.
+That is U-014.
+
+---
+
 ## 2026-09-14 -- the licensing screens are gone from the 32X boot
 
 Six screens removed from the 32X build, to return later as a two-screen credits
@@ -66,7 +140,8 @@ from the loop.
   licensing, so it stayed; Start already skips it.
 - **The 32X build shows the SEGA logo on green; the Genesis build shows it on
   black.** It is in the control too, so it predates this change, and the 32X
-  frame is identical at boot and on the attract cycle. Not investigated.
+  frame is identical at boot and on the attract cycle. Explained later the same
+  day: two data tables rebased as if they were pointers -- see the entry above.
 - `GameSetup1`'s other callers, `EvaluateEventCond` and `ManagePlayerInvoice`,
   pass 0 and take the title path, which the patch does not touch.
 

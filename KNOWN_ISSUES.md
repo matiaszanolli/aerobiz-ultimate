@@ -340,6 +340,36 @@ at **320x224 even when the Genesis build of the same game reports 256x224**, so
 Use `VRD_VIDEO_DUMP_EVERY` for long runs: a whole-game comparison at every
 frame is tens of gigabytes, at every 50th a few hundred megabytes.
 
+### Rebased "pointers" in ROM data that are really data
+
+Two rebasing passes (U-010's `dc.w`-table rule, U-013's table-run rule) rewrote
+word pairs that only *look* like ROM addresses as `dc.l ROM_BASE+$xxxxxx`. The
+Genesis build cannot see it -- `ROM_BASE` is 0 there -- so this is ground rule 8
+at scale: 41 cases found on 2026-09-14, out of 1,858 rewrites.
+
+**The signature.** Compare the 32X build with Genesis (use `32x-licensing` for
+lockstep). A misfire shows as a byte at an odd address equal to the Genesis
+byte plus `$90` -- `$00` to `$90`, `$01` to `$91`. A genuinely rebased pointer
+shows exactly the same signature, so the signature tells you where to look,
+not what you found.
+
+**Shapes that fooled the passes:**
+
+- a palette line starting with black: `$0000,$0EEE`
+- integer or index pairs: `$0001,$0002`, `$0004,$0004`
+- 4bpp tile pixels with a zero word: `$0000,$C000,$0000,$7000`
+- data just past the end of a genuine pointer table, reached by the run
+
+**The evidence is the code, not the shape.** Find what reads the address and
+at what width: `move.w` or a byte read means data, `move.l` or `movea.l (…)`
+means a pointer. Shape heuristics missed 4 of 25 cases; access width found all
+of them. Watch for an `lea (aN,dN),aN` or `movea.l aN,aM` between the load and
+the read -- the table is still being indexed.
+
+**The fix.** Restore the two words as `dc.w` with a comment naming the reading
+code, then check that the 32X game half differs from the previous build in one
+byte per longword and equals the Genesis ROM at every restored run.
+
 ### The default 32X boot is about 1,600 frames shorter than the original
 
 Since 2026-09-14 the 32X build skips the KOEI banners and the aircraft

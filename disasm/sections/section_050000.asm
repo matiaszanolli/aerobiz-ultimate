@@ -766,7 +766,9 @@
     dc.w    $7000,$0707,$0000,$7000,$0000,$0000,$0000,$0000; $052F80
     dc.w    $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000; $052F90
     dc.w    $0000,$6777,$7000,$6777,$0600,$7777,$6000,$0767; $052FA0
-    dc.l    ROM_BASE+$007776,ROM_BASE+$007770,ROM_BASE+$007767,ROM_BASE+$006670 ; $052FB0
+; Tile pixels, not pointers: 4bpp data inside a graphics block, read by no code as
+; longwords. U-010's dc.w-table pass mistook the $0000,$xxxx word pairs for addresses.
+    dc.w    $0000,$7776,$0000,$7770,$0000,$7767,$0000,$6670; $052FB0
     dc.w    $0000,$0600,$0000,$6000,$0000,$0000,$0000,$0000; $052FC0
     dc.w    $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000; $052FD0
     dc.w    $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000; $052FE0
@@ -4122,7 +4124,9 @@ AircraftStatsByRegion:                                  ; $05EDD0
     dc.l    ROM_BASE+$04631C    ; $05F6E6
     dc.l    ROM_BASE+$046312    ; $05F6EA
     dc.l    ROM_BASE+$046306    ; $05F6EE
-    dc.l    ROM_BASE+$020000    ; $05F6F2
+; Words, not a pointer: InitializeRouteDisplay reads $05F6F2 as a word index table
+; (move.w (a0,d4.w)) into the pointers at $09C7E0. U-013's table pass mis-rebased this pair.
+    dc.w    $0002,$0000    ; $05F6F2
     dc.w    $0001,$0001,$0000,$0000,$0000    ; $05F6F6
     dc.w    $0001,$0000,$0009,$0001,$0000,$0001,$0002,$0000; $05F700
     dc.w    $0000,$0005,$0000,$0000,$0003,$0000,$0008,$0000; $05F710
@@ -4241,9 +4245,11 @@ AircraftStatsByRegion:                                  ; $05EDD0
     dc.w    $0200,$E3CD,$0080,$0080,$0A00,$E3B5,$0080,$0080; $05FDB0
     dc.w    $0A00,$E3BE,$0098,$0098,$0A00,$E3C7,$0080,$0098; $05FDC0
     dc.w    $0A00,$E3D0,$0098,$0000    ; $05FDD0
-    dc.l    ROM_BASE+$020004    ; $05FDD8
-    dc.l    ROM_BASE+$060008    ; $05FDDC
-    dc.l    ROM_BASE+$0B000E    ; $05FDE0
+; Words, not pointers: RenderDetailedStats reads this stat value table as words
+; (move.w (a0,d0.w) on the parallel $05FDD6). U-013's table pass mis-rebased these.
+    dc.w    $0002,$0004    ; $05FDD8
+    dc.w    $0006,$0008    ; $05FDDC
+    dc.w    $000B,$000E    ; $05FDE0
     dc.w    $0011,$0014,$0017,$001D,$0020,$0023    ; $05FDE4
     dc.w    $0026,$0029,$002C,$002F,$0032,$0038,$0040,$0000; $05FDF0
     dc.w    $0000,$0000,$0010,$0010,$0010,$0020,$0020,$0030; $05FE00
