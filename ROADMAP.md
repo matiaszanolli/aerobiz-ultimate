@@ -16,62 +16,79 @@ work is complete.
 
 ## State of play, 2026-09-15
 
-**Done and shipping.** The game runs on the 32X, the Genesis ROM is still
-byte-identical, and the SH2 runs C that is part of the shipping cartridge. The
-world map is on the 32X layer, built from the ROM rather than a savestate, and
-**it scales** -- U-035, the flagship effect, is measured and working.
+**M1, M2 and M3 are complete.** The game runs on the 32X start to finish, the
+Genesis ROM is still byte-identical, the rebasing is audited rather than
+assumed, and the SH2 runs C that is part of the shipping cartridge.
 
-**New since 2026-09-12, all in the shipping cartridge:**
+**What actually ships in `make 32x`.** This list is deliberately narrow, because
+an earlier version of this section filed the map and the zoom under "done and
+shipping" and they are neither -- they are done and *demonstrated*, in their own
+targets. The shipping cartridge hands the SH2 exactly four things:
 
-- **The boot has a 32X face.** The SEGA logo spins and zooms in on the 32X
-  layer and lands on the Genesis logo with a pixel-identical hand-off -- the
-  first shipping use of the layer and of U-037's affine renderer.
-- **The obsolete licensing screens are gone** from the 32X boot -- the KOEI
-  banners and the 20 aircraft trademark notices -- and the title arrives 26.8 s
-  sooner. They return later as a two-screen credits sequence under U-061.
-- **41 data values that rebasing had mistaken for pointers are restored**:
-  among them the green SEGA background, the damaged SEGA logo, the intro
-  palette, the new-game defaults and two route-screen index tables. U-014
-  audits the rest.
-- **Two control builds** for isolating a suspect: `make 32x-nolz`
-  (decompression left on the 68000) and `make 32x-licensing` (the original
-  boot, for lockstep comparison with the Genesis).
+| Feature | Item | State |
+|---|---|---|
+| SEGA logo spins and zooms on the 32X layer, pixel-identical hand-off to the Genesis logo | U-037 | the one shipping use of the layer |
+| LZ decompression | U-046 | active, and the measured hot path |
+| `UnsignedDivide` slow path | U-044 | wired, correct, and **never called** -- Aerobiz never divides by `>= $10000` |
+| Licensing screens skipped, title 26.8 s sooner | U-061 | returns later as a credits sequence |
 
-**What the measurements changed.** Eight findings redirected the plan, and every
+**What is built and measured but not shipping.** Each is a separate target, and
+each is waiting on U-034 to decide what the map screen looks like:
+
+| | Target |
+|---|---|
+| World map on the layer, from ROM rather than a savestate (U-031) | `make 32x-maptest` |
+| Zoom, the flagship effect (U-035), with great-circle route arcs (U-032) and airport tiering (U-077) | `make 32x-zoomtest` |
+| Affine rotate and scale as a standalone demo (U-037 -- the renderer itself does ship, inside the intro) | `make 32x-affine` |
+
+**Control builds** for isolating a suspect: `make 32x-nolz` (decompression left
+on the 68000), `make 32x-licensing` (the original boot, for lockstep comparison
+with the Genesis), `make 32x-h40` / `32x-h40map` (display mode and plane
+geometry), `make 32x-rvprobe`.
+
+**Rebasing is closed, and it was not paperwork.** U-010 and U-013 did the
+rewrites; U-011 and U-014 checked them, and both audits are now re-runnable
+tools that report a new unjudged site rather than absorbing it. The thing that
+justified the effort: two entries in U-011's class were real ROM addresses, and
+until 2026-09-15 they left **every city in the game with no airport slots**.
+
+**What the measurements changed.** Nine findings redirected the plan, and every
 one contradicted something this roadmap previously asserted:
 
 | Finding | What it overturned |
 |---|---|
 | U-045: the 68000 is idle **69.5%** of gameplay; no AI or economy routine in the top 25; the LZ decompressor alone is **11.93%** | M5's premise. It was "AI and economy on the SH2, for responsiveness"; there is no queue to shorten. Rescoped to the hot path, and M8 no longer waits on it |
-| U-003: H32 puts the Genesis and 32X layers at **1.25x different scales**, for a hardware reason (EDCLK is always the H40 clock) | §4.1 as written. The map screen must run H40, and only that screen |
+| U-003: H32 puts the Genesis and 32X layers at **1.25x different scales**, for a hardware reason (EDCLK is always the H40 clock) | §4.1 as written. The conclusion drawn -- that the map screen must run H40 -- was itself later overturned: it only applies to a Genesis overlay registering against a 32X map, and U-034 stage 2 has no overlay |
 | U-039/U-044: a comm-port round trip costs **~560 68000 cycles** flat, and the one offload that looked ideal is **never called** | The idea that per-call offload is the mechanism. Batching is |
 | U-035: the zoom costs (source rows) x 320 dots, so vertical scale is free and the budget is **2.13 / 1.06 / 0.53** frames per blit at 1x / 2x / 4x | The worry that scaling might not fit at all. It fits from 2x in, on the master alone |
 | U-046: decompression output goes to a **work-RAM scratch buffer**, not VRAM, and the 68000 costs **285 cycles per output byte** | Both of that item's stated premises. Transport is 2-3% of decompression, so the offload wins by a wide margin |
 | U-093: the emulator modelled no SH2 cache and no memory latency at all | The idea that any SH2 timing here was a measurement. They were instruction counts |
-| U-034/U-036: the map and the panel screens share one 32x128 plane, and the game keeps **live scratch in its off-screen rows** at fixed VRAM addresses, written through `CmdSetupDMA` with an absolute destination | That the map screen could be widened to 64 cells at one call site. U-036 is blocked, and M4 goes through the 32X frame buffer instead |
+| U-034/U-036: the map and the panel screens share one 32x128 plane, and the game keeps **live scratch in its off-screen rows** at fixed VRAM addresses, written through `CmdSetupDMA` with an absolute destination | That the map screen could be widened to 64 cells at one call site. U-036 is closed, and M4 goes through the 32X frame buffer instead |
 | U-014: U-010's and U-013's rebasing passes rewrote **41 data values** as pointers -- palettes, index tables, tile pixels -- invisibly to the byte-identical check | That "the 32X build matches the Genesis" (U-013) meant rebasing was finished. It matched on the screens compared |
+| U-011: two `move.l #imm` entries in the "review" backlog were ROM table pointers, and every city in the game had **no airport slots** until they were rebased | That the review class was paperwork to be got through. It was a list of suspects, and it was holding a bug that only playing the game could find |
 
-**Critical path.** The correctness work is done; M4 is next.
+**Critical path.** Correctness is closed (M2), so the whole of it is now M4:
+getting the map that already works in `32x-zoomtest` into the shipping game.
 
-1. ~~**U-014 and U-011.**~~ **Both closed, 2026-09-15, and neither was
-   paperwork.** U-011's review class had already shipped a game-breaking bug --
-   two `move.l #imm` entries were real ROM addresses and left every city without
-   airport slots. All 899 sites are now judged, evidence in
-   `analysis/ROM_REF_VERDICTS.tsv`. U-014's 1,817 rebased data longwords are
-   audited by code rather than by shape: 551 references, every one a longword
-   read, **zero defects**, plus an outlier sweep over all 1,807 entries in runs
-   of five or more that flagged one, which resolved as legitimate. Both audits
-   are re-runnable (`scan_rom_refs.py`, `tools/audit_pointer_runs.py`) and both
-   are tripwires now -- a new unjudged site is reported rather than absorbed.
-   What is left is tool hardening, not audit: `table_targets` still needs the
-   longword-access and end-of-table rules from U-014 step 3.
-2. **M4 through the 32X frame buffer** -- U-034 stage 2. Widening the Genesis
-   plane (U-036) is blocked: `CmdSetupDMA` writes live scratch to fixed VRAM
-   addresses that a 64-cell plane displays, and the routine passing those
-   addresses is still unidentified. The frame-buffer route needs none of that,
-   and the SEGA intro has now shown the layer turned on and handed back in the
-   shipping build.
-3. Then the content questions -- U-032, U-033, U-077.
+1. **U-034 stage 2 -- the map screen through the 32X frame buffer.** Turn the
+   layer on for that screen at `PRI = 0`, blank the Genesis map tiles, keep the
+   Genesis chrome in front. The SEGA intro has already shown the layer turned on
+   and handed back cleanly in the shipping build, which is the part that used to
+   be unproven. Two things land here: the 64 transparent columns stop being a
+   defect and become the point, and **U-046's frame-buffer scratch at `$012000`
+   collides with a live layer** and has to move or be interlocked.
+   Widening the Genesis plane instead (U-036) stays blocked, and it is not a
+   prerequisite: `CmdSetupDMA` writes live scratch to fixed VRAM addresses that
+   a 64-cell plane would display, and the routine passing those addresses is
+   still unidentified.
+2. **U-034 stage 3 -- replace the hit test** with city-proximity in map space,
+   shared with U-081. The current one resolves a screen rectangle to one of
+   seven subcontinents, and every rectangle is invalidated the moment the map
+   can zoom or pan.
+3. **U-033**, per-pixel aircraft animation, the last open renderer item. It
+   wants the same sprite pipeline as U-038, so decide them together.
+
+Then M8, whose dependency is this and not M5.
 
 **The result that reframes M8.** At 4x each map pixel is a 4x4 block: zooming
 in reveals that there is nothing to reveal. The payoff has to come from
@@ -96,14 +113,28 @@ that fix, every Genesis-geometry frame had been silently dropped. One lesson
 came with them: **a savestate fixture scopes an equivalence test to the states
 it can reach** (KNOWN_ISSUES). Drive at least one comparison from power-on.
 
-**Honest state of the evidence.** Everything is PicoDrive; nothing has run on
-real hardware -- see [HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the eight
-questions only a console can answer. No console is available, so **Ares v148
-stands in**: its source was audited per question, and it can close three of
-them (boot and play, H40 registration, the intro's smoothness), second two more,
-and not reach the timing questions. The real boot ROM, which Ares runs, has
-already answered whether the cache is left on. What that caveat means has changed, so it
-is worth restating precisely:
+**Honest state of the evidence.** Nothing has run on real hardware -- see
+[HARDWARE_TESTS.md](HARDWARE_TESTS.md) for the eight questions only a console
+can answer. No console is available, so **Ares v148 stands in**, and as of
+2026-09-15 it is no longer a prospective stand-in: the game boots and plays
+there, a route was opened and flown, and the intro is smooth (items 2 and 8).
+
+**Ares has earned its place as a second instrument, not just a second opinion.**
+Three things came out of it that PicoDrive could not have produced:
+
+- **The region lockout.** Ares enforces the `RV` cartridge map, so `EarlyInit`'s
+  header read at `$0001F0` found nothing and the game stopped on its own
+  lockout screen. PicoDrive was permissive and had hidden this; the fix went in,
+  and then into PicoDrive as `VRD_RV_EMULATION`.
+- **The airport-slot bug.** Its Memory tool exports 68000 work RAM to a file,
+  and diffing that against the same export from retail Aerobiz Supersonic is
+  what turned "somewhere in 1,817 unaudited values" into two instructions.
+  Nothing else available could do it: the byte-identical check is blind here by
+  construction, and Ares's GDB server has no memory hooks outside the N64.
+- **The four `[unusual]` console notices are not ours.** Retail Virtua Racing
+  Deluxe prints the same four, so they come from the BIOS and from Ares.
+
+Caveats on the emulator evidence, restated precisely:
 
 - **SH2 timings are now modelled and validated against the manuals** --
   `VRD_SH2_TIMING=1` on the interpreter core, exact to the cycle over a million
@@ -122,7 +153,7 @@ is worth restating precisely:
 
 ---
 
-## M1 -- Adapter bring-up
+## M1 -- Adapter bring-up [COMPLETE]
 
 ### U-001 -- Verify the milestone-1 cartridge actually boots [DONE]
 
@@ -198,13 +229,27 @@ Neither affects the decision: the map screen goes H40, where neither applies.
 
 ---
 
-## M2 -- Rebase the game to $900000
+## M2 -- Rebase the game to $900000 [COMPLETE]
+
+Complete means **rewritten and audited**, which are different things and were
+separated by three days and two real bugs. U-010 and U-013 did the rewrites on
+shape; U-011 and U-014 checked them against what the code does. Both audits
+survive as tripwires rather than as one-off sweeps:
+
+| Command | Answers |
+|---|---|
+| `tools/scan_rom_refs.py` | every ROM literal is rebased, or carries a verdict in `analysis/ROM_REF_VERDICTS.tsv` |
+| `tools/audit_pointer_runs.py` | every rebased pointer run in ROM data is read at longword width; exits non-zero on a defect |
+
+Run both after anything that touches address literals. `make verify` cannot see
+this class at all -- that is ground rule 8, and it is the reason the milestone
+needed an audit phase and not just a rewrite phase.
 
 ### U-010 -- Rewrite the safe ROM literals [DONE]
 
 **Revisited 2026-09-14.** The `dc.w`-table pass here (1,290 rewrites) also
-caught tile pixel data -- 20 values in five lines, now restored. U-014 audits
-the rest.
+caught tile pixel data -- 20 values in five lines, now restored. U-014 audited
+the rest and found no others.
 
 3,001 rebased as `ROM_BASE+$xxxxxx`, in five batches, each verified
 byte-identical. `scan_rom_refs.py --rewrite` did the work, so the tool that
@@ -314,7 +359,7 @@ shifted -- which is the property the whole rebasing scheme depends on. Roughly
 **Revisited 2026-09-14.** The match held on the screens compared, not
 everywhere. The table passes here rewrote 21 data values as pointers --
 palettes, integer and index tables, and data past the end of genuine pointer
-tables -- now restored. U-014 audits the rest.
+tables -- now restored. U-014 audited the rest and found no others.
 
 **The 32X build renders identically to the Genesis build.** At frame 2550, and
 frame-for-frame through 4,500 frames driven by the same recorded input:
@@ -410,9 +455,10 @@ The inverse of U-011. U-011 is constants that might be addresses; this is
 rewrites) and U-013's table passes (567) produced 1,858 `dc.l ROM_BASE+$xxxxxx`
 in ROM data. On 2026-09-14, 41 of them turned out to be palettes, integer and
 index tables and tile pixels, and restoring them fixed the green SEGA screen,
-the damaged SEGA logo, the intro palette and the new-game defaults. The rest
-are unaudited. See HISTORY 2026-09-14 (later) and KNOWN_ISSUES for the
-signature and the evidence rule.
+the damaged SEGA logo, the intro palette and the new-game defaults. **The
+remaining 1,817 were audited on 2026-09-15 and none is data** -- the result is
+at the head of this item. See HISTORY 2026-09-14 (later) and KNOWN_ISSUES for
+the signature and the evidence rule that made the first 41 findable.
 
 1. **For each rewrite, find the code that reads it and its access width.**
    Word or byte reads mean data. Track `lea (aN,dN),aN` and `movea.l aN,aM`
@@ -450,11 +496,14 @@ signature and the evidence rule.
 `RenderRouteSlotScreen` and `InitializeRouteDisplay` -- were among the 41, and a
 bad index there sends a garbage source to the decompressor, which is what that
 screen looked like. A route was opened and flown on Ares, which draws that
-screen, so those two are settled and the remaining 1,817 are not.
+screen, so those two are settled on screen as well as on paper. The remaining
+1,817 were settled later the same day by the audit at the head of this item --
+by reading the code rather than by reaching the screen, which is why it covers
+the ones no harness can get to.
 
 ---
 
-## M3 -- Full game on 32X, layer blank
+## M3 -- Full game on 32X, layer blank [COMPLETE]
 
 ### U-020 -- Implement the 32X DMA stub: `RV` window and source translation [DONE]
 
@@ -522,15 +571,41 @@ width-independent.
 
 ## M4 -- World map on the 32X layer
 
-The map is on the layer and scaling (U-030, U-031, U-035). What remains is the
-screen it lives on (U-036), the things drawn over it (U-032, U-033), and
-retiring the Genesis renderer it replaces (U-034).
+**The renderer is done; the integration is not.** The map is on the layer,
+scaling, with great-circle route arcs and tiered airports over it -- U-030,
+U-031, U-035, U-032, U-077 -- and all of it runs in `make 32x-zoomtest`. None of
+it is in `make 32x`, because nothing has yet decided what happens to the Genesis
+map screen underneath.
 
-### U-036 -- Switch the map screen to H40 [BLOCKED: the off-screen rows are live]
+So the milestone is now one item wide: **U-034**, which turns the layer on for
+that screen, blanks the Genesis tiles behind it, and replaces the hit test that
+a moving map invalidates. U-036 (widening the Genesis plane instead) is blocked
+and, as it turns out, not needed. U-033 and U-038 are the remaining renderer
+work and can follow.
 
-The gate U-003 landed on. The map screen has to run 40 tiles per line for its
-Genesis overlay to register against a 32X-drawn map; every other screen stays
-H32 with the layer blanked.
+Read the items in this order: U-034 for the plan, U-036 for why the other route
+is closed, then the rendering items for what already works.
+
+### U-036 -- Switch the map screen to H40 [CLOSED: blocked, and superseded by U-034 stage 2]
+
+**Read this item for its measurements, not for a plan.** It is kept in full
+because almost everything it established is still true and still load-bearing --
+H40 registers pixel-for-pixel, the engine handles 64-cell planes correctly, the
+plane geometry is table-driven -- but the route it proposed is closed twice
+over. It cannot be done (the map and panel screens share `GameSetup2`:87's
+plane, and at 64 cells a live tile upload lands on displayed rows), and it does
+not need to be done (drawing the map in the 32X frame buffer needs no change to
+the Genesis plane at all).
+
+The section below is also the project's best worked example of an experiment
+sabotaging itself: five hypotheses were eliminated correctly, a sixth looked
+like an engine bug, and the "corruption" turned out to be the harness's own test
+gradient showing through columns the narrower plane had been covering by
+accident.
+
+The original framing follows. The gate U-003 landed on: the map screen has to
+run 40 tiles per line for its Genesis overlay to register against a 32X-drawn
+map; every other screen stays H32 with the layer blanked.
 
 `make 32x-h40` forces H40 once per frame from the V-Blank trampoline in the
 boot half -- no shared-code change -- with the layer on underneath. It answers
@@ -828,9 +903,11 @@ since say otherwise:
 - Once the map is on the 32X layer, plane B goes blank on the Genesis side and
   its geometry stops mattering at all.
 
-So U-030 and U-031 can proceed now. U-036 is still needed before the layer
-goes live during play -- the plane A UI must fill 40 columns in H40 -- but it
-gates the *switch-on*, not the renderer.
+So U-030 and U-031 can proceed now. U-036 was thought to gate the
+*switch-on* -- the plane A UI having to fill 40 columns in H40 -- but that
+assumed a Genesis overlay registering against a 32X map. U-034 stage 2 draws
+the map in the frame buffer with the Genesis plane carrying only chrome, so
+there is nothing to register and nothing to widen.
 
 ### U-030 -- Map data path to the SH2 [DONE]
 
@@ -961,7 +1038,7 @@ Two bugs worth recording, both silent:
 Open: the demo fans from London to all 31 other majors. Wiring it to the
 player's actual routes is U-034's business, along with what happens to the
 Genesis renderer it replaces.
-### U-033 -- Per-pixel aircraft animation [OPEN]
+### U-033 -- Per-pixel aircraft animation [OPEN, decide with U-038]
 
 ### U-038 -- Aircraft scale with the map as they fly [OPEN]
 
@@ -982,7 +1059,21 @@ source sprite magnified 4x is a 4x4-blocky plane. Either accept that, matching
 the map's own pixels, or carry two or three sprite sizes and switch on the
 same threshold U-077 uses for the airport tiers. Decide it with U-033, since
 both want the same sprite pipeline.
-### U-034 -- Retire the Genesis-side map renderer [OPEN, scoped]
+
+### U-034 -- Retire the Genesis-side map renderer [OPEN -- the critical path]
+
+**The whole of M4 is now this item.** Everything that draws already works in
+`make 32x-zoomtest`; what is missing is the decision about the screen it has to
+live on. The plan, current as of 2026-09-15:
+
+1. ~~U-036, map screen only.~~ **Dropped, measured not to work** -- see the
+   staged plan at the end of this item.
+2. **Turn the layer on for the map screen**, `PRI = 0`, Genesis chrome in
+   front, Genesis map tiles blanked so the SH2 map shows through. Resolve
+   U-046's frame-buffer scratch at `$012000`, which collides with a live layer.
+3. **Replace the hit test** with city-proximity in map space, shared with U-081.
+4. **Then** delete the Genesis renderer, keeping it selectable until the two
+   can be diffed.
 
 What is being retired is larger than "the map": `LoadMapGraphics` (`$03C1B8`,
 1,252 bytes) decompresses the route and city tile sets and tiles them to VRAM,
@@ -1006,14 +1097,19 @@ rectangles, which U-032 already showed is a solved problem: the table at
 to screen is the one the rasterizer already computes. Pick the nearest city
 within a radius, scaled by the zoom.
 
-**Ordering correction.** An earlier note here said U-034 comes first and U-081
-follows. It is the other way round in one respect: **U-036 must land before
-U-034**, because the map screen has to be H40 before the layer can be shown
-under it without the 1.25x mismatch U-003 measured. The good news is that
-`SetScrollQuadrant` is already called per screen from seven sites, including
-`RunWorldMapAnimation` -- so U-036 applied to the map screen alone is a change
-at one call site, not a global one, which is exactly the scope U-003 asked for
-and the global experiment was never meant to be.
+**Ordering, twice corrected.** This paragraph first said U-034 comes before
+U-081, then that **U-036 must land before U-034** -- the map screen having to be
+H40 before the layer can show under it without U-003's 1.25x mismatch -- on the
+strength of `SetScrollQuadrant` being called per screen, so the change would be
+at one call site.
+
+**Both the premise and the conclusion turned out wrong**, and the measurements
+are below. The call site is not per screen: the map screen and the panel screens
+share the plane `GameSetup2`:87 sets, and patching `InitScrollModes` as well
+changes nothing. And the H40 requirement applies to a Genesis *overlay*
+registering against a 32X map -- put the map in the frame buffer with the
+Genesis plane carrying only chrome, and there is no overlay to register. U-036
+is neither a prerequisite nor achievable, and U-081 merges into stage 3.
 
 **Stage 1 was scoped, built, measured -- and does not work.** The findings
 below replace an earlier set in this file that were wrong, and they are kept in
@@ -1889,6 +1985,39 @@ The two budgets that *are* tight:
   (`LoadAllGameData` `$00CA3E`). More cities and more routes both grow the
   save; the slot layout has to be re-planned before, not after.
 
+### The per-city tables are built per scenario, and the middle two are interpolated
+
+Established 2026-09-15, while fixing the airport-slot bug.
+`BuildAircraftAttrTable` (`$00C68A`) fills two per-city work-RAM tables at
+startup -- `$FF1298`, 89 x 4 bytes, and `$FF8824`, 89 x 2 -- and what it does
+depends on the scenario index in `$FF0002`:
+
+| Scenario | `$FF1298` source | `$FF8824` source |
+|---|---|---|
+| 0 | copied from `$05F26A` | copied from `$05F572` |
+| 3 | copied from `$05F3CE` | copied from `$05F624` |
+| 1, 2 | **interpolated** between the two | **interpolated** between the two |
+
+`ScaleAircraftAttrValue` (`$00C860`) is the interpolation:
+`a + (b - a) * $FF0002 / 3`, clamped to 0..255, with the divisor a literal
+`moveq #$3`.
+
+*The routine names are auto-generated and say "Aircraft", but both tables are
+89 entries -- the city count, not any aircraft count.* What the `$FF8824` values
+mean field by field is not established; what is established is that when the
+table came out uniform, **no city offered any airport slots**.
+
+Three consequences for M8, none visible from the table sizes alone:
+
+- **Adding a city means growing four ROM tables, not two.** Both endpoints of
+  each interpolation have to grow together, or scenarios 1 and 2 read past the
+  end of the shorter one -- and they will read *something*, silently.
+- **Adding an era is not just a new window start.** U-074 adds scenarios, but
+  the copy paths test for exactly 0 and 3 and the divisor is a hard-coded 3, so
+  endpoints and divisor are one fixed set that a fifth scenario breaks.
+- **The loop is the `#$59` sweep in miniature** (`cmpi.w #$59,d2`), so U-070
+  covers it, and it is a good first site to convert.
+
 ### The real cost of more airports
 
 89 is not a constant anywhere. It is the literal `#$59`, compared inline at
@@ -2213,7 +2342,10 @@ Validated on the case it was built for. Stock 32X build against the H40 build,
 | Frame drift | constant **+7** |
 
 So frame 2315 in the stock build is frame 2322 in the H40 build, same screen,
-100 frames long. **This unblocks U-036.**
+100 frames long. This unblocked U-036's *investigation* -- and the investigation
+then closed U-036 rather than completing it, which is the outcome the harness
+was for: it made the controlled comparison possible, and the controlled
+comparison showed the engine was never at fault.
 
 It also reproduces a number that was previously measured by hand: the Genesis
 build against the 32X build drifts +0 to +6 frames, which is U-013's "offset by
@@ -2232,7 +2364,21 @@ depends on, and a silent shift would invalidate them.
 | `VRD_SH2_TIMING_WAIT` | `min`/`max`/`mid` within the manual's ranges, so results are quoted as a range |
 | `VRD_RV_EMULATION=1` | the `RV` bit actually switching the cartridge windows |
 | `VRD_FRAME_FINGERPRINT` | per-frame screen identity (U-092) |
-| `VRD_RAM_TRACE` | one 68000 RAM value per frame |
+| `VRD_RAM_TRACE=addr:len:path` | one 68000 RAM value per frame, without paying two debugger commands a frame |
+| `VRD_VRAM_TRACE` | every VRAM write with address, value, 68000 PC, DMA source and callers -- named the U-036 scratch writer |
+| `VRD_INPUT_SCRIPT` | recorded input; the row count must equal `max_frames` exactly or the run aborts |
+| `VRD_VIDEO_DUMP_DIR` / `_START` / `_END` / `_EVERY` | frame capture, working at H32 and able to sample every Nth frame |
+
+The frontend also takes `--debug-script <file>`: `run N`, `joypad <mask>`,
+`save <path>`, `read`, `regs`, `quit` -- which is how a build gets driven
+through the menus to a started game without a human. Button masks: 8 Start,
+256 C, 1 B, 2 A, 16/32/64/128 up/down/left/right.
+
+Savestate chunks are decoded by id (`VRD_CHUNK_*` in the frontend): 1 is the
+68000 CPU state, **2 is 68000 work RAM**, 3 VRAM, 5 CRAM, 6 VSRAM. Chunks 2, 3
+and 5 are stored **byte-swapped** -- logical byte `a` is at index `a^1` -- which
+does not disturb a hash and silently ruins anything that decodes them. That trap
+has produced wrong conclusions here twice; see KNOWN_ISSUES.
 
 Two cores are now built by `build_cores.sh`, because they cannot share an
 object tree -- the Makefile has no dependency on `use_sh2drc`, so switching it
