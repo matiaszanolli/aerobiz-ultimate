@@ -58,12 +58,12 @@ one contradicted something this roadmap previously asserted:
 | Finding | What it overturned |
 |---|---|
 | U-045: the 68000 is idle **69.5%** of gameplay; no AI or economy routine in the top 25; the LZ decompressor alone is **11.93%** | M5's premise. It was "AI and economy on the SH2, for responsiveness"; there is no queue to shorten. Rescoped to the hot path, and M8 no longer waits on it |
-| U-003: H32 puts the Genesis and 32X layers at **1.25x different scales**, for a hardware reason (EDCLK is always the H40 clock) | §4.1 as written. The conclusion drawn -- that the map screen must run H40 -- was itself later overturned: it only applies to a Genesis overlay registering against a 32X map, and U-034 stage 2 has no overlay |
+| U-003: H32 puts the Genesis and 32X layers at **1.25x different scales**, for a hardware reason (EDCLK is always the H40 clock) | §4.1 as written. The map screen must run H40 whenever the layer is on -- which manual 3.3 requires independently (`32x-hardware-manual.md:1121`: with the layer non-blank the Genesis mode must match the 32X resolution, and H32 is listed only under Blank) |
 | U-039/U-044: a comm-port round trip costs **~560 68000 cycles** flat, and the one offload that looked ideal is **never called** | The idea that per-call offload is the mechanism. Batching is |
 | U-035: the zoom costs (source rows) x 320 dots, so vertical scale is free and the budget is **2.13 / 1.06 / 0.53** frames per blit at 1x / 2x / 4x | The worry that scaling might not fit at all. It fits from 2x in, on the master alone |
 | U-046: decompression output goes to a **work-RAM scratch buffer**, not VRAM, and the 68000 costs **285 cycles per output byte** | Both of that item's stated premises. Transport is 2-3% of decompression, so the offload wins by a wide margin |
 | U-093: the emulator modelled no SH2 cache and no memory latency at all | The idea that any SH2 timing here was a measurement. They were instruction counts |
-| U-034/U-036: the map and the panel screens share one 32x128 plane, and the game keeps **live scratch in its off-screen rows** at fixed VRAM addresses, written through `CmdSetupDMA` with an absolute destination | That the map screen could be widened to 64 cells at one call site. U-036 is closed, and M4 goes through the 32X frame buffer instead |
+| U-034/U-036: the map and the panel screens share one 32x128 plane, and the game keeps **live scratch in its off-screen rows** at fixed VRAM addresses, written through `CmdSetupDMA` with an absolute destination | That the map screen could be widened to 64 cells at one call site. U-036's widening half is blocked, and M4 goes through the 32X frame buffer instead |
 | U-014: U-010's and U-013's rebasing passes rewrote **41 data values** as pointers -- palettes, index tables, tile pixels -- invisibly to the byte-identical check | That "the 32X build matches the Genesis" (U-013) meant rebasing was finished. It matched on the screens compared |
 | U-011: two `move.l #imm` entries in the "review" backlog were ROM table pointers, and every city in the game had **no airport slots** until they were rebased | That the review class was paperwork to be got through. It was a list of suspects, and it was holding a bug that only playing the game could find |
 
@@ -77,10 +77,12 @@ getting the map that already works in `32x-zoomtest` into the shipping game.
    be unproven. Two things land here: the 64 transparent columns stop being a
    defect and become the point, and **U-046's frame-buffer scratch at `$012000`
    collides with a live layer** and has to move or be interlocked.
-   Widening the Genesis plane instead (U-036) stays blocked, and it is not a
-   prerequisite: `CmdSetupDMA` writes live scratch to fixed VRAM addresses that
-   a 64-cell plane would display, and the routine passing those addresses is
-   still unidentified.
+   **The screen must be H40 while the layer is on** -- manual 3.3
+   (`32x-hardware-manual.md:1121`) lists H32 only for a blank layer. H40 alone
+   is measured to render correctly (U-036). What is blocked is U-036's other
+   half, widening the plane to 64 cells, so a 32-cell plane in H40 **repeats
+   its columns 0-63 at 256-319** and that strip has to be dealt with some other
+   way. That is the open design question of this stage.
 2. **U-034 stage 3 -- replace the hit test** with city-proximity in map space,
    shared with U-081. The current one resolves a screen rectangle to one of
    seven subcontinents, and every rectangle is invalidated the moment the map
@@ -579,23 +581,33 @@ map screen underneath.
 
 So the milestone is now one item wide: **U-034**, which turns the layer on for
 that screen, blanks the Genesis tiles behind it, and replaces the hit test that
-a moving map invalidates. U-036 (widening the Genesis plane instead) is blocked
-and, as it turns out, not needed. U-033 and U-038 are the remaining renderer
+a moving map invalidates. It still needs U-036's H40 switch -- manual 3.3
+forbids a live layer over H32 -- but not U-036's blocked 64-cell plane. U-033 and U-038 are the remaining renderer
 work and can follow.
 
 Read the items in this order: U-034 for the plan, U-036 for why the other route
 is closed, then the rendering items for what already works.
 
-### U-036 -- Switch the map screen to H40 [CLOSED: blocked, and superseded by U-034 stage 2]
+### U-036 -- Switch the map screen to H40 [H40 half: required, works. Widening half: blocked]
 
-**Read this item for its measurements, not for a plan.** It is kept in full
-because almost everything it established is still true and still load-bearing --
-H40 registers pixel-for-pixel, the engine handles 64-cell planes correctly, the
-plane geometry is table-driven -- but the route it proposed is closed twice
-over. It cannot be done (the map and panel screens share `GameSetup2`:87's
-plane, and at 64 cells a live tile upload lands on displayed rows), and it does
-not need to be done (drawing the map in the 32X frame buffer needs no change to
-the Genesis plane at all).
+**This item is two changes, and only one of them is blocked.**
+
+- **The H40 switch is required and works.** Manual 3.3
+  (`32x-hardware-manual.md:1121`) requires the Genesis mode to match the 32X
+  resolution whenever the layer is not blank, and its combinations table lists
+  H32 only under Blank. So U-034 stage 2 cannot turn the layer on without it.
+  Measured below: H40 alone renders correctly and registers pixel for pixel.
+- **Widening the plane to 64 cells is blocked.** The map and panel screens share
+  `GameSetup2`:87's plane, and at 64 cells a live tile upload lands on displayed
+  rows.
+
+Without the widening, a 32-cell plane in H40 shows its columns 0-63 again at
+256-319. That strip is what U-034 stage 2 has to solve by other means.
+
+*A correction.* On 2026-09-15 this item was marked closed on the argument that
+H40 only mattered for registering a Genesis overlay against a 32X map. That was
+wrong: the requirement is the manual's display-mode rule, not registration, and
+it applies to any screen with the layer on.
 
 The section below is also the project's best worked example of an experiment
 sabotaging itself: five hypotheses were eliminated correctly, a sixth looked
@@ -903,11 +915,9 @@ since say otherwise:
 - Once the map is on the 32X layer, plane B goes blank on the Genesis side and
   its geometry stops mattering at all.
 
-So U-030 and U-031 can proceed now. U-036 was thought to gate the
-*switch-on* -- the plane A UI having to fill 40 columns in H40 -- but that
-assumed a Genesis overlay registering against a 32X map. U-034 stage 2 draws
-the map in the frame buffer with the Genesis plane carrying only chrome, so
-there is nothing to register and nothing to widen.
+So U-030 and U-031 can proceed now. U-036 still gates the *switch-on*: the
+layer cannot be shown in H32 (manual 3.3), and in H40 a 32-cell plane repeats
+columns 0-63 across the extra 64 pixels.
 
 ### U-030 -- Map data path to the SH2 [DONE]
 
@@ -1066,11 +1076,13 @@ both want the same sprite pipeline.
 `make 32x-zoomtest`; what is missing is the decision about the screen it has to
 live on. The plan, current as of 2026-09-15:
 
-1. ~~U-036, map screen only.~~ **Dropped, measured not to work** -- see the
-   staged plan at the end of this item.
-2. **Turn the layer on for the map screen**, `PRI = 0`, Genesis chrome in
-   front, Genesis map tiles blanked so the SH2 map shows through. Resolve
-   U-046's frame-buffer scratch at `$012000`, which collides with a live layer.
+1. ~~U-036's 64-cell plane.~~ **Dropped, measured not to work** -- see the
+   staged plan at the end of this item. U-036's H40 switch is still needed.
+2. **Turn the layer on for the map screen**: H40 (manual 3.3), `PRI = 0`,
+   Genesis chrome in front, Genesis map tiles blanked so the SH2 map shows
+   through, and something done about the 64 columns a 32-cell plane repeats.
+   The SH2 side is in: the renderer now yields a frame at a time, so LZ jobs
+   are answered while the map is up, and it renders only while FM is granted.
 3. **Replace the hit test** with city-proximity in map space, shared with U-081.
 4. **Then** delete the Genesis renderer, keeping it selectable until the two
    can be diffed.
@@ -1106,10 +1118,10 @@ at one call site.
 **Both the premise and the conclusion turned out wrong**, and the measurements
 are below. The call site is not per screen: the map screen and the panel screens
 share the plane `GameSetup2`:87 sets, and patching `InitScrollModes` as well
-changes nothing. And the H40 requirement applies to a Genesis *overlay*
-registering against a 32X map -- put the map in the frame buffer with the
-Genesis plane carrying only chrome, and there is no overlay to register. U-036
-is neither a prerequisite nor achievable, and U-081 merges into stage 3.
+changes nothing. The H40 half, though, is a
+prerequisite -- not for registration but because manual 3.3 forbids a live
+layer over an H32 screen -- and it is the half that works. U-081 merges into
+stage 3.
 
 **Stage 1 was scoped, built, measured -- and does not work.** The findings
 below replace an earlier set in this file that were wrong, and they are kept in
@@ -1216,10 +1228,11 @@ with quadrant `(1,1)`, and `make 32x-h40map` still exists.
 
 Staged plan:
 
-1. ~~**U-036, map screen only.**~~ **Dropped -- measured not to work.** The
-   map screen and the panel screens share `GameSetup2`:87's plane, so there is
-   no per-screen call site to change, and at 64 cells a tile upload lands on
-   plane B rows 21-22. Stage 2 does not depend on it.
+1. ~~**U-036's 64-cell plane, map screen only.**~~ **Dropped -- measured not
+   to work.** The map screen and the panel screens share `GameSetup2`:87's
+   plane, so there is no per-screen call site to change, and at 64 cells a tile
+   upload lands on plane B rows 21-22. Stage 2 does not depend on the widening;
+   it does depend on the H40 switch, which works.
 2. **Turn the layer on for that screen**, `PRI = 0`, Genesis chrome in front,
    and blank the Genesis map tiles so the SH2 map shows through. This is where
    the two deferred decisions land: the 64 transparent columns from U-036 stop
@@ -2342,10 +2355,9 @@ Validated on the case it was built for. Stock 32X build against the H40 build,
 | Frame drift | constant **+7** |
 
 So frame 2315 in the stock build is frame 2322 in the H40 build, same screen,
-100 frames long. This unblocked U-036's *investigation* -- and the investigation
-then closed U-036 rather than completing it, which is the outcome the harness
-was for: it made the controlled comparison possible, and the controlled
-comparison showed the engine was never at fault.
+100 frames long. **This unblocks U-036** -- and the investigation it enabled went on to
+show the engine was never at fault, and that the widening is blocked for a
+different reason.
 
 It also reproduces a number that was previously measured by hand: the Genesis
 build against the 32X build drifts +0 to +6 frames, which is U-013's "offset by
