@@ -9,7 +9,86 @@ manual section or the tool output that backs it.
 
 ---
 
-## 2026-09-15 (latest) -- U-011 closed: 899 suspects, none of them an address
+## 2026-09-15 (latest) -- U-014 closed: 1,817 rebased longwords, audited by code
+
+The other half of the rebasing debt, and the larger one. U-010's `dc.w`-table
+pass and U-013's table-run pass turned 1,817 word pairs in ROM data into
+`dc.l ROM_BASE+$xxxxxx`, both guessing from shape; 41 of those guesses were
+wrong and were restored on 2026-09-14. The rest had never been checked.
+
+**None of the remaining 1,817 is data mistaken for a pointer.**
+`tools/audit_pointer_runs.py` re-runs the whole audit and exits non-zero if that
+ever stops being true.
+
+The method matters more than the number, because shape heuristics are what
+created the problem. Neither test asks what a value looks like:
+
+- **Reachability.** An absolute operand encodes its address as a longword, so
+  scanning the built ROM for each run's own addresses finds every
+  `lea ($05E680).l,a0` and `movea.l #$05E680,a0`. 1,733 of 1,817 pointers sit in
+  runs something reaches.
+- **Access width**, U-014's own criterion: at each of the **551** references,
+  decode the instruction and follow the address register to the first read
+  through it. **Every one is a longword read.** Zero byte or word reads, which
+  is the defect signature.
+
+**The trap in the width test, which produced one false defect before it was
+fixed.** `movea.l $047992.l,a0` loads the table *entry*; a `move.b (a0)+` after
+it copies the string that entry points at, and is correct. `movea.l #$047982,a0`
+loads the table *address*; the same `move.b` there would mean the table is
+bytes. The two forms differ by one `#` and mean opposite things, so the tool
+keeps them apart explicitly.
+
+**Over-extension was swept separately**, since that is the shape the 41 had: a
+run grew outward from a verified base, so a swallowed non-pointer lands at an
+end. All 1,807 entries in runs of five or more were tested for pointing far
+outside their run-mates' range or into the run's own bytes. **One flagged** --
+`$05E7E0`'s first entry, `$045764`, against run-mates clustered in
+`$045A84-$045D4C`. It is the string "Santiago", in the same names block. The
+statistic was real and the defect was not.
+
+### 84 pointers nothing can reach, and what they appear to be
+
+Four tables in `section_0F0000` have no reference anywhere in the ROM: a table
+of the strings `MA2OPN`, `MA2SYK`, `MA2EP`, `MA2AFR`, `MA2IND`, `MA2ASI`,
+`MA2OSE`, `MA2USA`, `MA2CWIN`, `MA2END`, a directory of `{count, pointer}`
+records, and two tables of Shift-JIS-escaped text.
+
+Air Management II is the Japanese title of Aerobiz Supersonic, and those look
+like per-region asset names, so the likeliest reading is leftovers from the
+Japanese build that the USA ROM never calls. That is an inference, not a
+measurement. What *is* measured is that nothing reaches them, which is what
+makes their rebasing inert either way.
+
+Establishing that took a live reference and a bound. `MenuSelectEntry` does
+`movea.l #ROM_BASE+$000F0000,a0` then `move.l (a0,d0.l),-(a7)` with `d0` an
+index times four and a `cmpi.w #$0016` -- 23 entries, `$0F0000-$0F005B`, ending
+exactly where the MA2 string table begins at `$0F005C`. Adjacent, and separate.
+
+### The rule that over-rewrites also under-rewrites
+
+Hunting the above turned up the mirror image of the `--rewrite` hazard fixed
+earlier the same day. `dcw_pointers()` needs *every* pair on a line to be an
+address, so a table with a null in the middle, or whose last pointers share a
+line with the next structure, stops there and leaves the rest bare:
+
+```
+dc.w  $000F,$01A4,$0000,$0000,$000F,$01B6,$000F,$1E0E   ; $0F00B0
+```
+
+`$0F01A4` is that table's last string, `$0F01B6` and `$0F1E0E` open the next
+structure. Ten such pointers on five lines.
+
+**All ten are inert** -- every one adjoins a table in `section_0F0000` that
+nothing reaches -- **so nothing was changed.** They cannot be tested, and
+editing untestable data in exactly the class being hunted buys nothing. The
+finding is recorded in KNOWN_ISSUES with the test that finds it again.
+
+The confirmation method is worth keeping: a string table's targets are
+separated by the length of each string, so `$0F0114`+7 = `$0F011B`+7 =
+`$0F0122`+6 = `$0F0128` proves the chain without appealing to shape at all.
+
+## 2026-09-15 -- U-011 closed: 899 suspects, none of them an address
 
 The review class existed because two rebasing-adjacent questions have the same
 shape and opposite answers: rewriting a constant as `ROM_BASE+$xxxx` breaks the

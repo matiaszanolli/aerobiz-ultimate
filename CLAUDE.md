@@ -146,7 +146,8 @@ ROMs, and `make verify` is what tells you whether that was intended.
 | Tool | Purpose |
 |------|---------|
 | `tools/extract_mars_init.py` | lift the Sega initial program from a donor 32X ROM |
-| `tools/scan_rom_refs.py` | inventory and classify ROM address literals for rebasing |
+| `tools/scan_rom_refs.py` | inventory and classify ROM address literals for rebasing; verdicts live in `analysis/ROM_REF_VERDICTS.tsv` |
+| `tools/audit_pointer_runs.py` | re-run the U-014 audit: are the rebased pointer runs in ROM data really pointers? Exits non-zero on a defect |
 | `tools/disasm.py` | capstone disassembler: `pyenv exec python3 tools/disasm.py <start> <end>` |
 | `tools/m68k_disasm.py` | older disassembler; **has known decoding bugs**, see KNOWN_ISSUES.md |
 

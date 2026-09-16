@@ -51,21 +51,20 @@ one contradicted something this roadmap previously asserted:
 | U-034/U-036: the map and the panel screens share one 32x128 plane, and the game keeps **live scratch in its off-screen rows** at fixed VRAM addresses, written through `CmdSetupDMA` with an absolute destination | That the map screen could be widened to 64 cells at one call site. U-036 is blocked, and M4 goes through the 32X frame buffer instead |
 | U-014: U-010's and U-013's rebasing passes rewrote **41 data values** as pointers -- palettes, index tables, tile pixels -- invisibly to the byte-identical check | That "the 32X build matches the Genesis" (U-013) meant rebasing was finished. It matched on the screens compared |
 
-**Critical path.** Correctness first, then M4.
+**Critical path.** The correctness work is done; M4 is next.
 
-1. **U-014.** 1,817 rebased data values are still unaudited, and every wrong
-   one is a corruption on some screen that the byte-identical check cannot see.
-   The plane-selection corruption reported 2026-09-12 is gone -- a route opened
-   and flown on Ares, 2026-09-15 -- so the two index tables behind the route
-   screens are confirmed. The rest of the audit stands.
-   **The review class is closed (U-011, 2026-09-15).** It was not paperwork:
-   two of its `move #imm` entries were real ROM addresses and left every city in
-   the game without airport slots. All 899 sites are now judged, with the
-   evidence in `analysis/ROM_REF_VERDICTS.tsv`, and the tool reads that file so
-   a new unjudged site shows up as `review` instead of hiding in a pile.
-   That leaves **the 1,817 rebased data longwords as the whole of U-014**, and
-   they have no comparable shortcut: the review class collapsed to 93 distinct
-   values because immediates repeat, and data longwords do not.
+1. ~~**U-014 and U-011.**~~ **Both closed, 2026-09-15, and neither was
+   paperwork.** U-011's review class had already shipped a game-breaking bug --
+   two `move.l #imm` entries were real ROM addresses and left every city without
+   airport slots. All 899 sites are now judged, evidence in
+   `analysis/ROM_REF_VERDICTS.tsv`. U-014's 1,817 rebased data longwords are
+   audited by code rather than by shape: 551 references, every one a longword
+   read, **zero defects**, plus an outlier sweep over all 1,807 entries in runs
+   of five or more that flagged one, which resolved as legitimate. Both audits
+   are re-runnable (`scan_rom_refs.py`, `tools/audit_pointer_runs.py`) and both
+   are tripwires now -- a new unjudged site is reported rather than absorbed.
+   What is left is tool hardening, not audit: `table_targets` still needs the
+   longword-access and end-of-table rules from U-014 step 3.
 2. **M4 through the 32X frame buffer** -- U-034 stage 2. Widening the Genesis
    plane (U-036) is blocked: `CmdSetupDMA` writes live scratch to fixed VRAM
    addresses that a 64-cell plane displays, and the routine passing those
@@ -349,7 +348,62 @@ read the code:
 
 567 pointers rebased in total, every batch byte-identical on the Genesis side.
 
-### U-014 -- Audit rebased data longwords for data mistaken as pointers [OPEN]
+### U-014 -- Audit rebased data longwords for data mistaken as pointers [DONE]
+
+**All 1,817 are audited and none is data mistaken for a pointer.** Re-run the
+audit with `tools/audit_pointer_runs.py`; it exits non-zero if a defect appears.
+
+```
+rebased pointer runs in ROM data: 52 runs, 1817 pointers
+   44 runs, 1715 pointers   referenced inside their own extent
+    4 runs,   18 pointers   fragments: an adjacent entry is referenced
+    4 runs,   84 pointers   unreferenced anywhere in the ROM
+  indexed read .l  284      entry read .l  270
+defects (a table addressed, then read at byte or word width): 0
+```
+
+The audit rests on two tests, neither of which needs a judgement about what a
+value looks like -- which matters, because shape heuristics are what created
+these 1,817 in the first place.
+
+**Reachability.** An absolute operand encodes its address as a longword, so
+scanning the built ROM for each run's addresses finds `lea ($05E680).l,a0` and
+`movea.l #$05E680,a0` alike. 1,733 of 1,817 pointers sit in runs something
+reaches. The gap in this test is PC-relative addressing, which encodes a
+displacement instead -- there are three PC-relative operands left in the whole
+source, two of them in comments, and none addresses a table.
+
+**Access width**, U-014's own criterion. At each of the 551 references, decode
+the instruction and follow the address register forward to the first read
+through it. Every one is a longword read. The two reference forms have to be
+kept apart or every string table reports a false defect:
+
+| | |
+|---|---|
+| `movea.l $047992.l,a0` | loads the **entry**. A later `move.b (a0)+` is the string it points at -- correct |
+| `movea.l #$047982,a0` | loads the **address**. A later `move.b (a0)+` would mean the table is bytes |
+
+**Over-extension, the shape the 41 had, is separately swept.** A run grew
+outward from a verified base, so a swallowed non-pointer lands at an end. All
+1,807 entries in runs of five or more were tested for pointing far outside the
+range of their run-mates, or into the run's own bytes. **One flagged**, the
+first entry of `$05E7E0`, which points at `$045764` while its run-mates cluster
+in `$045A84-$045D4C`. It is the string "Santiago", in the same names block as
+the rest. Legitimate.
+
+**The 84 unreferenced pointers are all in `section_0F0000`**, in four tables
+nothing in the ROM points at: a table of the strings `MA2OPN`, `MA2SYK`,
+`MA2EP`, `MA2AFR`, `MA2IND`, `MA2ASI`, `MA2OSE`, `MA2USA`, `MA2CWIN`, `MA2END`,
+a directory of `{count, pointer}` records, and two tables of Shift-JIS-escaped
+text. Air Management II is the Japanese title of Aerobiz Supersonic, so the
+likeliest reading is leftovers from the Japanese build that the USA ROM never
+calls. Whatever they are, they are unreachable, so their rebasing is inert.
+
+Step 2 of the plan below -- corroborating on reachable screens -- was what found
+the original 41 and is not repeated here; the code-side test is strictly
+stronger, since it does not depend on a screen being reachable by the harness.
+Step 3's `dc.w`-table rule is fixed (see below); the `table_targets` longword
+and end-of-table rules are not, and are the one piece of this item left over.
 
 The inverse of U-011. U-011 is constants that might be addresses; this is
 "addresses" that were really constants. U-010's `dc.w`-table pass (1,290

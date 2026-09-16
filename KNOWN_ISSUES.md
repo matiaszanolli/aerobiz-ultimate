@@ -407,6 +407,36 @@ finished when you have run its destructive mode on a copy and read the diff.**
 Reading what it *prints* would have shown 20 sites in the `safe` column and
 nothing wrong.
 
+### The same rule truncates tables, which is the opposite mistake
+
+`dcw_pointers()` requires **every** pair on a line to be a ROM address with the
+same high word. A table with a null entry in the middle, or one whose last
+pointers share a source line with the next structure, fails the test for that
+whole line -- so the run stops and the remaining pointers stay bare `dc.w`.
+
+```
+dc.l  ROM_BASE+$0F0152, ... ROM_BASE+$0F019C          ; rebased, 20 entries
+dc.w  $000F,$01A4,$0000,$0000,$000F,$01B6,$000F,$1E0E ; $0F00B0  -- three more
+```
+
+`$0F01A4` is the same table's last string ("MA2END"), `$0F01B6` and `$0F1E0E`
+are the first two entries of the structure after it. All three are pointers and
+none is rebased. On the Genesis that is invisible; on the 32X each would read
+from unmapped space.
+
+**Found 2026-09-15: 10 such pointers on 5 lines, and all 10 are inert** --
+every one adjoins a table in `section_0F0000` that nothing in the ROM reaches.
+So no change was made, per ground rule 3: these are unreachable, which means a
+fix could not be tested, and editing them risks the very class of silent bug
+being hunted for no functional gain.
+
+**The test to re-run** is in the U-014 scratch method: take each bare `dc.w`
+line that adjoins a rebased run, and check whether every pair on it is either a
+null or an address sharing the run's high word. Confirm a candidate by chaining
+-- a string table's targets are separated by exactly the length of each string,
+so `$0F0114`+7 = `$0F011B`+7 = `$0F0122`+6 = `$0F0128` proves the chain with no
+appeal to what the value looks like.
+
 ### Nothing is at `$000100-$3FFFFF` while RV = 0
 
 The Genesis game can reach its own cartridge at low absolute addresses; the 32X
