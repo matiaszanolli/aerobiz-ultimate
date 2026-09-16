@@ -85,7 +85,7 @@ def load_verdicts(path=VERDICTS_FILE):
             if len(fields) < 3:
                 continue
             mnemonic, value, verdict = fields[0], fields[1], fields[2]
-            verdicts[(mnemonic.split(".")[0].lower(), int(value.lstrip("$"), 16))] = verdict
+            verdicts[(mnemonic.strip().lower(), int(value.lstrip("$"), 16))] = verdict
     return verdicts
 
 
@@ -110,7 +110,7 @@ def classify_immediate(mnemonic, suffix, value, args=""):
         return "numeric"
     if STATUS_REGISTER.search(args):
         return "numeric"      # an interrupt mask, not an address
-    if (mnemonic, value) in VERDICTS:
+    if (f"{mnemonic}.{suffix}" if suffix else mnemonic, value) in VERDICTS:
         return "numeric"
     return "review"
 
@@ -164,6 +164,21 @@ def dcw_pointers(operands):
     if len(set(lows)) != len(lows):
         return None
     return [(hi << 16) | lo for hi, lo in pairs]
+
+
+# The disassembly ends each data line with the ROM address it assembles to.
+# That is the stable key for a dc.w verdict; a line number is not.
+LINE_ADDRESS = re.compile(r";\s*\$([0-9A-Fa-f]{4,6})\s*$")
+
+
+def classify_dcw_table(in_run, raw):
+    """Classify a dc.w line that parses as a pointer table."""
+    if in_run:
+        return "safe", "dc.w pointer table"
+    address = LINE_ADDRESS.search(raw.rstrip("\n"))
+    if address and ("dc.w", int(address.group(1), 16)) in VERDICTS:
+        return "numeric", "dc.w pointer table, judged data"
+    return "review", "dc.w pointer table, isolated"
 
 
 def dcw_table_runs(lines):
@@ -231,9 +246,7 @@ def scan(paths):
                 if dcw:
                     table = dcw_pointers(dcw.group(1))
                     if table:
-                        kind = "safe" if num in runs else "review"
-                        form = ("dc.w pointer table" if num in runs
-                                else "dc.w pointer table, isolated")
+                        kind, form = classify_dcw_table(num in runs, raw)
                         for _ in table:
                             findings.append((path, num, kind, form, line.strip()))
 

@@ -27,7 +27,23 @@
 #   4. For stack pushes, read the callee.  All 249 reach the VDP command
 #      interface or a division helper.
 #
+# A `dc.w` row is keyed by the ROM address in the line's trailing comment rather
+# than by a value, since a data line has no single immediate. The address is
+# stable; a line number is not.
+#
 # mnemonic  value       verdict   evidence
+#
+# ---- dc.w lines that parse as a pointer table and are not one
+# Each sits alone inside a 4bpp graphics block, with unmistakable pixel data on
+# the lines above and below, and no longword anywhere in the ROM holds its
+# address -- checked over all 1 MB, 0 occurrences each. They carry the same
+# verdict as a source comment from the 2026-09-14 audit; this records it where
+# the tool can read it.
+dc.w	$00049B50	numeric	4bpp tile pixels; nothing in the ROM points here
+dc.w	$00049BD0	numeric	4bpp tile pixels; nothing in the ROM points here
+dc.w	$00049C50	numeric	4bpp tile pixels; nothing in the ROM points here
+dc.w	$00052FB0	numeric	4bpp tile pixels; nothing in the ROM points here
+dc.w	$00065810	numeric	4bpp tile pixels; nothing in the ROM points here
 #
 # ---- VDP register writes: $8000 | reg<<8 | data, pushed to the command interface
 move.l	$00008004	numeric	VDP register 0 = $04
