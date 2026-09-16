@@ -185,6 +185,7 @@ MARS_SH2_UDIV       equ $00880A00   ; cartridge $000A00 via the fixed window
 MARS_SH2_LZ         equ $00880B00   ; cartridge $000B00 via the fixed window
 MARS_SEGA_COVER     equ $00880C00   ; cartridge $000C00 via the fixed window
 MARS_SEGA_INTRO     equ $00880C04   ; its second entry
+MARS_PALETTE_WRITE  equ $00880E00   ; U-034 experiment: WriteCharUIDisplay's hook
 
 ; Scratch region of the 32X frame buffer used to hand decompressed bytes back
 ; to the 68000.  Past the 256-word line table plus 224 lines of 320 pixels
@@ -199,7 +200,7 @@ MARS_LZ_FB_ADDR     equ MARS_FRAMEBUFFER+MARS_LZ_FB_OFFSET
 MARS_RPC_CMD        equ MARS_COMM0  ; word: command; 0 = idle / complete
 MARS_RPC_ARG0       equ MARS_COMM2  ; long: argument 0 -> result 0
 MARS_RPC_ARG1       equ MARS_COMM4  ; long: argument 1 -> result 1
-MARS_RPC_COUNT      equ MARS_COMM6  ; long: dispatcher's own call counter
+MARS_RPC_COUNT      equ MARS_COMM6  ; word: dispatcher's own call counter
 
 MARS_SH2_CMD_PING   equ $0001
 MARS_SH2_CMD_UDIV32 equ $0002
@@ -212,7 +213,25 @@ MARS_SH2_CMD_LZ_JOB equ $0008
 MARS_SH2_CMD_AFFINE equ $0009
 MARS_SH2_CMD_SEGA   equ $000A
 MARS_SH2_CMD_SEGA_COVER equ $000B
-MARS_SH2_CMD_MAP_ON equ $000C   ; U-034: start rendering the map, one frame per
-                                ; dispatcher iteration; returns at once
-MARS_SH2_CMD_MAP_OFF equ $000D  ; stop rendering; the 68000 blanks the layer
+
+; World map on the 32X layer -- U-034 stage 2.  Comm word 1 is the only word the
+; RPC protocol above leaves free, and the boot release clears it along with the
+; rest of 'M_OK'.  Only the 68000 writes it (manual :717); the SH2 polls it.
+; MAP_STATE_ON is the request.  MAP_STATE_BUSY is the 68000's own bookkeeping --
+; the LZ thunk holds it while it owns FM -- and the SH2 ignores it.
+; MAP_STATE_GEN is bumped on every switch-on, and the SH2 echoes the generation
+; it has finished drawing in MARS_SH2_STATUS -- comm word 7, the one word only
+; the SH2 writes.  The layer is shown only when the two agree.
+MARS_MAP_STATE      equ MARS_COMM1
+MAP_STATE_ON        equ $0001
+MAP_STATE_ON_BIT    equ 0
+MAP_STATE_BUSY      equ $0002
+MAP_STATE_BUSY_BIT  equ 1
+MAP_STATE_LINGER    equ $00FC       ; 68000-private: frames the layer has outstayed
+MAP_STATE_LINGER_STEP equ $0004     ; the screen id, counted in bits 2-7
+MAP_STATE_GEN       equ $0F00
+MAP_STATE_GEN_STEP  equ $0100
+MARS_SH2_STATUS     equ MARS_COMM7
+SH2_STATUS_DRAWN    equ $8000
+
 MARS_STOCK_TRIGGER  equ $00FFF000   ; the game's own 10-byte RAM trigger stub

@@ -339,15 +339,14 @@ static unsigned int fb_blit_scaled(unsigned int cx, unsigned int cy,
  * quantisation is a rounding error rather than the measurement. */
 #define BENCH_BLITS  32u
 
-/* Animation state, held across calls because the renderer no longer owns the
- * loop -- see sh2_map_frame. */
+/* Animation state for the zoom demo, held across sh2_map_frame calls. */
 static unsigned long map_step;
 static long          map_dir;
 
 /* Load the asset and set the state one frame of animation needs. Deliberately
- * does not touch VDP_BITMAP: whoever turns the layer on owns the mode, and on
- * the demo cartridges that is md_main, before it hands FM over. */
-void sh2_map_begin(void)
+ * does not touch VDP_BITMAP: on the demo cartridge md_main sets the mode before
+ * it hands FM over. */
+static void sh2_map_begin(void)
 {
     map_load();
     PALETTE[PAL_MAJOR] = 0x001Fu;       /* red   -- major airports */
@@ -358,21 +357,18 @@ void sh2_map_begin(void)
 }
 
 /* ==========================================================================
- * One frame, then return. U-034 stage 2.
+ * One frame of the zoom, then return.
  *
- * The obvious shape for this is a loop that renders until told to stop, and it
- * is what sh2_zoom_test did for the whole of U-035. It cannot survive contact
- * with the game: U-046 routes every LZ_Decompress call through the SH2, and
- * RunWorldMapAnimation decompresses on frame 65 of its own 136-frame display
- * loop (RunWorldMapAnimation.asm:467) -- while the map is on screen. An SH2
- * inside a render loop would never answer, the thunk would spin out its
- * 400,000-iteration timeout, and the screen would fall back to the 68000 at
- * 285 cycles a byte.
- *
- * So the dispatcher owns the loop and calls this once per iteration; see
- * sh2_rpc_loop, which renders a frame and then services whatever is queued.
+ * sh2_zoom_test is a demo cartridge and may loop forever. The game may not: it
+ * decompresses while the map is on screen -- RunWorldMapAnimation does so on
+ * frame 65 of its own 136-frame display loop (RunWorldMapAnimation.asm:467) --
+ * and U-046 sends every LZ_Decompress call to the SH2, so an SH2 stuck in a
+ * render loop would never answer. Anything the game drives therefore draws a
+ * bounded amount and hands control back to the dispatcher; see
+ * sh2_map_game_draw and sh2_rpc_loop. This function is kept the same shape so
+ * the zoom can move into the game on the same terms.
  * ========================================================================== */
-void sh2_map_frame(void)
+static void sh2_map_frame(void)
 {
     fb_wait_vblank();
     (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, map_step);
@@ -387,6 +383,59 @@ void sh2_map_frame(void)
         map_step = FP_ONE;
         map_dir = -(long)ZOOM_STEP;
     }
+}
+
+/* ==========================================================================
+ * The world map as the game sees it. U-034 stage 2, first integration.
+ *
+ * Division of labour: the SH2 only draws. The 68000 turns the layer on once
+ * the SH2 reports both buffers drawn, and from then on keeps palette entries
+ * 16-31 equal to the game's own CRAM line 1, so fades and dimmed backdrops
+ * follow the Genesis. See 32x/map_screen.asm.
+ *
+ * Static and 1:1: the same picture the Genesis draws, so the result can be
+ * checked against the Genesis build pixel for pixel before anything moves.
+ * No overlay -- the game still draws its own markers, outlines and text on the
+ * Genesis planes, in front of this layer (PRI = 0).
+ *
+ * The screen runs H40 while the layer is on (manual 3.3, 32x-hardware-manual.md
+ * :1121), but the Genesis plane is only 32 cells wide, so the Genesis picture
+ * repeats its columns 0-63 at 256-319. The asset leaves that strip as palette
+ * index 0 and nothing else in the map uses index 0 (the map is indices 16-31),
+ * so setting the through bit on index 0 alone puts the strip -- and only the
+ * strip -- in front of the Genesis planes, covering the repeat. With PRI = 0 a
+ * through-bit colour is shown opposite the Genesis screen (:185, :1216).
+ * ========================================================================== */
+#define THROUGH_BIT     0x8000u
+#define SIDEBAR_COLOUR  0x2400u         /* line 1 entry 5, $0400, through the table */
+
+void sh2_map_game_begin(void)
+{
+    map_load();
+    PALETTE[0] = (unsigned short)(SIDEBAR_COLOUR | THROUGH_BIT);
+}
+
+/* One buffer's worth, then swap. A static picture needs one draw per buffer and
+ * then nothing, which is also what keeps it out of the way of the LZ thunk's FM
+ * handovers.
+ *
+ * sh2_map_game_begin writes the palette while the layer is still blank -- the
+ * 68000 shows it only after both draws -- which is the one time packed mode
+ * allows palette access outside H and V blank (manual :1066). */
+void sh2_map_game_draw(void)
+{
+    unsigned short fs = (unsigned short)(VDP_FBCTL & FBCTL_FS);
+
+    fb_wait_vblank();
+    (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, FP_ONE);
+    VDP_FBCTL = (unsigned short)(fs ^ FBCTL_FS);
+
+    /* A swap written during display lands at the next V Blank, and the buffer
+     * may only be touched again once FS reads back changed (manual :1059,
+     * :1061). Waiting on FS rather than on VBLK is what stops the next draw
+     * landing in the buffer this one has just filled, when this one happens
+     * to finish inside a V Blank. */
+    while ((VDP_FBCTL & FBCTL_FS) == fs) { }
 }
 
 void sh2_zoom_test(void)

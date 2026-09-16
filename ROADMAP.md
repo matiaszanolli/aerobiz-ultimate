@@ -32,11 +32,11 @@ targets. The shipping cartridge hands the SH2 exactly four things:
 | `UnsignedDivide` slow path | U-044 | wired, correct, and **never called** -- Aerobiz never divides by `>= $10000` |
 | Licensing screens skipped, title 26.8 s sooner | U-061 | returns later as a credits sequence |
 
-**What is built and measured but not shipping.** Each is a separate target, and
-each is waiting on U-034 to decide what the map screen looks like:
+**What is built and measured but not shipping.** Each is a separate target:
 
 | | Target |
 |---|---|
+| **The world map on the layer during play**, behind the game's chrome, following its fades (U-034 stage 2) | `make 32x-mapscreen` |
 | World map on the layer, from ROM rather than a savestate (U-031) | `make 32x-maptest` |
 | Zoom, the flagship effect (U-035), with great-circle route arcs (U-032) and airport tiering (U-077) | `make 32x-zoomtest` |
 | Affine rotate and scale as a standalone demo (U-037 -- the renderer itself does ship, inside the intro) | `make 32x-affine` |
@@ -70,19 +70,14 @@ one contradicted something this roadmap previously asserted:
 **Critical path.** Correctness is closed (M2), so the whole of it is now M4:
 getting the map that already works in `32x-zoomtest` into the shipping game.
 
-1. **U-034 stage 2 -- the map screen through the 32X frame buffer.** Turn the
-   layer on for that screen at `PRI = 0`, blank the Genesis map tiles, keep the
-   Genesis chrome in front. The SEGA intro has already shown the layer turned on
-   and handed back cleanly in the shipping build, which is the part that used to
-   be unproven. Two things land here: the 64 transparent columns stop being a
-   defect and become the point, and **U-046's frame-buffer scratch at `$012000`
-   collides with a live layer** and has to move or be interlocked.
-   **The screen must be H40 while the layer is on** -- manual 3.3
-   (`32x-hardware-manual.md:1121`) lists H32 only for a blank layer. H40 alone
-   is measured to render correctly (U-036). What is blocked is U-036's other
-   half, widening the plane to 64 cells, so a 32-cell plane in H40 **repeats
-   its columns 0-63 at 256-319** and that strip has to be dealt with some other
-   way. That is the open design question of this stage.
+1. **U-034 stage 2 -- the world map on the 32X layer. Working, in
+   `make 32x-mapscreen`.** The SH2 draws the map behind the game's own chrome on
+   every screen that uses it, in H40 with a through-bit sidebar covering the
+   strip a 32-cell plane repeats, following every fade and tint. A per-frame
+   oracle shows it pixel-exact against stock **except where the game edits the
+   map's tiles** -- route lines, the Quarterly Report's title bar. Forwarding
+   those tile uploads to the SH2 is what is left before it can ship. See U-034,
+   *Stage 2*.
 2. **U-034 stage 3 -- replace the hit test** with city-proximity in map space,
    shared with U-081. The current one resolves a screen rectangle to one of
    seven subcontinents, and every rectangle is invalidated the moment the map
@@ -930,7 +925,7 @@ plane.
 Findings, including the PicoDrive byte-swap trap, are in HISTORY.md
 (2026-09-12, map on the layer).
 
-### U-031 -- Packed-pixel map renderer on the SH2 master [DONE, one gap]
+### U-031 -- Packed-pixel map renderer on the SH2 master [DONE]
 
 `make 32x-maptest` puts the world map on the 32X layer, read from cartridge
 ROM by the SH2. The asset is built from `build/aerobiz.bin` by
@@ -954,11 +949,15 @@ left 256; the remaining 64 are index 0.
 
 Full findings in HISTORY.md (2026-09-12, map on the layer).
 
-**The one gap.** The 16-word map palette is a pinned constant, not derived: it
-is not in the ROM raw in either byte order, nor inside any of the 1,289
-compressed blocks reachable from the sources, so something builds it at
-runtime that has not been traced. Worth closing if the map screen is ever
-recoloured, and worth ignoring otherwise.
+**The gap is closed (2026-09-16).** The palette was pinned on the belief that it
+was not in the ROM. It is, raw, at **`$07677E`**: `LoadScreenGfx` hands those 16
+words to `DisplaySetup` for palette line 1, and the live CRAM on the world-map
+screen equals them word for word. The pinned constant had been captured
+mid-fade -- one `FadePalette` step down on every channel, `$0864` against
+`$0642` -- which is why no search could find it. `make_map_asset.py` now reads
+the table, and the first map-screen integration showed the difference plainly:
+with the pinned palette the SH2 map was visibly darker and greener than the
+Genesis one around it.
 
 **Still to decide.** The map is 256 wide against the layer's 320. Filling the
 extra 64 needs either map data that does not exist yet or a deliberate framing
@@ -1073,19 +1072,64 @@ both want the same sprite pipeline.
 ### U-034 -- Retire the Genesis-side map renderer [OPEN -- the critical path]
 
 **The whole of M4 is now this item.** Everything that draws already works in
-`make 32x-zoomtest`; what is missing is the decision about the screen it has to
-live on. The plan, current as of 2026-09-15:
+`make 32x-zoomtest`; stage 2 now puts it in the game. The plan, current as of
+2026-09-16:
 
 1. ~~U-036's 64-cell plane.~~ **Dropped, measured not to work** -- see the
    staged plan at the end of this item. U-036's H40 switch is still needed.
-2. **Turn the layer on for the map screen**: H40 (manual 3.3), `PRI = 0`,
-   Genesis chrome in front, Genesis map tiles blanked so the SH2 map shows
-   through, and something done about the 64 columns a 32-cell plane repeats.
-   The SH2 side is in: the renderer now yields a frame at a time, so LZ jobs
-   are answered while the map is up, and it renders only while FM is granted.
+2. **Turn the layer on for the map screen -- working, in `make 32x-mapscreen`.**
+   The world overview map is drawn by the SH2 behind the game's own chrome on
+   every screen that uses it, and a per-frame oracle
+   (`tools/mapscreen_oracle.py`) shows it pixel-exact against what stock would
+   display -- **except where the game has changed the map's tiles**, which is
+   the one thing left. Details below, under *Stage 2*.
 3. **Replace the hit test** with city-proximity in map space, shared with U-081.
 4. **Then** delete the Genesis renderer, keeping it selectable until the two
    can be diffed.
+
+#### Stage 2 -- the world map on the layer (2026-09-16)
+
+`make 32x-mapscreen` is an experiment target; the shipping cartridge is
+unchanged apart from the shared SH2 image. The design, every piece of it
+measured before it was built:
+
+| Piece | How |
+|---|---|
+| Which screens | The world overview is `LoadScreenGfx` (`$0068CA`), called by 21 screens -- news, Quarterly Report, event pictures, Inter-Regional totals. It writes screen id 7 to `$FF9A1C`; the regional maps write 0-6. Over a 66,000-frame DEMO game the id tracks what plane B holds, except that it moves *before* the screen does |
+| Plane B | `LoadScreenGfx` fills the 32x22 map block with tile 0 instead of placing the layout at `$070198` -- command `$1A`, the fill it already uses below, same arguments. Two sites, five bytes, same length |
+| On and off | Driven from the V-Blank trampoline, no call from the game. The 68000 decides and the SH2 only draws; a generation number in the state word stops a stale "drawn" from an earlier visit being believed |
+| Leaving | The id changes at the *start* of the fade-out, with the map still on plane B. The layer stays while CRAM line 1 is still the world palette faded down (a four-instruction channel-wise test), goes when it reaches black, and goes regardless after 48 frames |
+| H40 | Forced from the game's own register shadow while the layer is visible -- manual 3.3 -- and not while the SH2 is still drawing, when the layer is blank and H32 is allowed |
+| Columns 256-319 | A 32-cell plane repeats columns 0-63 there. The SH2 paints them with a through-bit colour, which sits in front of the Genesis with `PRI = 0` (manual :185, :1216) -- in PicoDrive and Ares alike |
+| Palette | The layer has its own palette, so entries 16-31 follow CRAM line 1: fades, the red civil-war tint, dimmed backdrops. Read from `WriteCharUIDisplay`'s copy at `$FF1400`, equal to CRAM in all 64 words across 222 sampled states, and mirrored **at the moment of the write** through a hook in that routine -- a V-Blank-only mirror ran exactly one frame behind |
+| LZ | The renderer yields between frames, the thunk marks itself busy so the layer is not switched mid-copy, and FM goes back to whoever should hold it |
+| Transport | Comm word 1 is the map state (68000 to SH2). The RPC call counter shrank to a word, freeing word 7 as the SH2's status -- nothing read the counter's low half |
+
+**Measured.** A DEMO game runs to 1988 without incident. Frame by frame through
+a turn change -- fade-out, black, fade-in -- **71 of 71 comparable frames are
+pixel-exact** against stock. Over 30,000 frames sampled every 100, 202
+comparable frames all have the map on the layer and **69 are exact**. Every
+difference in the other 133 is accounted for, and all of it is one thing:
+
+**What is left: the game edits the map's tiles.** Stock shows whatever is in
+VRAM tile slots 1-704 through the layout, and the game writes there. Two cases,
+measured:
+
+- `DrawRouteLines` draws a player's routes into the decompressed tiles before
+  they are uploaded -- 15,246 of the differing pixels are exactly the pixels
+  where the uploaded tile differs from the clean asset.
+- The Quarterly Report overwrites slots 1-32, the map's top row, with its title
+  bar's chevrons -- about 300 pixels on every report frame.
+
+The SH2 draws the clean asset, so both are missing. The general fix is for the
+SH2 to draw from the tiles the game actually uploaded, which means forwarding
+tile uploads that land in slots 1-704. Route lines are also where U-032's arcs
+belong once the map zooms, so the two want deciding together.
+
+The shipping cartridge's SH2 image changed with this (the dispatcher polls the
+state word). Against its predecessor, a power-on run is picture-identical for
+4,893 frames -- boot, intro, title, every menu -- and then the DEMO game's
+airline draw goes its own way, the documented timing sensitivity.
 
 What is being retired is larger than "the map": `LoadMapGraphics` (`$03C1B8`,
 1,252 bytes) decompresses the route and city tile sets and tiles them to VRAM,

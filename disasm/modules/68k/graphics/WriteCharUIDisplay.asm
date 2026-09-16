@@ -20,7 +20,14 @@ WriteCharUIDisplay:
     move.l  a2, -(a7)
     pea     ($0002).w
     pea     ($0008).w
+    ifd MAPSCREEN
+; U-034 stage 2 experiment: the same call, then the same colours on the 32X
+; layer while the world map is shown there.  Six bytes for six; see
+; 32x/map_screen.asm, MarsPaletteWrite.
+    jsr     (MARS_PALETTE_WRITE).l
+    else
     jsr GameCommand
+    endif
     move.w  d2, d0
     add.w   d0, d0
     move.l  d0, -(a7)

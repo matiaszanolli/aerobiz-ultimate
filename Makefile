@@ -73,6 +73,7 @@ BOOT_INC     = $(DISASM_DIR)/32x/mars_header.asm $(DISASM_DIR)/32x/md_main.asm \
                $(DISASM_DIR)/32x/lz_probe.asm \
                $(DISASM_DIR)/32x/sh2_lz.asm \
                $(DISASM_DIR)/32x/sega_intro.asm \
+               $(DISASM_DIR)/32x/map_screen.asm \
                $(wildcard $(DISASM_DIR)/modules/shared/*.asm)
 GAME_SRC     = $(DISASM_DIR)/ultimate_game.asm
 SH2_SRCS     = $(DISASM_DIR)/sh2/master/main.s $(DISASM_DIR)/sh2/slave/main.s
@@ -83,7 +84,7 @@ SH2_OBJS     = $(patsubst $(DISASM_DIR)/sh2/%.s,$(BUILD_DIR)/sh2/%.o,$(SH2_SRCS)
                $(patsubst $(DISASM_DIR)/sh2/%.c,$(BUILD_DIR)/sh2/%.o,$(SH2_CSRCS))
 SH2_LDS      = $(DISASM_DIR)/sh2/sh2.lds
 
-.PHONY: all genesis 32x 32x-m1 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest 32x-lztest 32x-nolz 32x-licensing 32x-affine verify clean help mars-init sh2
+.PHONY: all genesis 32x 32x-m1 32x-mapscreen 32x-sh2probe 32x-fbtest 32x-layeron 32x-h40 32x-h40map 32x-maptest 32x-zoomtest 32x-lzprobe 32x-timingtest 32x-lztest 32x-nolz 32x-licensing 32x-affine verify clean help mars-init sh2
 
 all: genesis 32x
 
@@ -163,6 +164,25 @@ $(BUILD_DIR)/aerobiz-ultimate-h40map.32x: $(BUILD_DIR)/32x_boot_h40.bin $(BUILD_
 $(BUILD_DIR)/32x_game_h40map.bin: $(GAME_SRC) $(SHARED_SRCS) | $(BUILD_DIR)
 	@echo "==> Assembling 32X game half, 64x32 map plane (\$$900000)..."
 	$(ASM) $(ASMFLAGS) -DH40MAP=1 -o $@ $<
+
+# U-034 stage 2 experiment: the world map on the 32X layer during play. The boot
+# half carries the map asset and the V-Blank logic (32x/map_screen.asm); the game
+# half has LoadScreenGfx leave the map cells transparent. Both halves need the
+# flag.
+32x-mapscreen: $(BUILD_DIR)/aerobiz-ultimate-mapscreen.32x
+
+$(BUILD_DIR)/aerobiz-ultimate-mapscreen.32x: $(BUILD_DIR)/32x_boot_mapscreen.bin $(BUILD_DIR)/32x_game_mapscreen.bin
+	@echo "==> Assembling world-map-layer experiment cartridge..."
+	@cat $(BUILD_DIR)/32x_boot_mapscreen.bin $(BUILD_DIR)/32x_game_mapscreen.bin > $@
+	@echo "==> Build complete: $@"
+
+$(BUILD_DIR)/32x_boot_mapscreen.bin: $(BOOT_SRC) $(BOOT_INC) $(MARS_INIT_BIN) $(MARS_INIT_INC) $(SH2_IMAGE_BIN) $(SH2_IMAGE_INC) $(BUILD_DIR)/map_asset.bin | $(BUILD_DIR)
+	@echo "==> Assembling 32X boot half, world map layer (\$$880000)..."
+	$(ASM) $(ASMFLAGS) -DMAPSCREEN=1 -DMAPASSET=1 -o $@ $<
+
+$(BUILD_DIR)/32x_game_mapscreen.bin: $(GAME_SRC) $(SHARED_SRCS) | $(BUILD_DIR)
+	@echo "==> Assembling 32X game half, world map layer (\$$900000)..."
+	$(ASM) $(ASMFLAGS) -DMAPSCREEN=1 -o $@ $<
 
 32x-h40: $(BUILD_DIR)/aerobiz-ultimate-h40.32x
 

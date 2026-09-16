@@ -513,3 +513,71 @@ comparison (U-092) is unaffected either way, since it matches by content.
 either and the run aborts before the core starts -- which reads as "the test
 produced nothing" rather than "the test never ran".
 
+
+The checked-in `profiling_frontend` binary is older than its source and accepts
+`VRD_FRAME_FINGERPRINT` and the video-dump variables while writing nothing for
+them. Build the frontend from source; `tools/vrd_harness.py` says how, and uses
+the rebuilt `vrd_fe`.
+
+### A thunk that calls game code must rebuild the argument frame
+
+Game routines take their arguments on the stack, just above the return
+address. A boot-half thunk reached by `jsr` in place of `jsr GameCommand`, which
+then calls `GameCommand` itself, puts a second return address in between -- and
+`GameCommand` reads every argument four bytes off. The first palette hook
+(U-034) did exactly that: the command number it read was a return address, and
+the game faded to black and stayed there for the rest of the run.
+
+Push the arguments again before the call. `move.l 7*4(sp),-(sp)` repeated seven
+times copies seven longwords in order, because the 68000 evaluates the source
+before the predecrement; drop them with `lea 7*4(sp),sp` afterwards. The SEGA
+intro thunk's "stack contract" note is the same lesson in a different shape.
+
+### Frame and state are one tick apart for some changes
+
+A savestate saved after frame f and the frame the frontend dumped for f do not
+always agree: a frame can already show a Genesis change -- a plane A blink, a
+sprite removal -- that the state holds only at f+1. A per-frame oracle has to
+accept state f+1 as well as f. It must **not** accept f-1: a frame matching the
+past is a lag, which is a real defect (the first U-034 palette mirror ran one
+frame behind, and this is how it was caught).
+
+PicoDrive also composites an H32 frame at 320 wide by stretching it (U-003), so
+an H32 frame cannot be compared with a native 256-wide render at all.
+
+### A pixel comparison that passes on black proves nothing
+
+`tools/mapscreen_oracle.py` passed 301 of 301 frames of a build that had faded
+the game to black for good -- the expected picture was black too. It passed a
+second time on a wrong assumption: blanked cells hold `$8000` as often as
+`$0000`, so "every cell is `$0000`" never fired and the check compared the
+un-substituted plane with itself. Any comparison of this kind has to report how
+much of what it compared was actually lit, and treat "all clean, nothing
+exercised" as a failure of the check, not a pass.
+
+### The game changes the screen id before it changes the screen
+
+`$FF9A1C` holds 7 while the world map is loaded and 0-6 for a regional map, and
+it is a good signal for which map plane B holds -- but the game writes the new
+id first and fades out afterwards, with the old map still on plane B for the
+whole fade. Switching the 32X layer off on the id alone made the map vanish at
+full brightness at the start of every turn change. See U-034, *Stage 2*, for
+what follows the fade instead.
+
+### The world map is whatever sits in tile slots 1-704
+
+Stock displays the map through a fixed layout (`$070198`, tiles 1-704 in
+order), so anything written into those tile slots appears on the map.
+`DrawRouteLines` draws route lines into the decompressed tiles before upload;
+the Quarterly Report replaces slots 1-32 with its title bar. A renderer that
+draws the map from the ROM asset draws neither. Any replacement for the Genesis
+map has to account for writes into those slots, not just for the layout.
+
+### CRAM is mirrored in work RAM
+
+`WriteCharUIDisplay` (`$004B6C`, misnamed -- it is the palette writer) writes
+colours through GameCommand 8 and then copies them to `$FF1400 + 2 * index`.
+Across 222 states of a DEMO game, fades included, that copy equalled CRAM in all
+64 words every time, so CRAM can be read from RAM with no VDP access. It is
+updated *after* the CRAM write, which matters to anything that reads it from an
+interrupt: see MarsPaletteWrite in `32x/map_screen.asm`.

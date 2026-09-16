@@ -46,6 +46,11 @@ MarsSh2Lz:
                                                 ; shared resource; an interrupt
                                                 ; decompressing mid-call would
                                                 ; read another call's results
+    ifd MAPSCREEN
+; Tell the V-Blank map logic to leave FM alone until we are done.  Set with
+; interrupts already masked, so it is up before anything could look.
+        ori.w   #MAP_STATE_BUSY,(MARS_MAP_STATE).l
+    endif
 
 ; --- hand the job over ------------------------------------------------------
 ; FM = 1 gives the SH2 the frame buffer.  The comm registers are not gated by
@@ -93,6 +98,9 @@ MarsSh2Lz:
         move.w  (a1)+,(a0)+
         dbra    d1,.copy
 .done:
+    ifd MAPSCREEN
+        bsr.s   LzReleaseFm
+    endif
         rts
 
 ; --- the SH2 never answered -------------------------------------------------
@@ -101,6 +109,26 @@ MarsSh2Lz:
 .fallback:
         andi.w  #$7FFF,(MARS_ADAPTER).l
         move.w  (sp)+,sr
+    ifd MAPSCREEN
+        bsr.s   LzReleaseFm
+    endif
         movem.l d2-d4/a2-a4,-(sp)
         movea.l $1C(sp),a0
         jmp     (GameLzResume).l
+
+    ifd MAPSCREEN
+; ---------------------------------------------------------------------------
+; Give FM to whoever should hold it now and drop BUSY.  That is the SH2 while
+; it is still drawing the world map, and the 68000 otherwise -- which is what
+; this thunk always left it at before U-034.  BUSY is dropped last, so the
+; V-Blank logic cannot change the map state between the test and the
+; handover.  d0 is the caller's result and is left alone.
+; ---------------------------------------------------------------------------
+LzReleaseFm:
+        bsr.w   MapSh2WantsFm
+        beq.s   .ours
+        ori.w   #(1<<MARS_FM),(MARS_ADAPTER).l
+.ours:
+        andi.w  #($FFFF-MAP_STATE_BUSY),(MARS_MAP_STATE).l
+        rts
+    endif

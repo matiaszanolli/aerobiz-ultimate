@@ -253,6 +253,33 @@ emulator cannot answer.
 - **Also check the first frames:** after the fix nothing but black should come
   before the speck appears.
 
+## 9. The world map on the layer during play (U-034 stage 2)
+
+The first screen where the layer and the Genesis share the picture for minutes
+at a time rather than seconds. Both emulators agree on every mechanism below;
+none is confirmed in silicon.
+
+- **Build:** `make 32x-mapscreen`. Start a game (or a DEMO game --
+  `tools/fixtures/demo_game.cmds` is the input) and watch the world map news
+  screens, a turn change, and a Quarterly Report.
+- **The sidebar.** Columns 256-319 are covered by a palette colour with the
+  through bit set, shown in front of the Genesis because `PRI = 0` (manual
+  :185, :1216). Pass: a solid dark strip down the right edge, no copy of the
+  left-hand panel pillar showing through it. PicoDrive adds one green step to
+  every through-bit colour (KNOWN_ISSUES); hardware should not.
+- **H40 per screen.** The screen switches between H32 and H40 as the world map
+  comes and goes, from the V-Blank handler. Pass: no roll, no torn frame at the
+  switch, and the Genesis panels land in the same place on the map screen as
+  under emulation (left-aligned, 256 wide).
+- **Palette timing.** The map's palette is written from the game's main line
+  right after its V-Blank handler, still inside the blanking interval, and
+  checked against PEN before every word. Pass: the map fades exactly with the
+  chrome around it on a turn change -- no step where the map is one shade
+  brighter for a frame. If PEN closes early on hardware, the symptom is a map a
+  frame behind the chrome, not a wrong colour that stays.
+- **Known, not a hardware question:** route lines and the Quarterly Report's
+  title-bar chevrons are missing from the map (ROADMAP U-034, *Stage 2*).
+
 ---
 
 ## Notes for the session

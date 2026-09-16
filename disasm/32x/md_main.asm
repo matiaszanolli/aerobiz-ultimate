@@ -278,6 +278,16 @@ MarsSecurityFailed:
         dcb.b   (CART_BASE+$000C00)-*,$FF
         include "32x/sega_intro.asm"
 
+    ifd MAPSCREEN
+; ---------------------------------------------------------------------------
+; The world-map layer code sits at a FIXED cartridge offset ($000E00) because
+; WriteCharUIDisplay in the game half reaches its first entry by address.
+; MARS_PALETTE_WRITE in definitions_32x.asm must match; map_screen.asm checks.
+; ---------------------------------------------------------------------------
+        dcb.b   (CART_BASE+$000E00)-*,$FF
+        include "32x/map_screen.asm"
+    endif
+
     ifd RVPROBE
         include "32x/rv_probe.asm"
     endif
@@ -313,6 +323,13 @@ GameUninitialized:      jmp     (GAME_BASE+$000FD2).l
 
 GameExtInt:             jmp     (GAME_BASE+$001480).l   ; level 2, stub in stock game
 GameHBlankInt:          jmp     (GAME_BASE+$001484).l   ; level 4, raster scroll
+    ifd MAPSCREEN
+; U-034 stage 2: the world map layer follows the game's screen id. See
+; map_screen.asm.
+GameVBlankInt:
+        bsr.w   MapScreenVBlank
+        jmp     (GAME_BASE+$0014E6).l
+    else
     ifd H40PROBE
 ; Force H40 once per frame, preserving whatever else the game has put in
 ; register 12. CmdSetVDPReg shadows every register at A5+reg, so $FFF01C holds
@@ -330,3 +347,4 @@ GameVBlankInt:
     else
 GameVBlankInt:          jmp     (GAME_BASE+$0014E6).l
     endif   ; level 6, per-frame handler
+    endif

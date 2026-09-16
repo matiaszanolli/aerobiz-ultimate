@@ -30,13 +30,28 @@ LoadScreenGfx:                                                  ; $0068CA
     pea     ($0001).w
     move.l  a3,-(sp)
     jsr     (ROM_BASE+$0045E6).l
+    ifd MAPSCREEN
+; U-034 stage 2 experiment: the world map is drawn on the 32X layer, so plane
+; B's 32x22 map cells are filled with tile 0 -- fully transparent -- instead of
+; placed from the layout at $070198.  Command $1A is the rectangle fill this
+; routine uses for the band below, with the same arguments in the same order.
+; The pointer push shrinks from six bytes to four and the nop restores the
+; size, which every rebased literal after this point depends on.
+    pea     ($0000).w
+    nop
+    else
     pea     (ROM_BASE+$00070198).l
+    endif
     pea     ($0016).w
     pea     ($0020).w
     clr.l   -(sp)
     clr.l   -(sp)
     pea     ($0001).w
+    ifd MAPSCREEN
+    pea     ($001A).w
+    else
     pea     ($001B).w
+    endif
     jsr     (a2)
     pea     ($0001).w
     pea     ($000E).w

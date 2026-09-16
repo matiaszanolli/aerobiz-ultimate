@@ -9,7 +9,93 @@ manual section or the tool output that backs it.
 
 ---
 
-## 2026-09-15 (latest) -- U-014 closed: 1,817 rebased longwords, audited by code
+## 2026-09-16 (latest) -- The world map on the 32X layer, in the game
+
+U-034 stage 2, as an experiment target: `make 32x-mapscreen`. The SH2 draws the
+world overview map behind the game's own chrome, on every screen that uses it,
+and a per-frame oracle shows the result pixel-exact against stock wherever the
+game has not edited the map's tiles. The shipping cartridge's 68000 half is
+untouched.
+
+### What had to be true first, and was checked
+
+- **The map screen decompresses while it is showing.** `RunWorldMapAnimation`
+  calls `LZ_Decompress` on frame 65 of its own 136-frame loop, and U-046 sends
+  every such call to the SH2. So the zoom renderer's loop-forever shape could
+  not go into the game: the dispatcher now owns the loop and the renderer draws
+  a bounded amount per iteration. Split first, and proved behaviour-preserving
+  on 28 composited frames of `32x-zoomtest` before and after. (The commit
+  message for that split, `18ef5a9`, says 30; the directory held 28 frames and
+  two manifests.)
+- **H40 is not optional.** A day earlier the roadmap had argued otherwise, and
+  it was wrong: `32x-hardware-manual.md:1121` requires the Genesis mode to match
+  the 32X resolution whenever the layer is not blank, and lists H32 only for a
+  blank layer. Corrected before any code depended on it.
+- **The strip a 32-cell plane repeats can be covered from the 32X side.** A
+  palette colour with the through bit set is shown in front of the Genesis when
+  `PRI = 0` (manual :185, :1216). PicoDrive's `draw.c` and Ares's `vdp.cpp`
+  implement it identically.
+- **Which screens, and when.** `LoadScreenGfx` loads the world overview for 21
+  callers and writes screen id 7 to `$FF9A1C`; the regional maps write 0-6.
+  Traced over a 66,000-frame DEMO game, the id says which map plane B holds --
+  but changes before the screen does.
+- **Where to keep state.** Work RAM has no free region (PORT_ARCHITECTURE); comm
+  word 1 is unused by the RPC protocol and cleared at boot. The call counter's
+  low half was read by nothing, so it became the SH2's status word.
+
+### The colours were wrong, and that closed U-031
+
+The first frame on screen had the right shapes and the wrong colours. The
+16-word palette U-031 had pinned "because it is not in the ROM" is in the ROM,
+raw, at `$07677E` -- `LoadScreenGfx` loads it -- and the pinned copy had been
+captured mid-fade, one step down on every channel. With the ROM table the
+composite matched stock in all 57,344 pixels of the region-select screen.
+
+### The fade-out, and a mirror one frame behind
+
+The id flips at the start of a turn change's fade-out, so the first build
+dropped the map at full brightness while the chrome faded. The layer now stays
+while CRAM line 1 is still the world palette faded down and goes when it hits
+black. The palette follows CRAM from `WriteCharUIDisplay`'s copy at `$FF1400`,
+which matched CRAM in 64 of 64 words across 222 sampled states.
+
+Mirrored from V-Blank alone, the map ran exactly one frame behind on every fade
+step: the Genesis band beneath it showed the new colour in all 12,288 changed
+pixels while all 45,056 map pixels showed the old one. The game writes CRAM from
+its main line after its own V-Blank handler, inside the blanking interval, so
+the change covers the next whole frame. `WriteCharUIDisplay` is now hooked and
+the mirror happens at the write.
+
+That hook's first version called `GameCommand` straight from a `jsr`'d thunk,
+so every argument was read four bytes off; the game faded to black and stayed
+there. The oracle said 301 of 301 frames were clean -- black against black.
+Both are in KNOWN_ISSUES.
+
+### The oracle, and what it says is left
+
+`tools/mapscreen_oracle.py` rebuilds stock's picture from each savestate of the
+32X run -- restoring map cells where `LoadScreenGfx` left tile 0, compositing
+planes and sprites in priority order -- and compares it with the frame the run
+produced. Through a turn change, frame by frame: **71 of 71** comparable frames
+exact. Over 30,000 frames sampled every 100: 202 comparable, all with the map on
+the layer, **69 exact**, and every differing pixel in the rest attributed to one
+cause -- the game editing the map's tiles. `DrawRouteLines` bakes route lines
+into them before upload (15,246 pixels, each exactly where the uploaded tile
+differs from the clean asset), and the Quarterly Report overwrites slots 1-32
+with its title bar. The SH2 draws the clean asset, so neither appears.
+
+The oracle got the report wrong once too: it restored map cells only when all
+704 were blank, and so predicted a plain background where stock -- checked in a
+stock savestate -- keeps 509 map cells behind the report.
+
+### The shipping cartridge
+
+Its SH2 image changed with the dispatcher. Against the previous shipping build,
+a power-on run is picture-identical for 4,893 frames -- boot, intro, title and
+every menu, with their decompressions -- and then the DEMO game's airline draw
+diverges, as any timing change makes it do.
+
+## 2026-09-15 -- U-014 closed: 1,817 rebased longwords, audited by code
 
 The other half of the rebasing debt, and the larger one. U-010's `dc.w`-table
 pass and U-013's table-run pass turned 1,817 word pairs in ROM data into
