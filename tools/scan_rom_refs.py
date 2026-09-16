@@ -8,15 +8,19 @@ be rewritten as ROM_BASE+$xxxxxx.
 
   safe       the operand is an address by construction (address register load,
              pea/lea, any ($imm).l operand, a branch or loop target)
+  numeric    the literal cannot be a rebased address: either it is a byte or
+             word immediate, which cannot hold 24 bits, or its (mnemonic, value)
+             pair carries a recorded verdict in analysis/ROM_REF_VERDICTS.tsv
   review     the literal sits where either an address or a plain number is
              plausible; it must be classified by hand against
-             analysis/DATA_TABLES.md before being touched
+             analysis/DATA_TABLES.md before being touched, and the verdict
+             written to analysis/ROM_REF_VERDICTS.tsv
 
 Addresses outside the ROM ($000200-$0FFFFF) are ignored: work RAM ($00FFxxxx),
 I/O ($00Axxxxx) and the VDP ($00Cxxxxx) do not move on the 32X.
 
 Usage:
-    scan_rom_refs.py [--list safe|review] [path ...]
+    scan_rom_refs.py [--list safe|numeric|review] [path ...]
     scan_rom_refs.py --rewrite [--form "<form>"] [path ...]
     scan_rom_refs.py --rewrite-dcw-code [path ...]
 
@@ -61,6 +65,54 @@ DC_LONG_VALUE = re.compile(r"\$([0-9A-Fa-f]{1,8})\b")
 
 # Mnemonics whose immediate operand is an address by construction.
 ADDRESS_IMMEDIATE = {"movea", "lea", "pea"}
+
+# Verdicts recorded by U-011, keyed by (mnemonic, value). A pair listed there has
+# been judged not to be an address, with the evidence beside it.
+VERDICTS_FILE = "analysis/ROM_REF_VERDICTS.tsv"
+
+
+def load_verdicts(path=VERDICTS_FILE):
+    verdicts = {}
+    try:
+        fh = open(path)
+    except OSError:
+        return verdicts
+    with fh:
+        for line in fh:
+            if line.startswith("#") or not line.strip():
+                continue
+            fields = line.rstrip("\n").split("\t")
+            if len(fields) < 3:
+                continue
+            mnemonic, value, verdict = fields[0], fields[1], fields[2]
+            verdicts[(mnemonic.split(".")[0].lower(), int(value.lstrip("$"), 16))] = verdict
+    return verdicts
+
+
+VERDICTS = load_verdicts()
+
+
+STATUS_REGISTER = re.compile(r",\s*(sr|ccr)\s*$", re.I)
+
+
+def classify_immediate(mnemonic, suffix, value, args=""):
+    """Classify one `<mnemonic> #$imm` site.
+
+    A rebased address is $9xxxxx -- 24 bits -- so a byte or word immediate
+    cannot carry one whatever its value looks like. That excludes the whole
+    word-sized half of this class by encoding rather than by judgement, and
+    leaves the longword sites, which are judged one (mnemonic, value) pair at a
+    time and recorded in analysis/ROM_REF_VERDICTS.tsv.
+    """
+    if mnemonic in ADDRESS_IMMEDIATE:
+        return "safe"
+    if suffix and suffix.lower() in ("b", "w"):
+        return "numeric"
+    if STATUS_REGISTER.search(args):
+        return "numeric"      # an interrupt mask, not an address
+    if (mnemonic, value) in VERDICTS:
+        return "numeric"
+    return "review"
 
 # Hand-encoded absolute-long instructions, emitted as `dc.w $op,$hi,$lo` by the
 # disassembly where a mnemonic was not trusted to reproduce the exact bytes.
@@ -114,6 +166,28 @@ def dcw_pointers(operands):
     return [(hi << 16) | lo for hi, lo in pairs]
 
 
+def dcw_table_runs(lines):
+    """Line numbers (1-based) of dc.w pointer tables that are part of a run.
+
+    A real pointer table spans consecutive lines. A single line that happens to
+    parse as one, with ordinary data above and below it, is far more likely to
+    be 4bpp pixel data: `$0000,$C000,$0000,$7000` is a plausible pointer pair
+    list and an entirely ordinary pair of tile rows. Five such lines survived
+    U-010, and `--rewrite` would have turned 20 words of graphics into rebased
+    pointers -- invisibly, because the Genesis ROM would stay byte-identical
+    (ground rule 8). Requiring a neighbour costs nothing on a genuine table and
+    demotes the isolated ones to `review`, where a human decides.
+    """
+    hits = set()
+    for i, raw in enumerate(lines, 1):
+        if raw.lstrip().startswith(";"):
+            continue
+        match = DCW_TABLE.search(REBASED.sub("REBASED", raw.rstrip("\n")))
+        if match and dcw_pointers(match.group(1)):
+            hits.add(i)
+    return {i for i in hits if (i - 1) in hits or (i + 1) in hits}
+
+
 EXCLUDED = {"disasm/sections/header.asm"}
 
 # A dc.w hand-encoding usually carries the decoded instruction as a comment.
@@ -135,7 +209,9 @@ def scan(paths):
         if path in EXCLUDED:
             continue
         with open(path, errors="replace") as fh:
-            for num, raw in enumerate(fh, 1):
+            source = fh.readlines()
+            runs = dcw_table_runs(source)
+            for num, raw in enumerate(source, 1):
                 line = REBASED.sub("REBASED", raw.rstrip("\n"))
                 if line.lstrip().startswith(";"):
                     continue
@@ -155,10 +231,11 @@ def scan(paths):
                 if dcw:
                     table = dcw_pointers(dcw.group(1))
                     if table:
+                        kind = "safe" if num in runs else "review"
+                        form = ("dc.w pointer table" if num in runs
+                                else "dc.w pointer table, isolated")
                         for _ in table:
-                            findings.append(
-                                (path, num, "safe", "dc.w pointer table", line.strip())
-                            )
+                            findings.append((path, num, kind, form, line.strip()))
 
                 dc_long = DC_LONG_LINE.search(line)
                 if dc_long:
@@ -174,7 +251,9 @@ def scan(paths):
                 op, args = match.group(1), match.group(2)
                 if not args:
                     continue
-                mnemonic = op.split(".")[0].lower()
+                parts = op.split(".")
+                mnemonic = parts[0].lower()
+                suffix = parts[1].lower() if len(parts) > 1 else ""
 
                 for pcrel in PC_RELATIVE.finditer(args):
                     if in_rom(int(pcrel.group(1), 16)):
@@ -197,12 +276,12 @@ def scan(paths):
                         )
 
                 for hexval in IMMEDIATE.findall(args):
-                    if not in_rom(int(hexval, 16)):
+                    value = int(hexval, 16)
+                    if not in_rom(value):
                         continue
-                    kind = "safe" if mnemonic in ADDRESS_IMMEDIATE else "review"
-                    findings.append(
-                        (path, num, kind, f"{mnemonic} #imm", line.strip())
-                    )
+                    kind = classify_immediate(mnemonic, suffix, value, args)
+                    form = f"{mnemonic} #imm" if suffix in ("", "l") else f"{mnemonic} #imm.{suffix}"
+                    findings.append((path, num, kind, form, line.strip()))
     return findings
 
 
@@ -222,7 +301,7 @@ def rebase(hexdigits):
     return f"ROM_BASE+${hexdigits}"
 
 
-def rewrite_code(code):
+def rewrite_code(code, dcw_table_ok=True):
     """Apply every safe rebase to one line of code. Returns (code, [forms])."""
     forms = []
 
@@ -245,7 +324,7 @@ def rewrite_code(code):
                 ], target
 
     dcw = DCW_TABLE.search(code)
-    if dcw:
+    if dcw and dcw_table_ok:
         table = dcw_pointers(dcw.group(1))
         if table:
             indent = code[: len(code) - len(code.lstrip())]
@@ -321,12 +400,12 @@ def rewrite_code(code):
     return code[:start] + new_args, forms, None
 
 
-def rewrite_line(line):
+def rewrite_line(line, dcw_table_ok=True):
     """Rebase one source line, preserving its trailing comment column."""
     if "ROM_BASE" in line or line.lstrip().startswith(";"):
         return line, []
     code, comment = split_comment(line)
-    new_code, forms, decoded = rewrite_code(code.rstrip())
+    new_code, forms, decoded = rewrite_code(code.rstrip(), dcw_table_ok)
     if not forms:
         return line, []
     if comment and decoded is not None and REDUNDANT.match(comment):
@@ -349,10 +428,11 @@ def rewrite(paths, only=None):
             continue
         with open(path, errors="replace") as fh:
             lines = fh.readlines()
+        runs = dcw_table_runs(lines)
         touched = False
         for index, raw in enumerate(lines):
             line = raw.rstrip("\n")
-            new_line, forms = rewrite_line(line)
+            new_line, forms = rewrite_line(line, (index + 1) in runs)
             if not forms:
                 continue
             if only and any(form != only for form in forms):

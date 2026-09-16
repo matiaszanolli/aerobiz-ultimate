@@ -392,6 +392,21 @@ the read -- the table is still being indexed.
 code, then check that the 32X game half differs from the previous build in one
 byte per longword and equals the Genesis ROM at every restored run.
 
+**The tool no longer offers the third shape.** Five lines of that exact kind
+survived U-010 still classified `safe`, and running `--rewrite` on a copy in
+2026-09-15 converted all 20 words to `dc.l ROM_BASE+$xxxxxx`. Nothing would have
+reported it: same bytes on Genesis, so `make verify` passes. The rule now
+requires a pointer table to span **consecutive lines**, because `$0000,$C000` is
+a plausible pointer pair and an ordinary pair of tile rows, and the only thing
+that separates them on one line is whether the neighbours look the same. A
+genuine multi-line table still rewrites; an isolated line is demoted to
+`review`.
+
+The general lesson is about the audit, not the rule: **a classifier is only
+finished when you have run its destructive mode on a copy and read the diff.**
+Reading what it *prints* would have shown 20 sites in the `safe` column and
+nothing wrong.
+
 ### Nothing is at `$000100-$3FFFFF` while RV = 0
 
 The Genesis game can reach its own cartridge at low absolute addresses; the 32X
@@ -428,6 +443,23 @@ the ones whose value lands in a data-table range from
 [analysis/DATA_TABLES.md](analysis/DATA_TABLES.md). VDP constants and money
 thresholds fall out immediately. Done 2026-09-15: 278 candidates, 2 real.
 Repeat it after any pass that touches address literals.
+
+**The whole class is now swept and written down** --
+[analysis/ROM_REF_VERDICTS.tsv](analysis/ROM_REF_VERDICTS.tsv), U-011. Two
+things learned there are worth reusing on any class like this one.
+
+*Ask what the encoding permits before asking what the value means.* A rebased
+address is `$9xxxxx`, so no byte or word immediate can hold one. That was 336
+of the 899 sites excluded without a judgement call, and it is not a heuristic --
+it is what the instruction can encode. `scan_rom_refs.py` applies it directly.
+
+*Follow the register, not the value.* `$00008000` appears 200 times and
+`$0000C000` once, and both look exactly like ROM addresses. What separates a
+constant from a pointer is whether the value ever reaches an address register.
+Tracing every destination forward found 10 sites that do, all of them
+`mulu.w #$0320,d0` feeding `lea (a0,d0.w),a0` -- a record stride, not an
+address. Reading 93 values and deciding what each "looks like" would have been
+guesswork; the trace is re-runnable.
 
 ### The default 32X boot is about 1,600 frames shorter than the original
 

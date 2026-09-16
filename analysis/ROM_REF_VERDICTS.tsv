@@ -1,0 +1,138 @@
+# Verdicts for the "review" class of tools/scan_rom_refs.py -- U-011.
+#
+# Each row records one (mnemonic, longword immediate) pair that falls inside the
+# ROM range $000200-$0FFFFF and is NOT a ROM address, with the evidence for that
+# call.  scan_rom_refs.py reads this file and reports a site as `numeric` when
+# its pair appears here, so a re-run shows only sites nobody has judged yet.
+#
+# Why the file exists: the Genesis byte-identical check cannot see a mistake in
+# this class (ground rule 8).  Rewriting a constant as ROM_BASE+$xxxx leaves the
+# Genesis ROM unchanged and breaks only the 32X build -- and leaving a real
+# address alone does the same.  Both directions cost a silent bug, so the verdict
+# has to be written down.  Two entries in this class were real addresses and left
+# every city in the game without airport slots until 2026-09-15; see HISTORY.
+#
+# Byte and word immediates are NOT listed.  A rebased address is $9xxxxx, 24
+# bits, which no byte or word immediate can hold, so the scanner excludes them
+# by encoding rather than by judgement.
+#
+# Method, applied to all 563 longword sites:
+#   1. Group by (mnemonic, value) -- 93 pairs.
+#   2. For register destinations, trace the register forward to see whether it
+#      ever reaches an address register before being redefined.  Ten sites do,
+#      all `mulu.w #$0320,d0` feeding `lea (a0,d0.w),a0` -- a record stride with
+#      its own base.  No other site in the class becomes an address.
+#   3. For `addi`, trace backward to the producer: 45 of 46 take a base from a
+#      register, so the immediate is a displacement, not an address.
+#   4. For stack pushes, read the callee.  All 249 reach the VDP command
+#      interface or a division helper.
+#
+# mnemonic  value       verdict   evidence
+#
+# ---- VDP register writes: $8000 | reg<<8 | data, pushed to the command interface
+move.l	$00008004	numeric	VDP register 0 = $04
+move.l	$00008104	numeric	VDP register 1 = $04
+move.l	$00008600	numeric	VDP register 6 = $00
+move.l	$00008700	numeric	VDP register 7 = $00, background colour index
+move.l	$00008800	numeric	VDP register 8 = $00
+move.l	$00008900	numeric	VDP register 9 = $00
+move.l	$00008A3F	numeric	VDP register 10 = $3F, H-interrupt counter
+move.l	$00008B00	numeric	VDP register 11 = $00, scroll mode
+move.l	$00008B02	numeric	VDP register 11 = $02, scroll mode
+move.l	$00008C00	numeric	VDP register 12 = $00, H32
+move.l	$00008C08	numeric	VDP register 12 = $08, shadow/highlight
+move.l	$00008C81	numeric	VDP register 12 = $81, H40
+move.l	$00008E00	numeric	VDP register 14 = $00
+move.l	$00008F02	numeric	VDP register 15 = $02, auto-increment
+move.l	$00009000	numeric	VDP register 16 = $00, plane size
+move.l	$00009010	numeric	VDP register 16 = $10, 32x64 cells
+move.l	$00009030	numeric	VDP register 16 = $30, 32x128 cells -- the gameplay map
+move.l	$00009100	numeric	VDP register 17 = $00, window H position
+move.l	$00009200	numeric	VDP register 18 = $00, window V position
+ori.l	$00009000	numeric	SetScrollQuadrant builds a register 16 write as $9000 | table byte
+#
+# ---- VRAM addresses and nametable words, pushed to TilePlacement / GameCommand
+move.l	$00008000	numeric	VRAM base / nametable priority bit; 249 pushes, every callee is the VDP command interface
+move.l	$0000A4E0	numeric	VRAM address inside the tile area ($0000-$BFFF)
+move.l	$0000A5E0	numeric	VRAM address inside the tile area
+move.l	$0000A620	numeric	VRAM address inside the tile area
+move.l	$0000A820	numeric	VRAM address inside the tile area
+move.l	$0000C000	numeric	VRAM $C000, plane A name table
+move.l	$0000E0C6	numeric	VRAM $E000, plane B name table, plus a cell offset
+move.l	$0000FC00	numeric	VRAM $FC00, horizontal scroll table
+#
+# ---- VRAM address arithmetic
+subi.l	$00000C00	numeric	EarlyInit and DecompressVDPTiles, VRAM address bit clear
+subi.l	$00001800	numeric	EarlyInit and DecompressVDPTiles, VRAM address bit clear
+ori.l	$00001000	numeric	EarlyInit and DecompressVDPTiles, sets VRAM address bit 12
+#
+# ---- Bit masks: an AND can only yield the immediate if the operand is all ones
+andi.l	$00000300	numeric	bit mask
+andi.l	$000003F8	numeric	bit mask, bits 8-3
+andi.l	$00000600	numeric	bit mask
+andi.l	$000007E0	numeric	bit mask, bits 9-5
+andi.l	$000007FF	numeric	bit mask, low 11 bits -- the VDP tile index field
+andi.l	$00000E00	numeric	bit mask
+andi.l	$00000F80	numeric	bit mask, bits 10-7
+andi.l	$00001E00	numeric	bit mask, bits 12-9
+andi.l	$00001FC0	numeric	bit mask
+andi.l	$00001FFF	numeric	bit mask, low 13 bits
+andi.l	$00003800	numeric	bit mask, bits 13-11
+andi.l	$00003FFF	numeric	bit mask, low 14 bits
+andi.l	$00006000	numeric	bit mask, bits 14-13
+andi.l	$00008000	numeric	sign-bit test
+andi.l	$0000FF00	numeric	bit mask, high byte of a word
+andi.l	$0000FFFE	numeric	bit mask, clears bit 0
+andi.l	$0000FFFF	numeric	truncate to word; 169 sites, none reaches an address register
+andi.l	$00030000	numeric	bit mask, bits 17-16
+#
+# ---- Comparisons
+cmpi.l	$000036B0	numeric	RenderAnimFrame, frame counter limit 14000
+cmpi.l	$00007FFF	numeric	SignedDiv and SignedMod range predicate
+cmpi.l	$0000FFFF	numeric	no-overflow sentinel, so commented at FilterCollection.asm:77
+cmpi.l	$00010000	numeric	UnsignedDivide and UnsignedMod range predicate
+cmpi.l	$000186A0	numeric	player cash at $6(a2) against 100000
+#
+# ---- Money and counts
+move.l	$00000320	numeric	800, relation-record stride; as mulu.w it feeds lea (a0,d0.w),a0
+move.l	$00001388	numeric	5000
+move.l	$00001D4C	numeric	7500
+move.l	$00001F40	numeric	8000
+move.l	$00002710	numeric	10000
+move.l	$000036B0	numeric	14000
+move.l	$00007FFF	numeric	word clamp
+move.l	$0000FFFF	numeric	word sentinel
+move.l	$00010000	numeric	65536
+move.l	$000186A0	numeric	100000
+addi.l	$00002710	numeric	CalcRelationValue, 10000
+addi.l	$00003E80	numeric	PostTurnCleanup, 16000, compared against player cash at $0006(a2)
+addi.l	$000186A0	numeric	player cash at $6(a2) += 100000
+addi.l	$00030D40	numeric	player cash at $6(a2) += 200000
+addi.l	$000007D0	numeric	RunScenarioMenu, 2000; d0 is the return of Modulo32, so 0-99 + 2000
+addi.l	$00003039	numeric	RandRange, 12345, the LCG increment
+#
+# ---- Displacements added to a base already in the register
+addi.l	$0000027A	numeric	tile char# offset from a register base
+addi.l	$00000328	numeric	tile char# offset, stat-bar empty icon
+addi.l	$0000033A	numeric	tile char# offset, fully-filled icon
+addi.l	$0000033B	numeric	tile char# offset, partial icon
+addi.l	$0000033C	numeric	tile char# offset, empty icon
+addi.l	$0000033D	numeric	tile char# offset, secondary stat icon
+addi.l	$0000033E	numeric	tile char# offset, stat-bar filled icon
+addi.l	$0000037B	numeric	tile char# offset
+addi.l	$00000405	numeric	LoadGameGraphics, offset from a register base
+addi.l	$0000045F	numeric	LoadGameGraphics, offset from a register base
+addi.l	$00000640	numeric	1600, tile char# base for the city header row
+addi.l	$00000690	numeric	tile char# offset
+addi.l	$00000722	numeric	offset from a5, compressed map tile data; a5 carries the base
+addi.l	$00000754	numeric	tile char# base for the player name column
+addi.l	$00000774	numeric	VRAM tile number base for icon tiles
+addi.l	$000010A0	numeric	RunWorldMapAnimation, city overlay band offset
+addi.l	$00001160	numeric	RunWorldMapAnimation, row 1 data offset
+addi.l	$000011A0	numeric	RunWorldMapAnimation, city overlay band offset
+addi.l	$00001320	numeric	RunWorldMapAnimation, row 2 data offset
+addi.l	$000014E0	numeric	RunWorldMapAnimation, row 3 data offset
+addi.l	$000016A0	numeric	RunWorldMapAnimation, row 4 data offset
+addi.l	$00000640	numeric	tile char# base
+addi.l	$00005000	numeric	added to a4 = $00FF1804, a work-RAM buffer, then MemFillByte
+addi.l	$0000637B	numeric	VRAM tile index base; the result is stored as words into -$10(a6,d0.w)

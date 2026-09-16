@@ -58,12 +58,14 @@ one contradicted something this roadmap previously asserted:
    The plane-selection corruption reported 2026-09-12 is gone -- a route opened
    and flown on Ares, 2026-09-15 -- so the two index tables behind the route
    screens are confirmed. The rest of the audit stands.
-   **The 896-entry review class is part of this, not paperwork.** Two of its
-   `move #imm` entries were real ROM addresses, and until 2026-09-15 they left
-   every city in the game without airport slots (HISTORY). The `move.l #imm`
-   subset is now swept at binary level and clean; the rest of the class --
-   `andi`, `addi`, `cmpi`, `ori`, `mulu`, `subi` -- is numeric by inspection of
-   its longword forms, but has not been walked entry by entry.
+   **The review class is closed (U-011, 2026-09-15).** It was not paperwork:
+   two of its `move #imm` entries were real ROM addresses and left every city in
+   the game without airport slots. All 899 sites are now judged, with the
+   evidence in `analysis/ROM_REF_VERDICTS.tsv`, and the tool reads that file so
+   a new unjudged site shows up as `review` instead of hiding in a pile.
+   That leaves **the 1,817 rebased data longwords as the whole of U-014**, and
+   they have no comparable shortcut: the review class collapsed to 93 distinct
+   values because immediates repeat, and data longwords do not.
 2. **M4 through the 32X frame buffer** -- U-034 stage 2. Widening the Genesis
    plane (U-036) is blocked: `CmdSetupDMA` writes live scratch to fixed VRAM
    addresses that a 64-cell plane displays, and the routine passing those
@@ -244,16 +246,57 @@ not land on an instruction boundary. All 50 do.
 
 `scan_rom_refs.py` now reports **zero** `safe` sites outstanding.
 
-### U-011 -- Classify the 901 "review" literals [OPEN]
+**Corrected 2026-09-15.** That sentence was true of what the tool printed and
+not of what the tool would do. Five `dc.w` lines still classified as `safe`, and
+`--rewrite` would have converted 20 words of 4bpp tile pixel data into rebased
+pointers. They are now `review`; see U-014.
 
-`tools/scan_rom_refs.py --list review`. Each is a `move`/`andi`/`addi`/`cmpi`/
-`ori`/`mulu`/`subi` immediate that happens to fall in `$000200-$0FFFFF`. Most
-are masks, counts and multipliers, not addresses. Classify against
-`analysis/DATA_TABLES.md` and `analysis/FUNCTION_REFERENCE.md`.
+### U-011 -- Classify the "review" literals [DONE]
 
-**The Genesis byte-identical check cannot catch a mistake here.** Rewriting a
-constant as `ROM_BASE+$xxxx` leaves the Genesis ROM unchanged and breaks only
-the 32X build. Record the verdict and the evidence for each site.
+899 sites, every one a `move`/`andi`/`addi`/`cmpi`/`ori`/`mulu`/`subi`
+immediate that happens to fall in `$000200-$0FFFFF`. **None is a ROM address.**
+The verdicts are in
+[analysis/ROM_REF_VERDICTS.tsv](analysis/ROM_REF_VERDICTS.tsv), one row per
+(mnemonic, value) pair with its evidence, and `scan_rom_refs.py` reads that file
+so a re-run reports only sites nobody has judged yet.
+
+This class had already shipped one game-breaking bug -- two of its `move.l`
+entries were real ROM addresses and left every city without airport slots until
+2026-09-15 (HISTORY) -- so it was worked as a backlog of real suspects, not as
+paperwork.
+
+**The class is far smaller than 899 once the encoding is taken into account.**
+A rebased address is `$9xxxxx`, 24 bits, which no byte or word immediate can
+hold. That excludes 336 sites by encoding rather than by judgement and leaves
+563 longword sites, which collapse to **93 distinct (mnemonic, value) pairs**.
+The tool now applies the same rule, so the word-sized half can never come back
+as backlog.
+
+Three structural passes settled the 93, and each is re-runnable rather than an
+opinion:
+
+| Pass | Result |
+|---|---|
+| Trace each destination register forward to see whether it ever reaches an address register | **10 of 563 do**, all `mulu.w #$0320,d0` feeding `lea (a0,d0.w),a0` -- an 800-byte record stride with its own base |
+| Trace each `addi.l` backward to its producer | **45 of 46** take a base from a register, so the immediate is a displacement; the 46th is `Modulo32`'s return value plus 2000, a price |
+| Read the callee for each stack push | **all 249** reach the VDP command interface (`TilePlacement`, `GameCommand`) or a division helper |
+
+What the 93 actually are: 20 VDP register writes (`$8000 | reg<<8 | data`),
+8 VRAM addresses and nametable words, 3 VRAM address bit operations, 18 bit
+masks, 5 comparisons, 16 money and count constants, and 23 displacements added
+to a base already held in the register. `$00008000` alone accounts for 200
+sites and `andi.l #$FFFF` for 169.
+
+**A useful negative result.** The forward trace also answers a question nobody
+had asked: does the game ever mask or truncate a value that is a ROM pointer?
+`andi.l #$FFFF` applied to a rebased `$90xxxx` pointer would break the 32X and
+nothing else. No `andi` result in the class reaches an address register, so the
+class is empty.
+
+Two tool defects were found while closing this, both recorded below under U-014
+and in [KNOWN_ISSUES.md](KNOWN_ISSUES.md): `ori #$0700,sr` was being offered for
+rebasing, and `--rewrite` would have turned 20 words of tile pixel data into
+pointers.
 
 ### U-012 -- Get the game half to assemble at $900000 [DONE]
 
@@ -329,6 +372,24 @@ signature and the evidence rule.
    these back. `table_targets` must require longword access and must not walk
    past a table's end; the `dc.w`-table rule must reject pairs whose low words
    are pixel- or colour-shaped.
+
+   **The `dc.w` half is done, and it was not hypothetical.** Closing U-011
+   turned up five surviving lines that the rule still called `safe`, and a
+   `--rewrite` on a copy converted all 20 words into `dc.l ROM_BASE+$xxxxxx`:
+
+   ```
+   dc.w  $0000,$C000,$0000,$7000,$0000,$7F00,$0000,$7F0C   ; $049B50
+   ->    dc.l ROM_BASE+$00C000,ROM_BASE+$007000,...
+   ```
+
+   `make verify` would have passed -- same bytes on Genesis -- and the 32X
+   would have shown corrupt tiles somewhere nobody was looking. The rule now
+   requires a pointer table to span **consecutive lines**: `$0000,$C000` is a
+   plausible pointer pair and an entirely ordinary pair of 4bpp tile rows, and
+   the thing that tells them apart is whether the neighbours look the same.
+   A genuine multi-line table still rewrites; the five isolated lines are now
+   `review`, which is where they belong, and they are the entire remaining
+   `review` class. The low-word shape test is still worth adding.
 
 **First check, done 2026-09-15:** the plane-selection corruption from
 2026-09-12 is gone. `$04797C` and `$05F6F2` -- word index tables behind

@@ -9,7 +9,76 @@ manual section or the tool output that backs it.
 
 ---
 
-## 2026-09-15 (latest) -- Ares stops at the region lockout, and PicoDrive now does too
+## 2026-09-15 (latest) -- U-011 closed: 899 suspects, none of them an address
+
+The review class existed because two rebasing-adjacent questions have the same
+shape and opposite answers: rewriting a constant as `ROM_BASE+$xxxx` breaks the
+32X silently, and leaving a real address alone breaks it just as silently. It
+had already cost one bug -- the airport slots, earlier the same day -- so it was
+worked as a list of suspects.
+
+**All 899 are numeric.** The verdicts, one row per (mnemonic, value) pair with
+its evidence, are in `analysis/ROM_REF_VERDICTS.tsv`, and `scan_rom_refs.py`
+reads that file, so the backlog is now a tripwire: a new unjudged site shows up
+as `review` rather than joining a pile that nobody reads.
+
+**The class was never 899 decisions.** Two reductions did nearly all the work,
+and both are mechanical:
+
+| | |
+|---|---|
+| A rebased address is `$9xxxxx`, 24 bits | no byte or word immediate can hold one -- **336 sites excluded by encoding** |
+| Immediates repeat | the remaining 563 are **93 distinct (mnemonic, value) pairs** |
+
+Then three re-runnable passes rather than 93 judgement calls:
+
+- **Trace each destination register forward.** Ten of 563 sites ever reach an
+  address register, all `mulu.w #$0320,d0` feeding `lea (a0,d0.w),a0` -- the
+  800-byte relation-record stride, which has its own base.
+- **Trace each `addi.l` backward.** 45 of 46 take a base from a register, so the
+  immediate is a displacement. The 46th adds 2000 to `Modulo32`'s return value:
+  a price, at `RunScenarioMenu.asm:121`.
+- **Read the callee of each stack push.** All 249 reach the VDP command
+  interface or a division helper. `$00008000` is 200 of them.
+
+**A question nobody had asked, answered for free.** The forward trace also finds
+any place the game masks a value that is a pointer -- `andi.l #$FFFF` on a
+rebased `$90xxxx` would break the 32X and nothing else. There are none.
+
+### Two tool defects, one of them armed
+
+Neither was the thing being looked for, and the second is the more useful find.
+
+`ori #$0700,sr` and `move #$2000,sr` were sitting in the review class. They are
+interrupt masks; a status-register destination cannot be an address. Three
+sites, now excluded by rule.
+
+The other: **five `dc.w` lines were still classified `safe`, and `--rewrite`
+would have converted 20 words of 4bpp tile pixel data into rebased pointers.**
+Run on a copy:
+
+```
+dc.w  $0000,$C000,$0000,$7000,$0000,$7F00,$0000,$7F0C    ; $049B50
+->    dc.l  ROM_BASE+$00C000,ROM_BASE+$007000,...
+```
+
+`make verify` would have passed -- identical bytes on Genesis -- and corrupt
+tiles would have appeared on the 32X on whatever screen uses them. KNOWN_ISSUES
+had listed this exact shape since 2026-09-14 as one that fools the passes; what
+it had not said is that the tool would still do it on request.
+
+The rule now requires a pointer table to span consecutive lines. `$0000,$C000`
+is a plausible pointer pair *and* an ordinary pair of tile rows; on a single
+line there is nothing to tell them apart, and across three there is. A genuine
+multi-line table still rewrites -- tested -- and the five isolated lines are now
+`review`, where a human decides. They are the entire remaining review class.
+
+**What this cost to find: running the destructive mode on a copy.** Reading what
+the tool printed showed 20 sites in the `safe` column and nothing wrong with
+them. A classifier is not audited until its `--rewrite` has been run somewhere
+harmless and the diff read.
+
+## 2026-09-15 -- Ares stops at the region lockout, and PicoDrive now does too
 
 The first run on Ares showed a black screen reading "DEVELOPED FOR USE ONLY
 WITH" -- the game's own region lockout, not a 32X fault. `EarlyInit` finds the
