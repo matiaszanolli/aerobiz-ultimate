@@ -58,6 +58,12 @@ one contradicted something this roadmap previously asserted:
    The plane-selection corruption reported 2026-09-12 is gone -- a route opened
    and flown on Ares, 2026-09-15 -- so the two index tables behind the route
    screens are confirmed. The rest of the audit stands.
+   **The 896-entry review class is part of this, not paperwork.** Two of its
+   `move #imm` entries were real ROM addresses, and until 2026-09-15 they left
+   every city in the game without airport slots (HISTORY). The `move.l #imm`
+   subset is now swept at binary level and clean; the rest of the class --
+   `andi`, `addi`, `cmpi`, `ori`, `mulu`, `subi` -- is numeric by inspection of
+   its longword forms, but has not been walked entry by entry.
 2. **M4 through the 32X frame buffer** -- U-034 stage 2. Widening the Genesis
    plane (U-036) is blocked: `CmdSetupDMA` writes live scratch to fixed VRAM
    addresses that a 64-cell plane displays, and the routine passing those

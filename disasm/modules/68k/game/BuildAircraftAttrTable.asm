@@ -68,8 +68,12 @@ BuildAircraftAttrTable:
     movea.l  #ROM_BASE+$0005F26A,a4
     movea.l  #ROM_BASE+$0005F3CE,a3
     movea.l  #$00FF1298,a2
-    move.l  #$5f572, -$4(a6)
-    move.l  #$5f624, -$8(a6)
+; Two ROM table pointers held in stack locals.  `move.l #imm,(d16,An)` is an
+; address-carrying form that the rebasing passes did not know, so these stayed
+; at their Genesis addresses and read nothing on the 32X -- every city's value
+; came back the same and no city offered a slot.  See HISTORY, 2026-09-15.
+    move.l  #ROM_BASE+$0005F572, -$4(a6)
+    move.l  #ROM_BASE+$0005F624, -$8(a6)
     movea.l  #$00FF8824,a5
     clr.w   d2
 .l0c7b0:

@@ -58,6 +58,44 @@ again at `RV = 1`.
   seen in a 32X". It is the first run of U-037's affine renderer outside
   PicoDrive. HARDWARE_TESTS item 8 records what this does and does not settle.
 
+### Zero airport slots: an address the rebasing passes were told to skip
+
+Reported from play: the 32X build offered no slots in any city, where the
+original shows a number beside each one. `BuildAircraftAttrTable` builds an
+89-entry per-city table at `$FF8824`, and for the middle scenarios it does not
+copy it -- it interpolates between two era tables whose addresses it holds in
+stack locals:
+
+```
+    move.l  #$5f572, -$4(a6)        ; before
+    move.l  #$5f624, -$8(a6)
+```
+
+Both are bare Genesis addresses. The game half is linked at `$900000`, and with
+`RV` clear nothing answers at `$0005F572`, so every city's value came back the
+same. Live RAM says it plainly: the retail original holds `82 31 79 00 84 00
+8e 01 64 2d ...`, the 32X build `02 00` repeated 89 times.
+
+**Fix:** `#ROM_BASE+$0005F572` and `#ROM_BASE+$0005F624`. Six bytes for six,
+Genesis byte-identical, and the game half gains exactly two differing bytes.
+
+**Why nothing caught it.** The bytes are *identical* in both ROMs, so the
+byte-identical check cannot see it (ground rule 8) and neither can a Genesis
+diff. `scan_rom_refs.py` did report both sites -- as **review**, the class
+PORT_ARCHITECTURE sizes at 896 entries, 414 of them `move #imm`. The class was
+never worked through. The tool was right; the backlog was the gap.
+
+**Audited, not assumed.** Every `move.l #imm` in the game image whose value
+lands in `$000200-$0FFFFF` and which the 32X build left unrebased: 278 sites,
+all VDP register constants (`$8000`, `$8C00`), loop counts or money thresholds
+apart from these two. The same sweep over `cmpi.l`/`addi.l`/`subi.l`/`andi.l`/
+`ori.l`: 24 sites, all numeric -- including `cmpi.l #$010000`, the divide
+routine's own fast-path predicate. So this class is now clean.
+
+**Found by** exporting 68000 work RAM from Ares in both builds at the same
+point (Tools -> Memory -> CPU RAM -> Export) and diffing. Ares's GDB server
+cannot do this -- its memory hooks are installed only by the N64 system code.
+
 ### The finished logo flashed before the spin
 
 Ares showed the full-size logo for one frame before the spin began. PicoDrive

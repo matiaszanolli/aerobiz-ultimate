@@ -408,6 +408,27 @@ Test with `VRD_RV_EMULATION=1`. Before 2026-09-15 that flag left
 Fix a read by taking the game half's copy, `(ROM_BASE+$xxxx,pc)`, under
 `GAME_REBASED`.
 
+### A ROM address can hide in `move.l #imm`, and the review class is not optional
+
+`lea`, `pea` and `movea.l #imm` are addresses by construction, so the rebasing
+passes rewrote them. `move.l #imm` is usually a constant -- `$8000` for a VDP
+register, `$0186A0` for a sum of money -- so the passes leave it alone and
+`scan_rom_refs.py` files it under **review**. Occasionally it is an address:
+`BuildAircraftAttrTable` keeps two ROM table pointers in stack locals that way,
+and on the 32X both read nothing, which left every city without slots
+(HISTORY, 2026-09-15).
+
+This class is invisible to every automated check: the bytes are identical in
+both ROMs, so `make verify` passes and a Genesis-versus-32X diff shows nothing.
+Only running the game finds it.
+
+**How to sweep it.** Decode the game image, take every `move.l #imm` whose
+value is in `$000200-$0FFFFF` and which the 32X build left unrebased, then keep
+the ones whose value lands in a data-table range from
+[analysis/DATA_TABLES.md](analysis/DATA_TABLES.md). VDP constants and money
+thresholds fall out immediately. Done 2026-09-15: 278 candidates, 2 real.
+Repeat it after any pass that touches address literals.
+
 ### The default 32X boot is about 1,600 frames shorter than the original
 
 Since 2026-09-14 the 32X build skips the KOEI banners and the aircraft
