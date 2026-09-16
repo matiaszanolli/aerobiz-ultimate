@@ -212,4 +212,7 @@ MARS_SH2_CMD_LZ_JOB equ $0008
 MARS_SH2_CMD_AFFINE equ $0009
 MARS_SH2_CMD_SEGA   equ $000A
 MARS_SH2_CMD_SEGA_COVER equ $000B
+MARS_SH2_CMD_MAP_ON equ $000C   ; U-034: start rendering the map, one frame per
+                                ; dispatcher iteration; returns at once
+MARS_SH2_CMD_MAP_OFF equ $000D  ; stop rendering; the 68000 blanks the layer
 MARS_STOCK_TRIGGER  equ $00FFF000   ; the game's own 10-byte RAM trigger stub

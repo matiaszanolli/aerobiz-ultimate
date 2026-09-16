@@ -40,10 +40,21 @@
 #define SH2_CMD_AFFINE  0x0009u
 #define SH2_CMD_SEGA    0x000Au
 #define SH2_CMD_SEGA_COVER 0x000Bu
+#define SH2_CMD_MAP_ON  0x000Cu
+#define SH2_CMD_MAP_OFF 0x000Du
+
+/* Interrupt Mask Register, manual 3.2.2 (address 2000 4000h): bit 15 is FM,
+ * the VDP access authorization. Read-only use here -- the register also holds
+ * the V/H/CMD/PWM enables, and ground rule 11 requires at least one to stay
+ * set, so nothing writes it. */
+#define SYS_INTMASK (*(volatile unsigned short *)0x20004000)
+#define INTMASK_FM  0x8000u
 
 void sh2_fb_test(void);
 void sh2_map_test(void);
 void sh2_zoom_test(void);
+void sh2_map_begin(void);
+void sh2_map_frame(void);
 void sh2_affine_test(void);
 void sh2_timing_test(void);
 void sh2_lz_test(void);
@@ -68,92 +79,125 @@ volatile unsigned long sh2_vint_count;
  * one is reachable as `read master <addr>`. */
 volatile unsigned long sh2_calls_serviced;
 
+/* Set by MAP_ON, cleared by MAP_OFF. While it is set the dispatcher renders a
+ * frame per iteration; see sh2_rpc_loop. */
+static int map_active;
+
+/* Service one command if the 68000 has queued one. Split out of sh2_rpc_loop
+ * so the render path and the idle path go through the same code rather than
+ * through two copies that can drift apart. */
+static void sh2_service(void)
+{
+    unsigned short cmd = COMM_CMD;
+
+    if (cmd == 0u)
+        return;
+
+    switch (cmd) {
+    case SH2_CMD_PING:
+        COMM_ARG0 = SH2_PING_REPLY;
+        break;
+
+    case SH2_CMD_UDIV32: {
+        /* Both arguments must be read before either result is written --
+         * the argument and result slots are the same registers. */
+        unsigned long dividend = COMM_ARG0;
+        unsigned long divisor  = COMM_ARG1;
+        unsigned long quotient, remainder;
+
+        if (divisor == 0uL) {
+            /* The 68000 routine would trap here; the probe never sends
+             * it.  Answer with a value it can recognise instead. */
+            quotient  = 0xFFFFFFFFuL;
+            remainder = 0uL;
+        } else {
+            quotient  = dividend / divisor;
+            remainder = dividend % divisor;
+        }
+
+        COMM_ARG0 = quotient;
+        COMM_ARG1 = remainder;
+        break;
+    }
+
+    case SH2_CMD_FBTEST:
+        sh2_fb_test();
+        break;
+
+    case SH2_CMD_MAPTEST:
+        sh2_map_test();
+        break;
+
+    case SH2_CMD_AFFINE:
+        sh2_affine_test();         /* animates; does not return */
+        break;
+
+    case SH2_CMD_SEGA:
+        sh2_sega_spin();           /* returns with the layer blank again */
+        break;
+
+    case SH2_CMD_SEGA_COVER:
+        sh2_sega_cover();          /* returns with the layer up, black */
+        break;
+
+    case SH2_CMD_ZOOM:
+        sh2_zoom_test();           /* animates; does not return */
+        break;
+
+    /* U-034 stage 2. MAP_ON loads the asset and returns immediately, so the
+     * 68000 is not held for the length of a frame; the dispatcher renders from
+     * then on. The 68000 owns VDP_BITMAP either side of this, because it is
+     * the side that knows when the map screen begins and ends. */
+    case SH2_CMD_MAP_ON:
+        sh2_map_begin();
+        map_active = 1;
+        break;
+
+    case SH2_CMD_MAP_OFF:
+        map_active = 0;
+        break;
+
+    case SH2_CMD_TIMING:
+        sh2_timing_test();         /* halts when done; does not return */
+        break;
+
+    case SH2_CMD_LZ:
+        sh2_lz_test();             /* halts when done; does not return */
+        break;
+
+    case SH2_CMD_LZ_JOB: {
+        /* Both arguments must be read before either result is written --
+         * the argument and result slots are the same registers. */
+        unsigned long src = COMM_ARG0;
+        unsigned long fbo = COMM_ARG1;
+        COMM_ARG0 = sh2_lz_job(src, fbo);
+        break;
+    }
+
+    default:
+        COMM_ARG0 = 0xDEAD0000uL | (unsigned long)cmd;
+        break;
+    }
+
+    sh2_calls_serviced = sh2_calls_serviced + 1uL;
+    COMM_COUNT = COMM_COUNT + 1uL;
+    COMM_CMD   = 0u;               /* release the 68000 */
+}
+
 void sh2_rpc_loop(void)
 {
     COMM_COUNT = 0;
     sh2_calls_serviced = 0;
 
     for (;;) {
-        unsigned short cmd = COMM_CMD;
+        /* Render only while the 68000 has actually granted the frame buffer.
+         * The LZ thunk takes FM back to copy its result out (sh2_lz.asm), and
+         * with FM = 0 an SH2 write to the frame buffer is ignored outright
+         * (manual:285) -- so rendering through that window would silently drop
+         * part of a frame rather than fail in any visible way. */
+        if (map_active && (SYS_INTMASK & INTMASK_FM) != 0u)
+            sh2_map_frame();
 
-        if (cmd == 0u)
-            continue;
-
-        switch (cmd) {
-        case SH2_CMD_PING:
-            COMM_ARG0 = SH2_PING_REPLY;
-            break;
-
-        case SH2_CMD_UDIV32: {
-            /* Both arguments must be read before either result is written --
-             * the argument and result slots are the same registers. */
-            unsigned long dividend = COMM_ARG0;
-            unsigned long divisor  = COMM_ARG1;
-            unsigned long quotient, remainder;
-
-            if (divisor == 0uL) {
-                /* The 68000 routine would trap here; the probe never sends
-                 * it.  Answer with a value it can recognise instead. */
-                quotient  = 0xFFFFFFFFuL;
-                remainder = 0uL;
-            } else {
-                quotient  = dividend / divisor;
-                remainder = dividend % divisor;
-            }
-
-            COMM_ARG0 = quotient;
-            COMM_ARG1 = remainder;
-            break;
-        }
-
-        case SH2_CMD_FBTEST:
-            sh2_fb_test();
-            break;
-
-        case SH2_CMD_MAPTEST:
-            sh2_map_test();
-            break;
-
-        case SH2_CMD_AFFINE:
-            sh2_affine_test();         /* animates; does not return */
-            break;
-
-        case SH2_CMD_SEGA:
-            sh2_sega_spin();           /* returns with the layer blank again */
-            break;
-
-        case SH2_CMD_SEGA_COVER:
-            sh2_sega_cover();          /* returns with the layer up, black */
-            break;
-
-        case SH2_CMD_ZOOM:
-            sh2_zoom_test();           /* animates; does not return */
-            break;
-
-        case SH2_CMD_TIMING:
-            sh2_timing_test();         /* halts when done; does not return */
-            break;
-
-        case SH2_CMD_LZ:
-            sh2_lz_test();             /* halts when done; does not return */
-            break;
-
-        case SH2_CMD_LZ_JOB: {
-            /* Both arguments must be read before either result is written --
-             * the argument and result slots are the same registers. */
-            unsigned long src = COMM_ARG0;
-            unsigned long fbo = COMM_ARG1;
-            COMM_ARG0 = sh2_lz_job(src, fbo);
-            break;
-        }
-
-        default:
-            COMM_ARG0 = 0xDEAD0000uL | (unsigned long)cmd;
-            break;
-        }
-
-        sh2_calls_serviced = sh2_calls_serviced + 1uL;
-        COMM_COUNT = COMM_COUNT + 1uL;
-        COMM_CMD   = 0u;               /* release the 68000 */
+        sh2_service();
     }
 }

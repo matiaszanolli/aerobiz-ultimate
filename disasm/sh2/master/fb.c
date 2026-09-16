@@ -20,6 +20,13 @@
 #define FBCTL_VBLK   0x8000u
 #define FBCTL_FS     0x0001u
 
+/* Bitmap mode register values (manual, Bitmap Mode).  Up here with the other
+ * register definitions rather than beside their first user: three separate
+ * features set this register now, and the SEGA intro was only the first. */
+#define MODE_BLANK   0x0000u
+#define MODE_PACKED  0x0001u
+#define BM_PRI       0x0080u          /* 32X layer in front of the Genesis */
+
 /* Packed pixel mode: one byte per pixel, so 320 pixels is 160 words, and the
  * line table is the first 256 words of the buffer (manual 3.3).  Pixel data
  * therefore starts at word 256. */
@@ -332,17 +339,62 @@ static unsigned int fb_blit_scaled(unsigned int cx, unsigned int cy,
  * quantisation is a rounding error rather than the measurement. */
 #define BENCH_BLITS  32u
 
-void sh2_zoom_test(void)
-{
-    unsigned long step = FP_ONE;
-    long dir = -(long)ZOOM_STEP;
-    unsigned long t0;
-    unsigned int i;
+/* Animation state, held across calls because the renderer no longer owns the
+ * loop -- see sh2_map_frame. */
+static unsigned long map_step;
+static long          map_dir;
 
+/* Load the asset and set the state one frame of animation needs. Deliberately
+ * does not touch VDP_BITMAP: whoever turns the layer on owns the mode, and on
+ * the demo cartridges that is md_main, before it hands FM over. */
+void sh2_map_begin(void)
+{
     map_load();
     PALETTE[PAL_MAJOR] = 0x001Fu;       /* red   -- major airports */
     PALETTE[PAL_MINOR] = 0x03FFu;       /* yellow -- secondaries */
     PALETTE[PAL_ARC]   = 0x7FFFu;       /* white  -- route arcs */
+    map_step = FP_ONE;
+    map_dir  = -(long)ZOOM_STEP;
+}
+
+/* ==========================================================================
+ * One frame, then return. U-034 stage 2.
+ *
+ * The obvious shape for this is a loop that renders until told to stop, and it
+ * is what sh2_zoom_test did for the whole of U-035. It cannot survive contact
+ * with the game: U-046 routes every LZ_Decompress call through the SH2, and
+ * RunWorldMapAnimation decompresses on frame 65 of its own 136-frame display
+ * loop (RunWorldMapAnimation.asm:467) -- while the map is on screen. An SH2
+ * inside a render loop would never answer, the thunk would spin out its
+ * 400,000-iteration timeout, and the screen would fall back to the 68000 at
+ * 285 cycles a byte.
+ *
+ * So the dispatcher owns the loop and calls this once per iteration; see
+ * sh2_rpc_loop, which renders a frame and then services whatever is queued.
+ * ========================================================================== */
+void sh2_map_frame(void)
+{
+    fb_wait_vblank();
+    (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, map_step);
+    fb_draw_overlay(fb_u0, fb_v0, fb_step, fb_slots);
+    VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
+
+    map_step = (unsigned long)((long)map_step + map_dir);
+    if (map_step <= ZOOM_MIN) {
+        map_step = ZOOM_MIN;
+        map_dir = (long)ZOOM_STEP;
+    } else if (map_step >= FP_ONE) {
+        map_step = FP_ONE;
+        map_dir = -(long)ZOOM_STEP;
+    }
+}
+
+void sh2_zoom_test(void)
+{
+    unsigned long t0;
+    unsigned int i;
+
+    sh2_map_begin();
 
     /* 1:1 first, which is the worst case: it needs a distinct source row per
      * display line, so nothing the animation does afterwards costs more.
@@ -359,21 +411,10 @@ void sh2_zoom_test(void)
     }
     sh2_zoom_blits = BENCH_BLITS;
 
-    for (;;) {
-        fb_wait_vblank();
-        (void)fb_blit_scaled(ZOOM_CX, ZOOM_CY, step);
-        fb_draw_overlay(fb_u0, fb_v0, fb_step, fb_slots);
-        VDP_FBCTL = (unsigned short)((VDP_FBCTL & FBCTL_FS) ^ FBCTL_FS);
-
-        step = (unsigned long)((long)step + dir);
-        if (step <= ZOOM_MIN) {
-            step = ZOOM_MIN;
-            dir = (long)ZOOM_STEP;
-        } else if (step >= FP_ONE) {
-            step = FP_ONE;
-            dir = -(long)ZOOM_STEP;
-        }
-    }
+    /* The demo cartridge has nothing else to do, so it keeps the loop. The
+     * frame it renders is the same one the game gets. */
+    for (;;)
+        sh2_map_frame();
 }
 /* ==========================================================================
  * U-077: level of detail -- the 32 major airports always, the 57 secondaries
@@ -939,10 +980,6 @@ void fb_draw_overlay(unsigned long u0, unsigned long v0, unsigned long step,
  * long, and cannot overrun the Genesis hold it sits inside.
  * ========================================================================== */
 #include "sega_logo.h"
-
-#define MODE_BLANK   0x0000u
-#define MODE_PACKED  0x0001u
-#define BM_PRI       0x0080u          /* 32X in front (manual, Bitmap Mode) */
 
 volatile unsigned long sh2_sega_drawn;
 volatile unsigned long sh2_sega_skipped;
