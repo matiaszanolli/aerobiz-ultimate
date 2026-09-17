@@ -288,6 +288,23 @@ The corollary is a trap: enabling the cache under PicoDrive changes the measured
 time by exactly zero. That is evidence about the emulator, not evidence that
 the cache was already on.
 
+### PicoDrive stops a 68000 that polls a comm register, so no timeout ever expires
+
+`pico/32x/memory.c` `m68k_poll_detect`: after 11 reads of a comm register less
+than 64 cycles apart, PicoDrive stops the 68000 (`SekSetStop(1)`) until the SH2
+writes one. So under the harness a thunk's wait loop runs 11 iterations and
+then simply waits for the answer, however long that takes. **Every "SH2 did
+not answer" path is dead code under PicoDrive.** Ares and hardware run the loop
+for real. Measured: a build whose SH2 never answers a divide froze with the
+68000 in the poll loop, `d0` at `$1000 - 11`.
+
+To exercise a fallback, the test build must space its polls out (a short
+`dbra` delay between reads is enough). Done for the divide thunk, 2026-09-16:
+with the SH2 ignoring divides for 4 frames in 8, 95 of 340 calls timed out
+and fell back, and none of the 340 results differed from a local division.
+The SH2 reads the operands when it gets to the command, so a late answer is
+still the right one.
+
 ### A core-side trace produces nothing when the input script is the wrong length
 
 Already recorded below for the frontend's own preconditions, repeated here
